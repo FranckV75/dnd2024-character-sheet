@@ -41,7 +41,7 @@ function cleanLegacyData(data) {
     // Liste des champs numériques
     const numericFields = [
         'str_score', 'dex_score', 'con_score', 'int_score', 'wis_score', 'cha_score',
-        'char_level', 'ac', 'hp_max', 'hp_current', 'hp_temp',
+        'char_level', 'ac', 'hp_max', 'hp_current', 'hp_temp', 'hd_current', 'hd_max',
         'gp', 'sp', 'cp', 'ep', 'pp'
     ];
 
@@ -49,7 +49,7 @@ function cleanLegacyData(data) {
     const textFields = [
         'char_name', 'char_class', 'char_subclass', 'char_background',
         'char_species', 'char_size', 'char_xp', 'heroic_inspiration',
-        'speed', 'initiative', 'passive_perception', 'hd_total', 'hd_spent'
+        'speed', 'initiative', 'passive_perception', 'hd_total', 'hd_spent', 'hd_type'
     ];
 
     // Nettoyer tous les champs
@@ -317,3 +317,8 @@ function importData(el) {
     r.readAsText(f);
     el.value = '';
 }
+
+    // AGENT 3 : Force Update Hit Dice Logic after load
+    if (typeof updateHitDiceType === 'function') updateHitDiceType();
+    if (typeof updateHitDiceCount === 'function') updateHitDiceCount();
+

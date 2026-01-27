@@ -272,44 +272,71 @@
                                     class="rich-input center single-line" style="font-size: 1.5rem;">10</div>
                             </div>
 
-                            <div class="hp-box box">
-                                <div><label>PV Maximum</label>
-                                    <div contenteditable="true" data-name="hp_max" class="rich-input single-line"></div>
+                            <div class="hp-hd-merged-box box"
+                                style="grid-column: span 2; display: flex; flex-direction: column; gap: 10px;">
+                                <!-- HP Section -->
+                                <div class="hp-section"
+                                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                    <div><label>PV Maximum</label>
+                                        <div contenteditable="true" data-name="hp_max" class="rich-input single-line"
+                                            style="font-size: 1.25rem; font-weight: bold;">
+                                        </div>
+                                    </div>
+                                    <div><label>PV Actuels</label>
+                                        <div contenteditable="true" data-name="hp_current"
+                                            class="rich-input single-line"
+                                            style="font-size: 1.25rem; font-weight: bold;"></div>
+                                    </div>
+                                    <div style="grid-column: span 2;"><label>PV Temporaires</label>
+                                        <div contenteditable="true" data-name="hp_temp" class="rich-input single-line"
+                                            style="font-size: 1.25rem; font-weight: bold;">
+                                        </div>
+                                    </div>
                                 </div>
-                                <div><label>PV Actuels</label>
-                                    <div contenteditable="true" data-name="hp_current" class="rich-input single-line"
-                                        style="font-size: 1.2rem;"></div>
-                                </div>
-                                <div style="grid-column: span 2;"><label>PV Temporaires</label>
-                                    <div contenteditable="true" data-name="hp_temp" class="rich-input single-line">
+
+                                <!-- HD Section -->
+                                <div class="hd-section" style="margin-top: 5px;">
+                                    <label>Dés de Vie</label>
+                                    <div class="row" style="align-items: center; gap: 10px;">
+                                        <select id="hd_type_select" name="hd_type" class="rich-input"
+                                            style="flex: 0.6; text-align-last: center; font-family: 'Cinzel', serif; font-size: 1.1rem;">
+                                            <option value="d6">d6</option>
+                                            <option value="d8">d8</option>
+                                            <option value="d10">d10</option>
+                                            <option value="d12">d12</option>
+                                        </select>
+                                        <div class="row"
+                                            style="flex: 1.4; align-items: center; gap: 5px; justify-content: center;">
+                                            <select id="hd_current_select" name="hd_current" class="rich-input center"
+                                                style="width: 50px; text-align-last: center; font-family: 'Cinzel', serif; font-weight: bold; font-size: 1.25rem; appearance: none; -webkit-appearance: none; border-bottom: 2px solid var(--primary-border);">
+                                                <!-- Options populated by JS -->
+                                            </select>
+                                            <span style="font-weight: bold; font-size: 1.25rem;">/</span>
+                                            <div id="hd_max_display" class="rich-input single-line center"
+                                                style="width: 40px; border:none; font-weight:bold; cursor: default; font-size: 1.25rem;">
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="box">
-                                <label>Dés de Vie</label>
-                                <div class="row">
-                                    <div contenteditable="true" data-name="hd_total" class="rich-input single-line"
-                                        placeholder="Total"></div>
-                                    <div contenteditable="true" data-name="hd_spent" class="rich-input single-line"
-                                        placeholder="Utilisés"></div>
+                            <!-- COLONNE DROITE : JETS CONTRE LA MORT + RESSOURCES -->
+                            <div class="vitals-side-col" style="display:flex; flex-direction:column; gap:10px;">
+                                <div class="box death-saves">
+                                    <label>Jets contre la mort</label>
+                                    <div class="chk-container">Succès: <input type="checkbox" name="ds_s1"> <input
+                                            type="checkbox" name="ds_s2"> <input type="checkbox" name="ds_s3"></div>
+                                    <div class="chk-container">Échecs: <input type="checkbox" name="ds_f1"> <input
+                                            type="checkbox" name="ds_f2"> <input type="checkbox" name="ds_f3"></div>
                                 </div>
-                            </div>
 
-                            <div class="box death-saves">
-                                <label>Jets contre la mort</label>
-                                <div class="chk-container">Succès: <input type="checkbox" name="ds_s1"> <input
-                                        type="checkbox" name="ds_s2"> <input type="checkbox" name="ds_s3"></div>
-                                <div class="chk-container">Échecs: <input type="checkbox" name="ds_f1"> <input
-                                        type="checkbox" name="ds_f2"> <input type="checkbox" name="ds_f3"></div>
-                            </div>
-
-                            <!-- RESSOURCE DE CLASSE DYNAMIQUE (RAGES, KI, ETC.) -->
-                            <div id="class-resource-box" class="box"
-                                style="display:none; border:2px solid var(--accent-color);">
-                                <label style="color:var(--accent-color); text-align:center;"
-                                    id="class-resource-label">Ressource</label>
-                                <div id="class-resource-slots"></div>
+                                <!-- RESSOURCE DE CLASSE (RAGES, KI, ETC.) -->
+                                <div id="class-resource-box" class="box"
+                                    style="display:none; border:2px solid var(--accent-color);">
+                                    <label style="color:var(--accent-color); text-align:center;"
+                                        id="class-resource-label">Ressource</label>
+                                    <div id="class-resource-slots"></div>
+                                </div>
                             </div>
                         </div>
 
