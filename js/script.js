@@ -1,13 +1,13 @@
-
+﻿
 
 
 
 // =============================================================================
-// MENUS DÉROULANTS DYNAMIQUES
+// MENUS DÃ‰ROULANTS DYNAMIQUES
 // =============================================================================
 
 /**
- * Remplit les menus déroulants avec les données de DD_RULES
+ * Remplit les menus dÃ©roulants avec les donnÃ©es de DD_RULES
  */
 function populateSelectOptions() {
     // Remplir le select des Classes
@@ -22,7 +22,7 @@ function populateSelectOptions() {
         }
     }
 
-    // Remplir le select des Espèces
+    // Remplir le select des EspÃ¨ces
     const speciesSelect = document.getElementById('char_species');
     if (speciesSelect) {
         speciesSelect.innerHTML = '<option value="">-- Choisir --</option>';
@@ -48,8 +48,8 @@ function populateSelectOptions() {
 }
 
 /**
- * Met à jour le select des Sous-Classes selon la Classe sélectionnée
- * @param {string} className - Nom de la classe sélectionnée
+ * Met Ã  jour le select des Sous-Classes selon la Classe sÃ©lectionnÃ©e
+ * @param {string} className - Nom de la classe sÃ©lectionnÃ©e
  */
 function updateSubclassOptions(className) {
     const subclassSelect = document.getElementById('char_subclass');
@@ -59,7 +59,7 @@ function updateSubclassOptions(className) {
 
     if (!className) return;
 
-    // Trouver la clé de la classe
+    // Trouver la clÃ© de la classe
     let classKey = null;
     for (const [key, classData] of Object.entries(DD_RULES.classes)) {
         if (classData.nameFr === className) {
@@ -82,7 +82,7 @@ function updateSubclassOptions(className) {
 }
 
 /**
- * Remplit le select du Destin Héroïque (Module Odyssée)
+ * Remplit le select du Destin HÃ©roÃ¯que (Module OdyssÃ©e)
  */
 function populateHeroicDestiny() {
     const heroicDestinySelect = document.getElementById('heroic_destiny');
@@ -103,10 +103,10 @@ window.onload = function () {
     generateSkillsHTML();
     initWeapons();
     initSpells();
-    populateSelectOptions(); // Remplir les menus déroulants
-    populateHeroicDestiny(); // Remplir le menu Destin Héroïque
+    populateSelectOptions(); // Remplir les menus dÃ©roulants
+    populateHeroicDestiny(); // Remplir le menu Destin HÃ©roÃ¯que
 
-    // Event listener pour mise à jour Sous-Classe
+    // Event listener pour mise Ã  jour Sous-Classe
     const classSelect = document.getElementById('char_class');
     if (classSelect) {
         classSelect.addEventListener('change', function () {
@@ -170,10 +170,10 @@ window.onload = function () {
 
     setupDrag();
 
-    // Initialiser le système d'onglets
+    // Initialiser le systÃ¨me d'onglets
     initTabs();
 
-    // Initialiser le système de repos
+    // Initialiser le systÃ¨me de repos
     initRestSystem();
     setupHeaderAutoFit();
 };
@@ -194,7 +194,7 @@ function changeBackground(input) {
             try {
                 localStorage.setItem('dd2024_bg', bgData);
             } catch (e) {
-                showModal("Attention : L'image est trop volumineuse pour être sauvegardée. Elle sera affichée pour cette session, mais disparaitra si vous rechargez la page.");
+                showModal("Attention : L'image est trop volumineuse pour Ãªtre sauvegardÃ©e. Elle sera affichÃ©e pour cette session, mais disparaitra si vous rechargez la page.");
             }
         };
         reader.readAsDataURL(input.files[0]);
@@ -244,15 +244,15 @@ function setupDrag() {
         const winW = window.innerWidth;
         const winH = window.innerHeight;
 
-        // Si la toolbar dépasse à droite
+        // Si la toolbar dÃ©passe Ã  droite
         if (r.right > winW) {
             toolbar.style.left = (winW - r.width - 20) + 'px';
         }
-        // Si elle dépasse en bas
+        // Si elle dÃ©passe en bas
         if (r.bottom > winH) {
             toolbar.style.top = (winH - r.height - 20) + 'px';
         }
-        // Si elle dépasse à gauche (rare mais possible)
+        // Si elle dÃ©passe Ã  gauche (rare mais possible)
         if (r.left < 0) {
             toolbar.style.left = '20px';
         }
@@ -303,7 +303,7 @@ function addWeaponRow(data = null) {
         tr.querySelector('.wpn-note').innerHTML = data.note || '';
     }
     bindStyleEvents();
-    addTableDataLabels(); // Mettre à jour les data-label
+    addTableDataLabels(); // Mettre Ã  jour les data-label
 }
 
 function initSpells() {
@@ -341,7 +341,7 @@ function addSpellRow(data = null) {
         tr.querySelector('.spl-m').checked = data.m || false;
     }
     bindStyleEvents();
-    addTableDataLabels(); // Mettre à jour les data-label
+    addTableDataLabels(); // Mettre Ã  jour les data-label
 }
 
 // =============================================================================
@@ -356,7 +356,7 @@ function addTableDataLabels() {
     // === TABLEAU DES ARMES ===
     const weaponsTable = document.querySelector('.weapons-table');
     if (weaponsTable) {
-        const weaponLabels = ['Nom', 'Att/DD', 'Dégâts', 'Notes', ''];
+        const weaponLabels = ['Nom', 'Att/DD', 'DÃ©gÃ¢ts', 'Notes', ''];
         weaponsTable.querySelectorAll('tbody tr').forEach(row => {
             row.querySelectorAll('td').forEach((cell, index) => {
                 if (weaponLabels[index]) {
@@ -369,7 +369,7 @@ function addTableDataLabels() {
     // === TABLEAU DES SORTS ===
     const spellsTable = document.querySelector('.data-table:not(.weapons-table)');
     if (spellsTable) {
-        const spellLabels = ['Niv', 'Nom', 'Temps', 'Portée', 'C/R/M', 'Notes', ''];
+        const spellLabels = ['Niv', 'Nom', 'Temps', 'PortÃ©e', 'C/R/M', 'Notes', ''];
         spellsTable.querySelectorAll('tbody tr').forEach(row => {
             row.querySelectorAll('td').forEach((cell, index) => {
                 if (spellLabels[index]) {
@@ -436,16 +436,16 @@ function openExportMenu() {
     let defName = `DD2024_${n}.json`;
 
     showModal((txt, btns, inp, area, close) => {
-        txt.innerHTML = "<b>Sauvegarde & Export</b><br>Sur tablette, utilisez 'Copier' si le téléchargement est bloqué.";
+        txt.innerHTML = "<b>Sauvegarde & Export</b><br>Sur tablette, utilisez 'Copier' si le tÃ©lÃ©chargement est bloquÃ©.";
 
         const btnFile = document.createElement('button');
         btnFile.className = 'btn btn-save';
-        btnFile.innerText = '💾 Télécharger Fichier';
+        btnFile.innerText = 'ðŸ’¾ TÃ©lÃ©charger Fichier';
         btnFile.onclick = () => { downloadFile(defName); close(); };
 
         const btnCopy = document.createElement('button');
         btnCopy.className = 'btn btn-copy';
-        btnCopy.innerText = '📋 Copier les Données';
+        btnCopy.innerText = 'ðŸ“‹ Copier les DonnÃ©es';
         btnCopy.onclick = () => {
             const data = JSON.stringify(getFormData(), null, 2);
             copyToClipboard(data);
@@ -465,7 +465,7 @@ function openExportMenu() {
 
 function copyToClipboard(text) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => showModal("Données copiées !"))
+        navigator.clipboard.writeText(text).then(() => showModal("DonnÃ©es copiÃ©es !"))
             .catch(() => fallbackCopy(text));
     } else {
         fallbackCopy(text);
@@ -480,7 +480,7 @@ function fallbackCopy(text) {
     ta.focus(); ta.select();
     try {
         document.execCommand('copy');
-        showModal("Données copiées !");
+        showModal("DonnÃ©es copiÃ©es !");
     } catch (err) {
         showModal("Erreur de copie.");
     }
@@ -502,7 +502,7 @@ function openImportMenu() {
         txt.innerHTML = "<b>Importation</b>";
         const btnFile = document.createElement('button');
         btnFile.className = 'btn btn-action';
-        btnFile.innerText = '📂 Ouvrir Fichier';
+        btnFile.innerText = 'ðŸ“‚ Ouvrir Fichier';
         btnFile.onclick = () => { document.getElementById('file-import').click(); close(); };
 
         if (area) {
@@ -512,12 +512,12 @@ function openImportMenu() {
 
         const btnPaste = document.createElement('button');
         btnPaste.className = 'btn btn-save';
-        btnPaste.innerText = '📥 Charger Texte Collé';
+        btnPaste.innerText = 'ðŸ“¥ Charger Texte CollÃ©';
         btnPaste.onclick = () => {
             try {
                 if (!area.value) return;
                 applyFormData(JSON.parse(area.value));
-                alert("Fiche chargée !");
+                alert("Fiche chargÃ©e !");
                 close();
             } catch (e) { alert("Code invalide."); }
         };
@@ -597,7 +597,7 @@ function updateClassResource(lvl, cls, mods) {
         if (lvl >= 14) count = 4;
     }
     else if (clsClean.includes('ensorceleur') || clsClean.includes('sorcer')) {
-        label = "Sorcellerie Innée";
+        label = "Sorcellerie InnÃ©e";
         count = 2;
     }
     else if (clsClean.includes('moine') || clsClean.includes('monk')) {
@@ -608,13 +608,13 @@ function updateClassResource(lvl, cls, mods) {
         if (lvl >= 3) {
             label = "Conduit Divin";
             count = 2;
-            // 2024 Paladin: 2 CD à lvl 3, 3 CD à lvl 11.
+            // 2024 Paladin: 2 CD Ã  lvl 3, 3 CD Ã  lvl 11.
             if (lvl >= 11) count = 3;
         }
     }
-    else if (clsClean.includes('rôdeur') || clsClean.includes('ranger')) {
-        label = "Ennemi Juré";
-        // Rôdeur (Ranger) 2024 : Favored Enemy uses (Hunter's Mark free casts)
+    else if (clsClean.includes('rÃ´deur') || clsClean.includes('ranger')) {
+        label = "Ennemi JurÃ©";
+        // RÃ´deur (Ranger) 2024 : Favored Enemy uses (Hunter's Mark free casts)
         // Lvl 1: 2, Lvl 5: 3, Lvl 9: 4, Lvl 13: 5, Lvl 17: 6
         count = 2;
         if (lvl >= 5) count = 3;
@@ -664,11 +664,11 @@ function updateClassResource(lvl, cls, mods) {
 // =============================================================================
 
 /**
- * Calcule les statistiques dérivées (Initiative, DD Sorts, Attaque Sorts)
- * avec gestion sécurisée des valeurs nulles/invalides
+ * Calcule les statistiques dÃ©rivÃ©es (Initiative, DD Sorts, Attaque Sorts)
+ * avec gestion sÃ©curisÃ©e des valeurs nulles/invalides
  */
 function calcDerivedStats() {
-    // Récupérer les modificateurs de caractéristiques de manière sécurisée
+    // RÃ©cupÃ©rer les modificateurs de caractÃ©ristiques de maniÃ¨re sÃ©curisÃ©e
     const getStatMod = (statName) => {
         const val = getVal(statName + '_score');
         return val ? calcMod(val) : 0;
@@ -713,7 +713,7 @@ function calcDerivedStats() {
 
 
         } else {
-            // Pas de caractéristique d'incantation sélectionnée
+            // Pas de caractÃ©ristique d'incantation sÃ©lectionnÃ©e
             const dcEl = document.getElementById('spell_save_dc');
             const atkEl = document.getElementById('spell_atk_bonus');
             if (dcEl) dcEl.innerText = '-';
@@ -725,7 +725,7 @@ function calcDerivedStats() {
 function calcStats() {
     let lvl = getVal('char_level') || 1;
 
-    // Récupérer la classe depuis le select ou contenteditable (compatibilité)
+    // RÃ©cupÃ©rer la classe depuis le select ou contenteditable (compatibilitÃ©)
     let clsEl = document.getElementById('char_class') || document.querySelector('[data-name="char_class"]');
     let cls = '';
     if (clsEl) {
@@ -759,7 +759,7 @@ function calcStats() {
     let pi = document.getElementById('passive_perc');
     if (pi && !pi.dataset.manual) pi.innerText = pp;
 
-    // Appeler les calculs dérivés (Initiative, DD Sorts, etc.)
+    // Appeler les calculs dÃ©rivÃ©s (Initiative, DD Sorts, etc.)
     calcDerivedStats();
 }
 
@@ -911,12 +911,12 @@ function removeBackground(userIndex) {
 // =============================================================================
 
 /**
- * Teste la fonction cleanLegacyData avec des données sales
- * Exécute des assertions pour valider le comportement
+ * Teste la fonction cleanLegacyData avec des donnÃ©es sales
+ * ExÃ©cute des assertions pour valider le comportement
  * Activer avec ?debug=1 dans l'URL
  */
 function debugMigration() {
-    console.log('=== DÉBUT DES TESTS DE MIGRATION ===');
+    console.log('=== DÃ‰BUT DES TESTS DE MIGRATION ===');
 
     // Test 1: Nettoyage des balises HTML
     const test1 = {
@@ -929,20 +929,20 @@ function debugMigration() {
 
     console.assert(
         result1.char_class === 'Barbare',
-        '❌ ÉCHEC Test 1a: char_class devrait être "Barbare", obtenu:', result1.char_class
+        'âŒ Ã‰CHEC Test 1a: char_class devrait Ãªtre "Barbare", obtenu:', result1.char_class
     );
 
     console.assert(
         result1.str_score === 19,
-        '❌ ÉCHEC Test 1b: str_score devrait être 19 (nombre), obtenu:', result1.str_score
+        'âŒ Ã‰CHEC Test 1b: str_score devrait Ãªtre 19 (nombre), obtenu:', result1.str_score
     );
 
-    // Vérifier qu'il ne reste pas de balises HTML
+    // VÃ©rifier qu'il ne reste pas de balises HTML
     const jsonStr = JSON.stringify(result1);
     if (jsonStr.includes('<') || jsonStr.includes('>')) {
-        console.error('❌ ÉCHEC CRITIQUE: Des balises HTML subsistent dans les données!', result1);
+        console.error('âŒ Ã‰CHEC CRITIQUE: Des balises HTML subsistent dans les donnÃ©es!', result1);
     } else {
-        console.log('✅ Test 1: Nettoyage HTML réussi');
+        console.log('âœ… Test 1: Nettoyage HTML rÃ©ussi');
     }
 
     // Test 2: Gestion des valeurs manquantes
@@ -951,12 +951,12 @@ function debugMigration() {
 
     console.assert(
         result2.str_score === 10,
-        '❌ ÉCHEC Test 2: str_score par défaut devrait être 10, obtenu:', result2.str_score
+        'âŒ Ã‰CHEC Test 2: str_score par dÃ©faut devrait Ãªtre 10, obtenu:', result2.str_score
     );
 
-    console.log('✅ Test 2: Valeurs par défaut appliquées');
+    console.log('âœ… Test 2: Valeurs par dÃ©faut appliquÃ©es');
 
-    // Test 3: Conversion des chaînes numériques
+    // Test 3: Conversion des chaÃ®nes numÃ©riques
     const test3 = {
         char_level: '3',
         ac: '17',
@@ -967,17 +967,17 @@ function debugMigration() {
 
     console.assert(
         typeof result3.char_level === 'number' && result3.char_level === 3,
-        '❌ ÉCHEC Test 3a: char_level devrait être 3 (nombre)'
+        'âŒ Ã‰CHEC Test 3a: char_level devrait Ãªtre 3 (nombre)'
     );
 
     console.assert(
         typeof result3.ac === 'number' && result3.ac === 17,
-        '❌ ÉCHEC Test 3b: ac devrait être 17 (nombre)'
+        'âŒ Ã‰CHEC Test 3b: ac devrait Ãªtre 17 (nombre)'
     );
 
-    console.log('✅ Test 3: Conversion numérique réussie');
+    console.log('âœ… Test 3: Conversion numÃ©rique rÃ©ussie');
 
-    // Test 4: Nettoyage récursif des tableaux
+    // Test 4: Nettoyage rÃ©cursif des tableaux
     const test4 = {
         dynamic_weapons: [
             { name: '<font size="2">Hache</font>', atk: '+6' }
@@ -988,12 +988,12 @@ function debugMigration() {
 
     console.assert(
         result4.dynamic_weapons[0].name === 'Hache',
-        '❌ ÉCHEC Test 4: Nettoyage récursif des armes a échoué'
+        'âŒ Ã‰CHEC Test 4: Nettoyage rÃ©cursif des armes a Ã©chouÃ©'
     );
 
-    console.log('✅ Test 4: Nettoyage récursif réussi');
+    console.log('âœ… Test 4: Nettoyage rÃ©cursif rÃ©ussi');
 
-    // Test 5: Cas réel de Korgul
+    // Test 5: Cas rÃ©el de Korgul
     const test5 = {
         char_class: '<font size="5">Barbare</font>',
         char_level: '<font size="5">3</font>',
@@ -1008,16 +1008,16 @@ function debugMigration() {
         result5.char_level === 3 &&
         result5.str_score === 19 &&
         result5.con_score === 18,
-        '❌ ÉCHEC Test 5: Données réelles de Korgul mal nettoyées'
+        'âŒ Ã‰CHEC Test 5: DonnÃ©es rÃ©elles de Korgul mal nettoyÃ©es'
     );
 
-    console.log('✅ Test 5: Cas réel de Korgul nettoyé avec succès', result5);
+    console.log('âœ… Test 5: Cas rÃ©el de Korgul nettoyÃ© avec succÃ¨s', result5);
 
-    console.log('=== FIN DES TESTS - TOUS LES TESTS PASSÉS ===');
+    console.log('=== FIN DES TESTS - TOUS LES TESTS PASSÃ‰S ===');
 }
 
 // =============================================================================
-// SYSTÈME DE NAVIGATION PAR ONGLETS
+// SYSTÃˆME DE NAVIGATION PAR ONGLETS
 // =============================================================================
 
 /**
@@ -1045,7 +1045,7 @@ function switchTab(tabName) {
 }
 
 /**
- * Initialise le système d'onglets
+ * Initialise le systÃ¨me d'onglets
  */
 function initTabs() {
     // Ajouter les event listeners sur tous les boutons d'onglets
@@ -1061,11 +1061,11 @@ function initTabs() {
     if (savedTab) {
         switchTab(savedTab);
     }
-    // Sinon, l'onglet "combat" est actif par défaut (déjà dans le HTML)
+    // Sinon, l'onglet "combat" est actif par dÃ©faut (dÃ©jÃ  dans le HTML)
 }
 
 // =============================================================================
-// SYSTÈME DE REPOS (COURT ET LONG)
+// SYSTÃˆME DE REPOS (COURT ET LONG)
 // =============================================================================
 
 let longRestTimer = null;
@@ -1074,12 +1074,12 @@ const LONG_REST_DURATION = 2000; // 2 secondes
 
 /**
  * Effectue un repos court (1 heure)
- * Restaure : dés de vie, ressources de classe
+ * Restaure : dÃ©s de vie, ressources de classe
  */
 function performShortRest() {
-    console.log('⚔️ Repos Court commencé...');
+    console.log('âš”ï¸ Repos Court commencÃ©...');
 
-    // Restaurer les ressources de classe (décocher toutes les cases)
+    // Restaurer les ressources de classe (dÃ©cocher toutes les cases)
     const resSlots = document.getElementById('class-resource-slots');
     if (resSlots) {
         resSlots.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
@@ -1089,24 +1089,24 @@ function performShortRest() {
 
     // Feedback visuel
     showModal(
-        '🌙 Repos Court Terminé',
+        'ðŸŒ™ Repos Court TerminÃ©',
         'Vous avez pris un repos d\'une heure.\n\n' +
-        '✅ Ressources de classe restaurées\n' +
-        '💡 N\'oubliez pas de lancer vos dés de vie si nécessaire',
+        'âœ… Ressources de classe restaurÃ©es\n' +
+        'ðŸ’¡ N\'oubliez pas de lancer vos dÃ©s de vie si nÃ©cessaire',
         [
             { label: 'OK', callback: () => { saveData(); } }
         ]
     );
 
-    console.log('✅ Repos Court terminé');
+    console.log('âœ… Repos Court terminÃ©');
 }
 
 /**
  * Effectue un repos long (8 heures)
- * Restaure : PV, dés de vie, emplacements de sorts, ressources de classe
+ * Restaure : PV, dÃ©s de vie, emplacements de sorts, ressources de classe
  */
 function performLongRest() {
-    console.log('🛏️ Repos Long commencé...');
+    console.log('ðŸ›ï¸ Repos Long commencÃ©...');
 
     // Restaurer les PV au maximum
     const hpMax = document.querySelector('[data-name="hp_max"]');
@@ -1119,7 +1119,7 @@ function performLongRest() {
     const hpTemp = document.querySelector('[data-name="hp_temp"]');
     if (hpTemp) hpTemp.innerText = '';
 
-    // Restaurer les dés de vie (remettre à 0 utilisés)
+    // Restaurer les dÃ©s de vie (remettre Ã  0 utilisÃ©s)
     const hdSpent = document.querySelector('[data-name="hd_spent"]');
     if (hdSpent) hdSpent.innerText = '0';
 
@@ -1139,28 +1139,28 @@ function performLongRest() {
 
     // Feedback visuel
     showModal(
-        '🛏️ Repos Long Terminé',
+        'ðŸ›ï¸ Repos Long TerminÃ©',
         'Vous avez pris un repos de 8 heures.\n\n' +
-        '✅ PV restaurés au maximum\n' +
-        '✅ Dés de vie restaurés\n' +
-        '✅ Ressources de classe restaurées\n' +
-        '✅ Jets contre la mort réinitialisés\n' +
-        '💡 N\'oubliez pas de préparer vos sorts',
+        'âœ… PV restaurÃ©s au maximum\n' +
+        'âœ… DÃ©s de vie restaurÃ©s\n' +
+        'âœ… Ressources de classe restaurÃ©es\n' +
+        'âœ… Jets contre la mort rÃ©initialisÃ©s\n' +
+        'ðŸ’¡ N\'oubliez pas de prÃ©parer vos sorts',
         [
             { label: 'OK', callback: () => { saveData(); calcStats(); } }
         ]
     );
 
-    console.log('✅ Repos Long terminé');
+    console.log('âœ… Repos Long terminÃ©');
 }
 
 /**
- * Gère le feedback visuel pendant l'appui long
+ * GÃ¨re le feedback visuel pendant l'appui long
  * @param {HTMLElement} btn - Le bouton Repos Long
- * @param {number} progress - Progression (0 à 1)
+ * @param {number} progress - Progression (0 Ã  1)
  */
 function updateLongRestProgress(btn, progress) {
-    // Créer ou mettre à jour la barre de progression
+    // CrÃ©er ou mettre Ã  jour la barre de progression
     let progressBar = btn.querySelector('.rest-progress');
     if (!progressBar) {
         progressBar = document.createElement('div');
@@ -1170,7 +1170,7 @@ function updateLongRestProgress(btn, progress) {
     }
     progressBar.style.width = (progress * 100) + '%';
 
-    // Effet de pulsation supplémentaire
+    // Effet de pulsation supplÃ©mentaire
     btn.style.transform = `scale(${1 + progress * 0.05})`;
 }
 
@@ -1185,7 +1185,7 @@ function cleanupLongRestFeedback(btn) {
 }
 
 /**
- * Initialise le système de repos
+ * Initialise le systÃ¨me de repos
  */
 function initRestSystem() {
     // Bouton Repos Court - Clic simple
@@ -1197,7 +1197,7 @@ function initRestSystem() {
     // Bouton Repos Long - Appui long 2 secondes
     const btnLongRest = document.getElementById('btn-long-rest');
     if (btnLongRest) {
-        // Début de l'appui
+        // DÃ©but de l'appui
         btnLongRest.addEventListener('mousedown', function (e) {
             e.preventDefault();
             longRestStartTime = Date.now();
@@ -1213,10 +1213,10 @@ function initRestSystem() {
                     cleanupLongRestFeedback(btnLongRest);
                     performLongRest();
                 }
-            }, 50); // Mise à jour toutes les 50ms
+            }, 50); // Mise Ã  jour toutes les 50ms
         });
 
-        // Fin de l'appui (relâchement trop tôt)
+        // Fin de l'appui (relÃ¢chement trop tÃ´t)
         btnLongRest.addEventListener('mouseup', function () {
             if (longRestTimer) {
                 clearInterval(longRestTimer);
@@ -1225,7 +1225,7 @@ function initRestSystem() {
 
                 const elapsed = Date.now() - longRestStartTime;
                 if (elapsed < LONG_REST_DURATION) {
-                    console.log('⏱️ Repos Long annulé (appui trop court)');
+                    console.log('â±ï¸ Repos Long annulÃ© (appui trop court)');
                 }
             }
         });
@@ -1236,7 +1236,7 @@ function initRestSystem() {
                 clearInterval(longRestTimer);
                 longRestTimer = null;
                 cleanupLongRestFeedback(btnLongRest);
-                console.log('⏱️ Repos Long annulé (souris sortie)');
+                console.log('â±ï¸ Repos Long annulÃ© (souris sortie)');
             }
         });
 
@@ -1267,22 +1267,22 @@ function initRestSystem() {
 
                 const elapsed = Date.now() - longRestStartTime;
                 if (elapsed < LONG_REST_DURATION) {
-                    console.log('⏱️ Repos Long annulé (appui tactile trop court)');
+                    console.log('â±ï¸ Repos Long annulÃ© (appui tactile trop court)');
                 }
             }
         });
     }
 }
 
-// Exécuter les tests au chargement si ?debug=1 dans l'URL
+// ExÃ©cuter les tests au chargement si ?debug=1 dans l'URL
 if (window.location.search.includes('debug=1')) {
-    console.log('🔍 Mode DEBUG activé - Exécution des tests...');
+    console.log('ðŸ” Mode DEBUG activÃ© - ExÃ©cution des tests...');
     debugMigration();
 }
 
 /**
- * Configure l'ajustement automatique du texte pour l'entête
- * Réduit la police si le texte dépasse la largeur
+ * Configure l'ajustement automatique du texte pour l'entÃªte
+ * RÃ©duit la police si le texte dÃ©passe la largeur
  */
 function setupHeaderAutoFit() {
     const headerInputs = document.querySelectorAll('header .rich-input');
@@ -1290,7 +1290,7 @@ function setupHeaderAutoFit() {
     const fitText = (el) => {
         if (!el) return;
 
-        // Reset à la taille de base (avec priority important pour surcharger le CSS)
+        // Reset Ã  la taille de base (avec priority important pour surcharger le CSS)
         el.style.setProperty('font-size', '1.5rem', 'important');
 
         // Logique pour les SELECT
@@ -1306,7 +1306,7 @@ function setupHeaderAutoFit() {
 
         // Logique pour les DIV/INPUT (scrollWidth)
         let size = 1.5;
-        // Tant que le contenu déborde (scrollWidth > clientWidth), on réduit
+        // Tant que le contenu dÃ©borde (scrollWidth > clientWidth), on rÃ©duit
         while (el.scrollWidth > el.clientWidth && size > 0.8) {
             size -= 0.1;
             el.style.setProperty('font-size', `${size}rem`, 'important');
@@ -1317,9 +1317,87 @@ function setupHeaderAutoFit() {
         // Appliquer au chargement
         fitText(el);
 
-        // Appliquer à la modification
+        // Appliquer Ã  la modification
         el.addEventListener('input', () => fitText(el)); // Pour div
         el.addEventListener('change', () => fitText(el)); // Pour select
         el.addEventListener('blur', () => fitText(el));
     });
 }
+
+/**
+ * GESTION DES DÉS DE VIE (HIT DICE) - AGENT 3
+ */
+
+function setupHitDiceLogic() {
+    const classSelect = document.getElementById('char_class');
+    // Listeners
+    if(classSelect) classSelect.addEventListener('change', updateHitDiceType);
+    
+    document.addEventListener('input', (e) => {
+        if (e.target.dataset.name === 'char_level' || e.target.id === 'level') {
+            updateHitDiceCount();
+        }
+    });
+
+    // Initial call
+    updateHitDiceType();
+    updateHitDiceCount();
+}
+
+function updateHitDiceType() {
+    const classSelect = document.getElementById('char_class');
+    const hdSelect = document.getElementById('hd_type_select');
+    if (!classSelect || !hdSelect) return;
+
+    const cls = (classSelect.value || '').toLowerCase();
+    let die = 'd8'; // Default
+
+    if (cls.includes('barbare') || cls.includes('barbarian')) die = 'd12';
+    else if (cls.includes('guerrier') || cls.includes('fighter') || 
+             cls.includes('paladin') || 
+             cls.includes('rôdeur') || cls.includes('ranger')) die = 'd10';
+    else if (cls.includes('sorcier') || cls.includes('warlock') ||
+             cls.includes('barde') || cls.includes('bard') ||
+             cls.includes('clerc') || cls.includes('cleric') ||
+             cls.includes('druide') || cls.includes('druid') ||
+             cls.includes('moine') || cls.includes('monk') ||
+             cls.includes('roublard') || cls.includes('rogue')) die = 'd8';
+    else if (cls.includes('magicien') || cls.includes('wizard') || 
+             cls.includes('ensorceleur') || cls.includes('sorcerer')) die = 'd6';
+
+    hdSelect.value = die;
+    hdSelect.dispatchEvent(new Event('change')); // Force save if listener exists
+}
+
+function updateHitDiceCount() {
+    let levelEl = document.querySelector('[data-name="char_level"]');
+    if (!levelEl) levelEl = document.getElementById('level');
+    
+    let level = 1;
+    if (levelEl) level = parseInt(levelEl.innerText) || 1;
+    
+    const maxDisplay = document.getElementById('hd_max_display');
+    if (maxDisplay) maxDisplay.innerText = level;
+    
+    const currentSelect = document.getElementById('hd_current_select');
+    if (currentSelect) {
+        const currentVal = parseInt(currentSelect.value) || 0;
+        currentSelect.innerHTML = '';
+        
+        for (let i = 0; i <= level; i++) {
+             const opt = document.createElement('option');
+             opt.value = i;
+             opt.innerText = i;
+             currentSelect.appendChild(opt);
+        }
+        
+        if (currentVal <= level) currentSelect.value = currentVal;
+        else currentSelect.value = level;
+    }
+}
+
+window.addEventListener('load', setupHitDiceLogic);
+
+
+
+
