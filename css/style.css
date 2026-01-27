@@ -163,7 +163,8 @@ body {
 
 .grid-header-2 {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    /* Ratio ajusté : Espèce (1.2) - Sous-Classe (2.5) - Taille (0.5) - PX (0.7) */
+    grid-template-columns: 1.2fr 2.5fr 0.5fr 0.7fr;
     gap: 10px;
 }
 
@@ -264,6 +265,31 @@ select.large-select {
     height: 50px;
     background: rgba(255, 255, 255, 0.3);
     border-radius: 5px;
+}
+
+/* HOMOGENEISATION ENTETE (Agent 3) */
+header .rich-input,
+header select {
+    font-family: 'Cinzel', serif !important;
+    font-weight: 800 !important;
+    font-size: 1.5rem !important;
+    /* GROS TEXTE PAR DEFAUT */
+    color: #2a1b0a !important;
+    /* Couleur sombre */
+    height: auto;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    /* Pour aligner le texte verticalement si input */
+}
+
+/* Ajustement spécifique pour les selects de l'entête */
+header select.large-select {
+    font-size: 1.5rem !important;
+    height: 40px;
+    /* Force height match */
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 .chk-container {

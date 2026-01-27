@@ -175,6 +175,7 @@ window.onload = function () {
 
     // Initialiser le système de repos
     initRestSystem();
+    setupHeaderAutoFit();
 };
 
 function updateOpacity(val) {
@@ -1277,4 +1278,48 @@ function initRestSystem() {
 if (window.location.search.includes('debug=1')) {
     console.log('🔍 Mode DEBUG activé - Exécution des tests...');
     debugMigration();
+}
+
+/**
+ * Configure l'ajustement automatique du texte pour l'entête
+ * Réduit la police si le texte dépasse la largeur
+ */
+function setupHeaderAutoFit() {
+    const headerInputs = document.querySelectorAll('header .rich-input');
+
+    const fitText = (el) => {
+        if (!el) return;
+
+        // Reset à la taille de base (avec priority important pour surcharger le CSS)
+        el.style.setProperty('font-size', '1.5rem', 'important');
+
+        // Logique pour les SELECT
+        if (el.tagName === 'SELECT') {
+            const selectedText = el.options[el.selectedIndex] ? el.options[el.selectedIndex].text : '';
+            if (selectedText.length > 25) {
+                el.style.setProperty('font-size', '1rem', 'important');
+            } else if (selectedText.length > 18) {
+                el.style.setProperty('font-size', '1.2rem', 'important');
+            }
+            return;
+        }
+
+        // Logique pour les DIV/INPUT (scrollWidth)
+        let size = 1.5;
+        // Tant que le contenu déborde (scrollWidth > clientWidth), on réduit
+        while (el.scrollWidth > el.clientWidth && size > 0.8) {
+            size -= 0.1;
+            el.style.setProperty('font-size', `${size}rem`, 'important');
+        }
+    };
+
+    headerInputs.forEach(el => {
+        // Appliquer au chargement
+        fitText(el);
+
+        // Appliquer à la modification
+        el.addEventListener('input', () => fitText(el)); // Pour div
+        el.addEventListener('change', () => fitText(el)); // Pour select
+        el.addEventListener('blur', () => fitText(el));
+    });
 }
