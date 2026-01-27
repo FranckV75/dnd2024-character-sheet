@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiche D&D 2024 - Mobile Ready</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Segoe+UI:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=1.1">
+</head>
+
+<body>
+
+    <!-- MODAL -->
+    <div id="custom-modal">
+        <div class="modal-content">
+            <div class="modal-msg" id="modal-text">Message</div>
+            <input type="text" id="modal-input" placeholder="Nom du fichier..." autocomplete="off">
+            <textarea id="modal-textarea" placeholder="Collez le code de sauvegarde ici..."></textarea>
+            <div class="modal-buttons" id="modal-actions"></div>
+
+
+        </div>
+    </div>
+
+    <!-- GALLERY MODAL -->
+    <div id="gallery-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-content gallery-content">
+            <h3>Galerie d'arrières-plans</h3>
+            <div class="gallery-controls">
+                <input type="text" id="new-bg-url" placeholder="https://mon-site.free.fr/mon-image.jpg" style="flex:1;">
+                <button class="btn btn-save" onclick="addNewBackground()">Ajouter</button>
+            </div>
+            <p style="font-size:0.8rem; margin-top:5px; color:#666;">Images stockées via lien (URL). Idéal pour Free.fr
+                ou autres hébergeurs.</p>
+            <div id="gallery-grid" class="gallery-grid">
+                <!-- Images will be injected here -->
+            </div>
+            <button class="btn" onclick="document.getElementById('gallery-modal').style.display='none'"
+                style="margin-top:15px;">Fermer</button>
+        </div>
+    </div>
+
+    <input type="file" id="file-import" style="display: none;" accept=".json" onchange="importData(this)">
+    <input type="file" id="bg-import" style="display: none;" accept="image/*" onchange="changeBackground(this)">
+
+    <!-- TOOLBAR -->
+    <div id="toolbar">
+        <div id="toolbar-header">
+            <span>GESTION ✥</span>
+            <span id="minimize-btn" onpointerdown="toggleToolbar(event)" title="Réduire/Agrandir">_</span>
+        </div>
+        <div id="toolbar-content">
+            <button class="btn btn-bg" onclick="openGallery()">🖼️ Galerie Fonds</button>
+            <div class="slider-label">Opacité Fiche</div>
+            <input type="range" id="opacity-slider" min="0.2" max="1" step="0.05" value="0.85"
+                oninput="updateOpacity(this.value)">
+            <div style="height: 5px;"></div>
+            <button class="btn btn-save" onclick="openExportMenu()">📤 Sauvegarder / Exporter</button>
+            <button class="btn" onclick="openImportMenu()">📥 Charger / Importer</button>
+            <div style="height: 5px;"></div>
+            <button class="btn" onclick="saveData()">💾 Sauvegarde Rapide</button>
+            <button class="btn desktop-only" onclick="window.print()">🖨️ Imprimer / PDF</button>
+            <button class="btn" onclick="triggerReset()">🗑️ Réinitialiser</button>
+        </div>
+    </div>
+
+    <!-- STYLE EDITOR -->
+    <div id="style-editor" class="no-focus-loss">
+        <div
+            style="margin-bottom: 8px; border-bottom: 1px solid #8b4513; padding-bottom: 5px; font-weight:bold; font-size:0.8rem; color:#5e2c04; font-family:'Cinzel', serif;">
+            STYLE</div>
+        <label>Format:</label>
+        <div style="margin-bottom: 10px;">
+            <button class="style-btn" onmousedown="event.preventDefault(); applyFormat('bold')"
+                title="Gras"><b>B</b></button>
+            <button class="style-btn" onmousedown="event.preventDefault(); applyFormat('italic')"
+                title="Italique"><i>I</i></button>
+            <button class="style-btn" onmousedown="event.preventDefault(); applyFormat('underline')"
+                title="Souligné"><u>U</u></button>
+        </div>
+        <label>Taille:</label>
+        <div style="margin-bottom: 10px; display: flex; gap: 2px;">
+            <button class="style-btn size-btn" onmousedown="event.preventDefault(); applyFontSize('1')">TP</button>
+            <button class="style-btn size-btn" onmousedown="event.preventDefault(); applyFontSize('2')">P</button>
+            <button class="style-btn size-btn" onmousedown="event.preventDefault(); applyFontSize('3')">N</button>
+            <button class="style-btn size-btn" onmousedown="event.preventDefault(); applyFontSize('5')">G</button>
+            <button class="style-btn size-btn" onmousedown="event.preventDefault(); applyFontSize('7')">TG</button>
+        </div>
+        <label>Couleur:</label>
+        <div style="display:flex; flex-wrap:wrap;">
+            <div class="color-swatch" style="background: #1a1a1a;"
+                onmousedown="event.preventDefault(); applyColor('#1a1a1a')"></div>
+            <div class="color-swatch" style="background: #8b0000;"
+                onmousedown="event.preventDefault(); applyColor('#8b0000')"></div>
+            <div class="color-swatch" style="background: #00008b;"
+                onmousedown="event.preventDefault(); applyColor('#00008b')"></div>
+            <div class="color-swatch" style="background: #006400;"
+                onmousedown="event.preventDefault(); applyColor('#006400')"></div>
+            <div class="color-swatch" style="background: #6a0dad;"
+                onmousedown="event.preventDefault(); applyColor('#6a0dad')"></div>
+            <div class="color-swatch" style="background: #d2691e;"
+                onmousedown="event.preventDefault(); applyColor('#d2691e')"></div>
+        </div>
+    </div>
+
+    <form id="sheet-form">
+        <div class="sheet-container">
+            <!-- HEADER -->
+            <header>
+                <div class="row" style="margin-bottom: 10px;">
+                    <div style="flex: 2;">
+                        <label>Nom du Personnage</label>
+                        <div contenteditable="true" data-name="char_name" class="rich-input single-line"
+                            style="font-size: 1.5rem; font-weight:bold;"></div>
+                    </div>
+                    <div style="flex: 1;"><label>Classe</label>
+                        <select id="char_class" name="char_class" class="large-select" onchange="calcStats()">
+                            <option value="">-- Choisir --</option>
+                        </select>
+                    </div>
+                    <div style="flex: 0.5;"><label>Niveau</label>
+                        <div contenteditable="true" data-name="char_level" class="rich-input single-line center"
+                            id="level">1</div>
+                    </div>
+                    <div style="flex: 1;"><label>Historique</label>
+                        <select id="char_background" name="char_background" class="large-select">
+                            <option value="">-- Choisir --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid-header-2">
+                    <div><label>Espèce</label>
+                        <select id="char_species" name="char_species" class="large-select">
+                            <option value="">-- Choisir --</option>
+                        </select>
+                    </div>
+                    <div><label>Sous-Classe</label>
+                        <select id="char_subclass" name="char_subclass" class="large-select">
+                            <option value="">-- Choisir --</option>
+                        </select>
+                    </div>
+                    <div><label>Taille</label>
+                        <div contenteditable="true" data-name="char_size" class="rich-input single-line"></div>
+                    </div>
+                    <div><label>PX</label>
+                        <div contenteditable="true" data-name="char_xp" class="rich-input single-line"></div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- BARRE DE NAVIGATION PAR ONGLETS -->
+            <nav class="tab-navigation" id="tab-navigation">
+                <button class="tab-btn active" data-tab="combat" type="button">✥ Caractéristiques & Combat</button>
+                <button class="tab-btn" data-tab="role" type="button">✥ Compétences & Histoire</button>
+                <button class="tab-btn" data-tab="magic" type="button">✥ Magie, équipement & trésors</button>
+            </nav>
+
+            <hr style="width: 100%; border: 1px solid #8b4513;">
+
+            <!-- ================================================================= -->
+            <!-- SECTION 1 : COMBAT -->
+            <!-- ================================================================= -->
+            <div class="tab-content active" id="tab-combat">
+
+                <div style="display: grid; grid-template-columns: 100px 1fr 1fr; gap: 20px;">
+                    <!-- STATS -->
+                    <aside class="stats-column">
+                        <div class="stat-box">
+                            <label>Force</label>
+                            <div contenteditable="true" data-name="str_score" id="str"
+                                class="rich-input center stat-val">10
+                            </div>
+                            <div class="stat-mod" id="str_mod">+0</div>
+                            <div class="stat-save"><input type="checkbox" name="str_save_prof"
+                                    onchange="calcStats()"><span>Sauv.</span>
+                                <div id="str_save_val">+0</div>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <label>Dextérité</label>
+                            <div contenteditable="true" data-name="dex_score" id="dex"
+                                class="rich-input center stat-val">10
+                            </div>
+                            <div class="stat-mod" id="dex_mod">+0</div>
+                            <div class="stat-save"><input type="checkbox" name="dex_save_prof"
+                                    onchange="calcStats()"><span>Sauv.</span>
+                                <div id="dex_save_val">+0</div>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <label>Constitution</label>
+                            <div contenteditable="true" data-name="con_score" id="con"
+                                class="rich-input center stat-val">10
+                            </div>
+                            <div class="stat-mod" id="con_mod">+0</div>
+                            <div class="stat-save"><input type="checkbox" name="con_save_prof"
+                                    onchange="calcStats()"><span>Sauv.</span>
+                                <div id="con_save_val">+0</div>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <label>Intelligence</label>
+                            <div contenteditable="true" data-name="int_score" id="int"
+                                class="rich-input center stat-val">10
+                            </div>
+                            <div class="stat-mod" id="int_mod">+0</div>
+                            <div class="stat-save"><input type="checkbox" name="int_save_prof"
+                                    onchange="calcStats()"><span>Sauv.</span>
+                                <div id="int_save_val">+0</div>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <label>Sagesse</label>
+                            <div contenteditable="true" data-name="wis_score" id="wis"
+                                class="rich-input center stat-val">10
+                            </div>
+                            <div class="stat-mod" id="wis_mod">+0</div>
+                            <div class="stat-save"><input type="checkbox" name="wis_save_prof"
+                                    onchange="calcStats()"><span>Sauv.</span>
+                                <div id="wis_save_val">+0</div>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <label>Charisme</label>
+                            <div contenteditable="true" data-name="cha_score" id="cha"
+                                class="rich-input center stat-val">10
+                            </div>
+                            <div class="stat-mod" id="cha_mod">+0</div>
+                            <div class="stat-save"><input type="checkbox" name="cha_save_prof"
+                                    onchange="calcStats()"><span>Sauv.</span>
+                                <div id="cha_save_val">+0</div>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- CENTER -->
+                    <section class="col">
+                        <div class="row box">
+                            <div class="col" style="flex:1; align-items: center;">
+                                <label>Bonus de Maîtrise</label>
+                                <div id="pb_display" class="rich-input center single-line" style="font-size: 1.5rem;">+2
+                                </div>
+                            </div>
+                            <div class="col" style="flex:1; align-items: center;">
+                                <label style="font-size:0.6rem; text-align:center;">Inspiration Héroïque ou points de
+                                    Foi</label>
+                                <div contenteditable="true" data-name="heroic_inspiration"
+                                    class="rich-input center single-line" style="width: 100%; min-height: 24px;"></div>
+                            </div>
+                            <div class="col" style="flex:1; align-items: center;">
+                                <label>Vitesse</label>
+                                <div contenteditable="true" data-name="speed" class="rich-input single-line center"
+                                    style="width: 60px;"></div>
+                            </div>
+                        </div>
+
+                        <div class="vitals-grid">
+                            <div class="ac-hex">
+                                <label>Classe d'Armure</label>
+                                <div contenteditable="true" data-name="ac" class="rich-input center single-line"
+                                    style="font-size: 1.8rem; border:none; background:transparent;"></div>
+                            </div>
+                            <div class="box">
+                                <label style="text-align:center">Initiative</label>
+                                <div contenteditable="true" data-name="initiative" id="initiative_val"
+                                    class="rich-input center single-line" style="font-size: 1.5rem;"></div>
+                            </div>
+                            <div class="box">
+                                <label style="text-align:center">Perception Passive</label>
+                                <div contenteditable="true" data-name="passive_perception" id="passive_perc"
+                                    class="rich-input center single-line" style="font-size: 1.5rem;">10</div>
+                            </div>
+
+                            <div class="hp-box box">
+                                <div><label>PV Maximum</label>
+                                    <div contenteditable="true" data-name="hp_max" class="rich-input single-line"></div>
+                                </div>
+                                <div><label>PV Actuels</label>
+                                    <div contenteditable="true" data-name="hp_current" class="rich-input single-line"
+                                        style="font-size: 1.2rem;"></div>
+                                </div>
+                                <div style="grid-column: span 2;"><label>PV Temporaires</label>
+                                    <div contenteditable="true" data-name="hp_temp" class="rich-input single-line">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="box">
+                                <label>Dés de Vie</label>
+                                <div class="row">
+                                    <div contenteditable="true" data-name="hd_total" class="rich-input single-line"
+                                        placeholder="Total"></div>
+                                    <div contenteditable="true" data-name="hd_spent" class="rich-input single-line"
+                                        placeholder="Utilisés"></div>
+                                </div>
+                            </div>
+
+                            <div class="box death-saves">
+                                <label>Jets contre la mort</label>
+                                <div class="chk-container">Succès: <input type="checkbox" name="ds_s1"> <input
+                                        type="checkbox" name="ds_s2"> <input type="checkbox" name="ds_s3"></div>
+                                <div class="chk-container">Échecs: <input type="checkbox" name="ds_f1"> <input
+                                        type="checkbox" name="ds_f2"> <input type="checkbox" name="ds_f3"></div>
+                            </div>
+
+                            <!-- RESSOURCE DE CLASSE DYNAMIQUE (RAGES, KI, ETC.) -->
+                            <div id="class-resource-box" class="box"
+                                style="display:none; border:2px solid var(--accent-color);">
+                                <label style="color:var(--accent-color); text-align:center;"
+                                    id="class-resource-label">Ressource</label>
+                                <div id="class-resource-slots"></div>
+                            </div>
+                        </div>
+
+                        <div class="box">
+                            <h3>Armes & Sorts Mineurs</h3>
+                            <div class="scroll-table-container" style="max-height: 250px;">
+                                <table class="data-table weapons-table">
+                                    <thead>
+                                        <tr>
+                                            <th width="35%">Nom</th>
+                                            <th width="15%">Att/DD</th>
+                                            <th width="25%">Dégâts</th>
+                                            <th>Notes</th>
+                                            <th style="width:20px"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="weapons_body"></tbody>
+                                </table>
+                            </div>
+                            <div class="add-row-btn" onclick="addWeaponRow()">+ Ajouter une arme ou un sort mineur</div>
+                        </div>
+                    </section>
+
+                    <!-- RIGHT -->
+                    <section class="col">
+                        <div class="box" style="flex: 1;">
+                            <h3>Traits & Dons</h3>
+                            <div contenteditable="true" data-name="traits_feats" class="rich-input multi-line"></div>
+                        </div>
+                        <div class="box" style="flex: 1;">
+                            <h3>Capacités de Classe</h3>
+                            <div contenteditable="true" data-name="class_features" class="rich-input multi-line"></div>
+                        </div>
+                        <div class="box">
+                            <h3>Entraînements & Maîtrises</h3>
+                            <label>Armures</label>
+                            <div class="chk-container">
+                                <input type="checkbox" name="prof_armor_light"> Légères
+                                <input type="checkbox" name="prof_armor_med"> Interméd.
+                                <input type="checkbox" name="prof_armor_heavy"> Lourdes
+                                <input type="checkbox" name="prof_armor_shield"> Boucliers
+                            </div>
+                            <label>Armes</label>
+                            <div contenteditable="true" data-name="profs_weapons" class="rich-input multi-line"
+                                style="min-height: 60px; max-height: 150px;"></div>
+                            <label>Outils</label>
+                            <div contenteditable="true" data-name="profs_tools" class="rich-input multi-line"
+                                style="min-height: 40px; max-height: 40px; overflow-y: auto;"></div>
+                            <label>Langues</label>
+                            <div contenteditable="true" data-name="langs" class="rich-input multi-line"
+                                style="min-height: 60px; max-height: 60px; overflow-y: auto;"></div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+            <!-- FIN SECTION COMBAT -->
+
+            <!-- ================================================================= -->
+            <!-- SECTION 2 : COMPÉTENCES & HISTOIRE -->
+            <!-- ================================================================= -->
+            <div class="tab-content" id="tab-role">
+                <!-- COMPÉTENCES -->
+                <div class="box" style="width: 100%; margin: 20px 0;">
+                    <h3>Compétences</h3>
+                    <div id="skills_container" class="skills-list"></div>
+                </div>
+
+                <!-- MODULE ODYSSÉE DES SEIGNEURS DRAGONS -->
+                <div class="box"
+                    style="background: linear-gradient(135deg, #2c1810 0%, #3d2417 100%); border: 2px solid #d4af37; padding: 15px;">
+                    <h3 style="color: #d4af37; text-align: center; margin: 0 0 15px 0; font-size: 1.1rem;">⚔️
+                        Odyssée des Seigneurs Dragons ⚔️</h3>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label style="color: #d4af37; font-size: 0.9rem;">Destin Héroïque</label>
+                            <select id="heroic_destiny" name="heroic_destiny"
+                                style="width: 100%; padding: 8px; font-size: 0.9rem; border: 2px solid #d4af37; border-radius: 5px; background: rgba(255, 255, 255, 0.95); font-family: 'Segoe UI', sans-serif;">
+                                <option value="">-- Aucun --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="color: #d4af37; font-size: 0.9rem;">Score de Gloire</label>
+                            <input type="number" id="glory_score" name="glory_score" min="0" max="100" value="0"
+                                style="width: 100%; padding: 8px; font-size: 1rem; text-align: center; border: 2px solid #d4af37; border-radius: 5px; background: rgba(255, 255, 255, 0.95);">
+                        </div>
+                        <div>
+                            <label style="color: #d4af37; font-size: 0.9rem;">Score de Vanité</label>
+                            <input type="number" id="vanity_score" name="vanity_score" min="0" max="100" value="0"
+                                style="width: 100%; padding: 8px; font-size: 1rem; text-align: center; border: 2px solid #d4af37; border-radius: 5px; background: rgba(255, 255, 255, 0.95);">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CENTRE DE REPOS (VERSION COMPACTE) -->
+                <div class="box"
+                    style="background: linear-gradient(135deg, #2c1810 0%, #3d2417 100%); border: 2px solid #d4af37; padding: 12px;">
+                    <h3 style="color: #d4af37; text-align: center; margin: 0 0 10px 0; font-size: 1rem;">⚔️ Centre de
+                        Repos</h3>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button class="btn btn-short-rest" id="btn-short-rest" type="button"
+                            style="flex: 1; max-width: 250px; min-height: 70px;">
+                            <span class="rest-icon" style="font-size: 1.8rem;">🌙</span>
+                            <span class="rest-label" style="font-size: 0.95rem;">Repos Court</span>
+                            <span class="rest-desc" style="font-size: 0.7rem;">1 heure</span>
+                        </button>
+                        <button class="btn btn-long-rest" id="btn-long-rest" type="button"
+                            style="flex: 1; max-width: 250px; min-height: 70px;">
+                            <span class="rest-icon" style="font-size: 1.8rem;">🛏️</span>
+                            <span class="rest-label" style="font-size: 0.95rem;">Repos Long</span>
+                            <span class="rest-desc" style="font-size: 0.7rem;">Maintenir 2s</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- APPARENCE & HISTOIRE -->
+                <div class="row" style="margin-top: 15px;">
+                    <div class="box" style="flex: 1;">
+                        <h3>Apparence</h3>
+                        <div contenteditable="true" data-name="appearance" class="rich-input multi-line"
+                            style="height: 150px;"></div>
+                    </div>
+                    <div class="box" style="flex: 2;">
+                        <h3>Histoire & Personnalité</h3>
+                        <div contenteditable="true" data-name="backstory" class="rich-input multi-line"
+                            style="height: 150px;"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- FIN SECTION COMPÉTENCES & HISTOIRE -->
+
+            <!-- ================================================================= -->
+            <!-- SECTION 3 : MAGIE & INVENTAIRE -->
+            <!-- ================================================================= -->
+            <div class="tab-content" id="tab-magic">
+
+                <!-- Caractéristique d'incantation -->
+                <div class="grid-3" style="margin-top: 20px;">
+                    <div class="box">
+                        <label>Caractéristique Incantation (mod. d'incant.)</label>
+                        <select name="spell_ability" id="spell_ability" onchange="calcStats()" class="large-select">
+                            <option value="none">-</option>
+                            <option value="int">Intelligence</option>
+                            <option value="wis">Sagesse</option>
+                            <option value="cha">Charisme</option>
+                        </select>
+                    </div>
+                    <div class="box"><label>DD Sauvegarde</label>
+                        <div id="spell_save_dc" class="rich-input center single-line" style="font-size: 2rem;">8
+                        </div>
+                    </div>
+                    <div class="box"><label>Bonus Attaque</label>
+                        <div id="spell_atk_bonus" class="rich-input center single-line" style="font-size: 2rem;">+0
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SORTS (Full Width) -->
+                <div class="box" style="width: 100%; margin-top: 15px;">
+                    <h3>Sorts Mineurs & Sorts Préparés</h3>
+                    <div class="scroll-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:30px;">Niv</th>
+                                    <th style="width:30%;">Nom</th>
+                                    <th style="width:15%;">Temps</th>
+                                    <th style="width:15%;">Portée</th>
+                                    <th style="width:60px;">C/R/M</th>
+                                    <th>Notes</th>
+                                    <th style="width:20px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="spells_body">
+                                <!-- Lignes de sorts générées par JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="add-row-btn" onclick="addSpellRow()">+ Ajouter un sort</div>
+                </div>
+
+                <div class="box" style="margin-top: 10px;">
+                    <h3>Équipement & Trésor</h3>
+                    <div contenteditable="true" data-name="equipment" class="rich-input multi-line"
+                        style="height: 200px;">
+                    </div>
+                    <div class="row">
+                        <div class="col"><label>Pièces de Cuivre</label>
+                            <div contenteditable="true" data-name="cp" class="rich-input single-line"></div>
+                        </div>
+                        <div class="col"><label>Pièces d’Argent</label>
+                            <div contenteditable="true" data-name="sp" class="rich-input single-line"></div>
+                        </div>
+                        <div class="col"><label>Pièces d'Électrum</label>
+                            <div contenteditable="true" data-name="ep" class="rich-input single-line"></div>
+                        </div>
+                        <div class="col"><label>Pièces d'Or</label>
+                            <div contenteditable="true" data-name="gp" class="rich-input single-line"></div>
+                        </div>
+                        <div class="col"><label>Pièces de Platine</label>
+                            <div contenteditable="true" data-name="pp" class="rich-input single-line"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+        <!-- FIN SECTION MAGIE & INVENTAIRE -->
+
+        </div>
+        <!-- FIN SHEET-CONTAINER -->
+    </form>
+
+    <!-- MODAL CALCULATEUR DE JET -->
+    <div id="calc-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 350px; text-align: center;">
+            <h3 id="calc-title" style="margin-top: 0; color: #4a3b2a;">Résultat du D20 ?</h3>
+            <p id="calc-subtitle" style="font-style: italic; color: #666; font-size: 0.9em; margin-bottom: 20px;">Force
+                (Mod +3)</p>
+
+            <input type="number" id="calc-input" placeholder="Ex: 15"
+                style="font-size: 2em; width: 100px; text-align: center; margin-bottom: 20px; border: 2px solid #8b5a2b; border-radius: 10px; padding: 10px;">
+
+            <div style="display: flex; justify-content: center; gap: 10px;">
+                <button class="btn btn-cancel" onclick="closeCalcModal()">Annuler</button>
+                <button class="btn" onclick="submitCalc()" style="background: #8b5a2b; color: white;">Valider</button>
+            </div>
+
+            <!-- RESULTAT FINAL -->
+            <div id="calc-result" style="display: none; margin-top: 20px; animation: fadeIn 0.3s;">
+                <div style="font-size: 3em; font-weight: bold; color: #27ae60;" id="calc-total">18</div>
+                <div style="color: #666; font-size: 0.9em;" id="calc-details">15 (Dé) + 3 (Force)</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/dd_rules.js"></script>
+    <script src="js/script.js?v=1.1"></script>
+</body>
+
+</html>
