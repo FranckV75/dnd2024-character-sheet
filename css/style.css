@@ -89,7 +89,7 @@ body {
     background-repeat: no-repeat;
     background-position: center center;
     background-attachment: fixed;
-    background-blend-mode: overlay;
+    /* Pas de background-blend-mode en mode clair pour que les images soient visibles */
     overflow-x: hidden;
     /* Empêche le scroll horizontal accidentel */
     width: 100%;

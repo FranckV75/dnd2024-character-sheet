@@ -22,6 +22,12 @@ function setTheme(theme) {
         btn.title = theme === 'dark' ? 'Mode clair' : 'Mode sombre';
     }
     localStorage.setItem('dd2024_theme', theme);
+
+    // Réappliquer l'opacité avec la bonne couleur de fond
+    const savedOpacity = localStorage.getItem('dd2024_opacity');
+    if (savedOpacity && typeof updateOpacity === 'function') {
+        updateOpacity(savedOpacity);
+    }
 }
 
 /**
