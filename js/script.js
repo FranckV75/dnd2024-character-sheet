@@ -178,96 +178,17 @@ window.onload = function () {
     setupHeaderAutoFit();
 };
 
-function updateOpacity(val) {
-    document.documentElement.style.setProperty('--sheet-opacity', val);
-    const containers = document.querySelectorAll('.sheet-container');
-    containers.forEach(c => c.style.backgroundColor = `rgba(255, 255, 255, ${val})`);
-    localStorage.setItem('dd2024_opacity', val);
-}
+// --- TOOLBAR, OPACITÉ, FOND D'ÉCRAN, ÉDITEUR DE STYLE ---
+// Migré vers ui-toolbar.js
 
-function changeBackground(input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const bgData = e.target.result;
-            document.body.style.backgroundImage = `url('${bgData}')`;
-            try {
-                localStorage.setItem('dd2024_bg', bgData);
-            } catch (e) {
-                showModal("Attention : L'image est trop volumineuse pour Ãªtre sauvegardÃ©e. Elle sera affichÃ©e pour cette session, mais disparaitra si vous rechargez la page.");
-            }
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-    input.value = '';
-}
 
-function bindStyleEvents() {
-    const targets = document.querySelectorAll('.rich-input, [id^="skill_val_"], .stat-mod, #spell_save_dc, #spell_atk_bonus, #pb_display, #str_save_val, #dex_save_val, #con_save_val, #int_save_val, #wis_save_val, #cha_save_val');
-    targets.forEach(el => {
-        el.removeEventListener('contextmenu', handleRightClick);
-        el.addEventListener('contextmenu', handleRightClick);
-    });
-}
 
-function handleRightClick(e) {
-    e.preventDefault();
-    let x = e.pageX || (e.touches ? e.touches[0].pageX : 0);
-    let y = e.pageY || (e.touches ? e.touches[0].pageY : 0);
-    if (x === undefined) { x = e.clientX + window.scrollX; y = e.clientY + window.scrollY; }
-    showStyleEditor(x, y, this);
-}
 
-function setupDrag() {
-    const toolbar = document.getElementById('toolbar');
-    const header = document.getElementById('toolbar-header');
-    if (!toolbar || !header) return;
-    let isDragging = false; let startX, startY, initialLeft, initialTop;
-    function getCoords(e) { return e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY }; }
-    function start(e) {
-        if (e.target.id === 'minimize-btn') return;
-        isDragging = true; const c = getCoords(e); startX = c.x; startY = c.y;
-        const r = toolbar.getBoundingClientRect(); initialLeft = r.left; initialTop = r.top;
-        toolbar.style.bottom = 'auto'; toolbar.style.right = 'auto'; toolbar.style.left = initialLeft + 'px'; toolbar.style.top = initialTop + 'px';
-    }
-    function move(e) {
-        if (!isDragging) return; e.preventDefault(); const c = getCoords(e);
-        toolbar.style.left = (initialLeft + c.x - startX) + 'px'; toolbar.style.top = (initialTop + c.y - startY) + 'px';
-    }
-    function end() { isDragging = false; }
-    header.addEventListener('mousedown', start); document.addEventListener('mousemove', move); document.addEventListener('mouseup', end);
-    header.addEventListener('touchstart', start, { passive: false }); document.addEventListener('touchmove', move, { passive: false }); document.addEventListener('touchend', end);
 
-    // Correction Bug Resize : S'assurer que le toolbar reste visible
-    window.addEventListener('resize', () => {
-        const r = toolbar.getBoundingClientRect();
-        const winW = window.innerWidth;
-        const winH = window.innerHeight;
 
-        // Si la toolbar dÃ©passe Ã  droite
-        if (r.right > winW) {
-            toolbar.style.left = (winW - r.width - 20) + 'px';
-        }
-        // Si elle dÃ©passe en bas
-        if (r.bottom > winH) {
-            toolbar.style.top = (winH - r.height - 20) + 'px';
-        }
-        // Si elle dÃ©passe Ã  gauche (rare mais possible)
-        if (r.left < 0) {
-            toolbar.style.left = '20px';
-        }
-    });
-}
 
-function toggleToolbar(e) {
-    if (e.stopPropagation) e.stopPropagation();
-    const t = document.getElementById('toolbar');
-    if (t) {
-        t.classList.toggle('minimized');
-        const btn = document.getElementById('minimize-btn');
-        if (btn) btn.innerHTML = t.classList.contains('minimized') ? '&#9744;' : '_';
-    }
-}
+
+
 
 function generateSkillsHTML() {
     const c = document.getElementById('skills_container');
@@ -402,130 +323,8 @@ function applyFormat(command, value = null) {
 function applyColor(color) { applyFormat('foreColor', color); }
 function applyFontSize(size) { applyFormat('fontSize', size); }
 
-function showModal(contentHtml) {
-    const m = document.getElementById('custom-modal');
-    const txt = document.getElementById('modal-text');
-    const btns = document.getElementById('modal-actions');
-    const inp = document.getElementById('modal-input');
-    const area = document.getElementById('modal-textarea');
-
-    if (!m || !txt || !btns) return;
-
-    txt.innerHTML = ''; btns.innerHTML = '';
-    if (inp) inp.style.display = 'none';
-    if (area) area.style.display = 'none';
-
-    if (typeof contentHtml === 'string') {
-        txt.innerHTML = contentHtml;
-        const btnOk = document.createElement('button');
-        btnOk.innerText = 'OK';
-        btnOk.className = 'btn btn-action';
-        btnOk.style.width = 'auto';
-        btnOk.onclick = () => { m.style.display = 'none'; };
-        btns.appendChild(btnOk);
-    } else {
-        contentHtml(txt, btns, inp, area, () => m.style.display = 'none');
-    }
-    m.style.display = 'flex';
-}
-
-function openExportMenu() {
-    let nEl = document.querySelector('[data-name="char_name"]');
-    let n = nEl ? nEl.innerText.trim().replace(/<[^>]*>/g, "") : "perso";
-    if (!n) n = "perso";
-    let defName = `DD2024_${n}.json`;
-
-    showModal((txt, btns, inp, area, close) => {
-        txt.innerHTML = "<b>Sauvegarde & Export</b><br>Sur tablette, utilisez 'Copier' si le tÃ©lÃ©chargement est bloquÃ©.";
-
-        const btnFile = document.createElement('button');
-        btnFile.className = 'btn btn-save';
-        btnFile.innerText = 'ðŸ’¾ TÃ©lÃ©charger Fichier';
-        btnFile.onclick = () => { downloadFile(defName); close(); };
-
-        const btnCopy = document.createElement('button');
-        btnCopy.className = 'btn btn-copy';
-        btnCopy.innerText = 'ðŸ“‹ Copier les DonnÃ©es';
-        btnCopy.onclick = () => {
-            const data = JSON.stringify(getFormData(), null, 2);
-            copyToClipboard(data);
-            close();
-        };
-
-        const btnCancel = document.createElement('button');
-        btnCancel.className = 'btn';
-        btnCancel.innerText = 'Annuler';
-        btnCancel.onclick = close;
-
-        btns.appendChild(btnFile);
-        btns.appendChild(btnCopy);
-        btns.appendChild(btnCancel);
-    });
-}
-
-function copyToClipboard(text) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => showModal("DonnÃ©es copiÃ©es !"))
-            .catch(() => fallbackCopy(text));
-    } else {
-        fallbackCopy(text);
-    }
-}
-
-function fallbackCopy(text) {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed"; ta.style.left = "0"; ta.style.top = "0";
-    document.body.appendChild(ta);
-    ta.focus(); ta.select();
-    try {
-        document.execCommand('copy');
-        showModal("DonnÃ©es copiÃ©es !");
-    } catch (err) {
-        showModal("Erreur de copie.");
-    }
-    document.body.removeChild(ta);
-}
-
-function downloadFile(fileName) {
-    const data = JSON.stringify(getFormData(), null, 2);
-    const b = new Blob([data], { type: "application/json" });
-    const url = URL.createObjectURL(b);
-    const a = document.createElement('a');
-    a.href = url; a.download = fileName;
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a); window.URL.revokeObjectURL(url);
-}
-
-function openImportMenu() {
-    showModal((txt, btns, inp, area, close) => {
-        txt.innerHTML = "<b>Importation</b>";
-        const btnFile = document.createElement('button');
-        btnFile.className = 'btn btn-action';
-        btnFile.innerText = 'ðŸ“‚ Ouvrir Fichier';
-        btnFile.onclick = () => { document.getElementById('file-import').click(); close(); };
-
-        if (area) {
-            area.style.display = 'block';
-            area.placeholder = 'Collez ici le code JSON...';
-        }
-
-        const btnPaste = document.createElement('button');
-        btnPaste.className = 'btn btn-save';
-        btnPaste.innerText = 'ðŸ“¥ Charger Texte CollÃ©';
-        btnPaste.onclick = () => {
-            try {
-                if (!area.value) return;
-                applyFormData(JSON.parse(area.value));
-                alert("Fiche chargÃ©e !");
-                close();
-            } catch (e) { alert("Code invalide."); }
-        };
-        const btnCancel = document.createElement('button');
-        btnCancel.className = 'btn'; btnCancel.innerText = 'Annuler'; btnCancel.onclick = close;
-        btns.appendChild(btnFile); btns.appendChild(btnPaste); btns.appendChild(btnCancel);
-    });
-}
+// --- SYSTÈME DE MODALES, EXPORT, IMPORT ---
+// Migré vers ui-modals.js
 
 function getVal(id_or_name) {
     let el = document.getElementById(id_or_name);
@@ -538,7 +337,7 @@ function getVal(id_or_name) {
 
 function getCheck(n) { let el = document.querySelector(`input[name="${n}"]`); return el ? el.checked : false; }
 function setTxt(id, val) { let el = document.getElementById(id); if (el) el.innerText = (val >= 0 ? "+" : "") + val; }
-function calcMod(s) { return Math.floor((s - 10) / 2); }
+// calcMod() est défini dans logic.js - ne pas dupliquer
 
 function updateSpellAbilityOptions(mods) {
     const select = document.getElementById('spell_ability');
@@ -568,60 +367,8 @@ function updateClassResource(lvl, cls, mods) {
 
     if (!resBox || !cls) return;
 
-    let clsClean = cls.trim().toLowerCase();
-    let count = 0;
-    let label = "";
-
-    if (clsClean.includes('barbar')) {
-        label = "Rages";
-        count = 2;
-        if (lvl >= 3) count = 3;
-        if (lvl >= 6) count = 4;
-        if (lvl >= 12) count = 5;
-        if (lvl >= 17) count = 6;
-    }
-    else if (clsClean.includes('bard')) {
-        label = "Inspiration Bardique";
-        count = Math.max(1, mods['cha']);
-    }
-    else if (clsClean.includes('clerc') || clsClean.includes('cleric')) {
-        label = "Conduit Divin";
-        count = 2;
-        if (lvl >= 6) count = 3;
-        if (lvl >= 18) count = 4;
-    }
-    else if (clsClean.includes('druid')) {
-        label = "Formes Sauvages";
-        count = 2;
-        if (lvl >= 6) count = 3;
-        if (lvl >= 14) count = 4;
-    }
-    else if (clsClean.includes('ensorceleur') || clsClean.includes('sorcer')) {
-        label = "Sorcellerie InnÃ©e";
-        count = 2;
-    }
-    else if (clsClean.includes('moine') || clsClean.includes('monk')) {
-        label = "Points de KI";
-        count = lvl;
-    }
-    else if (clsClean.includes('paladin')) {
-        if (lvl >= 3) {
-            label = "Conduit Divin";
-            count = 2;
-            // 2024 Paladin: 2 CD Ã  lvl 3, 3 CD Ã  lvl 11.
-            if (lvl >= 11) count = 3;
-        }
-    }
-    else if (clsClean.includes('rÃ´deur') || clsClean.includes('ranger')) {
-        label = "Ennemi JurÃ©";
-        // RÃ´deur (Ranger) 2024 : Favored Enemy uses (Hunter's Mark free casts)
-        // Lvl 1: 2, Lvl 5: 3, Lvl 9: 4, Lvl 13: 5, Lvl 17: 6
-        count = 2;
-        if (lvl >= 5) count = 3;
-        if (lvl >= 9) count = 4;
-        if (lvl >= 13) count = 5;
-        if (lvl >= 17) count = 6;
-    }
+    // Utiliser la fonction pure de logic.js au lieu de dupliquer la logique
+    const { count, label } = getClassResourceInfo(lvl, cls, mods);
 
     // Only rebuild if the resource type or quantity changes
     let currentLabel = resLabel.innerText;
@@ -811,100 +558,7 @@ function triggerReset() {
 
 
 // --- GALLERY SYSTEM ---
-function openGallery() {
-    document.getElementById('gallery-modal').style.display = 'flex';
-    renderGallery();
-}
-
-function getSavedBackgrounds() {
-    let saved = localStorage.getItem('dd2024_saved_bgs');
-    return saved ? JSON.parse(saved) : [];
-}
-
-function renderGallery() {
-    const grid = document.getElementById('gallery-grid');
-    grid.innerHTML = '';
-
-    // Combine defaults and user saved
-    const userBgs = getSavedBackgrounds();
-    const allBgs = ["none", ...DEFAULT_BGS, ...userBgs]; // Ajout de "none" pour pouvoir enlever le fond
-
-    let currentBg = document.body.style.backgroundImage || "";
-    // Nettoyage plus robuste du format url(...) pour tous les navigateurs
-    currentBg = currentBg.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
-
-    allBgs.forEach((url, idx) => {
-        const item = document.createElement('div');
-        item.className = 'gallery-item';
-
-        if (url === "none") {
-            item.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:0.7rem;color:#666;background:#eee;">SANS FOND</div>';
-            item.onclick = () => selectBackground("");
-            if (currentBg === "" || currentBg === "none") item.classList.add('active');
-            grid.appendChild(item);
-            return;
-        }
-
-        if (currentBg === url) item.classList.add('active');
-        item.onclick = () => selectBackground(url);
-
-        // Thumbnail (use the image itself)
-        const img = document.createElement('img');
-        img.src = url;
-        // Handle broken image links in preview
-        img.onerror = function () {
-            // Diagnostic temporaire pour l'utilisateur
-            console.error("Erreur de chargement pour : " + this.src);
-            // On ne met pas d'alerte intrusive mais on log
-            this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCI+PHRleHQgeD0iNTA1IiB5PSI1MCUiIGR5PSIuM2VtIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4/PC90ZXh0Pjwvc3ZnPg==';
-        };
-        item.appendChild(img);
-
-        // Delete button (only for user bgs, stored after "none" and defaults)
-        if (idx > DEFAULT_BGS.length) {
-            const btn = document.createElement('button');
-            btn.className = 'gallery-del';
-            btn.innerHTML = 'x';
-            btn.title = "Supprimer";
-            btn.onclick = (e) => {
-                e.stopPropagation();
-                removeBackground(idx - (DEFAULT_BGS.length + 1));
-            };
-            item.appendChild(btn);
-        }
-
-        grid.appendChild(item);
-    });
-}
-
-function selectBackground(url) {
-    document.body.style.backgroundImage = `url('${url}')`;
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center';
-    document.body.style.backgroundAttachment = 'fixed';
-    localStorage.setItem('dd2024_bg', url); // Save choice
-    renderGallery(); // Update active state
-}
-
-function addNewBackground() {
-    const input = document.getElementById('new-bg-url');
-    const url = input.value.trim();
-    if (!url) return;
-
-    let saved = getSavedBackgrounds();
-    saved.push(url);
-    localStorage.setItem('dd2024_saved_bgs', JSON.stringify(saved));
-
-    input.value = '';
-    renderGallery();
-}
-
-function removeBackground(userIndex) {
-    let saved = getSavedBackgrounds();
-    saved.splice(userIndex, 1);
-    localStorage.setItem('dd2024_saved_bgs', JSON.stringify(saved));
-    renderGallery();
-}
+// Migré vers ui-gallery.js
 
 // =============================================================================
 // FONCTION DE DEBUG TEMPORAIRE - TESTS DE MIGRATION
@@ -1065,214 +719,9 @@ function initTabs() {
 }
 
 // =============================================================================
-// SYSTÃˆME DE REPOS (COURT ET LONG)
+// SYSTÈME DE REPOS (COURT ET LONG)
 // =============================================================================
-
-let longRestTimer = null;
-let longRestStartTime = 0;
-const LONG_REST_DURATION = 2000; // 2 secondes
-
-/**
- * Effectue un repos court (1 heure)
- * Restaure : dÃ©s de vie, ressources de classe
- */
-function performShortRest() {
-    console.log('âš”ï¸ Repos Court commencÃ©...');
-
-    // Restaurer les ressources de classe (dÃ©cocher toutes les cases)
-    const resSlots = document.getElementById('class-resource-slots');
-    if (resSlots) {
-        resSlots.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            checkbox.checked = false;
-        });
-    }
-
-    // Feedback visuel
-    showModal(
-        'ðŸŒ™ Repos Court TerminÃ©',
-        'Vous avez pris un repos d\'une heure.\n\n' +
-        'âœ… Ressources de classe restaurÃ©es\n' +
-        'ðŸ’¡ N\'oubliez pas de lancer vos dÃ©s de vie si nÃ©cessaire',
-        [
-            { label: 'OK', callback: () => { saveData(); } }
-        ]
-    );
-
-    console.log('âœ… Repos Court terminÃ©');
-}
-
-/**
- * Effectue un repos long (8 heures)
- * Restaure : PV, dÃ©s de vie, emplacements de sorts, ressources de classe
- */
-function performLongRest() {
-    console.log('ðŸ›ï¸ Repos Long commencÃ©...');
-
-    // Restaurer les PV au maximum
-    const hpMax = document.querySelector('[data-name="hp_max"]');
-    const hpCurrent = document.querySelector('[data-name="hp_current"]');
-    if (hpMax && hpCurrent && hpMax.innerText.trim()) {
-        hpCurrent.innerText = hpMax.innerText;
-    }
-
-    // Effacer les PV temporaires
-    const hpTemp = document.querySelector('[data-name="hp_temp"]');
-    if (hpTemp) hpTemp.innerText = '';
-
-    // Restaurer les dÃ©s de vie (remettre Ã  0 utilisÃ©s)
-    const hdSpent = document.querySelector('[data-name="hd_spent"]');
-    if (hdSpent) hdSpent.innerText = '0';
-
-    // Restaurer les ressources de classe
-    const resSlots = document.getElementById('class-resource-slots');
-    if (resSlots) {
-        resSlots.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            checkbox.checked = false;
-        });
-    }
-
-    // Effacer les jets contre la mort
-    ['ds_s1', 'ds_s2', 'ds_s3', 'ds_f1', 'ds_f2', 'ds_f3'].forEach(name => {
-        const checkbox = document.querySelector(`[name="${name}"]`);
-        if (checkbox) checkbox.checked = false;
-    });
-
-    // Feedback visuel
-    showModal(
-        'ðŸ›ï¸ Repos Long TerminÃ©',
-        'Vous avez pris un repos de 8 heures.\n\n' +
-        'âœ… PV restaurÃ©s au maximum\n' +
-        'âœ… DÃ©s de vie restaurÃ©s\n' +
-        'âœ… Ressources de classe restaurÃ©es\n' +
-        'âœ… Jets contre la mort rÃ©initialisÃ©s\n' +
-        'ðŸ’¡ N\'oubliez pas de prÃ©parer vos sorts',
-        [
-            { label: 'OK', callback: () => { saveData(); calcStats(); } }
-        ]
-    );
-
-    console.log('âœ… Repos Long terminÃ©');
-}
-
-/**
- * GÃ¨re le feedback visuel pendant l'appui long
- * @param {HTMLElement} btn - Le bouton Repos Long
- * @param {number} progress - Progression (0 Ã  1)
- */
-function updateLongRestProgress(btn, progress) {
-    // CrÃ©er ou mettre Ã  jour la barre de progression
-    let progressBar = btn.querySelector('.rest-progress');
-    if (!progressBar) {
-        progressBar = document.createElement('div');
-        progressBar.className = 'rest-progress';
-        progressBar.style.cssText = 'position: absolute; bottom: 0; left: 0; height: 4px; background: #d4af37; transition: width 0.1s linear;';
-        btn.appendChild(progressBar);
-    }
-    progressBar.style.width = (progress * 100) + '%';
-
-    // Effet de pulsation supplÃ©mentaire
-    btn.style.transform = `scale(${1 + progress * 0.05})`;
-}
-
-/**
- * Nettoie le feedback visuel de l'appui long
- * @param {HTMLElement} btn - Le bouton Repos Long
- */
-function cleanupLongRestFeedback(btn) {
-    const progressBar = btn.querySelector('.rest-progress');
-    if (progressBar) progressBar.remove();
-    btn.style.transform = '';
-}
-
-/**
- * Initialise le systÃ¨me de repos
- */
-function initRestSystem() {
-    // Bouton Repos Court - Clic simple
-    const btnShortRest = document.getElementById('btn-short-rest');
-    if (btnShortRest) {
-        btnShortRest.addEventListener('click', performShortRest);
-    }
-
-    // Bouton Repos Long - Appui long 2 secondes
-    const btnLongRest = document.getElementById('btn-long-rest');
-    if (btnLongRest) {
-        // DÃ©but de l'appui
-        btnLongRest.addEventListener('mousedown', function (e) {
-            e.preventDefault();
-            longRestStartTime = Date.now();
-
-            longRestTimer = setInterval(() => {
-                const elapsed = Date.now() - longRestStartTime;
-                const progress = Math.min(elapsed / LONG_REST_DURATION, 1);
-
-                updateLongRestProgress(btnLongRest, progress);
-
-                if (progress >= 1) {
-                    clearInterval(longRestTimer);
-                    cleanupLongRestFeedback(btnLongRest);
-                    performLongRest();
-                }
-            }, 50); // Mise Ã  jour toutes les 50ms
-        });
-
-        // Fin de l'appui (relÃ¢chement trop tÃ´t)
-        btnLongRest.addEventListener('mouseup', function () {
-            if (longRestTimer) {
-                clearInterval(longRestTimer);
-                longRestTimer = null;
-                cleanupLongRestFeedback(btnLongRest);
-
-                const elapsed = Date.now() - longRestStartTime;
-                if (elapsed < LONG_REST_DURATION) {
-                    console.log('â±ï¸ Repos Long annulÃ© (appui trop court)');
-                }
-            }
-        });
-
-        // Annulation si on quitte le bouton
-        btnLongRest.addEventListener('mouseleave', function () {
-            if (longRestTimer) {
-                clearInterval(longRestTimer);
-                longRestTimer = null;
-                cleanupLongRestFeedback(btnLongRest);
-                console.log('â±ï¸ Repos Long annulÃ© (souris sortie)');
-            }
-        });
-
-        // Support tactile (mobile)
-        btnLongRest.addEventListener('touchstart', function (e) {
-            e.preventDefault();
-            longRestStartTime = Date.now();
-
-            longRestTimer = setInterval(() => {
-                const elapsed = Date.now() - longRestStartTime;
-                const progress = Math.min(elapsed / LONG_REST_DURATION, 1);
-
-                updateLongRestProgress(btnLongRest, progress);
-
-                if (progress >= 1) {
-                    clearInterval(longRestTimer);
-                    cleanupLongRestFeedback(btnLongRest);
-                    performLongRest();
-                }
-            }, 50);
-        });
-
-        btnLongRest.addEventListener('touchend', function () {
-            if (longRestTimer) {
-                clearInterval(longRestTimer);
-                longRestTimer = null;
-                cleanupLongRestFeedback(btnLongRest);
-
-                const elapsed = Date.now() - longRestStartTime;
-                if (elapsed < LONG_REST_DURATION) {
-                    console.log('â±ï¸ Repos Long annulÃ© (appui tactile trop court)');
-                }
-            }
-        });
-    }
-}
+// Migré vers ui-rest.js
 
 // ExÃ©cuter les tests au chargement si ?debug=1 dans l'URL
 if (window.location.search.includes('debug=1')) {
@@ -1331,8 +780,8 @@ function setupHeaderAutoFit() {
 function setupHitDiceLogic() {
     const classSelect = document.getElementById('char_class');
     // Listeners
-    if(classSelect) classSelect.addEventListener('change', updateHitDiceType);
-    
+    if (classSelect) classSelect.addEventListener('change', updateHitDiceType);
+
     document.addEventListener('input', (e) => {
         if (e.target.dataset.name === 'char_level' || e.target.id === 'level') {
             updateHitDiceCount();
@@ -1353,17 +802,17 @@ function updateHitDiceType() {
     let die = 'd8'; // Default
 
     if (cls.includes('barbare') || cls.includes('barbarian')) die = 'd12';
-    else if (cls.includes('guerrier') || cls.includes('fighter') || 
-             cls.includes('paladin') || 
-             cls.includes('rôdeur') || cls.includes('ranger')) die = 'd10';
+    else if (cls.includes('guerrier') || cls.includes('fighter') ||
+        cls.includes('paladin') ||
+        cls.includes('rôdeur') || cls.includes('ranger')) die = 'd10';
     else if (cls.includes('sorcier') || cls.includes('warlock') ||
-             cls.includes('barde') || cls.includes('bard') ||
-             cls.includes('clerc') || cls.includes('cleric') ||
-             cls.includes('druide') || cls.includes('druid') ||
-             cls.includes('moine') || cls.includes('monk') ||
-             cls.includes('roublard') || cls.includes('rogue')) die = 'd8';
-    else if (cls.includes('magicien') || cls.includes('wizard') || 
-             cls.includes('ensorceleur') || cls.includes('sorcerer')) die = 'd6';
+        cls.includes('barde') || cls.includes('bard') ||
+        cls.includes('clerc') || cls.includes('cleric') ||
+        cls.includes('druide') || cls.includes('druid') ||
+        cls.includes('moine') || cls.includes('monk') ||
+        cls.includes('roublard') || cls.includes('rogue')) die = 'd8';
+    else if (cls.includes('magicien') || cls.includes('wizard') ||
+        cls.includes('ensorceleur') || cls.includes('sorcerer')) die = 'd6';
 
     hdSelect.value = die;
     hdSelect.dispatchEvent(new Event('change')); // Force save if listener exists
@@ -1372,25 +821,25 @@ function updateHitDiceType() {
 function updateHitDiceCount() {
     let levelEl = document.querySelector('[data-name="char_level"]');
     if (!levelEl) levelEl = document.getElementById('level');
-    
+
     let level = 1;
     if (levelEl) level = parseInt(levelEl.innerText) || 1;
-    
+
     const maxDisplay = document.getElementById('hd_max_display');
     if (maxDisplay) maxDisplay.innerText = level;
-    
+
     const currentSelect = document.getElementById('hd_current_select');
     if (currentSelect) {
         const currentVal = parseInt(currentSelect.value) || 0;
         currentSelect.innerHTML = '';
-        
+
         for (let i = 0; i <= level; i++) {
-             const opt = document.createElement('option');
-             opt.value = i;
-             opt.innerText = i;
-             currentSelect.appendChild(opt);
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.innerText = i;
+            currentSelect.appendChild(opt);
         }
-        
+
         if (currentVal <= level) currentSelect.value = currentVal;
         else currentSelect.value = level;
     }
