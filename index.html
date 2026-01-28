@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="css/style.css?v=1.1">
 </head>
 
-<body>
+<body data-theme="light">
 
     <!-- MODAL -->
     <div id="custom-modal">
@@ -49,7 +49,10 @@
     <div id="toolbar">
         <div id="toolbar-header">
             <span>GESTION ✥</span>
-            <span id="minimize-btn" onpointerdown="toggleToolbar(event)" title="Réduire/Agrandir">_</span>
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <button id="theme-toggle" class="theme-toggle" title="Mode sombre">🌙</button>
+                <span id="minimize-btn" onpointerdown="toggleToolbar(event)" title="Réduire/Agrandir">_</span>
+            </div>
         </div>
         <div id="toolbar-content">
             <button class="btn btn-bg" onclick="openGallery()">🖼️ Galerie Fonds</button>
@@ -578,7 +581,18 @@
     <script src="js/data.js"></script>
     <script src="js/logic.js"></script>
     <script src="js/storage.js"></script>
+    <script src="js/theme.js"></script>
     <script src="js/script.js?v=2.0"></script>
+    <script>
+        // Initialize theme and attach event listener
+        document.addEventListener('DOMContentLoaded', function () {
+            initTheme();
+            const themeBtn = document.getElementById('theme-toggle');
+            if (themeBtn) {
+                themeBtn.addEventListener('click', toggleTheme);
+            }
+        });
+    </script>
 
 </body>
 

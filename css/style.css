@@ -1,11 +1,72 @@
 /* STYLES GLOBAUX */
 :root {
+    /* Base colors */
     --primary-border: #8b4513;
     --light-bg: #fffaf0;
     --input-bg: rgba(255, 255, 255, 0.3);
     --accent-color: #3e1c02;
     --save-color: #2e8b57;
     --sheet-opacity: 0.85;
+
+    /* Theme-aware variables */
+    --body-bg: #fdf5e6;
+    --body-color: #000;
+    --sheet-bg: rgba(255, 255, 255, var(--sheet-opacity));
+    --box-bg: rgba(255, 255, 255, 0.5);
+    --label-color: #2a1b0a;
+    --input-color: #000;
+    --table-header-bg: #e8dbc5;
+    --table-border: #aaa;
+    --stat-mod-bg: #e8dbc5;
+    --tab-nav-bg: rgba(255, 250, 240, 0.95);
+    --toolbar-bg: #4a3b2a;
+    --toolbar-header-bg: #2f251a;
+    --btn-bg: #e8dbc5;
+    --btn-color: #4a3b2a;
+}
+
+/* ============================================= */
+/* DARK MODE                                     */
+/* ============================================= */
+[data-theme="dark"] {
+    --primary-border: #d4a574;
+    --light-bg: #1a1a2e;
+    --input-bg: rgba(255, 255, 255, 0.1);
+    --accent-color: #e8b86d;
+    --body-bg: #0f0f1a;
+    --body-color: #e8dbc5;
+    --sheet-bg: rgba(30, 30, 50, var(--sheet-opacity));
+    --box-bg: rgba(40, 40, 60, 0.6);
+    --label-color: #d4a574;
+    --input-color: #f5f5f5;
+    --table-header-bg: #2a2a40;
+    --table-border: #555;
+    --stat-mod-bg: #3a3a50;
+    --tab-nav-bg: rgba(20, 20, 35, 0.95);
+    --toolbar-bg: #1a1a2e;
+    --toolbar-header-bg: #0f0f1a;
+    --btn-bg: #2a2a40;
+    --btn-color: #e8dbc5;
+}
+
+[data-theme="dark"] body {
+    background-blend-mode: multiply;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.3rem;
+    padding: 5px 8px;
+    opacity: 0.8;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.theme-toggle:hover {
+    opacity: 1;
+    transform: scale(1.1);
 }
 
 * {
@@ -17,22 +78,22 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 10px;
-    color: #000;
+    color: var(--body-color);
     font-weight: 500;
     font-size: 14px;
     -webkit-overflow-scrolling: touch;
     min-height: 100vh;
-    background-color: #fdf5e6;
+    background-color: var(--body-bg);
     background-image: none;
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
     background-attachment: fixed;
-    background-color: rgba(255, 250, 240, 0.2);
     background-blend-mode: overlay;
     overflow-x: hidden;
     /* Empêche le scroll horizontal accidentel */
     width: 100%;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* CONTENEUR PRINCIPAL */
@@ -41,14 +102,14 @@ body {
     max-width: 1100px;
     margin: 0 auto;
     padding: 25px;
-    background: rgba(255, 255, 255, var(--sheet-opacity));
+    background: var(--sheet-bg);
     border: 2px solid var(--primary-border);
     border-radius: 4px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
     display: grid;
     grid-gap: 15px;
     backdrop-filter: blur(3px);
-    transition: background 0.3s ease;
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 /* --- RESPONSIVE DESIGN --- */
@@ -173,9 +234,10 @@ body {
     border: 1px solid var(--primary-border);
     border-radius: 6px;
     padding: 8px;
-    background: rgba(255, 255, 255, 0.5);
+    background: var(--box-bg);
     position: relative;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 label {
@@ -183,10 +245,10 @@ label {
     font-weight: 800;
     text-transform: uppercase;
     font-size: 0.75rem;
-    color: #2a1b0a;
+    color: var(--label-color);
     display: block;
     margin-bottom: 3px;
-    text-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
+    transition: color 0.3s ease;
 }
 
 h2,
@@ -208,7 +270,7 @@ h3 {
 /* CHAMPS RICH TEXT */
 .rich-input {
     width: 100%;
-    border-bottom: 1px solid #8b4513;
+    border-bottom: 1px solid var(--primary-border);
     background: transparent;
     font-family: 'Cinzel', serif;
     padding: 4px;
@@ -217,7 +279,7 @@ h3 {
     transition: all 0.2s;
     cursor: text;
     overflow-wrap: break-word;
-    color: #000;
+    color: var(--input-color);
     font-weight: 600;
 }
 
@@ -250,12 +312,12 @@ h3 {
 select {
     width: 100%;
     border: none;
-    border-bottom: 1px solid #8b4513;
+    border-bottom: 1px solid var(--primary-border);
     background: transparent;
     font-family: 'Cinzel', serif;
     padding: 5px;
     font-weight: bold;
-    color: #000;
+    color: var(--input-color);
 }
 
 select.large-select {
@@ -351,14 +413,15 @@ input[type="checkbox"].square {
 }
 
 .stat-box {
-    border: 2px solid #5e2c04;
+    border: 2px solid var(--primary-border);
     border-radius: 8px;
     padding: 5px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--box-bg);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .stat-val {
@@ -373,7 +436,7 @@ input[type="checkbox"].square {
 }
 
 .stat-mod {
-    background: #e8dbc5;
+    background: var(--stat-mod-bg);
     border-radius: 50%;
     width: 40px;
     height: 30px;
@@ -381,10 +444,11 @@ input[type="checkbox"].square {
     justify-content: center;
     align-items: center;
     margin-top: 5px;
-    border: 1px solid #5e2c04;
+    border: 1px solid var(--primary-border);
     z-index: 2;
     cursor: context-menu;
     font-weight: bold;
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .stat-save {
@@ -498,9 +562,10 @@ input[type="checkbox"].square {
 .scroll-table-container {
     max-height: 350px;
     overflow-y: auto;
-    border: 1px solid #cbb69d;
+    border: 1px solid var(--table-border);
     margin-bottom: 5px;
-    background: rgba(255, 255, 255, 0.4);
+    background: var(--box-bg);
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .data-table {
@@ -512,18 +577,20 @@ input[type="checkbox"].square {
 .data-table th {
     text-align: left;
     font-size: 0.7rem;
-    border-bottom: 2px solid #5e2c04;
+    border-bottom: 2px solid var(--primary-border);
     position: sticky;
     top: 0;
-    background: #e8dbc5;
+    background: var(--table-header-bg);
     z-index: 10;
     padding: 5px;
     font-family: 'Cinzel', serif;
+    color: var(--label-color);
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .data-table td {
     padding: 4px;
-    border-bottom: 1px solid #aaa;
+    border-bottom: 1px solid var(--table-border);
     vertical-align: top;
 }
 
@@ -574,7 +641,7 @@ input[type="checkbox"].square {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background: #4a3b2a;
+    background: var(--toolbar-bg);
     color: #e8dbc5;
     padding: 10px;
     border-radius: 8px;
@@ -584,9 +651,9 @@ input[type="checkbox"].square {
     z-index: 1000;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
     width: 220px;
-    transition: height 0.3s;
+    transition: height 0.3s, background 0.3s ease;
     user-select: none;
-    border: 1px solid #8b4513;
+    border: 1px solid var(--primary-border);
 }
 
 #toolbar-header {
@@ -594,7 +661,7 @@ input[type="checkbox"].square {
     text-align: left;
     margin-bottom: 5px;
     cursor: move;
-    background: #2f251a;
+    background: var(--toolbar-header-bg);
     padding: 10px;
     border-radius: 4px;
     font-weight: bold;
@@ -603,6 +670,7 @@ input[type="checkbox"].square {
     align-items: center;
     color: #fff;
     font-family: 'Cinzel', serif;
+    transition: background 0.3s ease;
 }
 
 #minimize-btn {
@@ -624,9 +692,9 @@ input[type="checkbox"].square {
 }
 
 .btn {
-    background: #e8dbc5;
-    color: #4a3b2a;
-    border: 1px solid #8b4513;
+    background: var(--btn-bg);
+    color: var(--btn-color);
+    border: 1px solid var(--primary-border);
     padding: 12px;
     cursor: pointer;
     border-radius: 4px;
@@ -635,6 +703,7 @@ input[type="checkbox"].square {
     font-size: 0.9rem;
     font-weight: bold;
     font-family: 'Cinzel', serif;
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 .btn:hover {
@@ -1102,22 +1171,23 @@ input[type=range] {
     border-bottom: 2px solid var(--primary-border);
     position: sticky;
     top: 0;
-    background: rgba(255, 250, 240, 0.95);
+    background: var(--tab-nav-bg);
     backdrop-filter: blur(10px);
     z-index: 100;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: background 0.3s ease;
 }
 
 .tab-btn {
     flex: 1;
     padding: 12px 20px;
-    background: rgba(232, 219, 197, 0.6);
-    border: 2px solid #8b4513;
+    background: var(--btn-bg);
+    border: 2px solid var(--primary-border);
     border-radius: 8px 8px 0 0;
     font-family: 'Cinzel', serif;
     font-weight: bold;
     font-size: 1rem;
-    color: #4a3b2a;
+    color: var(--btn-color);
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
