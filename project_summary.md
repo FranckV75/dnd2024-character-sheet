@@ -10,15 +10,16 @@
 ### Structure des Fichiers
 ```
 0_Feuille_de_Perso_Antigravity/
-├── index.html          # Structure HTML principale (585 lignes)
+├── index.html          # Structure HTML principale (~600 lignes)
 ├── css/
-│   └── style.css       # Styles globaux (~1476 lignes)
+│   └── style.css       # Styles globaux + Dark Mode (~1550 lignes)
 ├── js/
 │   ├── data.js         # Constantes (SKILLS, DEFAULT_BGS)
+│   ├── dd_rules.js     # Règles D&D 2024 (classes, espèces, etc.)
 │   ├── logic.js        # Calculs D&D purs (sans DOM)
 │   ├── storage.js      # Gestion localStorage + import/export JSON
 │   ├── script.js       # Orchestrateur principal (init, events, DOM)
-│   └── ui.js           # Fonctions UI (modals, tabs, backgrounds)
+│   └── theme.js        # Gestion du Dark Mode (initTheme, toggleTheme)
 ├── task.md             # Suivi des tâches (checklist)
 └── *.json              # Fichiers de personnages (ex: Korgul)
 ```
@@ -107,17 +108,16 @@ Gérées par `getClassResourceInfo(level, className, mods)` :
 ## 📌 Règles de Collaboration avec l'Agent
 
 1. **Avant toute modification de code**, l'agent doit proposer :
-   - Le **Modèle** suggéré (ex: Gemini 3 Pro High, Claude Sonnet 4.5)
-   - Le **Mode** (Planning vs Fast)
+   - Le **Modèle** suggéré (ex: Gemini 3 Pro (High), Claude Sonnet 4.5 (Thinking))
+   - Le **Mode** suggéré (Planning vs Fast)
 2. **Attendre validation** de l'utilisateur avant d'exécuter.
 3. **Communiquer en français**.
-4. **Commits Git** : Toujours proposer un message de commit clair avant exécution.
 
 ---
 
 ## 🔮 Pistes d'Amélioration (Non implémentées)
 
-- [ ] Mode sombre (Dark Mode)
+- [x] Mode sombre (Dark Mode) ✅ Implémenté le 28/01/2026
 - [ ] Page d'accueil pour sélection de JSON
 - [ ] Optimisation/Refactoring JS avancé
 - [ ] Export PDF de la fiche
