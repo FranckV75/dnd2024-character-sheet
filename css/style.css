@@ -210,7 +210,7 @@ h3 {
     width: 100%;
     border-bottom: 1px solid #8b4513;
     background: transparent;
-    font-family: inherit;
+    font-family: 'Cinzel', serif;
     padding: 4px;
     min-height: 24px;
     outline: none;
@@ -1458,9 +1458,19 @@ input[type=range] {
 .vitals-box {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    /* Align with AC Hex center */
+    justify-content: flex-start;
+    /* Title at top */
     align-items: center;
     min-height: 120px;
     padding: 15px 5px;
+}
+
+.vitals-box .rich-input {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: -5px;
+    /* Alignment tweak */
 }
