@@ -1112,51 +1112,7 @@ input[type=range] {
     }
 }
 
-/* --- TRÈS PETIT MOBILE (< 400px) --- */
-@media (max-width: 400px) {
-
-    body {
-        padding: 5px;
-        font-size: 13px;
-    }
-
-    .sheet-container {
-        padding: 8px;
-    }
-
-    h2,
-    h3 {
-        font-size: 0.95rem;
-    }
-
-    label {
-        font-size: 0.7rem;
-    }
-
-    /* Stats en 2 colonnes sur très petit écran */
-    .stats-column {
-        justify-content: space-between;
-    }
-
-    .stat-box {
-        width: 48%;
-        min-width: auto;
-    }
-
-    /* Odyssée en colonne unique */
-    .box:has(#heroic_destiny)>div>div:nth-child(2),
-    .box:has(#heroic_destiny)>div>div:nth-child(3) {
-        width: 100%;
-        margin-right: 0;
-        margin-bottom: 8px;
-    }
-
-    #toolbar {
-        width: auto;
-        left: 5px;
-        right: 5px;
-    }
-}
+/* Media query 400px (très petits téléphones) supprimée - support tablettes/desktop uniquement */
 
 /* ============================================================================= */
 /* NAVIGATION PAR ONGLETS & CENTRE DE REPOS */
@@ -1418,12 +1374,7 @@ input[type=range] {
     }
 }
 
-@media (max-width: 600px) {
-    .tab-btn {
-        font-size: 0.75rem;
-        padding: 8px 4px;
-    }
-}
+/* Media query 600px (téléphones) supprimée - support tablettes/desktop uniquement */
 
 @media print {
     * {
