@@ -301,27 +301,7 @@ function addTableDataLabels() {
     }
 }
 
-let currentEditElement = null;
-
-function showStyleEditor(x, y, el) {
-    currentEditElement = el;
-    const ed = document.getElementById('style-editor');
-    if (ed) {
-        ed.style.left = x + 'px'; ed.style.top = y + 'px'; ed.style.display = 'block';
-    }
-}
-
-function applyFormat(command, value = null) {
-    if (!currentEditElement) return;
-    currentEditElement.focus();
-    document.execCommand(command, false, value);
-    const ed = document.getElementById('style-editor');
-    if (ed) ed.style.display = 'none';
-    document.getElementById('sheet-form').dispatchEvent(new Event('input'));
-}
-
-function applyColor(color) { applyFormat('foreColor', color); }
-function applyFontSize(size) { applyFormat('fontSize', size); }
+// Style editor functions migrated to ui-toolbar.js (showStyleEditor, applyFormat, applyColor, applyFontSize)
 
 // --- SYSTÈME DE MODALES, EXPORT, IMPORT ---
 // Migré vers ui-modals.js
@@ -726,7 +706,7 @@ function initTabs() {
 // ExÃ©cuter les tests au chargement si ?debug=1 dans l'URL
 if (window.location.search.includes('debug=1')) {
     console.log('ðŸ” Mode DEBUG activÃ© - ExÃ©cution des tests...');
-    debugMigration();
+    // debugMigration(); // Removed - function no longer exists
 }
 
 /**
