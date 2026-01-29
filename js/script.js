@@ -214,7 +214,7 @@ function addWeaponRow(data = null) {
         <td><div contenteditable="true" class="rich-input single-line wpn-atk"></div></td>
         <td><div contenteditable="true" class="rich-input single-line wpn-dmg"></div></td>
         <td><div contenteditable="true" class="rich-input single-line wpn-note"></div></td>
-        <td><button class="del-btn" onclick="this.closest('tr').remove(); saveData();">x</button></td>
+        <td><button class="del-btn" aria-label="Supprimer l'arme" onclick="this.closest('tr').remove(); saveData();">x</button></td>
     `;
     body.appendChild(tr);
     if (data) {
@@ -247,7 +247,7 @@ function addSpellRow(data = null) {
             <div><label>M</label><input type="checkbox" class="spl-m"></div>
         </td>
         <td><div contenteditable="true" class="rich-input single-line spl-note"></div></td>
-        <td><button class="del-btn" onclick="this.closest('tr').remove(); saveData();">x</button></td>
+        <td><button class="del-btn" aria-label="Supprimer le sort" onclick="this.closest('tr').remove(); saveData();">x</button></td>
     `;
     body.appendChild(tr);
 

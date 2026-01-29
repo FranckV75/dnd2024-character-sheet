@@ -651,9 +651,25 @@ input[type="checkbox"].square {
     z-index: 1000;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
     width: 220px;
-    transition: height 0.3s, background 0.3s ease;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s, background 0.3s ease, opacity 0.3s ease;
     user-select: none;
     border: 1px solid var(--primary-border);
+}
+
+/* Panneau rétractable sur tablettes portrait (<900px) */
+@media (max-width: 900px) {
+    #toolbar {
+        width: 60px;
+        overflow: hidden;
+    }
+
+    #toolbar:hover {
+        width: 220px;
+    }
+
+    #toolbar-header {
+        white-space: nowrap;
+    }
 }
 
 #toolbar-header {
@@ -909,6 +925,40 @@ input[type=range] {
 
 .no-focus-loss {
     user-select: none;
+}
+
+/* ============================================================================= */
+/* ANIMATIONS PREMIUM POUR ONGLETS */
+/* ============================================================================= */
+
+/* Transition fluide lors du changement d'onglet */
+.tab-content {
+    animation: fadeInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animation sur les boutons d'onglets */
+.tab-nav button {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-nav button:hover {
+    transform: translateY(-2px);
+}
+
+.tab-nav button.active {
+    transform: scale(1.02);
 }
 
 /* ============================================================================= */
