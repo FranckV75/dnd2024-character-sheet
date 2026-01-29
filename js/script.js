@@ -165,7 +165,7 @@ window.onload = function () {
     // Initial Calc
     setTimeout(() => {
         calcStats();
-        addTableDataLabels(); // Injecter les data-label pour mobile
+        // addTableDataLabels supprimée (mobile phone uniquement)
     }, 100);
 
     setupDrag();
@@ -224,7 +224,7 @@ function addWeaponRow(data = null) {
         tr.querySelector('.wpn-note').innerHTML = data.note || '';
     }
     bindStyleEvents();
-    addTableDataLabels(); // Mettre Ã  jour les data-label
+    // addTableDataLabels() supprimée - support téléphone mobile retiré
 }
 
 function initSpells() {
@@ -262,44 +262,10 @@ function addSpellRow(data = null) {
         tr.querySelector('.spl-m').checked = data.m || false;
     }
     bindStyleEvents();
-    addTableDataLabels(); // Mettre Ã  jour les data-label
 }
 
-// =============================================================================
-// PHASE 3/3 : INJECTION DATA-LABEL POUR MOBILE
-// =============================================================================
+// Fonction addTableDataLabels supprimée (support téléphone mobile retiré)
 
-/**
- * Injecte les attributs data-label dans les cellules de tableaux
- * pour permettre l'affichage des labels sur mobile via CSS ::before
- */
-function addTableDataLabels() {
-    // === TABLEAU DES ARMES ===
-    const weaponsTable = document.querySelector('.weapons-table');
-    if (weaponsTable) {
-        const weaponLabels = ['Nom', 'Att/DD', 'DÃ©gÃ¢ts', 'Notes', ''];
-        weaponsTable.querySelectorAll('tbody tr').forEach(row => {
-            row.querySelectorAll('td').forEach((cell, index) => {
-                if (weaponLabels[index]) {
-                    cell.setAttribute('data-label', weaponLabels[index]);
-                }
-            });
-        });
-    }
-
-    // === TABLEAU DES SORTS ===
-    const spellsTable = document.querySelector('.data-table:not(.weapons-table)');
-    if (spellsTable) {
-        const spellLabels = ['Niv', 'Nom', 'Temps', 'PortÃ©e', 'C/R/M', 'Notes', ''];
-        spellsTable.querySelectorAll('tbody tr').forEach(row => {
-            row.querySelectorAll('td').forEach((cell, index) => {
-                if (spellLabels[index]) {
-                    cell.setAttribute('data-label', spellLabels[index]);
-                }
-            });
-        });
-    }
-}
 
 // Style editor functions migrated to ui-toolbar.js (showStyleEditor, applyFormat, applyColor, applyFontSize)
 
