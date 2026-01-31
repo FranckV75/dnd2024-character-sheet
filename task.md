@@ -8,3 +8,5 @@
 - [x] Ajouter un mode sombre (Dark Mode)
 - [ ] Créer une page d'accueil pour le chargement de JSON
 - [x] Unification Police Globale (Cinzel)
+- [x] Fix responsive overlap (Toolbar auto-retract at <900px)
+
