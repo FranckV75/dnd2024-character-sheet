@@ -462,23 +462,105 @@ input[type="checkbox"].square {
 
 .skills-list {
     font-size: 0.85rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+/* === SKILL GROUPS (Grouped by Ability) === */
+.skill-group {
+    background: var(--box-bg);
+    border: 1px solid var(--primary-border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.skill-group-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--stat-mod-bg);
+    border-bottom: 1px solid var(--primary-border);
+    font-family: 'Cinzel', serif;
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: var(--label-color);
+    transition: background 0.3s ease;
+}
+
+.skill-group-icon {
+    font-size: 1rem;
+}
+
+.skill-group-title {
+    flex: 1;
+}
+
+.skill-group-mod {
+    font-size: 1rem;
+    color: var(--accent-color);
+    font-weight: bold;
 }
 
 .skill-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px dotted #555;
-    padding: 3px 5px;
-    min-height: 24px;
+    border-bottom: 1px dotted var(--table-border);
+    padding: 6px 10px;
+    min-height: 32px;
+}
+
+.skill-row:last-child {
+    border-bottom: none;
+}
+
+.skill-checkboxes {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.skill-name {
+    flex: 1;
+    margin-left: 8px;
+    color: var(--input-color);
 }
 
 .skill-mod {
-    width: 30px;
+    width: 35px;
     text-align: right;
     cursor: context-menu;
     padding-right: 2px;
     font-weight: bold;
+    font-family: 'Cinzel', serif;
+    color: var(--input-color);
+}
+
+/* Expertise Checkbox (double border = double proficiency) */
+.expertise-checkbox {
+    border-style: double !important;
+    border-width: 3px !important;
+    border-color: var(--accent-color) !important;
+}
+
+.expertise-checkbox:checked {
+    background: var(--accent-color) !important;
+    box-shadow: inset 0 0 0 2px white;
+}
+
+/* Responsive: 1 column on smaller tablets */
+@media (max-width: 900px) {
+    .skills-list {
+        grid-template-columns: 1fr;
+    }
+
+    .skill-row {
+        min-height: 44px;
+        padding: 8px 10px;
+    }
 }
 
 .vitals-grid {

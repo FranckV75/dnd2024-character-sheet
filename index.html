@@ -297,19 +297,23 @@
                                     </div>
                                 </div>
 
-                                <!-- HD Section -->
-                                <div class="hd-section" style="margin-top: 5px;">
-                                    <label>Dés de Vie</label>
-                                    <div class="row" style="align-items: center; gap: 10px;">
+                                <!-- HD Section (Aligned Labels & Inputs) -->
+                                <div class="hd-section" style="margin-top: 5px; display:flex;">
+                                    <div style="flex:0.6; display:flex; flex-direction:column;">
+                                        <label>Dés de Vie</label>
                                         <select id="hd_type_select" name="hd_type" class="rich-input"
-                                            style="flex: 0.6; text-align-last: center; font-family: 'Cinzel', serif; font-size: 1.1rem;">
+                                            style="width: 100%; text-align-last: center; font-family: 'Cinzel', serif; font-size: 1.1rem; margin-top:2px;">
                                             <option value="d6">d6</option>
                                             <option value="d8">d8</option>
                                             <option value="d10">d10</option>
                                             <option value="d12">d12</option>
                                         </select>
+                                    </div>
+
+                                    <div style="flex:1.4; display:flex; flex-direction:column; padding-left:10px;">
+                                        <label style="text-align:center;">Dés Utilisés</label>
                                         <div class="row"
-                                            style="flex: 1.4; align-items: center; gap: 5px; justify-content: center;">
+                                            style="align-items: center; gap: 5px; justify-content: center; width: 100%; margin-top:2px;">
                                             <select id="hd_current_select" name="hd_current" class="rich-input center"
                                                 style="width: 50px; text-align-last: center; font-family: 'Cinzel', serif; font-weight: bold; font-size: 1.25rem; appearance: none; -webkit-appearance: none; border-bottom: 2px solid var(--primary-border);">
                                                 <!-- Options populated by JS -->
