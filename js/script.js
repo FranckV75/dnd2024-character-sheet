@@ -282,7 +282,20 @@ function addSpellRow(data = null) {
     if (!body) return;
     const tr = document.createElement('tr');
     tr.innerHTML = `
-        <td><div contenteditable="true" class="rich-input single-line spl-lvl center"></div></td>
+        <td>
+            <select class="spl-lvl std-input" onchange="saveData()">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+            </select>
+        </td>
         <td><div contenteditable="true" class="rich-input single-line spl-name"></div></td>
         <td><div contenteditable="true" class="rich-input single-line spl-time"></div></td>
         <td><div contenteditable="true" class="rich-input single-line spl-range"></div></td>
@@ -297,7 +310,9 @@ function addSpellRow(data = null) {
     body.appendChild(tr);
 
     if (data) {
-        tr.querySelector('.spl-lvl').innerHTML = data.lvl || '';
+        // Clean legacy HTML from level value
+        const cleanLvl = String(data.lvl || '0').replace(/<[^>]*>/g, '').trim();
+        tr.querySelector('.spl-lvl').value = cleanLvl || '0';
         tr.querySelector('.spl-name').innerHTML = data.name || '';
         tr.querySelector('.spl-time').innerHTML = data.time || '';
         tr.querySelector('.spl-range').innerHTML = data.range || '';
@@ -329,7 +344,7 @@ function filterSpells(level) {
     const rows = document.querySelectorAll('#spells_body tr');
     rows.forEach(row => {
         const lvlCell = row.querySelector('.spl-lvl');
-        const rowLevel = lvlCell ? lvlCell.textContent.trim() : '';
+        const rowLevel = lvlCell ? (lvlCell.tagName === 'SELECT' ? lvlCell.value : lvlCell.textContent.trim()) : '';
 
         if (level === 'all') {
             row.style.display = '';

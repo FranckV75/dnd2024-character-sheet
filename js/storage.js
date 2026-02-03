@@ -149,7 +149,7 @@ function getFormData() {
     if (sBody) {
         sBody.querySelectorAll('tr').forEach(tr => {
             spells.push({
-                lvl: tr.querySelector('.spl-lvl').innerHTML,
+                lvl: (tr.querySelector('.spl-lvl').tagName === 'SELECT') ? tr.querySelector('.spl-lvl').value : tr.querySelector('.spl-lvl').innerHTML,
                 name: tr.querySelector('.spl-name').innerHTML,
                 time: tr.querySelector('.spl-time').innerHTML,
                 range: tr.querySelector('.spl-range').innerHTML,
@@ -318,7 +318,7 @@ function importData(el) {
     el.value = '';
 }
 
-    // AGENT 3 : Force Update Hit Dice Logic after load
-    if (typeof updateHitDiceType === 'function') updateHitDiceType();
-    if (typeof updateHitDiceCount === 'function') updateHitDiceCount();
+// AGENT 3 : Force Update Hit Dice Logic after load
+if (typeof updateHitDiceType === 'function') updateHitDiceType();
+if (typeof updateHitDiceCount === 'function') updateHitDiceCount();
 
