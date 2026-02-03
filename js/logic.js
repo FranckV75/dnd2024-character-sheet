@@ -21,14 +21,17 @@ function calculateProficiencyBonus(level) {
 }
 
 /**
- * Calcule le bonus d'une compétence
+ * Calcule le bonus d'une compétence avec support Expertise
  * @param {number} statMod - Modificateur de la statistique associée
  * @param {boolean} isProficient - Le personnage est-il formé à cette compétence ?
+ * @param {boolean} hasExpertise - Le personnage a-t-il l'Expertise (double maîtrise) ?
  * @param {number} proficiencyBonus - Bonus de maîtrise du personnage
  * @returns {number} - Bonus total de compétence
  */
-function calculateSkillBonus(statMod, isProficient, proficiencyBonus) {
-    return statMod + (isProficient ? proficiencyBonus : 0);
+function calculateSkillBonus(statMod, isProficient, hasExpertise, proficiencyBonus) {
+    if (hasExpertise) return statMod + (proficiencyBonus * 2);
+    if (isProficient) return statMod + proficiencyBonus;
+    return statMod;
 }
 
 /**

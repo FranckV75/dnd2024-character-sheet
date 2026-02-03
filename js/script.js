@@ -193,10 +193,35 @@ window.onload = function () {
 function generateSkillsHTML() {
     const c = document.getElementById('skills_container');
     if (!c) return;
+
     let h = '';
-    SKILLS.forEach(s => {
-        h += `<div class="skill-row"><div class="chk-container"><input type="checkbox" name="skill_prof_${s.id}" onchange="calcStats()"><span>${s.name} <span style="color:#4a3b2a; font-size:0.7em">(${s.stat.toUpperCase()})</span></span></div><div class="skill-mod" id="skill_val_${s.id}">+0</div></div>`;
+    const statOrder = ['str', 'dex', 'int', 'wis', 'cha'];
+
+    statOrder.forEach(stat => {
+        const label = STAT_LABELS[stat];
+        const skills = SKILLS_BY_STAT[stat];
+
+        h += `<div class="skill-group">`;
+        h += `<div class="skill-group-header">`;
+        h += `<span class="skill-group-icon">${label.icon}</span>`;
+        h += `<span class="skill-group-title">${label.name}</span>`;
+        h += `<span class="skill-group-mod" id="${stat}_mod_display">+0</span>`;
+        h += `</div>`;
+
+        skills.forEach(s => {
+            h += `<div class="skill-row">`;
+            h += `<div class="skill-checkboxes">`;
+            h += `<input type="checkbox" name="skill_prof_${s.id}" title="Maîtrise" onchange="calcStats()">`;
+            h += `<input type="checkbox" name="skill_exp_${s.id}" class="expertise-checkbox" title="Expertise" onchange="calcStats()">`;
+            h += `</div>`;
+            h += `<span class="skill-name">${s.name}</span>`;
+            h += `<span class="skill-mod" id="skill_val_${s.id}">+0</span>`;
+            h += `</div>`;
+        });
+
+        h += `</div>`;
     });
+
     c.innerHTML = h;
 }
 
@@ -418,7 +443,7 @@ function calcDerivedStats() {
 function calcStats() {
     let lvl = getVal('char_level') || 1;
 
-    // RÃ©cupÃ©rer la classe depuis le select ou contenteditable (compatibilitÃ©)
+    // Récupérer la classe depuis le select ou contenteditable (compatibilité)
     let clsEl = document.getElementById('char_class') || document.querySelector('[data-name="char_class"]');
     let cls = '';
     if (clsEl) {
@@ -438,21 +463,32 @@ function calcStats() {
         setTxt(s + '_mod', m);
         let p = getCheck(s + '_save_prof');
         setTxt(s + '_save_val', m + (p ? pb : 0));
+
+        // Mettre à jour le modificateur dans l'en-tête du groupe de compétences
+        const groupMod = document.getElementById(`${s}_mod_display`);
+        if (groupMod) groupMod.innerText = (m >= 0 ? '+' : '') + m;
     });
 
     updateSpellAbilityOptions(mods);
     updateClassResource(lvl, cls, mods);
 
+    // Calculer les bonus de compétences avec support Expertise
     SKILLS.forEach(s => {
-        let p = getCheck(`skill_prof_${s.id}`);
-        setTxt(`skill_val_${s.id}`, mods[s.stat] + (p ? pb : 0));
+        let isProficient = getCheck(`skill_prof_${s.id}`);
+        let hasExpertise = getCheck(`skill_exp_${s.id}`);
+        let bonus = calculateSkillBonus(mods[s.stat], isProficient, hasExpertise, pb);
+        setTxt(`skill_val_${s.id}`, bonus);
     });
 
-    let pp = 10 + mods['wis'] + (getCheck('skill_prof_perception') ? pb : 0);
+    // Perception Passive (avec Expertise si applicable)
+    let percProf = getCheck('skill_prof_perception');
+    let percExp = getCheck('skill_exp_perception');
+    let percBonus = calculateSkillBonus(mods['wis'], percProf, percExp, pb);
+    let pp = 10 + percBonus;
     let pi = document.getElementById('passive_perc');
     if (pi && !pi.dataset.manual) pi.innerText = pp;
 
-    // Appeler les calculs dÃ©rivÃ©s (Initiative, DD Sorts, etc.)
+    // Appeler les calculs dérivés (Initiative, DD Sorts, etc.)
     calcDerivedStats();
 }
 
