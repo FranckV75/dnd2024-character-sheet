@@ -474,8 +474,20 @@ function calcStats() {
 
     // Calculer les bonus de compétences avec support Expertise
     SKILLS.forEach(s => {
-        let isProficient = getCheck(`skill_prof_${s.id}`);
-        let hasExpertise = getCheck(`skill_exp_${s.id}`);
+        // Récupérer les éléments DOM pour gérer les dépendances
+        const profCheck = document.querySelector(`input[name="skill_prof_${s.id}"]`);
+        const expCheck = document.querySelector(`input[name="skill_exp_${s.id}"]`);
+
+        if (profCheck && expCheck) {
+            // Règle D&D : L'Expertise implique la Maîtrise
+            if (expCheck.checked && !profCheck.checked) {
+                profCheck.checked = true;
+            }
+        }
+
+        let isProficient = profCheck ? profCheck.checked : false;
+        let hasExpertise = expCheck ? expCheck.checked : false;
+
         let bonus = calculateSkillBonus(mods[s.stat], isProficient, hasExpertise, pb);
         setTxt(`skill_val_${s.id}`, bonus);
     });
