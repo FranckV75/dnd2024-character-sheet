@@ -527,6 +527,8 @@ input[type="checkbox"].square {
     flex: 1;
     margin-left: 8px;
     color: var(--input-color);
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
 }
 
 .skill-mod {
