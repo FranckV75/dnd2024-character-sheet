@@ -551,6 +551,98 @@ input[type="checkbox"].square {
     box-shadow: inset 0 0 0 2px white;
 }
 
+/* === SKILLS CONTAINER (No border wrapper) === */
+.skills-container-box {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+.skills-container-box>h3 {
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent-color);
+}
+
+/* === REST BLOCK COMPACT (6th grid item - Parchment style) === */
+.rest-block-compact {
+    background: var(--box-bg);
+    border: 1px solid var(--primary-border) !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.rest-block-compact .skill-group-header {
+    background: var(--stat-mod-bg);
+    border-bottom: 1px solid var(--primary-border);
+    flex-shrink: 0;
+}
+
+.rest-block-compact .skill-group-title {
+    color: var(--label-color);
+}
+
+.rest-buttons-compact {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    padding: 10px;
+    flex: 1;
+    align-items: stretch;
+}
+
+.rest-buttons-compact .btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 8px 10px;
+    height: 100%;
+    min-height: 0;
+    flex: 1;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.rest-buttons-compact .btn-short-rest {
+    background: linear-gradient(135deg, #1a3a52 0%, #2d5a7b 100%);
+    border: 1px solid #3d7aa5;
+    color: #fff;
+}
+
+.rest-buttons-compact .btn-short-rest:hover {
+    background: linear-gradient(135deg, #2d5a7b 0%, #3d7aa5 100%);
+    transform: translateY(-1px);
+}
+
+.rest-buttons-compact .btn-long-rest {
+    background: linear-gradient(135deg, #3d2417 0%, #5a3520 100%);
+    border: 1px solid #d4af37;
+    color: #d4af37;
+}
+
+.rest-buttons-compact .btn-long-rest:hover {
+    background: linear-gradient(135deg, #5a3520 0%, #7a4528 100%);
+    transform: translateY(-1px);
+}
+
+.rest-buttons-compact .rest-icon {
+    font-size: 1.2rem;
+}
+
+.rest-buttons-compact .rest-label {
+    font-weight: bold;
+    font-family: 'Cinzel', serif;
+}
+
+.rest-buttons-compact .rest-desc {
+    font-size: 0.7rem;
+    opacity: 0.8;
+}
+
 /* Responsive: 1 column on smaller tablets */
 @media (max-width: 900px) {
     .skills-list {

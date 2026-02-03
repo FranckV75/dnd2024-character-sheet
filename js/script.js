@@ -222,6 +222,26 @@ function generateSkillsHTML() {
         h += `</div>`;
     });
 
+    // 6ème bloc : Centre de Repos (compact, intégré à la grille)
+    h += `<div class="skill-group rest-block-compact">`;
+    h += `<div class="skill-group-header">`;
+    h += `<span class="skill-group-icon">⚔️</span>`;
+    h += `<span class="skill-group-title">REPOS</span>`;
+    h += `</div>`;
+    h += `<div class="rest-buttons-compact">`;
+    h += `<button class="btn btn-short-rest" id="btn-short-rest" type="button">`;
+    h += `<span class="rest-icon">🌙</span>`;
+    h += `<span class="rest-label">Court</span>`;
+    h += `<span class="rest-desc">1h</span>`;
+    h += `</button>`;
+    h += `<button class="btn btn-long-rest" id="btn-long-rest" type="button">`;
+    h += `<span class="rest-icon">🛏️</span>`;
+    h += `<span class="rest-label">Long</span>`;
+    h += `<span class="rest-desc">Maintenir</span>`;
+    h += `</button>`;
+    h += `</div>`;
+    h += `</div>`;
+
     c.innerHTML = h;
 }
 
