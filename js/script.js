@@ -309,6 +309,86 @@ function addSpellRow(data = null) {
     bindStyleEvents();
 }
 
+// === SPELL FILTERING SYSTEM ===
+let currentSpellFilter = 'all';
+
+// Default spell slots per level (can be customized via data)
+const DEFAULT_SPELL_SLOTS = {
+    1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1
+};
+
+function filterSpells(level) {
+    currentSpellFilter = level;
+
+    // Update active button
+    document.querySelectorAll('.spell-filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.level === level);
+    });
+
+    // Filter table rows
+    const rows = document.querySelectorAll('#spells_body tr');
+    rows.forEach(row => {
+        const lvlCell = row.querySelector('.spl-lvl');
+        const rowLevel = lvlCell ? lvlCell.textContent.trim() : '';
+
+        if (level === 'all') {
+            row.style.display = '';
+        } else {
+            row.style.display = (rowLevel === level) ? '' : 'none';
+        }
+    });
+
+    // Show/hide slot tracker
+    const tracker = document.getElementById('spell-slots-tracker');
+    if (level === 'all' || level === '0') {
+        tracker.style.display = 'none';
+    } else {
+        tracker.style.display = 'flex';
+        updateSpellSlots(parseInt(level));
+    }
+}
+
+function updateSpellSlots(level) {
+    const container = document.getElementById('slots-container');
+    if (!container) return;
+
+    // Get slot count from saved data or default
+    const savedSlots = JSON.parse(localStorage.getItem('spell_slots') || '{}');
+    const maxSlots = savedSlots[`max_${level}`] || DEFAULT_SPELL_SLOTS[level] || 0;
+    const usedSlots = savedSlots[`used_${level}`] || 0;
+
+    let html = `<span class="slots-level">Niv ${level}</span>`;
+    for (let i = 0; i < maxSlots; i++) {
+        const checked = i < usedSlots ? 'checked' : '';
+        html += `<input type="checkbox" class="slot-checkbox" data-level="${level}" data-index="${i}" ${checked} onchange="toggleSlot(${level}, ${i}, this.checked)">`;
+    }
+    html += `<button class="slots-add-btn" onclick="addSpellSlot(${level})" title="Ajouter un emplacement">+</button>`;
+
+    container.innerHTML = html;
+}
+
+function toggleSlot(level, index, checked) {
+    const savedSlots = JSON.parse(localStorage.getItem('spell_slots') || '{}');
+
+    // Count how many are checked up to this index
+    if (checked) {
+        savedSlots[`used_${level}`] = index + 1;
+    } else {
+        savedSlots[`used_${level}`] = index;
+    }
+
+    localStorage.setItem('spell_slots', JSON.stringify(savedSlots));
+    saveData();
+}
+
+function addSpellSlot(level) {
+    const savedSlots = JSON.parse(localStorage.getItem('spell_slots') || '{}');
+    const currentMax = savedSlots[`max_${level}`] || DEFAULT_SPELL_SLOTS[level] || 0;
+    savedSlots[`max_${level}`] = currentMax + 1;
+    localStorage.setItem('spell_slots', JSON.stringify(savedSlots));
+    updateSpellSlots(level);
+}
+
 // Fonction addTableDataLabels supprimée (support téléphone mobile retiré)
 
 
