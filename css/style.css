@@ -607,6 +607,36 @@ input[type="checkbox"].square {
     transition: all 0.2s ease;
 }
 
+/* === STANDARD FORM INPUTS === */
+.std-input {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.95rem;
+    border: 1px solid var(--primary-border);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.7);
+    color: inherit;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.std-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background: rgba(255, 255, 255, 1);
+}
+
+body.dark-mode .std-input {
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--text-color);
+    border-color: var(--primary-border);
+}
+
+body.dark-mode .std-input:focus {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: var(--accent-color);
+}
+
 .rest-buttons-compact .btn-short-rest {
     background: linear-gradient(135deg, #1a3a52 0%, #2d5a7b 100%);
     border: 1px solid #3d7aa5;
