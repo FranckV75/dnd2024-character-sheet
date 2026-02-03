@@ -407,7 +407,7 @@
             <!-- ================================================================= -->
             <div class="tab-content" id="tab-role">
                 <!-- COMPÉTENCES -->
-                <div class="box" style="width: 100%; margin: 20px 0;">
+                <div class="box skills-container-box" style="width: 100%; margin: 20px 0;">
                     <h3>Compétences</h3>
                     <div id="skills_container" class="skills-list"></div>
                 </div>
@@ -438,26 +438,9 @@
                     </div>
                 </div>
 
-                <!-- CENTRE DE REPOS (VERSION COMPACTE) -->
-                <div class="box"
-                    style="background: linear-gradient(135deg, #2c1810 0%, #3d2417 100%); border: 2px solid #d4af37; padding: 12px;">
-                    <h3 style="color: #d4af37; text-align: center; margin: 0 0 10px 0; font-size: 1rem;">⚔️ Centre de
-                        Repos</h3>
-                    <div style="display: flex; gap: 10px; justify-content: center;">
-                        <button class="btn btn-short-rest" id="btn-short-rest" type="button"
-                            style="flex: 1; max-width: 250px; min-height: 70px;">
-                            <span class="rest-icon" style="font-size: 1.8rem;">🌙</span>
-                            <span class="rest-label" style="font-size: 0.95rem;">Repos Court</span>
-                            <span class="rest-desc" style="font-size: 0.7rem;">1 heure</span>
-                        </button>
-                        <button class="btn btn-long-rest" id="btn-long-rest" type="button"
-                            style="flex: 1; max-width: 250px; min-height: 70px;">
-                            <span class="rest-icon" style="font-size: 1.8rem;">🛏️</span>
-                            <span class="rest-label" style="font-size: 0.95rem;">Repos Long</span>
-                            <span class="rest-desc" style="font-size: 0.7rem;">Maintenir 2s</span>
-                        </button>
-                    </div>
-                </div>
+
+                <!-- CENTRE DE REPOS: Injecté dynamiquement dans la grille des compétences -->
+
 
                 <!-- APPARENCE & HISTOIRE -->
                 <div class="row" style="margin-top: 15px;">
