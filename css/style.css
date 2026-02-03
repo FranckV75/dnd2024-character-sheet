@@ -637,6 +637,30 @@ body.dark-mode .std-input:focus {
     border-color: var(--accent-color);
 }
 
+/* === ODYSSEY BLOCK (Darker Beige) === */
+.odyssey-box {
+    background: var(--stat-mod-bg) !important;
+    /* Beige plus foncé */
+    border: 1px solid var(--primary-border) !important;
+}
+
+.odyssey-box h3 {
+    background: transparent;
+    /* Fond transparent car le parent est déjà foncé */
+    border-bottom: 2px solid var(--accent-color);
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.odyssey-box.text-left h3 {
+    text-align: left;
+}
+
+.odyssey-box .rich-input {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid var(--primary-border);
+}
+
 .rest-buttons-compact .btn-short-rest {
     background: linear-gradient(135deg, #1a3a52 0%, #2d5a7b 100%);
     border: 1px solid #3d7aa5;
