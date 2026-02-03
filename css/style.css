@@ -1009,7 +1009,7 @@ body.dark-mode .std-input:focus {
 
 /* TABLEAUX */
 .scroll-table-container {
-    max-height: 350px;
+    max-height: 600px;
     overflow-y: auto;
     border: 1px solid var(--table-border);
     margin-bottom: 5px;
