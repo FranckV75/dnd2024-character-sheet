@@ -272,6 +272,189 @@ function addWeaponRow(data = null) {
     // addTableDataLabels() supprimée - support téléphone mobile retiré
 }
 
+// === SPELL AUTOCOMPLETE SYSTEM ===
+
+/**
+ * Mapping des noms français de classes vers les slugs anglais utilisés dans SPELLS_DATA
+ */
+const CLASS_NAME_TO_SLUG = {};
+if (typeof DD_RULES !== 'undefined') {
+    for (const [slug, data] of Object.entries(DD_RULES.classes)) {
+        CLASS_NAME_TO_SLUG[data.nameFr] = slug;
+    }
+}
+
+/**
+ * Retourne le slug anglais de la classe actuellement sélectionnée
+ */
+function getCurrentClassSlug() {
+    const classSelect = document.getElementById('char_class');
+    if (!classSelect || !classSelect.value) return null;
+    return CLASS_NAME_TO_SLUG[classSelect.value] || null;
+}
+
+/**
+ * Filtre SPELLS_DATA selon la classe et le texte saisi
+ * @param {string} query - Texte tapé par l'utilisateur
+ * @param {string|null} classSlug - Slug de la classe (ou null pour toutes)
+ * @returns {Array} - Sorts correspondants (max 15)
+ */
+function getSpellSuggestions(query, classSlug) {
+    if (typeof SPELLS_DATA === 'undefined' || !query || query.length < 2) return [];
+    const q = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return SPELLS_DATA
+        .filter(spell => {
+            // Filtre par classe si applicable
+            if (classSlug && !spell.classes.includes(classSlug)) return false;
+            // Filtre par nom (FR ou VO), insensible aux accents
+            const nameFr = spell.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const nameVo = spell.vo.toLowerCase();
+            return nameFr.includes(q) || nameVo.includes(q);
+        })
+        .sort((a, b) => {
+            // Priorité aux résultats qui commencent par la query
+            const aStarts = a.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').startsWith(q);
+            const bStarts = b.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').startsWith(q);
+            if (aStarts && !bStarts) return -1;
+            if (!aStarts && bStarts) return 1;
+            return a.name.localeCompare(b.name, 'fr');
+        })
+        .slice(0, 15);
+}
+
+/**
+ * Applique les données d'un sort à la ligne du tableau
+ */
+function applySpellToRow(tr, spell) {
+    if (!tr || !spell) return;
+    const lvlSelect = tr.querySelector('.spl-lvl');
+    if (lvlSelect) lvlSelect.value = String(spell.level);
+    const timeEl = tr.querySelector('.spl-time');
+    if (timeEl) timeEl.textContent = spell.castTime || '';
+    const rangeEl = tr.querySelector('.spl-range');
+    if (rangeEl) rangeEl.textContent = spell.range || '';
+    // Concentration / Ritual / Material (C/R/M)
+    const cBox = tr.querySelector('.spl-c');
+    if (cBox) cBox.checked = !!spell.concentration;
+    const rBox = tr.querySelector('.spl-r');
+    if (rBox) rBox.checked = !!spell.ritual;
+    const mBox = tr.querySelector('.spl-m');
+    if (mBox) mBox.checked = spell.components ? spell.components.includes('M') : false;
+    // Ajouter l'école + VO dans les notes si vide
+    const noteEl = tr.querySelector('.spl-note');
+    if (noteEl && !noteEl.textContent.trim()) {
+        noteEl.textContent = `${spell.school} (${spell.vo})`;
+    }
+    saveData();
+}
+
+/**
+ * Crée le dropdown d'autocomplétion pour un champ de nom de sort
+ */
+function initSpellAutocomplete(nameEl) {
+    if (!nameEl) return;
+    // Créer le conteneur du dropdown
+    const dropdown = document.createElement('div');
+    dropdown.className = 'spell-autocomplete-dropdown';
+    dropdown.style.display = 'none';
+    nameEl.parentElement.style.position = 'relative';
+    nameEl.parentElement.appendChild(dropdown);
+
+    let selectedIndex = -1;
+    let currentSuggestions = [];
+
+    function showSuggestions(suggestions) {
+        currentSuggestions = suggestions;
+        selectedIndex = -1;
+        if (suggestions.length === 0) {
+            dropdown.style.display = 'none';
+            return;
+        }
+        const classSlug = getCurrentClassSlug();
+        dropdown.innerHTML = suggestions.map((spell, i) => {
+            const levelLabel = spell.level === 0 ? 'Sort m.' : `Niv.${spell.level}`;
+            const schoolClass = spell.school.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            return `<div class="spell-suggestion" data-index="${i}">
+                <span class="spell-sug-name">${spell.name}</span>
+                <span class="spell-sug-meta">
+                    <span class="spell-sug-level">${levelLabel}</span>
+                    <span class="spell-sug-school badge-${schoolClass}">${spell.school}</span>
+                </span>
+            </div>`;
+        }).join('');
+        dropdown.style.display = 'block';
+
+        // Click handlers
+        dropdown.querySelectorAll('.spell-suggestion').forEach(item => {
+            item.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                const idx = parseInt(item.dataset.index);
+                selectSuggestion(idx);
+            });
+        });
+    }
+
+    function selectSuggestion(idx) {
+        if (idx < 0 || idx >= currentSuggestions.length) return;
+        const spell = currentSuggestions[idx];
+        // Handle names with | (alternatives)
+        const displayName = spell.name.includes('|') ? spell.name.split('|')[0].trim() : spell.name;
+        nameEl.textContent = displayName;
+        dropdown.style.display = 'none';
+        // Auto-fill the row
+        const tr = nameEl.closest('tr');
+        applySpellToRow(tr, spell);
+    }
+
+    function highlightItem(idx) {
+        dropdown.querySelectorAll('.spell-suggestion').forEach(el => el.classList.remove('highlighted'));
+        if (idx >= 0 && idx < currentSuggestions.length) {
+            const el = dropdown.querySelector(`[data-index="${idx}"]`);
+            if (el) {
+                el.classList.add('highlighted');
+                el.scrollIntoView({ block: 'nearest' });
+            }
+        }
+    }
+
+    // Input handler
+    nameEl.addEventListener('input', () => {
+        const query = nameEl.textContent.trim();
+        const classSlug = getCurrentClassSlug();
+        const suggestions = getSpellSuggestions(query, classSlug);
+        showSuggestions(suggestions);
+    });
+
+    // Keyboard navigation
+    nameEl.addEventListener('keydown', (e) => {
+        if (dropdown.style.display === 'none') return;
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedIndex = Math.min(selectedIndex + 1, currentSuggestions.length - 1);
+            highlightItem(selectedIndex);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedIndex = Math.max(selectedIndex - 1, 0);
+            highlightItem(selectedIndex);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (selectedIndex >= 0) {
+                selectSuggestion(selectedIndex);
+            } else if (currentSuggestions.length === 1) {
+                selectSuggestion(0);
+            }
+            dropdown.style.display = 'none';
+        } else if (e.key === 'Escape') {
+            dropdown.style.display = 'none';
+        }
+    });
+
+    // Hide on blur
+    nameEl.addEventListener('blur', () => {
+        setTimeout(() => { dropdown.style.display = 'none'; }, 150);
+    });
+}
+
 function initSpells() {
     const body = document.getElementById('spells_body');
     if (body && body.children.length === 0) for (let i = 0; i < 6; i++) addSpellRow();
@@ -296,7 +479,7 @@ function addSpellRow(data = null) {
                 <option value="9">9</option>
             </select>
         </td>
-        <td><div contenteditable="true" class="rich-input single-line spl-name"></div></td>
+        <td><div contenteditable="true" class="rich-input single-line spl-name" spellcheck="false"></div></td>
         <td><div contenteditable="true" class="rich-input single-line spl-time"></div></td>
         <td><div contenteditable="true" class="rich-input single-line spl-range"></div></td>
         <td class="crm-cell">
@@ -321,6 +504,8 @@ function addSpellRow(data = null) {
         tr.querySelector('.spl-r').checked = data.r || false;
         tr.querySelector('.spl-m').checked = data.m || false;
     }
+    // Attach autocomplete to spell name field
+    initSpellAutocomplete(tr.querySelector('.spl-name'));
     bindStyleEvents();
 }
 

@@ -2047,3 +2047,176 @@ input[type=range] {
     margin-top: -5px;
     /* Alignment tweak */
 }
+
+/* ===================================================================
+   SPELL AUTOCOMPLETE DROPDOWN
+   =================================================================== */
+
+.spell-autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    max-height: 280px;
+    overflow-y: auto;
+    background: rgba(255, 250, 240, 0.97);
+    border: 2px solid var(--primary-border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(139, 69, 19, 0.15);
+    backdrop-filter: blur(12px);
+    animation: dropdownSlideIn 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes dropdownSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.spell-suggestion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 10px;
+    cursor: pointer;
+    transition: background 0.12s ease, transform 0.1s ease;
+    border-bottom: 1px solid rgba(139, 69, 19, 0.08);
+}
+
+.spell-suggestion:last-child {
+    border-bottom: none;
+}
+
+.spell-suggestion:hover,
+.spell-suggestion.highlighted {
+    background: linear-gradient(135deg, rgba(139, 90, 43, 0.12) 0%, rgba(218, 165, 32, 0.1) 100%);
+}
+
+.spell-suggestion.highlighted {
+    outline: 2px solid var(--primary-border);
+    outline-offset: -2px;
+}
+
+.spell-sug-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 8px;
+}
+
+.spell-sug-meta {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.spell-sug-level {
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: #5e2c04;
+    background: rgba(139, 69, 19, 0.1);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.spell-sug-school {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 10px;
+    color: white;
+    font-family: 'Segoe UI', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* School color badges */
+.badge-abjuration {
+    background: #3b82f6;
+}
+
+.badge-divination {
+    background: #a78bfa;
+}
+
+.badge-enchantement {
+    background: #ec4899;
+}
+
+.badge-evocation {
+    background: #ef4444;
+}
+
+.badge-illusion {
+    background: #8b5cf6;
+}
+
+.badge-invocation {
+    background: #f59e0b;
+}
+
+.badge-necromancie {
+    background: #374151;
+}
+
+.badge-transmutation {
+    background: #10b981;
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .spell-autocomplete-dropdown {
+    background: rgba(26, 26, 46, 0.97);
+    border-color: #555;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .spell-suggestion:hover,
+[data-theme="dark"] .spell-suggestion.highlighted {
+    background: linear-gradient(135deg, rgba(100, 80, 60, 0.3) 0%, rgba(218, 165, 32, 0.15) 100%);
+}
+
+[data-theme="dark"] .spell-suggestion.highlighted {
+    outline-color: #888;
+}
+
+[data-theme="dark"] .spell-sug-name {
+    color: #e8dbc5;
+}
+
+[data-theme="dark"] .spell-sug-level {
+    color: #e8dbc5;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Scrollbar styling */
+.spell-autocomplete-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.spell-autocomplete-dropdown::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.spell-autocomplete-dropdown::-webkit-scrollbar-thumb {
+    background: rgba(139, 69, 19, 0.3);
+    border-radius: 3px;
+}
+
+.spell-autocomplete-dropdown::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 69, 19, 0.5);
+}
