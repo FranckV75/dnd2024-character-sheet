@@ -7,7 +7,7 @@
     <title>Fiche D&D 2024 - Mobile Ready</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Segoe+UI:wght@400;600&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=1.1">
+    <link rel="stylesheet" href="css/style.css?v=2.8">
 </head>
 
 <body data-theme="light">
@@ -488,18 +488,29 @@
 
                     <!-- Barre de filtre par niveau -->
                     <div class="spell-filter-bar">
-                        <button class="spell-filter-btn active" data-level="all"
+                        <button type="button" class="spell-filter-btn active" data-level="all"
                             onclick="filterSpells('all')">Tous</button>
-                        <button class="spell-filter-btn" data-level="0" onclick="filterSpells('0')">0</button>
-                        <button class="spell-filter-btn" data-level="1" onclick="filterSpells('1')">1</button>
-                        <button class="spell-filter-btn" data-level="2" onclick="filterSpells('2')">2</button>
-                        <button class="spell-filter-btn" data-level="3" onclick="filterSpells('3')">3</button>
-                        <button class="spell-filter-btn" data-level="4" onclick="filterSpells('4')">4</button>
-                        <button class="spell-filter-btn" data-level="5" onclick="filterSpells('5')">5</button>
-                        <button class="spell-filter-btn" data-level="6" onclick="filterSpells('6')">6</button>
-                        <button class="spell-filter-btn" data-level="7" onclick="filterSpells('7')">7</button>
-                        <button class="spell-filter-btn" data-level="8" onclick="filterSpells('8')">8</button>
-                        <button class="spell-filter-btn" data-level="9" onclick="filterSpells('9')">9</button>
+                        <button type="button" class="spell-filter-btn" data-level="0"
+                            onclick="filterSpells('0')">0</button>
+                        <button type="button" class="spell-filter-btn" data-level="1"
+                            onclick="filterSpells('1')">1</button>
+                        <button type="button" class="spell-filter-btn" data-level="2"
+                            onclick="filterSpells('2')">2</button>
+                        <button type="button" class="spell-filter-btn" data-level="3"
+                            onclick="filterSpells('3')">3</button>
+                        <button type="button" class="spell-filter-btn" data-level="4"
+                            onclick="filterSpells('4')">4</button>
+                        <button type="button" class="spell-filter-btn" data-level="5"
+                            onclick="filterSpells('5')">5</button>
+                        <button type="button" class="spell-filter-btn" data-level="6"
+                            onclick="filterSpells('6')">6</button>
+                        <button type="button" class="spell-filter-btn" data-level="7"
+                            onclick="filterSpells('7')">7</button>
+                        <button type="button" class="spell-filter-btn" data-level="8"
+                            onclick="filterSpells('8')">8</button>
+                        <button type="button" class="spell-filter-btn" data-level="9"
+                            onclick="filterSpells('9')">9</button>
+                        <span id="spell-count" class="spell-count"></span>
                     </div>
 
                     <!-- Tracker d'emplacements (visible quand un niveau spécifique est sélectionné) -->

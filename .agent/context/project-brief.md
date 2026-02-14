@@ -75,3 +75,6 @@ Pour garantir une qualité premium et une traçabilité, nous utilisons un cycle
 ## 🛡️ Règles de Sécurité Critique
 - **NE JAMAIS SUPPRIMER NI MODIFIER** le contenu du dossier `.agent/rules/`. Ce dossier est géré automatiquement par l'interface Antigravity lors de la création de règles.
 - Toujours privilégier `project-brief.md` comme source de vérité pour le contexte projet.
+## 🔮 Roadmap Immédiate (v2.3.0)
+- **Grimoire Intelligent** : Auto-complétion des sorts depuis D&D 2024, filtrage avancé, gestion des composantes V/S/M.
+- **Spec Technique** : Voir `implementation_plan.md` pour le détail.

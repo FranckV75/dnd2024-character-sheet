@@ -11,15 +11,22 @@ Toutes les modifications notables du projet sont documentées ici.
 
 ---
 
-## [2.1.0] - 2026-01-29
+## [2.2.0] - 2026-02-14
 
 ### Added
-- **Micro-animations premium** sur les onglets (fadeInUp, hover effects)
-- **Panneau Gestion rétractable** sur tablettes portrait (<900px)
-- **Attributs ARIA** sur les boutons de suppression (accessibilité)
+- **Magie & Grimoire (Tab 3)** :
+    - Filtres de sorts par niveau (0-9) avec boutons stylisés.
+    - Tracker d'emplacements de sorts (slots) avec sauvegarde LocalStorage.
+    - Design "Grimoire" premium (Cinzel, headers dorés).
+    - Trésorerie visuelle avec icônes de pièces métalliques.
+- **Compétences & Histoire (Tab 2)** :
+    - Intégration du **Centre de Repos** (Court/Long).
+    - Thème unifié beige foncé pour les blocs du bas (Odyssée, Apparence, Histoire).
 
 ### Changed
-- Transition toolbar avec cubic-bezier Material Design
+- Remplacement de la saisie manuelle de niveau de sort par un **menu déroulant**.
+- Augmentation de la hauteur de la table des sorts (600px).
+- Harmonisation des styles de bordures et de fonds sur l'ensemble de la fiche.
 
 ---
 

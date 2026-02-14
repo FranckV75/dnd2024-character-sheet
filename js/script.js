@@ -165,7 +165,7 @@ window.onload = function () {
     // Initial Calc
     setTimeout(() => {
         calcStats();
-        // addTableDataLabels supprimée (mobile phone uniquement)
+        updateSpellCount();
     }, 100);
 
     setupDrag();
@@ -324,60 +324,147 @@ function addSpellRow(data = null) {
     bindStyleEvents();
 }
 
-// === SPELL FILTERING SYSTEM ===
-let currentSpellFilter = 'all';
+// === SPELL FILTERING SYSTEM (Multi-select) ===
+let activeSpellFilters = new Set(); // Vide = tous les niveaux
 
 // Default spell slots per level (can be customized via data)
 const DEFAULT_SPELL_SLOTS = {
     1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1
 };
 
-function filterSpells(level) {
-    currentSpellFilter = level;
+/**
+ * Détermine si une ligne de sort est "vide" (aucun contenu saisi)
+ */
+function isSpellRowEmpty(row) {
+    const nameEl = row.querySelector('.spl-name');
+    const name = nameEl ? nameEl.textContent.trim() : '';
+    const timeEl = row.querySelector('.spl-time');
+    const time = timeEl ? timeEl.textContent.trim() : '';
+    const rangeEl = row.querySelector('.spl-range');
+    const range = rangeEl ? rangeEl.textContent.trim() : '';
+    return name === '' && time === '' && range === '';
+}
 
-    // Update active button
+/**
+ * Met à jour le compteur de sorts visibles
+ */
+function updateSpellCount() {
+    const counter = document.getElementById('spell-count');
+    if (!counter) return;
+    const rows = document.querySelectorAll('#spells_body tr');
+    let total = 0;
+    let visible = 0;
+    rows.forEach(row => {
+        if (!isSpellRowEmpty(row)) {
+            total++;
+            if (row.style.display !== 'none') visible++;
+        }
+    });
+    if (activeSpellFilters.size === 0) {
+        counter.textContent = `${total} sort${total > 1 ? 's' : ''}`;
+    } else {
+        counter.textContent = `${visible} / ${total} sort${total > 1 ? 's' : ''}`;
+    }
+}
+
+/**
+ * Filtre les sorts par niveau avec multi-sélection (toggle)
+ * - Cliquer "Tous" réinitialise la sélection
+ * - Cliquer un niveau l'ajoute/retire du filtre actif
+ * - Les lignes vides restent toujours visibles
+ */
+function filterSpells(level) {
+    if (level === 'all') {
+        activeSpellFilters.clear();
+    } else {
+        // Toggle : ajouter ou retirer le niveau
+        if (activeSpellFilters.has(level)) {
+            activeSpellFilters.delete(level);
+        } else {
+            activeSpellFilters.add(level);
+        }
+    }
+
+    // Si plus aucun filtre actif, revenir au mode "Tous"
+    const showAll = activeSpellFilters.size === 0;
+
+    // Update active buttons (multi-select)
     document.querySelectorAll('.spell-filter-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.level === level);
+        const btnLevel = btn.dataset.level;
+        if (btnLevel === 'all') {
+            btn.classList.toggle('active', showAll);
+        } else {
+            btn.classList.toggle('active', activeSpellFilters.has(btnLevel));
+        }
     });
 
-    // Filter table rows
+    // Filter table rows — lignes vides toujours visibles
     const rows = document.querySelectorAll('#spells_body tr');
     rows.forEach(row => {
+        if (showAll) {
+            row.style.display = '';
+            return;
+        }
+
+        // Les lignes vides restent toujours visibles
+        if (isSpellRowEmpty(row)) {
+            row.style.display = '';
+            return;
+        }
+
         const lvlCell = row.querySelector('.spl-lvl');
         const rowLevel = lvlCell ? (lvlCell.tagName === 'SELECT' ? lvlCell.value : lvlCell.textContent.trim()) : '';
-
-        if (level === 'all') {
-            row.style.display = '';
-        } else {
-            row.style.display = (rowLevel === level) ? '' : 'none';
-        }
+        row.style.display = activeSpellFilters.has(rowLevel) ? '' : 'none';
     });
 
     // Show/hide slot tracker
     const tracker = document.getElementById('spell-slots-tracker');
-    if (level === 'all' || level === '0') {
+    if (showAll || (activeSpellFilters.size === 1 && activeSpellFilters.has('0'))) {
         tracker.style.display = 'none';
     } else {
         tracker.style.display = 'flex';
-        updateSpellSlots(parseInt(level));
+        // Afficher les slots pour tous les niveaux sélectionnés (hors 0)
+        const levelsForSlots = [...activeSpellFilters].filter(l => l !== '0').map(Number);
+        if (levelsForSlots.length > 0) {
+            updateSpellSlots(levelsForSlots);
+        } else {
+            tracker.style.display = 'none';
+        }
     }
+
+    // Mettre à jour le compteur
+    updateSpellCount();
 }
 
-function updateSpellSlots(level) {
+/**
+ * Met à jour l'affichage des emplacements de sorts.
+ * Supporte un seul niveau (number) ou plusieurs (array).
+ */
+function updateSpellSlots(levels) {
     const container = document.getElementById('slots-container');
     if (!container) return;
 
-    // Get slot count from saved data or default
-    const savedSlots = JSON.parse(localStorage.getItem('spell_slots') || '{}');
-    const maxSlots = savedSlots[`max_${level}`] || DEFAULT_SPELL_SLOTS[level] || 0;
-    const usedSlots = savedSlots[`used_${level}`] || 0;
+    // Normaliser : accepter un nombre ou un tableau
+    if (!Array.isArray(levels)) levels = [levels];
 
-    let html = `<span class="slots-level">Niv ${level}</span>`;
-    for (let i = 0; i < maxSlots; i++) {
-        const checked = i < usedSlots ? 'checked' : '';
-        html += `<input type="checkbox" class="slot-checkbox" data-level="${level}" data-index="${i}" ${checked} onchange="toggleSlot(${level}, ${i}, this.checked)">`;
-    }
-    html += `<button class="slots-add-btn" onclick="addSpellSlot(${level})" title="Ajouter un emplacement">+</button>`;
+    const savedSlots = JSON.parse(localStorage.getItem('spell_slots') || '{}');
+    let html = '';
+
+    levels.forEach(level => {
+        const maxSlots = savedSlots[`max_${level}`] || DEFAULT_SPELL_SLOTS[level] || 0;
+        const usedSlots = savedSlots[`used_${level}`] || 0;
+
+        html += `<span class="slots-level">Niv ${level}</span>`;
+        for (let i = 0; i < maxSlots; i++) {
+            const checked = i < usedSlots ? 'checked' : '';
+            html += `<input type="checkbox" class="slot-checkbox" data-level="${level}" data-index="${i}" ${checked} onchange="toggleSlot(${level}, ${i}, this.checked)">`;
+        }
+        html += `<button class="slots-remove-btn" onclick="removeSpellSlot(${level})" title="Retirer un emplacement">-</button>`;
+        html += `<button class="slots-add-btn" onclick="addSpellSlot(${level})" title="Ajouter un emplacement">+</button>`;
+
+        // Séparateur entre niveaux
+        if (levels.length > 1) html += `<span class="slots-separator">│</span>`;
+    });
 
     container.innerHTML = html;
 }
@@ -401,7 +488,38 @@ function addSpellSlot(level) {
     const currentMax = savedSlots[`max_${level}`] || DEFAULT_SPELL_SLOTS[level] || 0;
     savedSlots[`max_${level}`] = currentMax + 1;
     localStorage.setItem('spell_slots', JSON.stringify(savedSlots));
-    updateSpellSlots(level);
+
+    // Refresh correctly (keep multi-select view if active)
+    refreshSpellSlots(level);
+}
+
+function removeSpellSlot(level) {
+    const savedSlots = JSON.parse(localStorage.getItem('spell_slots') || '{}');
+    const currentMax = savedSlots[`max_${level}`] || DEFAULT_SPELL_SLOTS[level] || 0;
+
+    if (currentMax > 0) {
+        savedSlots[`max_${level}`] = currentMax - 1;
+
+        // Ensure used slots don't exceed new max
+        const used = savedSlots[`used_${level}`] || 0;
+        if (used > savedSlots[`max_${level}`]) {
+            savedSlots[`used_${level}`] = savedSlots[`max_${level}`];
+        }
+
+        localStorage.setItem('spell_slots', JSON.stringify(savedSlots));
+        refreshSpellSlots(level);
+    }
+}
+
+function refreshSpellSlots(fallbackLevel) {
+    if (typeof activeSpellFilters !== 'undefined' && activeSpellFilters.size > 0) {
+        const levelsForSlots = [...activeSpellFilters].filter(l => l !== '0').map(Number);
+        if (levelsForSlots.length > 0) {
+            updateSpellSlots(levelsForSlots);
+            return;
+        }
+    }
+    updateSpellSlots(fallbackLevel);
 }
 
 // Fonction addTableDataLabels supprimée (support téléphone mobile retiré)
