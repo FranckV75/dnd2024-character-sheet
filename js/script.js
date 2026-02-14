@@ -512,10 +512,22 @@ function addSpellRow(data = null) {
 // === SPELL FILTERING SYSTEM (Multi-select) ===
 let activeSpellFilters = new Set(); // Vide = tous les niveaux
 
-// Default spell slots per level (can be customized via data)
-const DEFAULT_SPELL_SLOTS = {
-    1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1
-};
+/**
+ * Retourne les emplacements par défaut pour la classe et le niveau actuels.
+ * Utilise DD_RULES.getSpellSlots() pour le calcul officiel D&D 2024.
+ * Fallback sur des valeurs standards si les règles ne sont pas chargées.
+ */
+function getDefaultSpellSlots() {
+    if (typeof DD_RULES === 'undefined' || !DD_RULES.getSpellSlots) {
+        return { 1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1 };
+    }
+    const classSelect = document.getElementById('char_class');
+    const cls = classSelect ? classSelect.value : '';
+    const lvl = getVal('char_level') || 1;
+    const slots = DD_RULES.getSpellSlots(cls, lvl);
+    // Si la classe n'est pas un lanceur, retourner des slots vides
+    return Object.keys(slots).length > 0 ? slots : {};
+}
 
 /**
  * Détermine si une ligne de sort est "vide" (aucun contenu saisi)
@@ -636,7 +648,8 @@ function updateSpellSlots(levels) {
     let html = '';
 
     levels.forEach(level => {
-        const maxSlots = savedSlots[`max_${level}`] || DEFAULT_SPELL_SLOTS[level] || 0;
+        const defaultSlots = getDefaultSpellSlots();
+        const maxSlots = savedSlots[`max_${level}`] !== undefined ? savedSlots[`max_${level}`] : (defaultSlots[level] || 0);
         const usedSlots = savedSlots[`used_${level}`] || 0;
 
         html += `<span class="slots-level">Niv ${level}</span>`;
@@ -670,7 +683,8 @@ function toggleSlot(level, index, checked) {
 
 function addSpellSlot(level) {
     const savedSlots = JSON.parse(localStorage.getItem('spell_slots') || '{}');
-    const currentMax = savedSlots[`max_${level}`] || DEFAULT_SPELL_SLOTS[level] || 0;
+    const defaultSlots = getDefaultSpellSlots();
+    const currentMax = savedSlots[`max_${level}`] !== undefined ? savedSlots[`max_${level}`] : (defaultSlots[level] || 0);
     savedSlots[`max_${level}`] = currentMax + 1;
     localStorage.setItem('spell_slots', JSON.stringify(savedSlots));
 
@@ -680,7 +694,8 @@ function addSpellSlot(level) {
 
 function removeSpellSlot(level) {
     const savedSlots = JSON.parse(localStorage.getItem('spell_slots') || '{}');
-    const currentMax = savedSlots[`max_${level}`] || DEFAULT_SPELL_SLOTS[level] || 0;
+    const defaultSlots = getDefaultSpellSlots();
+    const currentMax = savedSlots[`max_${level}`] !== undefined ? savedSlots[`max_${level}`] : (defaultSlots[level] || 0);
 
     if (currentMax > 0) {
         savedSlots[`max_${level}`] = currentMax - 1;
@@ -889,6 +904,14 @@ function calcStats() {
 
     updateSpellAbilityOptions(mods);
     updateClassResource(lvl, cls, mods);
+
+    // Mettre à jour les emplacements de sorts si un filtre de niveau est actif
+    if (typeof activeSpellFilters !== 'undefined' && activeSpellFilters.size > 0) {
+        const levelsForSlots = [...activeSpellFilters].filter(l => l !== '0').map(Number);
+        if (levelsForSlots.length > 0) {
+            updateSpellSlots(levelsForSlots);
+        }
+    }
 
     // Calculer les bonus de compétences avec support Expertise
     SKILLS.forEach(s => {

@@ -592,6 +592,138 @@ const DD_RULES = {
             }
         }
         return filtered;
+    },
+
+    // =========================================================================
+    // EMPLACEMENTS DE SORTS (D&D 2024)
+    // =========================================================================
+
+    /**
+     * Tables d'emplacements de sorts par type de lanceur.
+     * Chaque entrée [niv1, niv2, ..., niv9] donne le nombre d'emplacements.
+     * Index = niveau du personnage (1-20).
+     */
+    spellSlots: {
+        // Plein lanceur : Bard, Cleric, Druid, Sorcerer, Wizard
+        full: {
+            1: [2, 0, 0, 0, 0, 0, 0, 0, 0],
+            2: [3, 0, 0, 0, 0, 0, 0, 0, 0],
+            3: [4, 2, 0, 0, 0, 0, 0, 0, 0],
+            4: [4, 3, 0, 0, 0, 0, 0, 0, 0],
+            5: [4, 3, 2, 0, 0, 0, 0, 0, 0],
+            6: [4, 3, 3, 0, 0, 0, 0, 0, 0],
+            7: [4, 3, 3, 1, 0, 0, 0, 0, 0],
+            8: [4, 3, 3, 2, 0, 0, 0, 0, 0],
+            9: [4, 3, 3, 3, 1, 0, 0, 0, 0],
+            10: [4, 3, 3, 3, 2, 0, 0, 0, 0],
+            11: [4, 3, 3, 3, 2, 1, 0, 0, 0],
+            12: [4, 3, 3, 3, 2, 1, 0, 0, 0],
+            13: [4, 3, 3, 3, 2, 1, 1, 0, 0],
+            14: [4, 3, 3, 3, 2, 1, 1, 0, 0],
+            15: [4, 3, 3, 3, 2, 1, 1, 1, 0],
+            16: [4, 3, 3, 3, 2, 1, 1, 1, 0],
+            17: [4, 3, 3, 3, 2, 1, 1, 1, 1],
+            18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
+            19: [4, 3, 3, 3, 3, 2, 1, 1, 1],
+            20: [4, 3, 3, 3, 3, 2, 2, 1, 1]
+        },
+        // Demi-lanceur : Paladin, Ranger (commence au niveau 2)
+        half: {
+            1: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            2: [2, 0, 0, 0, 0, 0, 0, 0, 0],
+            3: [3, 0, 0, 0, 0, 0, 0, 0, 0],
+            4: [3, 0, 0, 0, 0, 0, 0, 0, 0],
+            5: [4, 2, 0, 0, 0, 0, 0, 0, 0],
+            6: [4, 2, 0, 0, 0, 0, 0, 0, 0],
+            7: [4, 3, 0, 0, 0, 0, 0, 0, 0],
+            8: [4, 3, 0, 0, 0, 0, 0, 0, 0],
+            9: [4, 3, 2, 0, 0, 0, 0, 0, 0],
+            10: [4, 3, 2, 0, 0, 0, 0, 0, 0],
+            11: [4, 3, 3, 0, 0, 0, 0, 0, 0],
+            12: [4, 3, 3, 0, 0, 0, 0, 0, 0],
+            13: [4, 3, 3, 1, 0, 0, 0, 0, 0],
+            14: [4, 3, 3, 1, 0, 0, 0, 0, 0],
+            15: [4, 3, 3, 2, 0, 0, 0, 0, 0],
+            16: [4, 3, 3, 2, 0, 0, 0, 0, 0],
+            17: [4, 3, 3, 3, 1, 0, 0, 0, 0],
+            18: [4, 3, 3, 3, 1, 0, 0, 0, 0],
+            19: [4, 3, 3, 3, 2, 0, 0, 0, 0],
+            20: [4, 3, 3, 3, 2, 0, 0, 0, 0]
+        },
+        // Warlock (Pacte) : emplacements uniques qui reviennent au repos court
+        pact: {
+            1: [1, 0, 0, 0, 0, 0, 0, 0, 0],
+            2: [2, 0, 0, 0, 0, 0, 0, 0, 0],
+            3: [0, 2, 0, 0, 0, 0, 0, 0, 0],
+            4: [0, 2, 0, 0, 0, 0, 0, 0, 0],
+            5: [0, 0, 2, 0, 0, 0, 0, 0, 0],
+            6: [0, 0, 2, 0, 0, 0, 0, 0, 0],
+            7: [0, 0, 0, 2, 0, 0, 0, 0, 0],
+            8: [0, 0, 0, 2, 0, 0, 0, 0, 0],
+            9: [0, 0, 0, 0, 2, 0, 0, 0, 0],
+            10: [0, 0, 0, 0, 2, 0, 0, 0, 0],
+            11: [0, 0, 0, 0, 3, 0, 0, 0, 0],
+            12: [0, 0, 0, 0, 3, 0, 0, 0, 0],
+            13: [0, 0, 0, 0, 3, 0, 0, 0, 0],
+            14: [0, 0, 0, 0, 3, 0, 0, 0, 0],
+            15: [0, 0, 0, 0, 3, 0, 0, 0, 0],
+            16: [0, 0, 0, 0, 3, 0, 0, 0, 0],
+            17: [0, 0, 0, 0, 4, 0, 0, 0, 0],
+            18: [0, 0, 0, 0, 4, 0, 0, 0, 0],
+            19: [0, 0, 0, 0, 4, 0, 0, 0, 0],
+            20: [0, 0, 0, 0, 4, 0, 0, 0, 0]
+        }
+    },
+
+    /**
+     * Mapping des classes vers leur type de lanceur
+     */
+    casterType: {
+        bard: 'full', cleric: 'full', druid: 'full', sorcerer: 'full', wizard: 'full',
+        paladin: 'half', ranger: 'half',
+        warlock: 'pact',
+        // Non-lanceurs (pas de slots par défaut)
+        barbarian: null, fighter: null, monk: null, rogue: null
+    },
+
+    /**
+     * Retourne les emplacements de sorts pour une classe et un niveau donnés.
+     * @param {string} className - Nom de la classe (FR, EN ou slug)
+     * @param {number} level - Niveau du personnage (1-20)
+     * @returns {Object} - { 1: nbSlots, 2: nbSlots, ..., 9: nbSlots } ou {} si non-lanceur
+     */
+    getSpellSlots(className, level) {
+        if (!className || !level) return {};
+
+        // Trouver le slug de la classe
+        let classSlug = null;
+        const cleanName = className.toLowerCase().trim();
+        for (const [key, cls] of Object.entries(this.classes)) {
+            if (cls.name.toLowerCase() === cleanName ||
+                cls.nameFr.toLowerCase() === cleanName ||
+                key === cleanName) {
+                classSlug = key;
+                break;
+            }
+        }
+
+        if (!classSlug) return {};
+
+        const type = this.casterType[classSlug];
+        if (!type) return {};
+
+        const clampedLevel = Math.max(1, Math.min(20, level));
+        const slotsArray = this.spellSlots[type][clampedLevel];
+        if (!slotsArray) return {};
+
+        const result = {};
+        slotsArray.forEach((count, idx) => {
+            const spellLevel = idx + 1;
+            if (count > 0) {
+                result[spellLevel] = count;
+            }
+        });
+        return result;
     }
 };
 

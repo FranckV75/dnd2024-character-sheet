@@ -16,8 +16,8 @@
 
 ## Story 4 : Emplacements de Sorts
 - [x] Ajouter boutons ± pour ajustement manuel des slots max
-- [ ] Ajouter table `SPELL_SLOTS` dans `dd_rules.js` (par classe/niveau)
-- [ ] Calcul automatique des slots basés sur le niveau du personnage
+- [x] Ajouter table `SPELL_SLOTS` dans `dd_rules.js` (full/half/pact, niv 1-20)
+- [x] Calcul automatique des slots basés sur le niveau et la classe du personnage
 
 ## Story 5 : UX Polish
 - [ ] Tri par colonne (nom, niveau, école)
