@@ -156,7 +156,9 @@ function getFormData() {
                 note: tr.querySelector('.spl-note').innerHTML,
                 c: tr.querySelector('.spl-c').checked,
                 r: tr.querySelector('.spl-r').checked,
-                m: tr.querySelector('.spl-m').checked
+                m: tr.querySelector('.spl-m').checked,
+                prep: tr.querySelector('.spl-prep') ? tr.querySelector('.spl-prep').checked : false,
+                school: tr.querySelector('.spl-school') ? tr.querySelector('.spl-school').textContent : ''
             });
         });
     }

@@ -20,6 +20,6 @@
 - [x] Calcul automatique des slots basés sur le niveau et la classe du personnage
 
 ## Story 5 : UX Polish
-- [ ] Tri par colonne (nom, niveau, école)
-- [ ] Colonne "École" avec badge coloré
-- [ ] Checkbox "Préparé" par sort
+- [x] Tri par colonne (nom, niveau, école)
+- [x] Colonne "École" avec badge coloré
+- [x] Checkbox "Préparé" par sort

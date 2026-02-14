@@ -345,6 +345,16 @@ function getSpellSuggestions(query, classSlug) {
 }
 
 /**
+ * Applique un badge d'école coloré à un élément <span>
+ */
+function setSchoolBadge(el, schoolName) {
+    if (!el || !schoolName) return;
+    el.textContent = schoolName;
+    const slug = schoolName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    el.className = 'spl-school badge-school badge-' + slug;
+}
+
+/**
  * Applique les données d'un sort à la ligne du tableau
  */
 function applySpellToRow(tr, spell) {
@@ -362,11 +372,75 @@ function applySpellToRow(tr, spell) {
     if (rBox) rBox.checked = !!spell.ritual;
     const mBox = tr.querySelector('.spl-m');
     if (mBox) mBox.checked = spell.components ? spell.components.includes('M') : false;
-    // Ajouter l'école + VO dans les notes si vide
+    // École (badge coloré)
+    const schoolEl = tr.querySelector('.spl-school');
+    if (schoolEl && spell.school) setSchoolBadge(schoolEl, spell.school);
+    // VO dans les notes si vide
     const noteEl = tr.querySelector('.spl-note');
     if (noteEl && !noteEl.textContent.trim()) {
-        noteEl.textContent = `${spell.school} (${spell.vo})`;
+        noteEl.textContent = spell.vo || '';
     }
+    saveData();
+}
+
+// === SPELL SORTING SYSTEM ===
+let currentSpellSort = { col: null, dir: 'asc' };
+
+/**
+ * Trie les lignes de sorts par colonne (nom, niveau, école)
+ */
+function sortSpells(col) {
+    const body = document.getElementById('spells_body');
+    if (!body) return;
+
+    // Toggle direction
+    if (currentSpellSort.col === col) {
+        currentSpellSort.dir = currentSpellSort.dir === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSpellSort.col = col;
+        currentSpellSort.dir = 'asc';
+    }
+
+    const rows = Array.from(body.querySelectorAll('tr'));
+
+    // Séparer lignes vides (à la fin) et remplies (à trier)
+    const filled = rows.filter(r => !isSpellRowEmpty(r));
+    const empty = rows.filter(r => isSpellRowEmpty(r));
+
+    filled.sort((a, b) => {
+        let va, vb;
+        switch (col) {
+            case 'lvl':
+                va = parseInt(a.querySelector('.spl-lvl')?.value || '0');
+                vb = parseInt(b.querySelector('.spl-lvl')?.value || '0');
+                break;
+            case 'name':
+                va = (a.querySelector('.spl-name')?.textContent || '').toLowerCase();
+                vb = (b.querySelector('.spl-name')?.textContent || '').toLowerCase();
+                break;
+            case 'school':
+                va = (a.querySelector('.spl-school')?.textContent || '').toLowerCase();
+                vb = (b.querySelector('.spl-school')?.textContent || '').toLowerCase();
+                break;
+            default:
+                return 0;
+        }
+        let cmp = col === 'lvl' ? va - vb : va.localeCompare(vb, 'fr');
+        return currentSpellSort.dir === 'desc' ? -cmp : cmp;
+    });
+
+    // Réinsérer dans l'ordre
+    [...filled, ...empty].forEach(r => body.appendChild(r));
+
+    // Mettre à jour les icônes de tri
+    document.querySelectorAll('.sort-icon').forEach(icon => {
+        if (icon.dataset.col === col) {
+            icon.textContent = currentSpellSort.dir === 'asc' ? '▲' : '▼';
+        } else {
+            icon.textContent = '';
+        }
+    });
+
     saveData();
 }
 
@@ -487,6 +561,7 @@ function addSpellRow(data = null) {
     if (!body) return;
     const tr = document.createElement('tr');
     tr.innerHTML = `
+        <td class="prep-cell"><input type="checkbox" class="spl-prep" onchange="saveData()" title="Préparé"></td>
         <td>
             <select class="spl-lvl std-input" onchange="saveData()">
                 <option value="0">0</option>
@@ -502,6 +577,7 @@ function addSpellRow(data = null) {
             </select>
         </td>
         <td><div contenteditable="true" class="rich-input single-line spl-name" spellcheck="false"></div></td>
+        <td class="school-cell"><span class="spl-school"></span></td>
         <td><div contenteditable="true" class="rich-input single-line spl-time"></div></td>
         <td><div contenteditable="true" class="rich-input single-line spl-range"></div></td>
         <td class="crm-cell">
@@ -525,6 +601,9 @@ function addSpellRow(data = null) {
         tr.querySelector('.spl-c').checked = data.c || false;
         tr.querySelector('.spl-r').checked = data.r || false;
         tr.querySelector('.spl-m').checked = data.m || false;
+        // New fields (backward compatible)
+        if (data.prep !== undefined) tr.querySelector('.spl-prep').checked = data.prep;
+        if (data.school) setSchoolBadge(tr.querySelector('.spl-school'), data.school);
     }
     // Attach autocomplete to spell name field
     initSpellAutocomplete(tr.querySelector('.spl-name'));
