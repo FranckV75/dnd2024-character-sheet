@@ -1,0 +1,19 @@
+{
+  "name": "dnd2024-character-sheet",
+  "version": "2.2.0",
+  "description": "Feuille de Personnage D&D 2024 - Mobile Ready",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "dnd",
+    "dungeons-and-dragons",
+    "character-sheet",
+    "javascript"
+  ],
+  "author": "Antigravity",
+  "license": "ISC"
+}
