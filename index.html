@@ -510,6 +510,18 @@
                             onclick="filterSpells('8')">8</button>
                         <button type="button" class="spell-filter-btn" data-level="9"
                             onclick="filterSpells('9')">9</button>
+                        <select id="spell-class-filter" name="spell_class_filter" class="spell-class-filter"
+                            onchange="saveData()">
+                            <option value="">Toutes les classes</option>
+                            <option value="bard">Barde</option>
+                            <option value="cleric">Clerc</option>
+                            <option value="druid">Druide</option>
+                            <option value="sorcerer">Ensorceleur</option>
+                            <option value="wizard">Magicien</option>
+                            <option value="warlock">Occultiste</option>
+                            <option value="paladin">Paladin</option>
+                            <option value="ranger">Rôdeur</option>
+                        </select>
                         <span id="spell-count" class="spell-count"></span>
                     </div>
 

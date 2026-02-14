@@ -63,6 +63,7 @@
   "glory_score": "0",
   "vanity_score": "0",
   "spell_ability": "wis",
+  "spell_class_filter": "druid",
   "char_name": "Korgul Brise-Crâne",
   "char_level": "3",
   "char_size": "1m98",

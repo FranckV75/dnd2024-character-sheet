@@ -285,12 +285,34 @@ if (typeof DD_RULES !== 'undefined') {
 }
 
 /**
- * Retourne le slug anglais de la classe actuellement sélectionnée
+ * Retourne le slug anglais de la classe sélectionnée dans le filtre de sorts.
+ * Lit depuis #spell-class-filter (dropdown dédié dans la barre de sorts).
+ * Retourne null si "Toutes les classes" est sélectionné.
  */
 function getCurrentClassSlug() {
+    const filter = document.getElementById('spell-class-filter');
+    if (!filter || !filter.value) return null;
+    return filter.value; // Déjà un slug anglais (bard, cleric, wizard, etc.)
+}
+
+/**
+ * Synchronise le filtre de classe des sorts avec la classe du personnage.
+ * Appelé au changement de char_class pour pré-sélectionner la classe correspondante,
+ * mais uniquement si le filtre est sur "Toutes les classes" (pas d'override utilisateur).
+ */
+function syncSpellClassFilter() {
     const classSelect = document.getElementById('char_class');
-    if (!classSelect || !classSelect.value) return null;
-    return CLASS_NAME_TO_SLUG[classSelect.value] || null;
+    const spellFilter = document.getElementById('spell-class-filter');
+    if (!classSelect || !spellFilter) return;
+
+    const classSlug = CLASS_NAME_TO_SLUG[classSelect.value];
+    // Seulement pré-sélectionner si le filtre est sur "Toutes" et que la classe est un lanceur
+    if (spellFilter.value === '' && classSlug) {
+        const casterType = DD_RULES.casterType[classSlug];
+        if (casterType) {
+            spellFilter.value = classSlug;
+        }
+    }
 }
 
 /**
@@ -904,6 +926,7 @@ function calcStats() {
 
     updateSpellAbilityOptions(mods);
     updateClassResource(lvl, cls, mods);
+    syncSpellClassFilter();
 
     // Mettre à jour les emplacements de sorts si un filtre de niveau est actif
     if (typeof activeSpellFilters !== 'undefined' && activeSpellFilters.size > 0) {
