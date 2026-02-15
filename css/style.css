@@ -924,6 +924,52 @@ input[type="checkbox"].square {
     margin-right: 10px;
 }
 
+.toolbar-title {
+    font-weight: bold;
+    color: #d4af37;
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.auth-status {
+    font-size: 0.55rem;
+    color: #8b4513;
+    margin-left: auto;
+    padding-right: 5px;
+    text-align: right;
+    line-height: 1.1;
+    font-weight: bold;
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 10px;
+}
+
+.toolbar-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.minimize-btn {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.2rem;
+    line-height: 0.5;
+    padding: 0 5px;
+    transition: transform 0.2s;
+}
+
+.minimize-btn:hover {
+    transform: scale(1.2);
+    color: #d4af37;
+}
+
 .slots-container {
     display: flex;
     align-items: center;

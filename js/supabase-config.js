@@ -31,9 +31,8 @@ async function updateUIForUser(user) {
     const authBtn = document.getElementById('auth-btn');
     if (user) {
         if (authStatus) {
-            authStatus.innerHTML = '<span style="color:#2ec27e">CONNECTÉE</span><br>✥ (' + user.email.split('@')[0].toUpperCase() + ')';
-            authStatus.style.lineHeight = '1.1';
-            authStatus.style.textAlign = 'right';
+            const shortName = user.email.split('@')[0].toUpperCase().substring(0, 10);
+            authStatus.innerHTML = '<span style="color:#2ec27e">✥</span> ' + shortName;
         }
         if (authBtn) {
             authBtn.textContent = '👤 Déconnexion';

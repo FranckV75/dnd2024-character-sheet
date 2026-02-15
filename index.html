@@ -49,12 +49,12 @@
     <!-- TOOLBAR -->
     <div id="toolbar">
         <div id="toolbar-header">
-            <span>GESTION</span>
-            <div id="auth-status" style="font-size: 0.7rem; color: #8b4513; margin-left: auto; padding-right: 10px;">
-                Hors-ligne</div>
-            <div style="display: flex; align-items: center; gap: 5px;">
+            <span class="toolbar-title">GESTION</span>
+            <div id="auth-status" class="auth-status">HORS-LIGNE</div>
+            <div class="toolbar-controls">
                 <button id="theme-toggle" class="theme-toggle" title="Mode sombre">🌙</button>
-                <span id="minimize-btn" onpointerdown="toggleToolbar(event)" title="Réduire/Agrandir">_</span>
+                <button id="minimize-btn" class="minimize-btn" onpointerdown="toggleToolbar(event)"
+                    title="Réduire/Agrandir">_</button>
             </div>
         </div>
         <div id="toolbar-content">
