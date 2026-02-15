@@ -31,8 +31,9 @@ async function updateUIForUser(user) {
     const authBtn = document.getElementById('auth-btn');
     if (user) {
         if (authStatus) {
-            authStatus.textContent = 'Connecté (' + user.email.split('@')[0] + ')';
-            authStatus.style.color = '#27ae60';
+            authStatus.innerHTML = '<span style="color:#2ec27e">CONNECTÉE</span><br>✥ (' + user.email.split('@')[0].toUpperCase() + ')';
+            authStatus.style.lineHeight = '1.1';
+            authStatus.style.textAlign = 'right';
         }
         if (authBtn) {
             authBtn.textContent = '👤 Déconnexion';
@@ -43,7 +44,7 @@ async function updateUIForUser(user) {
         }
     } else {
         if (authStatus) {
-            authStatus.textContent = 'Hors-ligne';
+            authStatus.textContent = 'HORS-LIGNE';
             authStatus.style.color = '#8b4513';
         }
         if (authBtn) {
