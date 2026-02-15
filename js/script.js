@@ -1097,115 +1097,6 @@ function triggerReset() {
 // --- GALLERY SYSTEM ---
 // Migré vers ui-gallery.js
 
-// =============================================================================
-// FONCTION DE DEBUG TEMPORAIRE - TESTS DE MIGRATION
-// =============================================================================
-
-/**
- * Teste la fonction cleanLegacyData avec des donnÃ©es sales
- * ExÃ©cute des assertions pour valider le comportement
- * Activer avec ?debug=1 dans l'URL
- */
-function debugMigration() {
-    console.log('=== DÃ‰BUT DES TESTS DE MIGRATION ===');
-
-    // Test 1: Nettoyage des balises HTML
-    const test1 = {
-        char_class: '<font size="5">Barbare</font>',
-        char_name: '<font color="#8b0000">Korgul</font>',
-        str_score: '<b>19</b>'
-    };
-
-    const result1 = cleanLegacyData(test1);
-
-    console.assert(
-        result1.char_class === 'Barbare',
-        'âŒ Ã‰CHEC Test 1a: char_class devrait Ãªtre "Barbare", obtenu:', result1.char_class
-    );
-
-    console.assert(
-        result1.str_score === 19,
-        'âŒ Ã‰CHEC Test 1b: str_score devrait Ãªtre 19 (nombre), obtenu:', result1.str_score
-    );
-
-    // VÃ©rifier qu'il ne reste pas de balises HTML
-    const jsonStr = JSON.stringify(result1);
-    if (jsonStr.includes('<') || jsonStr.includes('>')) {
-        console.error('âŒ Ã‰CHEC CRITIQUE: Des balises HTML subsistent dans les donnÃ©es!', result1);
-    } else {
-        console.log('âœ… Test 1: Nettoyage HTML rÃ©ussi');
-    }
-
-    // Test 2: Gestion des valeurs manquantes
-    const test2 = {};
-    const result2 = cleanLegacyData(test2);
-
-    console.assert(
-        result2.str_score === 10,
-        'âŒ Ã‰CHEC Test 2: str_score par dÃ©faut devrait Ãªtre 10, obtenu:', result2.str_score
-    );
-
-    console.log('âœ… Test 2: Valeurs par dÃ©faut appliquÃ©es');
-
-    // Test 3: Conversion des chaÃ®nes numÃ©riques
-    const test3 = {
-        char_level: '3',
-        ac: '17',
-        hp_max: '38'
-    };
-
-    const result3 = cleanLegacyData(test3);
-
-    console.assert(
-        typeof result3.char_level === 'number' && result3.char_level === 3,
-        'âŒ Ã‰CHEC Test 3a: char_level devrait Ãªtre 3 (nombre)'
-    );
-
-    console.assert(
-        typeof result3.ac === 'number' && result3.ac === 17,
-        'âŒ Ã‰CHEC Test 3b: ac devrait Ãªtre 17 (nombre)'
-    );
-
-    console.log('âœ… Test 3: Conversion numÃ©rique rÃ©ussie');
-
-    // Test 4: Nettoyage rÃ©cursif des tableaux
-    const test4 = {
-        dynamic_weapons: [
-            { name: '<font size="2">Hache</font>', atk: '+6' }
-        ]
-    };
-
-    const result4 = cleanLegacyData(test4);
-
-    console.assert(
-        result4.dynamic_weapons[0].name === 'Hache',
-        'âŒ Ã‰CHEC Test 4: Nettoyage rÃ©cursif des armes a Ã©chouÃ©'
-    );
-
-    console.log('âœ… Test 4: Nettoyage rÃ©cursif rÃ©ussi');
-
-    // Test 5: Cas rÃ©el de Korgul
-    const test5 = {
-        char_class: '<font size="5">Barbare</font>',
-        char_level: '<font size="5">3</font>',
-        str_score: '<b>19</b>',
-        con_score: '<b><font color="#8b0000">18</font><font size="1"><i>(16)</i></font></b>'
-    };
-
-    const result5 = cleanLegacyData(test5);
-
-    console.assert(
-        result5.char_class === 'Barbare' &&
-        result5.char_level === 3 &&
-        result5.str_score === 19 &&
-        result5.con_score === 18,
-        'âŒ Ã‰CHEC Test 5: DonnÃ©es rÃ©elles de Korgul mal nettoyÃ©es'
-    );
-
-    console.log('âœ… Test 5: Cas rÃ©el de Korgul nettoyÃ© avec succÃ¨s', result5);
-
-    console.log('=== FIN DES TESTS - TOUS LES TESTS PASSÃ‰S ===');
-}
 
 // =============================================================================
 // SYSTÃˆME DE NAVIGATION PAR ONGLETS
@@ -1260,11 +1151,6 @@ function initTabs() {
 // =============================================================================
 // Migré vers ui-rest.js
 
-// ExÃ©cuter les tests au chargement si ?debug=1 dans l'URL
-if (window.location.search.includes('debug=1')) {
-    console.log('ðŸ” Mode DEBUG activÃ© - ExÃ©cution des tests...');
-    // debugMigration(); // Removed - function no longer exists
-}
 
 /**
  * Configure l'ajustement automatique du texte pour l'entÃªte
