@@ -312,13 +312,13 @@ async function saveData() {
  */
 async function loadData() {
     // 1. Essayer de charger depuis Supabase si connecté
-    if (currentUser) {
+    if (window.currentUser) {
         try {
-            console.log('☁️ Supabase : Chargement des données...');
+            console.log('☁️ Supabase : Chargement des données pour', window.currentUser.id);
             const { data, error } = await supabase
                 .from('characters')
                 .select('data')
-                .eq('user_id', currentUser.id)
+                .eq('user_id', window.currentUser.id)
                 .order('updated_at', { ascending: false })
                 .limit(1)
                 .single();
