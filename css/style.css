@@ -1282,7 +1282,7 @@ input[type="checkbox"].square {
     gap: 10px;
     z-index: 1000;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    width: 220px;
+    width: 260px;
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s, background 0.3s ease, opacity 0.3s ease;
     user-select: none;
     border: 1px solid var(--primary-border);
@@ -1296,7 +1296,7 @@ input[type="checkbox"].square {
     }
 
     #toolbar:hover {
-        width: 220px;
+        width: 260px;
     }
 
     #toolbar-header {
