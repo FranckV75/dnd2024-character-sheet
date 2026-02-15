@@ -1,7 +1,7 @@
 # 📜 Fiche D&D 2024 - Synthèse du Projet
 
 > **Document de référence** pour les futures sessions de développement.  
-> Dernière mise à jour : 14 février 2026
+> Dernière mise à jour : 15 février 2026
 
 ---
 
@@ -10,59 +10,59 @@
 ### Structure des Fichiers
 ```
 0_Feuille_de_Perso_Antigravity/
-├── index.html          # Structure HTML principale (~630 lignes)
+├── index.html          # Structure HTML principale (~650 lignes)
 ├── css/
-│   └── style.css       # Styles globaux + Dark Mode (~1650 lignes)
+│   └── style.css       # Styles globaux + Dark Mode (~2300 lignes)
 ├── js/
 │   ├── data.js         # Constantes (SKILLS, DEFAULT_BGS)
-│   ├── dd_rules.js     # Règles D&D 2024 (classes, espèces, etc.)
+│   ├── dd_rules.js     # Règles D&D 2024 (classes, espèces, slots)
 │   ├── logic.js        # Calculs D&D purs (sans DOM)
 │   ├── storage.js      # Gestion localStorage + import/export JSON
 │   ├── script.js       # Orchestrateur principal (init, events, DOM)
+│   ├── spells-data.js  # Base de données des 391 sorts D&D 2024
 │   ├── theme.js        # Gestion du Dark Mode
 │   └── ui-*.js         # Modules UI (toolbar, modals, rest, gallery)
 ├── task.md             # Suivi des tâches (Grimoire Intelligent)
-└── docs/               # Documentation (CHANGELOG, ARCHITECTURE)
+└── project_summary.md  # Ce document (Synthèse)
 ```
 
 ### Principe de Séparation des Responsabilités
 - **`logic.js`** : Fonctions pures (calculs D&D 2024). Aucun accès DOM.
-- **`storage.js`** : Gestion localStorage + import/export JSON.
-- **`script.js`** : Orchestrateur, gestions des filtres et slots de sorts.
-- **`ui-*.js`** : Modules spécialisés pour l'interface (séparation des modales, toolbar, etc.).
+- **`storage.js`** : Persistance des données (Sorts, Armes, Ressources).
+- **`script.js`** : Logique du Grimoire, autocomplétion, et orchestration.
+- **`dd_rules.js`** : Source de vérité pour les règles (évolutions des slots, ressources).
 
 ---
 
-## 🎮 Logique de Jeu Implémentée
+## 🎮 Grimoire Intelligent (v2.3.0)
 
-### Magie & Grimoire (D&D 2024)
-- **Multi-filtres** : Sélection multiple de niveaux (0-9) via un Set actif.
-- **Lignes Vides** : Toujours visibles pour permettre l'ajout rapide de sorts personnalisés.
-- **Slots Tracker** : Compteur d'emplacements avec boutons `+` et `-` manuels.
-- **Sauvegarde** : Les slots utilisés et max sont persistés par niveau dans LocalStorage.
-
-### Dés de Vie (Hit Dice)
-- **Total** = Niveau du personnage (calculé automatiquement).
-- **Régénération** : Sélecteur dynamique mis à jour à chaque changement de niveau.
-
-### Ressources de Classe
-Gérées par `getClassResourceInfo(level, className, mods)` :
-- Barbare (Rages), Barde (Inspiration), Moine (Ki), Paladin (Conduit Divin), etc.
+### Fonctionnalités Clés
+- **Base de Données Intégrée** : 391 sorts officiels avec métadonnées complètes.
+- **Autocomplétion & Remplissage** : Saisie du nom -> Remplissage Niv/Temps/Portée/École/VO/CRM.
+- **Filtres Avancés** : Multi-sélection de niveaux + **Filtre par classe dédié** indépendant de la classe du personnage.
+- **Gestion des Slots** : Calcul automatique PHB 2024 selon la classe et le niveau.
+- **UX Premium** : Badges d'école colorés, tri par colonne (Niv/Nom/École), case "Préparé".
 
 ---
 
-## ✅ Tâches Réalisées (Dernières)
-
-- [x] **Story 1 (Grimoire)** : Multi-filtrage des sorts et visibilité des lignes vides.
-- [x] **Story 4 (Grimoire)** : Boutons d'ajustement manuel (+/-) pour les emplacements de sorts.
-- [x] **Dark Mode CSS** : Correction de la lisibilité des menus déroulants de niveau de sort en mode sombre.
-- [x] **Modularisation JS** : Extraction des fonctionnalités UI dans des fichiers dédiés.
+## 🔍 Rapport d'Audit QA (15/02/2026)
+- **Score Global : 10/10** ✅
+- **Console** : 0 erreur / 0 warning au chargement et durant la navigation.
+- **Responsive** : Validé à 850px et 1024px.
+- **Code** : Nettoyage du code mort (`debugMigration`) effectué. Stabilité runtime confirmée.
 
 ---
 
-## 📌 En cours (Roadmap : Grimoire Intelligent)
+## ✅ Historique des Stories Terminées
+- [x] **Story 1** : Multi-filtrage et compteur de sorts.
+- [x] **Story 2 & 3** : Extraction de la base 391 sorts et autocomplétion.
+- [x] **Story 4** : Calculateur automatique d'emplacements (slots) 2024.
+- [x] **Story 5** : Tri, badges d'école et cases "Préparé".
 
-1. **Extraction de la Base de Sorts** (Story 2) : Importation des 391 sorts AideDD D&D 2024.
-2. **Auto-complétion** (Story 3) : Remplissage intelligent des champs de sorts lors de la saisie.
-3. **Automatisation Slots** (Story 4) : Calcul automatique des slots max selon le niveau officiel de la classe.
-4. **UX Finish** (Story 5) : Tri des colonnes, badges visuels pour les écoles de magie.
+---
+
+## 📌 Prochaines Étapes
+1. **Ajustements Visuels (Display)** : Polissage final de l'onglet Magie.
+2. **Recherche / Filtre Textuel** : Filtrer les sorts du grimoire par mot-clé.
+3. **Module Équipement** : Transformation de l'inventaire en table dynamique.
+4. **Multiclassage** : Gestion avancée des slots pour les multiclasses.
