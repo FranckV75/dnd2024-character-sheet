@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fiche D&D 2024 - Mobile Ready</title>
+    <meta name="google" content="notranslate">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Segoe+UI:wght@400;600&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="css/style.css?v=2.8">
@@ -49,6 +50,8 @@
     <div id="toolbar">
         <div id="toolbar-header">
             <span>GESTION ✥</span>
+            <div id="auth-status" style="font-size: 0.7rem; color: #8b4513; margin-left: auto; padding-right: 10px;">
+                Hors-ligne</div>
             <div style="display: flex; align-items: center; gap: 5px;">
                 <button id="theme-toggle" class="theme-toggle" title="Mode sombre">🌙</button>
                 <span id="minimize-btn" onpointerdown="toggleToolbar(event)" title="Réduire/Agrandir">_</span>
@@ -62,6 +65,8 @@
             <div style="height: 5px;"></div>
             <button class="btn btn-save" onclick="openExportMenu()">📤 Sauvegarder / Exporter</button>
             <button class="btn" onclick="openImportMenu()">📥 Charger / Importer</button>
+            <div style="height: 5px;"></div>
+            <button id="auth-btn" class="btn btn-bg" onclick="openAuthModal()">👤 Se connecter</button>
             <div style="height: 5px;"></div>
             <button class="btn" onclick="saveData()">💾 Sauvegarde Rapide</button>
             <button class="btn desktop-only" onclick="window.print()">🖨️ Imprimer / PDF</button>
