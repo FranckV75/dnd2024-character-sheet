@@ -277,17 +277,58 @@ function applyFormData(d) {
 // =============================================================================
 
 /**
- * Sauvegarde les données dans localStorage
+ * Sauvegarde les données dans localStorage et synchronise avec Supabase
  */
-function saveData() {
-    localStorage.setItem('dd2024_char', JSON.stringify(getFormData()));
-    showModal('Sauvegardé !');
+async function saveData() {
+    const data = getFormData();
+
+    // 1. Sauvegarde locale (immédiate)
+    localStorage.setItem('dd2024_char', JSON.stringify(data));
+    showModal('Sauvegardé localement !');
+
+    // 2. Synchronisation Cloud (arrière-plan)
+    try {
+        console.log('☁️ Supabase : Tentative de synchronisation...');
+        const { error } = await supabase
+            .from('characters')
+            .upsert({
+                name: data.char_name || 'Sans nom',
+                data: data,
+                updated_at: new Date()
+            }, { onConflict: 'name' }); // Utilise le nom comme clé unique pour ce test simple
+
+        if (error) throw error;
+        console.log('✅ Supabase : Synchronisé avec succès');
+    } catch (err) {
+        console.warn('❌ Supabase : Échec de synchronisation', err.message);
+    }
 }
 
 /**
- * Charge les données depuis localStorage
+ * Charge les données depuis Supabase (priorité) avec fallback localStorage
  */
-function loadData() {
+async function loadData() {
+    // 1. Essayer de charger depuis Supabase
+    try {
+        console.log('☁️ Supabase : Chargement des données...');
+        const { data, error } = await supabase
+            .from('characters')
+            .select('data')
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        if (data && data.data) {
+            console.log('✅ Supabase : Données cloud chargées');
+            const cleanedData = cleanLegacyData(data.data);
+            applyFormData(cleanedData);
+            return;
+        }
+    } catch (err) {
+        console.log('ℹ️ Supabase : Pas de données cloud ou erreur, fallback local');
+    }
+
+    // 2. Fallback sur localStorage
     let d = localStorage.getItem('dd2024_char');
     if (d) {
         const rawData = JSON.parse(d);
