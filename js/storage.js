@@ -185,6 +185,14 @@ function getFormData() {
     const vanityEl = document.getElementById('vanity_score');
     if (vanityEl) d['vanity_score'] = vanityEl.value;
 
+    // Capturer les préférences visuelles (opacité, fond, thème)
+    d['_visual_prefs'] = {
+        opacity: localStorage.getItem('dd2024_opacity') || '1',
+        theme: document.body.getAttribute('data-theme') || 'light',
+        galleryBg: localStorage.getItem('dd2024_gallery_bg') || null
+    };
+    // Le fond d'écran custom est exclu (trop volumineux pour Supabase)
+
     return d;
 }
 
@@ -268,6 +276,22 @@ function applyFormData(d) {
             setTimeout(() => {
                 subclassSelect.value = d.char_subclass;
             }, 50);
+        }
+    }
+
+    // Restaurer les préférences visuelles
+    if (d['_visual_prefs']) {
+        const vp = d['_visual_prefs'];
+        if (vp.opacity && typeof updateOpacity === 'function') {
+            updateOpacity(parseFloat(vp.opacity));
+            const slider = document.getElementById('opacity_slider');
+            if (slider) slider.value = vp.opacity;
+        }
+        if (vp.theme && typeof setTheme === 'function') {
+            setTheme(vp.theme);
+        }
+        if (vp.galleryBg) {
+            localStorage.setItem('dd2024_gallery_bg', vp.galleryBg);
         }
     }
 }
