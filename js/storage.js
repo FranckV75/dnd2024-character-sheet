@@ -286,46 +286,52 @@ async function saveData() {
     localStorage.setItem('dd2024_char', JSON.stringify(data));
     showModal('Sauvegardé localement !');
 
-    // 2. Synchronisation Cloud (arrière-plan)
-    try {
-        console.log('☁️ Supabase : Tentative de synchronisation...');
-        const { error } = await supabase
-            .from('characters')
-            .upsert({
-                name: data.char_name || 'Sans nom',
-                data: data,
-                updated_at: new Date()
-            }, { onConflict: 'name' }); // Utilise le nom comme clé unique pour ce test simple
+    // 2. Synchronisation Cloud (si connecté)
+    if (currentUser) {
+        try {
+            console.log('☁️ Supabase : Tentative de synchronisation...');
+            const { error } = await supabase
+                .from('characters')
+                .upsert({
+                    name: data.char_name || 'Sans nom',
+                    data: data,
+                    user_id: currentUser.id,
+                    updated_at: new Date()
+                }, { onConflict: 'name, user_id' });
 
-        if (error) throw error;
-        console.log('✅ Supabase : Synchronisé avec succès');
-    } catch (err) {
-        console.warn('❌ Supabase : Échec de synchronisation', err.message);
+            if (error) throw error;
+            console.log('✅ Supabase : Synchronisé avec succès');
+        } catch (err) {
+            console.warn('❌ Supabase : Échec de synchronisation', err.message);
+        }
     }
 }
 
 /**
- * Charge les données depuis Supabase (priorité) avec fallback localStorage
+ * Charge les données depuis Supabase (priorité si connecté) avec fallback localStorage
  */
 async function loadData() {
-    // 1. Essayer de charger depuis Supabase
-    try {
-        console.log('☁️ Supabase : Chargement des données...');
-        const { data, error } = await supabase
-            .from('characters')
-            .select('data')
-            .order('updated_at', { ascending: false })
-            .limit(1)
-            .single();
+    // 1. Essayer de charger depuis Supabase si connecté
+    if (currentUser) {
+        try {
+            console.log('☁️ Supabase : Chargement des données...');
+            const { data, error } = await supabase
+                .from('characters')
+                .select('data')
+                .eq('user_id', currentUser.id)
+                .order('updated_at', { ascending: false })
+                .limit(1)
+                .single();
 
-        if (data && data.data) {
-            console.log('✅ Supabase : Données cloud chargées');
-            const cleanedData = cleanLegacyData(data.data);
-            applyFormData(cleanedData);
-            return;
+            if (data && data.data) {
+                console.log('✅ Supabase : Données cloud chargées');
+                const cleanedData = cleanLegacyData(data.data);
+                applyFormData(cleanedData);
+                return;
+            }
+        } catch (err) {
+            console.log('ℹ️ Supabase : Pas de données cloud pour cet utilisateur');
         }
-    } catch (err) {
-        console.log('ℹ️ Supabase : Pas de données cloud ou erreur, fallback local');
     }
 
     // 2. Fallback sur localStorage
@@ -359,6 +365,58 @@ function importData(el) {
     };
     r.readAsText(f);
     el.value = '';
+}
+
+// =============================================================================
+// AUTHENTIFICATION UI
+// =============================================================================
+
+function openAuthModal() {
+    const content = `
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
+            <input type="email" id="auth-email" placeholder="Email" class="std-input">
+            <input type="password" id="auth-pwd" placeholder="Mot de passe" class="std-input">
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn" onclick="handleAuthAction('signin')">Connexion</button>
+                <button class="btn btn-save" onclick="handleAuthAction('signup')">Créer un compte</button>
+            </div>
+            <p style="font-size:0.7rem; color:#666; margin-top:5px;">Si c'est votre première fois, cliquez sur 'Créer un compte'.</p>
+        </div>
+    `;
+
+    showModal('Accès au Grimoire Cloud', null, true);
+    const modalContent = document.querySelector('.modal-content');
+    const authWrapper = document.getElementById('auth-wrapper') || document.createElement('div');
+    authWrapper.id = 'auth-wrapper';
+    authWrapper.innerHTML = content;
+    modalContent.appendChild(authWrapper);
+}
+
+async function handleAuthAction(type) {
+    const email = document.getElementById('auth-email').value;
+    const pwd = document.getElementById('auth-pwd').value;
+
+    if (!email || !pwd) {
+        alert('Veuillez remplir email et mot de passe.');
+        return;
+    }
+
+    try {
+        if (type === 'signup') {
+            const { error } = await supabase.auth.signUp({ email, password: pwd });
+            if (error) throw error;
+            showModal('Compte créé ! Vous pouvez maintenant vous connecter.');
+        } else {
+            const { error, data } = await supabase.auth.signInWithPassword({ email, password: pwd });
+            if (error) throw error;
+            updateUIForUser(data.user);
+            const modal = document.getElementById('custom-modal');
+            if (modal) modal.style.display = 'none';
+            showModal('Connexion réussie !');
+        }
+    } catch (err) {
+        alert('Erreur: ' + err.message);
+    }
 }
 
 // AGENT 3 : Force Update Hit Dice Logic after load
