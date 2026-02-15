@@ -38,18 +38,19 @@ function cleanLegacyData(data) {
         return match ? parseInt(match[0], 10) : 0;
     };
 
-    // Liste des champs numériques
-    const numericFields = [
+    // Champs contenteditable "riches" : on PRÉSERVE le HTML (styles utilisateur)
+    // getVal() extrait les nombres via regex, donc les calculs ne sont pas affectés
+    const richFields = [
         'str_score', 'dex_score', 'con_score', 'int_score', 'wis_score', 'cha_score',
-        'char_level', 'ac', 'hp_max', 'hp_current', 'hp_temp', 'hd_current', 'hd_max',
-        'gp', 'sp', 'cp', 'ep', 'pp'
+        'char_level', 'char_name', 'char_size', 'char_xp',
+        'ac', 'hp_max', 'hp_current', 'hp_temp', 'speed'
     ];
 
-    // Liste des champs texte qui doivent être nettoyés du HTML
-    const textFields = [
-        'char_name', 'char_class', 'char_subclass', 'char_background',
-        'char_species', 'char_size', 'char_xp', 'heroic_inspiration',
-        'speed', 'initiative', 'passive_perception', 'hd_total', 'hd_spent', 'hd_type'
+    // Champs <select> ou <input> : on nettoie le HTML (pas de rich-text possible)
+    const selectInputFields = [
+        'char_class', 'char_subclass', 'char_background', 'char_species',
+        'heroic_inspiration', 'hd_total', 'hd_spent', 'hd_type',
+        'hd_current', 'hd_max', 'gp', 'sp', 'cp', 'ep', 'pp'
     ];
 
     // Nettoyer tous les champs
@@ -58,25 +59,23 @@ function cleanLegacyData(data) {
 
         const value = data[key];
 
-        // Traiter les champs numériques
-        if (numericFields.includes(key)) {
-            cleaned[key] = extractNumber(value);
+        // Champs riches : conserver tel quel (HTML préservé)
+        if (richFields.includes(key)) {
+            cleaned[key] = value;
         }
-        // Traiter les champs texte
-        else if (textFields.includes(key)) {
+        // Champs select/input : nettoyer le HTML résiduel
+        else if (selectInputFields.includes(key)) {
             cleaned[key] = stripHTML(value);
         }
-        // Traiter les tableaux (armes, sorts)
+        // Traiter les tableaux (armes, sorts) — conserver le HTML dans les noms/notes
         else if (Array.isArray(value)) {
             cleaned[key] = value.map(item => {
                 if (typeof item === 'object' && item !== null) {
-                    // Nettoyage récursif des objets dans les tableaux
                     const cleanedItem = {};
                     for (const itemKey in item) {
                         if (item.hasOwnProperty(itemKey)) {
-                            cleanedItem[itemKey] = typeof item[itemKey] === 'string'
-                                ? stripHTML(item[itemKey])
-                                : item[itemKey];
+                            // Préserver le HTML dans les champs de contenu des armes/sorts
+                            cleanedItem[itemKey] = item[itemKey];
                         }
                     }
                     return cleanedItem;
@@ -91,13 +90,19 @@ function cleanLegacyData(data) {
     }
 
     // Valeurs par défaut pour les champs essentiels
-    cleaned.str_score = cleaned.str_score || 10;
-    cleaned.dex_score = cleaned.dex_score || 10;
-    cleaned.con_score = cleaned.con_score || 10;
-    cleaned.int_score = cleaned.int_score || 10;
-    cleaned.wis_score = cleaned.wis_score || 10;
-    cleaned.cha_score = cleaned.cha_score || 10;
-    cleaned.char_level = cleaned.char_level || 1;
+    // Vérifier si le champ est vide ou ne contient aucun chiffre
+    const hasNumber = (v) => {
+        if (typeof v === 'number') return v !== 0;
+        if (typeof v === 'string') return /\d/.test(v);
+        return false;
+    };
+    if (!hasNumber(cleaned.str_score)) cleaned.str_score = '10';
+    if (!hasNumber(cleaned.dex_score)) cleaned.dex_score = '10';
+    if (!hasNumber(cleaned.con_score)) cleaned.con_score = '10';
+    if (!hasNumber(cleaned.int_score)) cleaned.int_score = '10';
+    if (!hasNumber(cleaned.wis_score)) cleaned.wis_score = '10';
+    if (!hasNumber(cleaned.cha_score)) cleaned.cha_score = '10';
+    if (!hasNumber(cleaned.char_level)) cleaned.char_level = '1';
 
     return cleaned;
 }
