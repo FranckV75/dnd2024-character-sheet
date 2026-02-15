@@ -10,31 +10,46 @@ const SUPABASE_KEY = 'sb_publishable_TUhtpo9_mc6BRiIqHMmgQA_PanYvpe7';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 window.supabase = supabaseClient;
 
-// Etat de l'utilisateur
-let currentUser = null;
+// Etat de l'utilisateur (Global pour être accessible partout)
+window.currentUser = null;
 
 // Initialisation au chargement
 async function checkUser() {
-    const { data: { user } } = await supabase.auth.getUser();
+    console.log('🔍 Supabase : Vérification de la session...');
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) console.error('❌ Supabase Auth Error:', error.message);
     updateUIForUser(user);
 }
-checkUser();
+// On attend un petit peu que storage.js soit chargé avant de checker l'user
+setTimeout(checkUser, 500);
 
 async function updateUIForUser(user) {
-    currentUser = user;
+    window.currentUser = user;
+    console.log('👤 Utilisateur actuel :', user ? user.email : 'Non connecté');
+
     const authStatus = document.getElementById('auth-status');
     const authBtn = document.getElementById('auth-btn');
     if (user) {
-        authStatus.textContent = 'Connecté';
-        authStatus.style.color = '#27ae60';
-        authBtn.textContent = '👤 Déconnexion';
-        authBtn.onclick = signOut;
-        loadData(); // Recharger les données du cloud pour cet utilisateur
+        if (authStatus) {
+            authStatus.textContent = 'Connecté (' + user.email.split('@')[0] + ')';
+            authStatus.style.color = '#27ae60';
+        }
+        if (authBtn) {
+            authBtn.textContent = '👤 Déconnexion';
+            authBtn.onclick = signOut;
+        }
+        if (typeof loadData === 'function') {
+            loadData();
+        }
     } else {
-        authStatus.textContent = 'Hors-ligne';
-        authStatus.style.color = '#8b4513';
-        authBtn.textContent = '👤 Se connecter';
-        authBtn.onclick = openAuthModal;
+        if (authStatus) {
+            authStatus.textContent = 'Hors-ligne';
+            authStatus.style.color = '#8b4513';
+        }
+        if (authBtn) {
+            authBtn.textContent = '👤 Se connecter';
+            authBtn.onclick = openAuthModal;
+        }
     }
 }
 
