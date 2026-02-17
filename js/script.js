@@ -125,6 +125,20 @@ window.onload = function () {
         if (opacitySlider) opacitySlider.value = op;
     }
 
+    let zoom = localStorage.getItem('dd2024_bg_zoom');
+    if (zoom && typeof updateBgZoom === 'function') {
+        updateBgZoom(zoom);
+        const zSlider = document.getElementById('bg-zoom');
+        if (zSlider) zSlider.value = zoom;
+    }
+
+    let posY = localStorage.getItem('dd2024_bg_pos_y');
+    if (posY && typeof updateBgPosY === 'function') {
+        updateBgPosY(posY);
+        const ySlider = document.getElementById('bg-pos-y');
+        if (ySlider) ySlider.value = posY;
+    }
+
     loadData();
 
     const sheetForm = document.getElementById('sheet-form');
