@@ -126,7 +126,7 @@ function showManualHitDiceInput(hdType, conMod, hdUsed) {
         btnValidate.onclick = () => {
             const dieResult = parseInt(inp?.value) || 0;
             if (dieResult < 1) {
-                alert('Veuillez entrer une valeur valide (1 ou plus)');
+                showModal('Veuillez entrer une valeur valide (1 ou plus)');
                 return;
             }
             const healing = Math.max(1, dieResult + conMod);

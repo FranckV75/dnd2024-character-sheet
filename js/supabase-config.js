@@ -78,7 +78,7 @@ function openAuthModal() {
         </div>
     `;
 
-    showModal('Accès au Grimoire Cloud', null, true);
+    showModal('Accès au Grimoire Cloud');
     const modalContent = document.querySelector('.modal-content');
     const authWrapper = document.getElementById('auth-wrapper') || document.createElement('div');
     authWrapper.id = 'auth-wrapper';
@@ -91,7 +91,7 @@ async function handleAuthAction(type) {
     const pwd = document.getElementById('auth-pwd').value;
 
     if (!email || !pwd) {
-        alert('Veuillez remplir email et mot de passe.');
+        showModal('Veuillez remplir email et mot de passe.');
         return;
     }
 
@@ -109,6 +109,6 @@ async function handleAuthAction(type) {
             showModal('Connexion réussie !');
         }
     } catch (err) {
-        alert('Erreur: ' + err.message);
+        showModal('Erreur: ' + err.message);
     }
 }

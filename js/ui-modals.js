@@ -153,9 +153,9 @@ function openImportMenu() {
             try {
                 if (!area.value) return;
                 applyFormData(JSON.parse(area.value));
-                alert("Fiche chargée !");
+                showModal("Fiche chargée !");
                 close();
-            } catch (e) { alert("Code invalide."); }
+            } catch (e) { showModal("Code invalide."); }
         };
         const btnCancel = document.createElement('button');
         btnCancel.className = 'btn'; btnCancel.innerText = 'Annuler'; btnCancel.onclick = close;
