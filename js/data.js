@@ -9,10 +9,10 @@ const DEFAULT_BGS = [
     // --- IMAGES PERMANENTES ---
     "Fond_Equipe.webp",
     "Fond_Fafnir.webp",
-    "Fond_Odyss%C3%A9e_des_Seigneurs_Dragons.webp",
-    "Fond%20de%20feuille%20perso%20Iria.webp",
-    "Fond%20de%20feuille%20perso%20Hedera.webp",
-    "Fond%20de%20feuille%20perso%20Cephalus.webp"
+    "Fond_Odyssée.webp",
+    "Fond_Iria.webp",
+    "Fond_Hedera.webp",
+    "Fond_Cephalus.webp"
 ];
 
 /**
