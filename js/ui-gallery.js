@@ -56,6 +56,29 @@ function renderGallery() {
         };
         item.appendChild(img);
 
+        // Name Label
+        let name = url;
+        // Si c'est une URL locale/fichier
+        const parts = url.split('/');
+        const filename = parts[parts.length - 1];
+        // Nettoyer le nom
+        name = filename.replace(/\.(webp|png|jpg|jpeg)$/i, '')
+            .replace(/^Fond[ _-]?/, '') // Enlever "Fond_" ou "Fond " ou "Fond-"
+            .replace(/_/g, ' ')         // Remplacer underscores par espaces
+            .replace(/%20/g, ' ');      // Remplacer %20 par espaces
+
+        const label = document.createElement('div');
+        label.className = 'gallery-label';
+        label.textContent = name;
+        label.style.textAlign = 'center';
+        label.style.fontSize = '0.75rem';
+        label.style.marginTop = '4px';
+        label.style.whiteSpace = 'nowrap';
+        label.style.overflow = 'hidden';
+        label.style.textOverflow = 'ellipsis';
+        label.title = name; // Tooltip full name
+        item.appendChild(label);
+
         // Delete button (only for user bgs)
         if (idx > DEFAULT_BGS.length) {
             const btn = document.createElement('button');
