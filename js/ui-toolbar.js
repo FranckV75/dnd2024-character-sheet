@@ -43,6 +43,32 @@ function changeBackground(input) {
     input.value = '';
 }
 
+/**
+ * Met à jour le zoom vertical de l'image de fond
+ * Si zoom = 100% -> background-size: cover (comportement standard)
+ * Si zoom != 100% -> background-size: <val>% auto (permet de dézoomer ou sur-zoomer)
+ * @param {number} val - Zoom en pourcentage (20-200)
+ */
+function updateBgZoom(val) {
+    if (parseInt(val) === 100) {
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundRepeat = 'no-repeat';
+    } else {
+        document.body.style.backgroundSize = `${val}% auto`;
+        document.body.style.backgroundRepeat = 'no-repeat';
+    }
+    localStorage.setItem('dd2024_bg_zoom', val);
+}
+
+/**
+ * Met à jour la position verticale de l'image de fond
+ * @param {number} val - Position Y en pourcentage (0-100)
+ */
+function updateBgPosY(val) {
+    document.body.style.backgroundPosition = `center ${val}%`;
+    localStorage.setItem('dd2024_bg_pos_y', val);
+}
+
 // =============================================================================
 // GESTION DU CLIC DROIT ET ÉDITEUR DE STYLE
 // =============================================================================
