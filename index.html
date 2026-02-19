@@ -61,7 +61,20 @@
         </div>
         <div id="toolbar-content">
             <button class="btn btn-bg" onclick="openGallery()">🖼️ Galerie Fonds</button>
-            <div class="slider-label">Opacité Fiche</div>
+
+            <div class="slider-label">Cadrage Fond</div>
+            <div style="display: flex; gap: 5px; align-items: center;">
+                <span title="Position Verticale" style="font-size: 1.2rem; cursor: help;">↕️</span>
+                <input type="range" id="bg-pos-y" min="0" max="100" step="1" value="50"
+                    oninput="updateBgPosY(this.value)" style="flex: 1;">
+            </div>
+            <div style="display: flex; gap: 5px; align-items: center; margin-top: 5px;">
+                <span title="Zoom" style="font-size: 1.2rem; cursor: help;">🔍</span>
+                <input type="range" id="bg-zoom" min="20" max="200" step="5" value="100"
+                    oninput="updateBgZoom(this.value)" style="flex: 1;">
+            </div>
+
+            <div class="slider-label" style="margin-top: 10px;">Opacité Fiche</div>
             <input type="range" id="opacity-slider" min="0.2" max="1" step="0.05" value="0.85"
                 oninput="updateOpacity(this.value)">
             <div style="height: 5px;"></div>
