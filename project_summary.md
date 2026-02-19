@@ -1,29 +1,26 @@
 # Projet : Fiche de Personnage D&D 2024 - Cloud & Cadrage
 
-## État au 17 Février 2026 - POLISH & GALERIE
+## État au 19 Février 2026 - OPTIMISATION & GALERIE
 
 ### ✅ Avancées de la Session
 
-1. **Galerie : Fonds d'Écran Personnalisés & Contrôles** :
-    - Ajout de 3 nouveaux fonds officiels : *Iria*, *Hedera*, *Cephalus*.
-    - Intégration de sliders de **Cadrage** dans la Toolbar :
-        - **Position Y (↕️)** : Permet de monter/descendre l'image pour centrer le sujet.
-        - **Zoom (magnifying glass icon)** : Permet de zoomer (max 200%) ou dézoomer/adapter (min 20%).
-    - Ces réglages sont persistants (localStorage + Cloud).
+1. **Optimisation des Images (Performance)** :
+    - Conversion de toutes les images de fond du format PNG (~9 Mo) vers le format **WebP** (~1.3 Mo).
+    - Gain de performance majeur : chargement plus rapide et stabilité du LocalStorage (limité à 5 Mo).
+    - Standardisation du nommage des fichiers (`Fond_Nom.webp`).
 
-2. **Audit & Nettoyage Technique (Refactoring)** :
-    - Suppression des doublons de code d'authentification dans `storage.js`.
-    - Harmonisation complète des messages utilisateur : remplacement de tous les `alert()` par notre système de modales `showModal()` pour une expérience premium unifiée.
-    - Correction de signatures de fonctions (`showModal` dans `import` et `config`).
+2. **Amélioration de la Galerie** :
+    - **Labels dynamiques** : Affichage automatique du nom du personnage sous chaque vignette (ex: "Iria", "Equipe").
+    - **Refonte visuelle** : Grid CSS ajusté pour accueillir les noms, style harmonisé avec le thème sombre/clair.
+    - **Nettoyage Import URL** : Suppression des références obsolètes (Free.fr) et simplification de l'interface d'ajout par lien externe.
 
-3. **Grimoire & UI (Précédemment)** :
-    - Autocomplétion et filtres de sorts opérationnels.
-    - Layout du tableau des sorts stabilisé.
+3. **Maintenance & Bugfixes** :
+    - Correction des styles CSS de la galerie pour éviter l'overflow des textes.
+    - Mise à jour de `js/data.js` pour pointer vers les nouvelles ressources WebP.
 
 ### 🔑 Données de Configuration
 - **Site Web** : `https://franckv75.github.io/dnd2024-character-sheet/`
-- **Base de Données** : Supabase (Table: `characters`, `campaigns`...)
-- **Authentification** : Gestion centralisée via `supabase-config.js`.
+- **Format Image** : Privilégier le **WebP** pour tout nouvel ajout.
 
 ### 📋 Prochaines Étapes Validées
 - [ ] **Interface "Mes Personnages"** : Un menu pour lister et basculer entre ses différents héros stockés dans le cloud.
@@ -33,10 +30,9 @@
 ### 📁 Architecture des Fichiers Modifiés (Session)
 | Fichier | Modifications |
 |---------|--------------|
-| `index.html` | Ajout sliders Toolbar, structure modales |
-| `js/ui-toolbar.js` | Logique sliders Zoom/Pos Y, persistance |
-| `js/storage.js` | Nettoyage doublons Auth, sauvegarde prefs visuelles |
-| `js/supabase-config.js` | Correction showModal, centralisation Auth |
-| `js/data.js` | Ajout nouveaux fonds d'écran par défaut |
+| `js/data.js` | Références aux fichiers .webp renommés |
+| `js/ui-gallery.js` | Logique d'affichage des noms (labels) |
+| `css/style.css` | Flexbox pour la galerie, hauteur auto des items |
+| `index.html` | Nettoyage de la modale galerie (textes) |
 
-*Dernière mise à jour : 17/02/2026 22:58*
+*Dernière mise à jour : 19/02/2026 19:30*
