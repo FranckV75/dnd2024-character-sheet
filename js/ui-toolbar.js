@@ -23,37 +23,6 @@ function updateOpacity(val) {
 }
 
 /**
- * Met à jour le zoom vertical de l'image de fond
- * Si zoom = 100% -> background-size: cover (comportement standard)
- * Si zoom != 100% -> background-size: <val>% auto (permet de dézoomer ou sur-zoomer)
- * @param {number} val - Zoom en pourcentage (20-200)
- */
-function updateBgZoom(val) {
-    if (parseInt(val) === 100) {
-        document.body.style.backgroundSize = 'cover';
-        document.body.style.backgroundRepeat = 'no-repeat'; // Évite la répétition si on repasse à cover
-    } else {
-        // Mode manuel (dézoom ou zoom fort)
-        document.body.style.backgroundSize = `${val}% auto`;
-
-        // Si on dézoome (<100), on veut peut-être éviter la répétition ou centrer
-        document.body.style.backgroundRepeat = 'no-repeat';
-        // La position est déjà gérée par updateBgPosY (center Y%)
-    }
-    localStorage.setItem('dd2024_bg_zoom', val);
-}
-
-/**
- * Met à jour la position verticale de l'image de fond
- * @param {number} val - Position Y en pourcentage (0-100)
- */
-function updateBgPosY(val) {
-    // Center X is always maintained (50% or center)
-    document.body.style.backgroundPosition = `center ${val}%`;
-    localStorage.setItem('dd2024_bg_pos_y', val);
-}
-
-/**
  * Change l'image de fond via un input file
  * @param {HTMLInputElement} input - Input file contenant l'image
  */
@@ -208,3 +177,22 @@ function applyColor(color) { applyFormat('foreColor', color); }
  * @param {string} size - Taille de police (1-7)
  */
 function applyFontSize(size) { applyFormat('fontSize', size); }
+
+/**
+ * Bascule le mode cinéma (masque toute l'interface sauf le fond)
+ */
+function toggleCinemaMode() {
+    const body = document.body;
+    const btn = document.getElementById('cinema-btn');
+    if (!body || !btn) return;
+
+    body.classList.toggle('cinema-mode');
+
+    if (body.classList.contains('cinema-mode')) {
+        btn.innerHTML = '❌';
+        btn.title = "Quitter le mode Cinéma";
+    } else {
+        btn.innerHTML = '👁️';
+        btn.title = "Mode Cinéma (Masquer l'interface)";
+    }
+}
