@@ -38,7 +38,7 @@ function renderGallery() {
         item.className = 'gallery-item';
 
         if (url === "none") {
-            item.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:0.7rem;color:#666;background:#eee;">SANS FOND</div>';
+            item.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:80px;font-size:0.7rem;color:#666;background:#eee;">SANS FOND</div>';
             item.onclick = () => selectBackground("");
             if (currentBg === "" || currentBg === "none") item.classList.add('active');
             grid.appendChild(item);
