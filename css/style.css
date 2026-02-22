@@ -145,12 +145,14 @@ body {
     }
 
     /* On casse la grille principale pour tout empiler */
-    .grid-3 {
+    .grid-3,
+    .combat-grid {
         display: flex;
         flex-direction: column;
     }
 
-    .grid-3>* {
+    .grid-3>*,
+    .combat-grid>* {
         width: 100%;
         grid-column: auto !important;
         /* Reset du span 2 precedent */
@@ -227,6 +229,12 @@ body {
     /* Ratio ajusté : Espèce (1.2) - Sous-Classe (2.5) - Taille (0.5) - PX (0.7) */
     grid-template-columns: 1.2fr 2.5fr 0.5fr 0.7fr;
     gap: 10px;
+}
+
+.combat-grid {
+    display: grid;
+    grid-template-columns: 100px 1fr 1fr;
+    gap: 20px;
 }
 
 /* BOXES */
