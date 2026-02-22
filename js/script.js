@@ -97,14 +97,34 @@ function populateHeroicDestiny() {
     });
 }
 
+/**
+ * Met à jour le Palier de Renommée en fonction des points (Odyssée)
+ */
+function updatePalier() {
+    const gloryInput = document.getElementById('glory_score');
+    const vanityInput = document.getElementById('vanity_score');
+    if (!gloryInput || !vanityInput) return;
 
+    const pts = parseInt(gloryInput.value) || 0;
+    let palier = "Inconnu";
+
+    if (pts >= 19) palier = "Divin";
+    else if (pts >= 15) palier = "Culte";
+    else if (pts >= 11) palier = "Idolâtré";
+    else if (pts >= 6) palier = "Reconnaissance urbaine";
+    else if (pts >= 1) palier = "Célébrité locale";
+
+    vanityInput.value = palier;
+}
 
 window.onload = function () {
     generateSkillsHTML();
     initWeapons();
     initSpells();
-    populateSelectOptions(); // Remplir les menus dÃ©roulants
-    populateHeroicDestiny(); // Remplir le menu Destin HÃ©roÃ¯que
+    populateSelectOptions(); // Remplir les menus déroulants
+    populateHeroicDestiny(); // Remplir le menu Destin Héroïque
+    updatePalier(); // Initialiser le Palier Odyssée au chargement
+
 
     // Event listener pour mise Ã  jour Sous-Classe
     const classSelect = document.getElementById('char_class');
