@@ -436,22 +436,23 @@
                 <!-- MODULE ODYSSÉE DES SEIGNEURS DRAGONS -->
                 <div class="box odyssey-box">
                     <h3>⚔️ Odyssée des Seigneurs Dragons ⚔️</h3>
-                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px;">
+                    <div style="display: grid; grid-template-columns: 1.8fr 0.8fr 1.4fr; gap: 10px;">
                         <div>
                             <label>Destin Héroïque</label>
-                            <select id="heroic_destiny" name="heroic_destiny" class="std-input">
+                            <select id="heroic_destiny" name="heroic_destiny" class="std-input" onchange="saveData()">
                                 <option value="">-- Aucun --</option>
                             </select>
                         </div>
                         <div>
-                            <label>Score de Gloire</label>
-                            <input type="number" id="glory_score" name="glory_score" min="0" max="100" value="0"
-                                class="std-input" style="text-align: center;">
+                            <label>Points de Renommée</label>
+                            <input type="number" id="glory_score" name="glory_score" min="0" max="20" value="0"
+                                class="std-input" style="text-align: center;" oninput="updatePalier(); saveData();">
                         </div>
                         <div>
-                            <label>Score de Vanité</label>
-                            <input type="number" id="vanity_score" name="vanity_score" min="0" max="100" value="0"
-                                class="std-input" style="text-align: center;">
+                            <label>Palier</label>
+                            <input type="text" id="vanity_score" name="vanity_score" value="" class="std-input"
+                                style="text-align: center; background: transparent; cursor: default; font-weight: bold; color: var(--accent-color);"
+                                readonly tabindex="-1">
                         </div>
                     </div>
                 </div>
