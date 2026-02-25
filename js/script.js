@@ -117,6 +117,77 @@ function updatePalier() {
     vanityInput.value = palier;
 }
 
+/**
+ * Initialise l'effet "Premium Lazy Reveal" sur les panneaux principaux
+ */
+function initPremiumReveal() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                // Optionnel : ne plus observer une fois visible
+                // observer.unobserve(entry.target); 
+            }
+        });
+    }, {
+        threshold: 0.1, // Déclencher quand 10% de l'élément est visible
+        rootMargin: "0px 0px -50px 0px"
+    });
+
+    const boxes = document.querySelectorAll('.box, .tab-content > div');
+    boxes.forEach(box => {
+        box.classList.add('premium-reveal');
+        observer.observe(box);
+    });
+}
+
+/**
+ * Initialise les Tooltips Premium "Parchemin"
+ */
+function initPremiumTooltips() {
+    let tooltip = document.getElementById('premium-tooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'premium-tooltip';
+        document.body.appendChild(tooltip);
+    }
+
+    const elementsWithTitle = document.querySelectorAll('[title]');
+    elementsWithTitle.forEach(el => {
+        const titleText = el.getAttribute('title');
+        if (!titleText) return;
+
+        el.setAttribute('data-premium-title', titleText);
+        el.removeAttribute('title'); // Retire le tooltip par défaut natif
+
+        el.addEventListener('mouseenter', (e) => {
+            tooltip.textContent = el.getAttribute('data-premium-title');
+            tooltip.classList.add('visible');
+            positionTooltip(e, tooltip);
+        });
+
+        el.addEventListener('mousemove', (e) => {
+            positionTooltip(e, tooltip);
+        });
+
+        el.addEventListener('mouseleave', () => {
+            tooltip.classList.remove('visible');
+        });
+    });
+
+    function positionTooltip(e, tooltipEl) {
+        let x = e.clientX + 15;
+        let y = e.clientY + 15;
+        // Ajustement si le tooltip sort de l'écran (bas rudimentaire)
+        const rect = tooltipEl.getBoundingClientRect();
+        if (x + rect.width > window.innerWidth) x = window.innerWidth - rect.width - 10;
+        if (y + rect.height > window.innerHeight) y = window.innerHeight - rect.height - 10;
+
+        tooltipEl.style.left = x + 'px';
+        tooltipEl.style.top = y + 'px';
+    }
+}
+
 window.onload = function () {
     generateSkillsHTML();
     initWeapons();
@@ -124,6 +195,8 @@ window.onload = function () {
     populateSelectOptions(); // Remplir les menus déroulants
     populateHeroicDestiny(); // Remplir le menu Destin Héroïque
     updatePalier(); // Initialiser le Palier Odyssée au chargement
+    initPremiumReveal(); // Initialiser le fade-in au scroll
+    initPremiumTooltips(); // Tooltips custom sur éléments title
 
 
     // Event listener pour mise Ã  jour Sous-Classe
