@@ -24,8 +24,11 @@
 - **URL de Production** : `https://franckv75.github.io/dnd2024-character-sheet/`
 
 ### 📋 Prochaines Priorités Techniques (Prêt pour les Agents)
-- [ ] **Restructuration de l'Onglet 3 (Armes & Grimoire)** : Ajout possible d'un ou plusieurs sous-onglets pour la gestion des Armes qui prend beaucoup de place. Alignement des inputs Att/DD et Dégâts avec leurs en-têtes.
-- [ ] **Mode Multi-Personnages (Supabase)** : Menu global (lister, basculer).
-- [ ] **Grimoire Avancé** : Lier les listes de sorts du PDF officiel D&D 2024.
 
-*Dernière mise à jour : 22/02/2026*
+La prochaine session sera dédiée à une **Refonte Structurelle Majeure** pilotée par des schémas de l'utilisateur :
+- [ ] **Création de l'Onglet 4 ("Aptitudes & Traits")** : Déporter les blocs denses (Traits, Dons, Capacités de classe) pour alléger l'onglet 2.
+- [ ] **Refonte de l'Onglet 1 & 2** : Déplacer des blocs depuis l'Onglet 2 vers l'Onglet 1 selon le nouveau design.
+- [ ] **Restructuration de l'Onglet 3 (Armes & Grimoire)** : Sous-onglets pour l'équipement, alignement des inputs Att/DD et Dégâts.
+- [ ] **Grimoire Avancé & Multi-Perso** : Lier les sorts au PDF officiel et préparer l'intégration Supabase.
+
+*Dernière mise à jour : 25/02/2026*

@@ -248,6 +248,52 @@ body {
     transition: background 0.3s ease, border-color 0.3s ease;
 }
 
+/* === EFFET PREMIUM REVEAL (JS) === */
+.premium-reveal {
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.premium-reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* === TOOLTIP PREMIUM === */
+#premium-tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: #fdf5e6;
+    /* Parchemin clair */
+    color: #3e1c02;
+    border: 2px solid #8b4513;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    font-family: 'Cinzel', serif;
+    font-weight: bold;
+    border-radius: 4px;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
+    z-index: 9999;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+[data-theme="dark"] #premium-tooltip {
+    background: #1a1a2e;
+    /* Parchemin sombre */
+    color: #e8dbc5;
+    border-color: #d4a574;
+}
+
+#premium-tooltip.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+
+
 label {
     font-family: 'Cinzel', serif;
     font-weight: 800;
@@ -315,6 +361,9 @@ h3 {
 .rich-input:focus {
     background: rgba(255, 255, 255, 0.8);
     border-color: var(--accent-color);
+    box-shadow: 0 0 8px rgba(232, 184, 109, 0.5);
+    /* Subtle golden glow */
+    outline: none;
 }
 
 select {
@@ -634,6 +683,8 @@ input[type="checkbox"].square {
     outline: none;
     border-color: var(--accent-color);
     background: rgba(255, 255, 255, 1);
+    box-shadow: 0 0 8px rgba(232, 184, 109, 0.5);
+    /* Subtle golden glow */
 }
 
 [data-theme="dark"] .std-input {
@@ -645,6 +696,7 @@ input[type="checkbox"].square {
 [data-theme="dark"] .std-input:focus {
     background: rgba(0, 0, 0, 0.7);
     border-color: var(--accent-color);
+    box-shadow: 0 0 8px rgba(232, 184, 109, 0.6);
 }
 
 /* === ODYSSEY & BOTTOM BLOCKS === */
@@ -1468,11 +1520,13 @@ input[type="checkbox"].square {
     font-size: 0.9rem;
     font-weight: bold;
     font-family: 'Cinzel', serif;
-    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .btn:hover {
     background: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .btn-save {
