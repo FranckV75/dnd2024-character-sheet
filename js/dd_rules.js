@@ -733,6 +733,7 @@ const DD_RULES = {
     weapons: [
         // ARMES COURANTES DE CORPS À CORPS
         { name: "Bâton", atk: "FOR", dmg: "1d6 cont.", prop: "Polyvalente (1d8)", prof: "Renversement", ammo: "-" },
+        { name: "Coutille", atk: "FOR", dmg: "1d4 tran.", prop: "Allonge, Finesse, Légère", prof: "Écorchure", ammo: "-" },
         { name: "Dague", atk: "DEX", dmg: "1d4 perf.", prop: "Finesse, Légère, Lancer (6/18 m)", prof: "Coup double", ammo: "-" },
         { name: "Gourdin", atk: "FOR", dmg: "1d4 cont.", prop: "Légère", prof: "Ralentissement", ammo: "-" },
         { name: "Hachette", atk: "FOR", dmg: "1d6 tran.", prop: "Légère, Lancer (6/18 m)", prof: "Ouverture", ammo: "-" },
@@ -741,7 +742,7 @@ const DD_RULES = {
         { name: "Marteau léger", atk: "FOR", dmg: "1d4 cont.", prop: "Légère, Lancer (6/18 m)", prof: "Coup double", ammo: "-" },
         { name: "Masse d'armes", atk: "FOR", dmg: "1d6 cont.", prop: "-", prof: "Sape", ammo: "-" },
         { name: "Massue", atk: "FOR", dmg: "1d8 cont.", prop: "Deux mains", prof: "Poussée", ammo: "-" },
-        { name: "Faucille", atk: "FOR", dmg: "1d4 tran.", prop: "Légère", prof: "Coup double", ammo: "-" },
+        { name: "Serpe", atk: "FOR", dmg: "1d4 tran.", prop: "Légère", prof: "Coup double", ammo: "-" },
 
         // ARMES COURANTES À DISTANCE
         { name: "Arbalète légère", atk: "DEX", dmg: "1d8 perf.", prop: "Munitions (24/96 m), Chargement, Deux mains", prof: "Ralentissement", ammo: "-" },
@@ -755,14 +756,16 @@ const DD_RULES = {
         { name: "Épée courte", atk: "DEX", dmg: "1d6 perf.", prop: "Finesse, Légère", prof: "Ouverture", ammo: "-" },
         { name: "Épée longue", atk: "FOR", dmg: "1d8 tran.", prop: "Polyvalente (1d10)", prof: "Sape", ammo: "-" },
         { name: "Fléau d'armes", atk: "FOR", dmg: "1d8 cont.", prop: "-", prof: "Sape", ammo: "-" },
+        { name: "Fouet", atk: "DEX", dmg: "1d4 tran.", prop: "Finesse, Allonge", prof: "Ralentissement", ammo: "-" },
         { name: "Hache d'armes", atk: "FOR", dmg: "1d8 tran.", prop: "Polyvalente (1d10)", prof: "Renversement", ammo: "-" },
         { name: "Hache à deux mains", atk: "FOR", dmg: "1d12 tran.", prop: "Lourde, Deux mains", prof: "Enchaînement", ammo: "-" },
         { name: "Hallebarde", atk: "FOR", dmg: "1d10 tran.", prop: "Lourde, Allonge, Deux mains", prof: "Enchaînement", ammo: "-" },
         { name: "Lance d'arçon", atk: "FOR", dmg: "1d10 perf.", prop: "Allonge, Lourde, Deux mains (si monté)", prof: "Renversement", ammo: "-" },
+        { name: "Maillet d'armes", atk: "FOR", dmg: "2d6 cont.", prop: "Lourde, Deux mains", prof: "Renversement", ammo: "-" },
         { name: "Marteau de guerre", atk: "FOR", dmg: "1d8 cont.", prop: "Polyvalente (1d10)", prof: "Poussée", ammo: "-" },
-        { name: "Masse d'armes lourde", atk: "FOR", dmg: "1d12 cont.", prop: "Lourde, Deux mains", prof: "Renversement", ammo: "-" },
-        { name: "Partisane", atk: "FOR", dmg: "1d10 tran.", prop: "Lourde, Allonge, Deux mains", prof: "Poussée", ammo: "-" },
+        { name: "Morgenstern", atk: "FOR", dmg: "1d8 perf.", prop: "-", prof: "Sape", ammo: "-" },
         { name: "Pic de guerre", atk: "FOR", dmg: "1d8 perf.", prop: "Polyvalente (1d10)", prof: "Sape", ammo: "-" },
+        { name: "Pique", atk: "FOR", dmg: "1d10 perf.", prop: "Lourde, Allonge, Deux mains", prof: "Poussée", ammo: "-" },
         { name: "Rapière", atk: "DEX", dmg: "1d8 perf.", prop: "Finesse", prof: "Ouverture", ammo: "-" },
         { name: "Trident", atk: "FOR", dmg: "1d8 perf.", prop: "Lancer (6/18 m), Polyvalente (1d10)", prof: "Renversement", ammo: "-" },
 
@@ -770,7 +773,11 @@ const DD_RULES = {
         { name: "Arbalète de poing", atk: "DEX", dmg: "1d6 perf.", prop: "Munitions (9/36 m), Légère, Chargement", prof: "Ouverture", ammo: "-" },
         { name: "Arbalète lourde", atk: "DEX", dmg: "1d10 perf.", prop: "Munitions (30/120 m), Lourde, Chargement, Deux mains", prof: "Poussée", ammo: "-" },
         { name: "Arc long", atk: "DEX", dmg: "1d8 perf.", prop: "Munitions (45/180 m), Lourde, Deux mains", prof: "Ralentissement", ammo: "-" },
-        { name: "Sarbacane", atk: "DEX", dmg: "1 perf.", prop: "Munitions (6/15 m), Chargement", prof: "Ouverture", ammo: "-" }
+        { name: "Sarbacane", atk: "DEX", dmg: "1 perf.", prop: "Munitions (6/15 m), Chargement", prof: "Ouverture", ammo: "-" },
+
+        // ARMES À FEU (Optionnel / Guide du Maître)
+        { name: "Mousquet", atk: "DEX", dmg: "1d12 perf.", prop: "Munitions (12/36 m), Chargement, Deux mains", prof: "Poussée", ammo: "-" },
+        { name: "Pistolet", atk: "DEX", dmg: "1d10 perf.", prop: "Munitions (9/27 m), Chargement", prof: "Ouverture", ammo: "-" }
     ]
 };
 
