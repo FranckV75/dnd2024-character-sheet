@@ -175,6 +175,7 @@
             <!-- BARRE DE NAVIGATION PAR ONGLETS -->
             <nav class="tab-navigation" id="tab-navigation">
                 <button class="tab-btn active" data-tab="combat" type="button">✥ Caractéristiques & Combat</button>
+                <button class="tab-btn" data-tab="traits" type="button">✥ Aptitudes & Traits</button>
                 <button class="tab-btn" data-tab="role" type="button">✥ Compétences & Histoire</button>
                 <button class="tab-btn" data-tab="magic" type="button">✥ Magie, équipement & trésors</button>
             </nav>
@@ -394,36 +395,54 @@
                                 <input type="checkbox" name="prof_armor_heavy"> Lourdes
                                 <input type="checkbox" name="prof_armor_shield"> Boucliers
                             </div>
-                            <label>Armes</label>
-                            <div contenteditable="true" data-name="profs_weapons" class="rich-input multi-line"
-                                style="min-height: 60px; max-height: 150px;"></div>
-                            <label>Outils</label>
-                            <div contenteditable="true" data-name="profs_tools" class="rich-input multi-line"
-                                style="min-height: 40px; max-height: 40px; overflow-y: auto;"></div>
-                            <label>Langues</label>
-                            <div contenteditable="true" data-name="langs" class="rich-input multi-line"
-                                style="min-height: 60px; max-height: 60px; overflow-y: auto;"></div>
+                        </div>
+                        <div class="box rest-block-compact" style="margin-top:20px;">
+                            <h3>⚔️ Repos ⚔️</h3>
+                            <div class="rest-buttons-compact"
+                                style="display: flex; justify-content: space-around; gap: 10px; margin-top: 10px;">
+                                <button class="btn btn-short-rest" id="btn-short-rest" type="button" style="flex:1;">
+                                    <span class="rest-icon" style="font-size: 1.5rem;">🌙</span>
+                                    <span class="rest-label" style="display:block;">Court</span>
+                                    <span class="rest-desc" style="font-size: 0.8rem;">1h</span>
+                                </button>
+                                <button class="btn btn-long-rest" id="btn-long-rest" type="button" style="flex:1;">
+                                    <span class="rest-icon" style="font-size: 1.5rem;">🛏️</span>
+                                    <span class="rest-label" style="display:block;">Long</span>
+                                    <span class="rest-desc" style="font-size: 0.8rem;">Maintenir</span>
+                                </button>
+                            </div>
                         </div>
                     </section>
 
                     <!-- RIGHT -->
-                    <section class="col">
-                        <div class="box" style="flex: 1;">
-                            <h3>Traits & Dons</h3>
-                            <div contenteditable="true" data-name="traits_feats" class="rich-input multi-line"></div>
-                        </div>
-                        <div class="box" style="flex: 1;">
-                            <h3>Capacités de Classe</h3>
-                            <div contenteditable="true" data-name="class_features" class="rich-input multi-line"></div>
-                        </div>
-
-                    </section>
+                    <!-- Zone déplacée vers l'Onglet 2 -->
                 </div>
             </div>
             <!-- FIN SECTION COMBAT -->
 
             <!-- ================================================================= -->
-            <!-- SECTION 2 : COMPÉTENCES & HISTOIRE -->
+            <!-- SECTION 2 : APTITUDES & TRAITS -->
+            <!-- ================================================================= -->
+            <div class="tab-content" id="tab-traits">
+                <div class="grid-2" style="margin-top: 15px;">
+                    <section class="col">
+                        <div class="box" style="flex: 1;">
+                            <h3>Traits & Dons</h3>
+                            <div contenteditable="true" data-name="traits_feats" class="rich-input multi-line"></div>
+                        </div>
+                    </section>
+                    <section class="col">
+                        <div class="box" style="flex: 1;">
+                            <h3>Capacités de Classe</h3>
+                            <div contenteditable="true" data-name="class_features" class="rich-input multi-line"></div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+            <!-- FIN SECTION APTITUDES & TRAITS -->
+
+            <!-- ================================================================= -->
+            <!-- SECTION 3 : COMPÉTENCES & HISTOIRE -->
             <!-- ================================================================= -->
             <div class="tab-content" id="tab-role">
                 <!-- COMPÉTENCES -->
@@ -458,9 +477,21 @@
                 </div>
 
 
-                <!-- CENTRE DE REPOS: Injecté dynamiquement dans la grille des compétences -->
+                <!-- CENTRE DE REPOS SUPPRIMÉ D'ICI (Généré en JS auparavant) -->
 
-
+                <!-- OUTILS ET LANGUES (Déplacés depuis l'onglet 1) -->
+                <div class="row" style="margin-top: 15px; gap: 15px;">
+                    <div class="box text-left" style="flex: 1;">
+                        <h3>Outils</h3>
+                        <div contenteditable="true" data-name="profs_tools" class="rich-input multi-line"
+                            style="min-height: 60px; height: 100px; overflow-y: auto;"></div>
+                    </div>
+                    <div class="box text-left" style="flex: 1;">
+                        <h3>Langues</h3>
+                        <div contenteditable="true" data-name="langs" class="rich-input multi-line"
+                            style="min-height: 60px; height: 100px; overflow-y: auto;"></div>
+                    </div>
+                </div>
                 <!-- APPARENCE & HISTOIRE -->
                 <div class="row" style="margin-top: 15px;">
                     <div class="box odyssey-box text-left" style="flex: 1;">
