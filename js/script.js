@@ -342,9 +342,12 @@ function addWeaponRow(data = null) {
     if (!body) return;
     const tr = document.createElement('tr');
     tr.innerHTML = `
-        <td><div contenteditable="true" class="rich-input single-line wpn-name"></div></td>
+        <td style="position: relative;"><div contenteditable="true" class="rich-input single-line wpn-name"></div></td>
         <td><div contenteditable="true" class="rich-input single-line wpn-atk"></div></td>
         <td><div contenteditable="true" class="rich-input single-line wpn-dmg"></div></td>
+        <td><div contenteditable="true" class="rich-input single-line wpn-prop"></div></td>
+        <td><div contenteditable="true" class="rich-input single-line wpn-prof"></div></td>
+        <td><div contenteditable="true" class="rich-input single-line wpn-ammo"></div></td>
         <td><div contenteditable="true" class="rich-input single-line wpn-note"></div></td>
         <td><button class="del-btn" aria-label="Supprimer l'arme" onclick="this.closest('tr').remove(); saveData();">x</button></td>
     `;
@@ -353,10 +356,99 @@ function addWeaponRow(data = null) {
         tr.querySelector('.wpn-name').innerHTML = data.name || '';
         tr.querySelector('.wpn-atk').innerHTML = data.atk || '';
         tr.querySelector('.wpn-dmg').innerHTML = data.dmg || '';
+        tr.querySelector('.wpn-prop').innerHTML = data.prop || '';
+        tr.querySelector('.wpn-prof').innerHTML = data.prof || '';
+        tr.querySelector('.wpn-ammo').innerHTML = data.ammo || '';
         tr.querySelector('.wpn-note').innerHTML = data.note || '';
     }
+
+    // Autocomplétion Armes D&D 2024
+    if (typeof DD_RULES !== 'undefined' && DD_RULES.weapons) {
+        setupWeaponAutocomplete(tr.querySelector('.wpn-name'), tr);
+    }
+
     bindStyleEvents();
-    // addTableDataLabels() supprimée - support téléphone mobile retiré
+}
+
+let weaponAutocompleteContainer = null;
+
+function setupWeaponAutocomplete(input, tr) {
+    if (!weaponAutocompleteContainer) {
+        weaponAutocompleteContainer = document.createElement('div');
+        weaponAutocompleteContainer.id = 'weapon-autocomplete';
+        weaponAutocompleteContainer.style.position = 'absolute';
+        weaponAutocompleteContainer.style.zIndex = '99999';
+        weaponAutocompleteContainer.style.backgroundColor = 'var(--bg-color, #2a2a2a)';
+        weaponAutocompleteContainer.style.border = '1px solid var(--primary-border, #ccc)';
+        weaponAutocompleteContainer.style.maxHeight = '200px';
+        weaponAutocompleteContainer.style.overflowY = 'auto';
+        weaponAutocompleteContainer.style.display = 'none';
+        weaponAutocompleteContainer.style.boxShadow = '0 4px 6px rgba(0,0,0,0.5)';
+        weaponAutocompleteContainer.style.minWidth = '200px';
+        document.body.appendChild(weaponAutocompleteContainer);
+
+        // Clic à l'extérieur pour fermer
+        document.addEventListener('click', function (e) {
+            if (weaponAutocompleteContainer.style.display !== 'none' && e.target !== input && !weaponAutocompleteContainer.contains(e.target)) {
+                weaponAutocompleteContainer.style.display = 'none';
+            }
+        });
+    }
+
+    input.addEventListener('focus', function () {
+        // Optionnel : ne rien faire au focus, attendre l'input
+    });
+
+    input.addEventListener('input', function () {
+        let val = this.innerText.trim();
+        weaponAutocompleteContainer.innerHTML = '';
+
+        if (!val || typeof DD_RULES === 'undefined' || !DD_RULES.weapons) {
+            weaponAutocompleteContainer.style.display = 'none';
+            return;
+        }
+
+        const q = val.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        let matches = DD_RULES.weapons.filter(w => {
+            const wName = w.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            return wName.includes(q);
+        });
+
+        if (matches.length === 0) {
+            weaponAutocompleteContainer.style.display = 'none';
+            return;
+        }
+
+        // Positionnement absolu par rapport à l'input
+        const rect = input.getBoundingClientRect();
+        weaponAutocompleteContainer.style.left = (rect.left + window.scrollX) + 'px';
+        weaponAutocompleteContainer.style.top = (rect.bottom + window.scrollY + 2) + 'px';
+        weaponAutocompleteContainer.style.display = 'block';
+
+        matches.forEach(w => {
+            let item = document.createElement('div');
+            item.innerHTML = w.name;
+            item.style.padding = '8px';
+            item.style.cursor = 'pointer';
+            item.style.borderBottom = '1px solid var(--primary-border, #444)';
+            item.style.color = 'var(--text-color, #e0d0b0)';
+
+            item.addEventListener('mouseover', () => item.style.backgroundColor = 'var(--accent-color, #555)');
+            item.addEventListener('mouseout', () => item.style.backgroundColor = '');
+
+            item.addEventListener('click', function () {
+                input.innerHTML = w.name;
+                tr.querySelector('.wpn-atk').innerHTML = w.atk;
+                tr.querySelector('.wpn-dmg').innerHTML = w.dmg;
+                tr.querySelector('.wpn-prop').innerHTML = w.prop;
+                tr.querySelector('.wpn-prof').innerHTML = w.prof;
+                // ammo n'est pas rempli automatiquement pour que l'utilisateur gère (ex: 15/20)
+                weaponAutocompleteContainer.style.display = 'none';
+                saveData();
+            });
+            weaponAutocompleteContainer.appendChild(item);
+        });
+    });
 }
 
 // === SPELL AUTOCOMPLETE SYSTEM ===

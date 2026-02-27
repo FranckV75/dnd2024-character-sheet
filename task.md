@@ -20,13 +20,13 @@
 - [x] Persistance OK : les champs `data-name` sont collectés automatiquement par `getFormData()`
 
 ## Story 4 : Refonte du Bloc Armes (Onglet 1)
-- [ ] Renommer "Armes & Sorts Mineurs" → "Armes"
-- [ ] Ajouter colonnes : Type, Propriétés, Poids, Prix
-- [ ] Menu déroulant auto-complétion (similaire au Grimoire)
-- [ ] Système de munitions : format `[Restant] / [Max]`
-- [ ] Filtres par catégorie (Courantes, Guerre, CàC, Distance)
+- [x] Renommer "Armes & Sorts Mineurs" → "Armes"
+- [x] Ajouter les colonnes de combat : Propriétés, Maîtrise, Munitions (au lieu de Poids/Prix réservés à l'inventaire)
+- [x] Menu déroulant auto-complétion dynamique depuis `dd_rules.js` (Armes D&D 2024)
+- [x] Système de munitions géré via la colonne libre (format texte, ex: `15/20`)
+- [ ] Filtres par catégorie (Courantes, Guerre, CàC, Distance) - *Optionnel/Reporté car l'autocomplétion est globale*
 - [ ] Réorganiser la zone supérieure (CA, Initiative, PV, Vitesse, etc.) pour meilleur alignement
-- [ ] Adapter `dynamic_weapons` dans `storage.js`
+- [x] Adapter `dynamic_weapons` dans `storage.js` pour sauvegarder Propriétés, Maîtrise et Munitions
 
 ## Story 5 : Bloc Armures & Boucliers + Fatigue (Onglet 1)
 - [ ] Remplacer les checkboxes armures par un tableau détaillé (CA, Force, Discrétion, Poids, Prix, Équipé)
