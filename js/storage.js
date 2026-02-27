@@ -128,6 +128,7 @@ function getFormData() {
         if (key) {
             if (!el.classList.contains('wpn-name') && !el.classList.contains('wpn-atk') &&
                 !el.classList.contains('wpn-dmg') && !el.classList.contains('wpn-note') &&
+                !el.classList.contains('wpn-prop') && !el.classList.contains('wpn-prof') && !el.classList.contains('wpn-ammo') &&
                 !el.classList.contains('spl-lvl') && !el.classList.contains('spl-name') &&
                 !el.classList.contains('spl-time') && !el.classList.contains('spl-range') &&
                 !el.classList.contains('spl-note')) {
@@ -140,10 +141,13 @@ function getFormData() {
     if (wBody) {
         wBody.querySelectorAll('tr').forEach(tr => {
             weapons.push({
-                name: tr.querySelector('.wpn-name').innerHTML,
-                atk: tr.querySelector('.wpn-atk').innerHTML,
-                dmg: tr.querySelector('.wpn-dmg').innerHTML,
-                note: tr.querySelector('.wpn-note').innerHTML
+                name: tr.querySelector('.wpn-name') ? tr.querySelector('.wpn-name').innerHTML : '',
+                atk: tr.querySelector('.wpn-atk') ? tr.querySelector('.wpn-atk').innerHTML : '',
+                dmg: tr.querySelector('.wpn-dmg') ? tr.querySelector('.wpn-dmg').innerHTML : '',
+                prop: tr.querySelector('.wpn-prop') ? tr.querySelector('.wpn-prop').innerHTML : '',
+                prof: tr.querySelector('.wpn-prof') ? tr.querySelector('.wpn-prof').innerHTML : '',
+                ammo: tr.querySelector('.wpn-ammo') ? tr.querySelector('.wpn-ammo').innerHTML : '',
+                note: tr.querySelector('.wpn-note') ? tr.querySelector('.wpn-note').innerHTML : ''
             });
         });
     }
