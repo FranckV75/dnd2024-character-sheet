@@ -424,19 +424,110 @@
             <!-- SECTION 2 : APTITUDES & TRAITS -->
             <!-- ================================================================= -->
             <div class="tab-content" id="tab-traits">
-                <div class="grid-2" style="margin-top: 15px;">
-                    <section class="col">
-                        <div class="box" style="flex: 1;">
-                            <h3>Traits & Dons</h3>
-                            <div contenteditable="true" data-name="traits_feats" class="rich-input multi-line"></div>
+                <div
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px; align-items: start;">
+
+                    <!-- COLONNE GAUCHE : Traits + Dons -->
+                    <div>
+                        <!-- BLOC TRAITS -->
+                        <div class="box">
+                            <h3>🌟 Traits de Personnage</h3>
+                            <div contenteditable="true" data-name="traits_feats" class="rich-input multi-line"
+                                style="min-height: 120px; max-height: 220px; overflow-y: auto;"
+                                aria-label="Traits de personnage"></div>
                         </div>
-                    </section>
-                    <section class="col">
-                        <div class="box" style="flex: 1;">
-                            <h3>Capacités de Classe</h3>
-                            <div contenteditable="true" data-name="class_features" class="rich-input multi-line"></div>
+
+                        <!-- BLOC DONS -->
+                        <div class="box" style="margin-top: 15px;">
+                            <h3>⭐ Dons</h3>
+                            <div id="feats-list">
+                                <!-- Rangée don 1 -->
+                                <div class="feat-row"
+                                    style="display: grid; grid-template-columns: auto 1fr; gap: 6px; align-items: center; margin-bottom: 8px;">
+                                    <span class="feat-level-badge"
+                                        style="font-size: 0.7rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 2px 6px; white-space: nowrap;">Niv.
+                                        —</span>
+                                    <div contenteditable="true" data-name="feat_1" class="rich-input single-line"
+                                        style="font-size: 0.9rem;" placeholder="Nom du don..." aria-label="Don 1"></div>
+                                </div>
+                                <!-- Rangée don 2 -->
+                                <div class="feat-row"
+                                    style="display: grid; grid-template-columns: auto 1fr; gap: 6px; align-items: center; margin-bottom: 8px;">
+                                    <span class="feat-level-badge"
+                                        style="font-size: 0.7rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 2px 6px; white-space: nowrap;">Niv.
+                                        —</span>
+                                    <div contenteditable="true" data-name="feat_2" class="rich-input single-line"
+                                        style="font-size: 0.9rem;" aria-label="Don 2"></div>
+                                </div>
+                                <!-- Rangée don 3 -->
+                                <div class="feat-row"
+                                    style="display: grid; grid-template-columns: auto 1fr; gap: 6px; align-items: center; margin-bottom: 8px;">
+                                    <span class="feat-level-badge"
+                                        style="font-size: 0.7rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 2px 6px; white-space: nowrap;">Niv.
+                                        —</span>
+                                    <div contenteditable="true" data-name="feat_3" class="rich-input single-line"
+                                        style="font-size: 0.9rem;" aria-label="Don 3"></div>
+                                </div>
+                                <!-- Rangée don 4 -->
+                                <div class="feat-row"
+                                    style="display: grid; grid-template-columns: auto 1fr; gap: 6px; align-items: center; margin-bottom: 8px;">
+                                    <span class="feat-level-badge"
+                                        style="font-size: 0.7rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 2px 6px; white-space: nowrap;">Niv.
+                                        —</span>
+                                    <div contenteditable="true" data-name="feat_4" class="rich-input single-line"
+                                        style="font-size: 0.9rem;" aria-label="Don 4"></div>
+                                </div>
+                                <!-- Rangée don 5 -->
+                                <div class="feat-row"
+                                    style="display: grid; grid-template-columns: auto 1fr; gap: 6px; align-items: center; margin-bottom: 8px;">
+                                    <span class="feat-level-badge"
+                                        style="font-size: 0.7rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 2px 6px; white-space: nowrap;">Niv.
+                                        —</span>
+                                    <div contenteditable="true" data-name="feat_5" class="rich-input single-line"
+                                        style="font-size: 0.9rem;" aria-label="Don 5"></div>
+                                </div>
+                                <!-- Rangée don 6 -->
+                                <div class="feat-row"
+                                    style="display: grid; grid-template-columns: auto 1fr; gap: 6px; align-items: center; margin-bottom: 4px;">
+                                    <span class="feat-level-badge"
+                                        style="font-size: 0.7rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 2px 6px; white-space: nowrap;">Niv.
+                                        —</span>
+                                    <div contenteditable="true" data-name="feat_6" class="rich-input single-line"
+                                        style="font-size: 0.9rem;" aria-label="Don 6"></div>
+                                </div>
+                            </div>
                         </div>
-                    </section>
+                    </div>
+                    <!-- FIN COLONNE GAUCHE -->
+
+                    <!-- COLONNE DROITE : Capacités + Compagnons + Synergie -->
+                    <div>
+                        <!-- BLOC CAPACITÉS DE CLASSE -->
+                        <div class="box">
+                            <h3>⚔️ Capacités de Classe</h3>
+                            <div contenteditable="true" data-name="class_features" class="rich-input multi-line"
+                                style="min-height: 120px; max-height: 220px; overflow-y: auto;"
+                                aria-label="Capacités de classe"></div>
+                        </div>
+
+                        <!-- BLOC COMPAGNONS & FAMILIERS -->
+                        <div class="box" style="margin-top: 15px;">
+                            <h3>🐾 Compagnons & Familiers</h3>
+                            <div contenteditable="true" data-name="companions" class="rich-input multi-line"
+                                style="min-height: 80px; max-height: 160px; overflow-y: auto;"
+                                aria-label="Compagnons et familiers"></div>
+                        </div>
+
+                        <!-- BLOC SYNERGIE -->
+                        <div class="box" style="margin-top: 15px;">
+                            <h3>🤝 Synergie entre Joueurs</h3>
+                            <div contenteditable="true" data-name="synergy" class="rich-input multi-line"
+                                style="min-height: 80px; max-height: 160px; overflow-y: auto;"
+                                aria-label="Synergie entre joueurs"></div>
+                        </div>
+                    </div>
+                    <!-- FIN COLONNE DROITE -->
+
                 </div>
             </div>
             <!-- FIN SECTION APTITUDES & TRAITS -->
@@ -591,9 +682,11 @@
                                 <tr>
                                     <th style="width:25px;" title="Préparé">P</th>
                                     <th style="width:40px; cursor:pointer;" onclick="sortSpells('lvl')"
-                                        title="Trier par niveau">Niv <span class="sort-icon" data-col="lvl"></span></th>
+                                        title="Trier par niveau">Niv <span class="sort-icon" data-col="lvl"></span>
+                                    </th>
                                     <th style="width:25%; cursor:pointer;" onclick="sortSpells('name')"
-                                        title="Trier par nom">Nom <span class="sort-icon" data-col="name"></span></th>
+                                        title="Trier par nom">Nom <span class="sort-icon" data-col="name"></span>
+                                    </th>
                                     <th style="width:80px; cursor:pointer;" onclick="sortSpells('school')"
                                         title="Trier par école">École <span class="sort-icon" data-col="school"></span>
                                     </th>
