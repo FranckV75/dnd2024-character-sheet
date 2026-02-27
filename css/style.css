@@ -1395,6 +1395,12 @@ input[type="checkbox"].square {
     vertical-align: top;
 }
 
+/* === WEAPONS TABLE STYLING === */
+.weapons-table .rich-input {
+    font-size: 0.70rem;
+    min-height: 20px;
+}
+
 .add-row-btn {
     width: 100%;
     padding: 6px;
