@@ -14,10 +14,10 @@
 - [x] Vérifier la persistance (les `data-name` existants doivent continuer à fonctionner)
 
 ## Story 3 : Construction de l'Onglet 2 (Aptitudes & Traits)
-- [ ] Scinder "Traits & Dons" en 2 sous-blocs (Traits + Dons avec 6 emplacements)
-- [ ] Scinder "Capacités de Classe" en 2 sous-blocs (Capacités + Compagnons/Familiers)
-- [ ] Ajouter le bloc "Synergie entre les joueurs"
-- [ ] Étendre `storage.js` pour les nouveaux champs (`dynamic_feats`, `companions`, `synergy`)
+- [x] Scinder "Traits & Dons" en 2 sous-blocs (Traits + Dons avec 6 emplacements)
+- [x] Scinder "Capacités de Classe" en 2 sous-blocs (Capacités + Compagnons/Familiers)
+- [x] Ajouter le bloc "Synergie entre les joueurs"
+- [x] Persistance OK : les champs `data-name` sont collectés automatiquement par `getFormData()`
 
 ## Story 4 : Refonte du Bloc Armes (Onglet 1)
 - [ ] Renommer "Armes & Sorts Mineurs" → "Armes"
