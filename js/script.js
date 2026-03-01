@@ -284,6 +284,8 @@ window.onload = function () {
     initRestSystem();
     // Initialiser l'affichage de la Fatigue D&D 2024
     initFatigueDisplay();
+    // Initialiser l'autocomplétion des Dons D&D 2024
+    initFeatsAutocomplete();
     setupHeaderAutoFit();
 };
 
@@ -430,7 +432,168 @@ function addArmorRow(data = null) {
     // Sauvegarde auto au changement des checkboxes
     tr.querySelector('.armor-stealth').addEventListener('change', saveData);
     tr.querySelector('.armor-equipped').addEventListener('change', saveData);
+
+    // Autocomplétion Armures D&D 2024
+    if (typeof EQUIPMENT_DATA !== 'undefined' && EQUIPMENT_DATA.armors) {
+        setupArmorAutocomplete(tr.querySelector('.armor-name'), tr);
+    }
+
     bindStyleEvents();
+}
+
+let featAutocompleteContainer = null;
+
+function initFeatsAutocomplete() {
+    if (typeof FEATS_DATA === 'undefined') return;
+    const featsInputs = document.querySelectorAll('#feats-list [data-name^="feat_"]');
+    featsInputs.forEach(input => {
+        setupFeatAutocomplete(input);
+    });
+}
+
+function setupFeatAutocomplete(input) {
+    if (!featAutocompleteContainer) {
+        featAutocompleteContainer = document.createElement('div');
+        featAutocompleteContainer.id = 'feat-autocomplete';
+        featAutocompleteContainer.style.position = 'absolute';
+        featAutocompleteContainer.style.zIndex = '99999';
+        featAutocompleteContainer.style.backgroundColor = 'var(--bg-color, #2a2a2a)';
+        featAutocompleteContainer.style.border = '1px solid var(--primary-border, #ccc)';
+        featAutocompleteContainer.style.maxHeight = '250px';
+        featAutocompleteContainer.style.overflowY = 'auto';
+        featAutocompleteContainer.style.display = 'none';
+        featAutocompleteContainer.style.boxShadow = '0 4px 6px rgba(0,0,0,0.5)';
+        featAutocompleteContainer.style.minWidth = '220px';
+        document.body.appendChild(featAutocompleteContainer);
+
+        document.addEventListener('click', function (e) {
+            if (featAutocompleteContainer.style.display !== 'none' && e.target !== input && !featAutocompleteContainer.contains(e.target)) {
+                featAutocompleteContainer.style.display = 'none';
+            }
+        });
+    }
+
+    input.addEventListener('input', function () {
+        let val = this.innerText.trim();
+        featAutocompleteContainer.innerHTML = '';
+
+        if (!val || typeof FEATS_DATA === 'undefined') {
+            featAutocompleteContainer.style.display = 'none';
+            return;
+        }
+
+        const q = val.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        let matches = FEATS_DATA.filter(f => {
+            const fName = f.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            return fName.includes(q);
+        });
+
+        if (matches.length === 0) {
+            featAutocompleteContainer.style.display = 'none';
+            return;
+        }
+
+        const rect = input.getBoundingClientRect();
+        featAutocompleteContainer.style.left = (rect.left + window.scrollX) + 'px';
+        featAutocompleteContainer.style.top = (rect.bottom + window.scrollY + 2) + 'px';
+        featAutocompleteContainer.style.display = 'block';
+
+        matches.forEach(f => {
+            let item = document.createElement('div');
+            item.innerHTML = `<strong>${f.name}</strong> <span style="font-size:0.75em; color:var(--accent-color);">[${f.type}]</span><br>
+                              <span style="font-size:0.7em; color:var(--text-muted);">${f.prereq ? 'Préreq: ' + f.prereq : 'Aucun prérequis'}</span>`;
+            item.style.padding = '8px';
+            item.style.cursor = 'pointer';
+            item.style.borderBottom = '1px solid var(--table-border, #444)';
+            item.className = 'autocomplete-item';
+
+            item.addEventListener('mousedown', function (e) { e.preventDefault(); });
+            item.addEventListener('click', function () {
+                input.innerText = f.name;
+
+                featAutocompleteContainer.style.display = 'none';
+                saveData();
+                bindStyleEvents();
+            });
+            featAutocompleteContainer.appendChild(item);
+        });
+    });
+}
+
+let armorAutocompleteContainer = null;
+
+
+function setupArmorAutocomplete(input, tr) {
+    if (!armorAutocompleteContainer) {
+        armorAutocompleteContainer = document.createElement('div');
+        armorAutocompleteContainer.id = 'armor-autocomplete';
+        armorAutocompleteContainer.style.position = 'absolute';
+        armorAutocompleteContainer.style.zIndex = '99999';
+        armorAutocompleteContainer.style.backgroundColor = 'var(--bg-color, #2a2a2a)';
+        armorAutocompleteContainer.style.border = '1px solid var(--primary-border, #ccc)';
+        armorAutocompleteContainer.style.maxHeight = '200px';
+        armorAutocompleteContainer.style.overflowY = 'auto';
+        armorAutocompleteContainer.style.display = 'none';
+        armorAutocompleteContainer.style.boxShadow = '0 4px 6px rgba(0,0,0,0.5)';
+        armorAutocompleteContainer.style.minWidth = '200px';
+        document.body.appendChild(armorAutocompleteContainer);
+
+        document.addEventListener('click', function (e) {
+            if (armorAutocompleteContainer.style.display !== 'none' && e.target !== input && !armorAutocompleteContainer.contains(e.target)) {
+                armorAutocompleteContainer.style.display = 'none';
+            }
+        });
+    }
+
+    input.addEventListener('input', function () {
+        let val = this.innerText.trim();
+        armorAutocompleteContainer.innerHTML = '';
+
+        if (!val || typeof EQUIPMENT_DATA === 'undefined' || !EQUIPMENT_DATA.armors) {
+            armorAutocompleteContainer.style.display = 'none';
+            return;
+        }
+
+        const q = val.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        let matches = EQUIPMENT_DATA.armors.filter(a => {
+            const aName = a.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            return aName.includes(q);
+        });
+
+        if (matches.length === 0) {
+            armorAutocompleteContainer.style.display = 'none';
+            return;
+        }
+
+        const rect = input.getBoundingClientRect();
+        armorAutocompleteContainer.style.left = (rect.left + window.scrollX) + 'px';
+        armorAutocompleteContainer.style.top = (rect.bottom + window.scrollY + 2) + 'px';
+        armorAutocompleteContainer.style.display = 'block';
+
+        matches.forEach(a => {
+            let item = document.createElement('div');
+            item.innerHTML = a.name + ` <span style="font-size:0.7em; color:var(--text-muted)">(${a.type})</span>`;
+            item.style.padding = '8px';
+            item.style.cursor = 'pointer';
+            item.style.borderBottom = '1px solid var(--table-border, #444)';
+            item.className = 'autocomplete-item';
+
+            item.addEventListener('mousedown', function (e) { e.preventDefault(); });
+            item.addEventListener('click', function () {
+                input.innerText = a.name;
+                tr.querySelector('.armor-ca').innerText = a.ca || '';
+                tr.querySelector('.armor-str').innerText = a.str || '';
+                tr.querySelector('.armor-stealth').checked = a.stealth || false;
+                tr.querySelector('.armor-weight').innerText = a.weight || '';
+                tr.querySelector('.armor-price').innerText = a.price || '';
+
+                armorAutocompleteContainer.style.display = 'none';
+                saveData();
+                bindStyleEvents();
+            });
+            armorAutocompleteContainer.appendChild(item);
+        });
+    });
 }
 
 let weaponAutocompleteContainer = null;
