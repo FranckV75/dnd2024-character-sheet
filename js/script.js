@@ -364,7 +364,19 @@ function addWeaponRow(data = null) {
         tr.querySelector('.wpn-prof').innerHTML = data.prof || '';
         tr.querySelector('.wpn-ammo').innerHTML = data.ammo || '';
         tr.querySelector('.wpn-note').innerHTML = data.note || '';
-        if (data.category) tr.dataset.category = data.category;
+
+        // Assigner la catégorie: soit depuis la sauvegarde, soit devinée depuis DD_RULES
+        if (data.category) {
+            tr.dataset.category = data.category;
+        } else if (typeof DD_RULES !== 'undefined' && DD_RULES.weapons) {
+            const cleanName = (data.name || '').trim().toLowerCase();
+            const foundWeapon = DD_RULES.weapons.find(w => w.name.toLowerCase() === cleanName);
+            if (foundWeapon && foundWeapon.category) {
+                tr.dataset.category = foundWeapon.category;
+            } else {
+                tr.dataset.category = '';
+            }
+        }
     }
 
     // Autocomplétion Armes D&D 2024
@@ -390,14 +402,14 @@ function filterWeapons(btn, filter) {
             return;
         }
 
-        const category = row.dataset.category || '';
+        const category = (row.dataset.category || '').toLowerCase();
 
         // Logique de filtrage en fonction des mots-clés de catégorie (injectés par setupWeaponAutocomplete)
         let show = false;
 
         // Filtres par maîtrise (Courante / Guerre)
-        if (filter === 'courante' && category === 'Courante') show = true;
-        if (filter === 'guerre' && category === 'Guerre') show = true;
+        if (filter === 'courante' && category.includes('courante')) show = true;
+        if (filter === 'guerre' && category.includes('guerre')) show = true;
 
         // Pour CàC et Distance, on regarde les propriétés de l'arme
         const props = (row.querySelector('.wpn-prop').innerText || '').toLowerCase();
