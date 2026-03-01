@@ -39,3 +39,8 @@
 - [x] Créer `js/feats-data.js` (dons depuis le Manuel)
 - [x] Connecter les menus déroulants des Stories 3, 4, 5 aux nouvelles données
 - [x] Charger les nouveaux scripts dans `index.html`
+## Story 7 : Refonte des Dons (Feats) D&D 2024
+- [ ] Mettre à jour `feats-data.js` pour inclure la description complète et l'ASI de tous les dons par niveau.
+- [ ] Dans `index.html`, créer les 6 blocs (1 pour chaque niveau de don : 0/1, 4, 8, 12, 16, 19).
+- [ ] Connecter chaque bloc à un menu déroulant dynamique triant par "Origine", "Général" ou "Épique" basé sur `feats-data.js`.
+- [ ] Afficher la description du don sélectionné dans le HTML (`<div class="feat-desc">`).
