@@ -153,6 +153,29 @@ function getFormData() {
     }
     d['dynamic_weapons'] = weapons;
 
+    // Armures dynamiques (Story 5)
+    const armors = [];
+    const aBody = document.getElementById('armors_body');
+    if (aBody) {
+        aBody.querySelectorAll('tr').forEach(tr => {
+            armors.push({
+                name: tr.querySelector('.armor-name') ? tr.querySelector('.armor-name').innerHTML : '',
+                ca: tr.querySelector('.armor-ca') ? tr.querySelector('.armor-ca').innerHTML : '',
+                str: tr.querySelector('.armor-str') ? tr.querySelector('.armor-str').innerHTML : '',
+                stealth: tr.querySelector('.armor-stealth') ? tr.querySelector('.armor-stealth').checked : false,
+                weight: tr.querySelector('.armor-weight') ? tr.querySelector('.armor-weight').innerHTML : '',
+                price: tr.querySelector('.armor-price') ? tr.querySelector('.armor-price').innerHTML : '',
+                comment: tr.querySelector('.armor-comment') ? tr.querySelector('.armor-comment').innerHTML : '',
+                equipped: tr.querySelector('.armor-equipped') ? tr.querySelector('.armor-equipped').checked : false
+            });
+        });
+    }
+    d['dynamic_armors'] = armors;
+
+    // Niveau de Fatigue D&D 2024
+    const fatigueEl = document.getElementById('fatigue_level');
+    d['fatigue_level'] = fatigueEl ? parseInt(fatigueEl.value) || 0 : 0;
+
     const spells = [];
     const sBody = document.getElementById('spells_body');
     if (sBody) {
@@ -249,6 +272,23 @@ function applyFormData(d) {
         } else {
             for (let i = 0; i < 6; i++) addSpellRow();
         }
+    }
+
+    // Armures dynamiques (Story 5)
+    const tbodyA = document.getElementById('armors_body');
+    if (tbodyA) {
+        tbodyA.innerHTML = '';
+        if (d.dynamic_armors && Array.isArray(d.dynamic_armors)) {
+            d.dynamic_armors.forEach(a => addArmorRow(a));
+        }
+    }
+
+    // Niveau de Fatigue D&D 2024
+    const fatigueEl = document.getElementById('fatigue_level');
+    if (fatigueEl && d.fatigue_level !== undefined) {
+        fatigueEl.value = d.fatigue_level;
+        // Mettre à jour la description si initFatigueDisplay a déjà été appelé
+        fatigueEl.dispatchEvent(new Event('input'));
     }
 
     let pp = document.getElementById('passive_perc');
