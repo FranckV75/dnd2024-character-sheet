@@ -35,7 +35,7 @@
 - [x] Étendre `storage.js` (`dynamic_armors`, `fatigue_level`)
 
 ## Story 6 : Base de Données Équipement & Dons
-- [ ] Créer `js/equipment-data.js` (armes + armures depuis AideDD/Manuel p212-219)
-- [ ] Créer `js/feats-data.js` (dons depuis le Manuel)
-- [ ] Connecter les menus déroulants des Stories 3, 4, 5 aux nouvelles données
-- [ ] Charger les nouveaux scripts dans `index.html`
+- [x] Créer `js/equipment-data.js` (armes + armures depuis AideDD/Manuel p212-219)
+- [x] Créer `js/feats-data.js` (dons depuis le Manuel)
+- [x] Connecter les menus déroulants des Stories 3, 4, 5 aux nouvelles données
+- [x] Charger les nouveaux scripts dans `index.html`
