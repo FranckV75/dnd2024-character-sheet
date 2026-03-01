@@ -59,14 +59,19 @@ function updateSubclassOptions(className) {
 
     if (!className) return;
 
-    for (const [key, classData] of Object.entries(DD_RULES.classes)) {
-        if (classData.nameFr === className && classData.subclasses) {
-            classData.subclasses.forEach(sub => {
-                const option = document.createElement('option');
-                option.value = sub;
-                option.textContent = sub;
-                subclassSelect.appendChild(option);
-            });
+    for (const [classKey, classData] of Object.entries(DD_RULES.classes)) {
+        if (classData.nameFr === className) {
+            // Trouver les sous-classes correspondantes dans DD_RULES.subclasses
+            if (DD_RULES.subclasses) {
+                for (const [subKey, subData] of Object.entries(DD_RULES.subclasses)) {
+                    if (subData.class === classKey) {
+                        const option = document.createElement('option');
+                        option.value = subData.nameFr;
+                        option.textContent = subData.nameFr;
+                        subclassSelect.appendChild(option);
+                    }
+                }
+            }
             break;
         }
     }
