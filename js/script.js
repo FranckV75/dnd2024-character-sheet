@@ -364,6 +364,7 @@ function addWeaponRow(data = null) {
         tr.querySelector('.wpn-prof').innerHTML = data.prof || '';
         tr.querySelector('.wpn-ammo').innerHTML = data.ammo || '';
         tr.querySelector('.wpn-note').innerHTML = data.note || '';
+        if (data.category) tr.dataset.category = data.category;
     }
 
     // Autocomplétion Armes D&D 2024
@@ -372,6 +373,45 @@ function addWeaponRow(data = null) {
     }
 
     bindStyleEvents();
+}
+
+/**
+ * Filtre les armes affichées dans le tableau selon leur catégorie
+ */
+function filterWeapons(btn, filter) {
+    // Gérer l'état actif des boutons
+    document.querySelectorAll('#weapon-filters .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const rows = document.querySelectorAll('#weapons_body tr');
+    rows.forEach(row => {
+        if (filter === 'all') {
+            row.style.display = '';
+            return;
+        }
+
+        const category = row.dataset.category || '';
+
+        // Logique de filtrage en fonction des mots-clés de catégorie (injectés par setupWeaponAutocomplete)
+        let show = false;
+
+        // Filtres par maîtrise (Courante / Guerre)
+        if (filter === 'courante' && category === 'Courante') show = true;
+        if (filter === 'guerre' && category === 'Guerre') show = true;
+
+        // Pour CàC et Distance, on regarde les propriétés de l'arme
+        const props = (row.querySelector('.wpn-prop').innerText || '').toLowerCase();
+        const isRanged = props.includes('munitions') || props.includes('lancer');
+
+        if (filter === 'cac' && !isRanged) show = true;
+        if (filter === 'distance' && isRanged) show = true;
+
+        row.style.display = show ? '' : 'none';
+
+        // Exemption : toujours afficher les lignes complètement vides (pour pouvoir en ajouter des nouvelles facilement sous un filtre)
+        const name = row.querySelector('.wpn-name').innerText.trim();
+        if (name === '') row.style.display = '';
+    });
 }
 
 // =============================================================================
@@ -669,9 +709,16 @@ function setupWeaponAutocomplete(input, tr) {
                 tr.querySelector('.wpn-dmg').innerHTML = w.dmg;
                 tr.querySelector('.wpn-prop').innerHTML = w.prop;
                 tr.querySelector('.wpn-prof').innerHTML = w.prof;
+                tr.dataset.category = w.category || ''; // Injection pour le filtrage
                 // ammo n'est pas rempli automatiquement pour que l'utilisateur gère (ex: 15/20)
                 weaponAutocompleteContainer.style.display = 'none';
                 saveData();
+
+                // Réappliquer le filtre actif si nécessaire
+                const activeFilter = document.querySelector('#weapon-filters .filter-btn.active');
+                if (activeFilter) {
+                    filterWeapons(activeFilter, activeFilter.dataset.filter);
+                }
             });
             weaponAutocompleteContainer.appendChild(item);
         });
