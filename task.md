@@ -29,10 +29,10 @@
 - [x] Adapter `dynamic_weapons` dans `storage.js` pour sauvegarder Propriétés, Maîtrise et Munitions
 
 ## Story 5 : Bloc Armures & Boucliers + Fatigue (Onglet 1)
-- [ ] Remplacer les checkboxes armures par un tableau détaillé (CA, Force, Discrétion, Poids, Prix, Équipé)
-- [ ] Menu déroulant armures du manuel
-- [ ] Ajouter Fatigue D&D 2024 (input 0-6) dans le bloc Repos
-- [ ] Étendre `storage.js` (`dynamic_armors`, `fatigue_level`)
+- [x] Remplacer les checkboxes armures par un tableau détaillé (CA, Force, Discrétion, Poids, Prix, Équipé)
+- [x] Menu déroulant armures du manuel
+- [x] Ajouter Fatigue D&D 2024 (input 0-6) dans le bloc Repos
+- [x] Étendre `storage.js` (`dynamic_armors`, `fatigue_level`)
 
 ## Story 6 : Base de Données Équipement & Dons
 - [ ] Créer `js/equipment-data.js` (armes + armures depuis AideDD/Manuel p212-219)
