@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -260,107 +260,118 @@
 
                     <!-- CENTER -->
                     <section class="col">
-                        <div class="row box" style="align-items: stretch;">
-                            <div class="col header-stat-col">
-                                <label class="header-stat-label">Bonus de Maîtrise</label>
-                                <div id="pb_display" class="rich-input center single-line header-stat-val-small">+2
+                        <div class="vitals-new-layout"
+                            style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
+                            <!-- LIGNE 1 : CA, Initi, Perce, [Maîtrise|Inspi|Vitesse], Jets de mort -->
+                            <div style="display: flex; gap: 10px; align-items: stretch;">
+                                <div class="ac-hex" style="flex: 0 0 140px; padding: 35px 5px 15px; min-height: 130px;">
+                                    <label style="font-size: 0.65rem;">Classe d'Armure</label>
+                                    <div contenteditable="true" data-name="ac"
+                                        class="rich-input center single-line header-stat-val-large"
+                                        style="border:none; background:transparent;"></div>
                                 </div>
-                            </div>
-                            <div class="col header-stat-col">
-                                <label class="header-stat-label small">Inspiration Héroïque<br>ou points de Foi</label>
-                                <div contenteditable="true" data-name="heroic_inspiration"
-                                    class="rich-input center single-line header-stat-val-small"></div>
-                            </div>
-                            <div class="col header-stat-col">
-                                <label class="header-stat-label">Vitesse</label>
-                                <div contenteditable="true" data-name="speed"
-                                    class="rich-input single-line center header-stat-val-small"></div>
-                            </div>
-                        </div>
+                                <div class="box vitals-box" style="flex: 1; min-width: 60px;">
+                                    <label style="text-align:center">Initiative</label>
+                                    <div contenteditable="true" data-name="initiative" id="initiative_val"
+                                        class="rich-input center single-line header-stat-val-small"></div>
+                                </div>
+                                <div class="box vitals-box" style="flex: 1; min-width: 80px;">
+                                    <label style="text-align:center">Perception Passive</label>
+                                    <div contenteditable="true" data-name="passive_perception" id="passive_perc"
+                                        class="rich-input center single-line header-stat-val-small">10</div>
+                                </div>
 
-                        <div class="vitals-grid">
-                            <div class="ac-hex">
-                                <label>Classe d'Armure</label>
-                                <div contenteditable="true" data-name="ac"
-                                    class="rich-input center single-line header-stat-val-large"
-                                    style="border:none; background:transparent;"></div>
-                            </div>
-                            <div class="box vitals-box">
-                                <label style="text-align:center">Initiative</label>
-                                <div contenteditable="true" data-name="initiative" id="initiative_val"
-                                    class="rich-input center single-line header-stat-val-small"></div>
-                            </div>
-                            <div class="box vitals-box">
-                                <label style="text-align:center">Perception Passive</label>
-                                <div contenteditable="true" data-name="passive_perception" id="passive_perc"
-                                    class="rich-input center single-line header-stat-val-small">10</div>
-                            </div>
-
-                            <div class="hp-hd-merged-box box"
-                                style="grid-column: span 2; display: flex; flex-direction: column; gap: 10px;">
-                                <!-- HP Section -->
-                                <div class="hp-section"
-                                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                                    <div><label>PV Maximum</label>
-                                        <div contenteditable="true" data-name="hp_max" class="rich-input single-line"
-                                            style="font-size: 1.25rem; font-weight: bold;">
-                                        </div>
+                                <!-- Combine Maîtrise / Inspi / Vitesse -->
+                                <div class="box"
+                                    style="flex: 3; display: flex; justify-content: space-around; align-items: center; padding: 5px;">
+                                    <div
+                                        style="text-align:center; flex:1; border-right: 1px dashed var(--primary-border);">
+                                        <label class="header-stat-label" style="font-size:0.6rem;">Bonus de
+                                            Maîtrise</label>
+                                        <div id="pb_display" class="rich-input center single-line header-stat-val-small"
+                                            style="border:none; background:transparent;">+2</div>
                                     </div>
-                                    <div><label>PV Actuels</label>
-                                        <div contenteditable="true" data-name="hp_current"
-                                            class="rich-input single-line"
-                                            style="font-size: 1.25rem; font-weight: bold;"></div>
+                                    <div
+                                        style="text-align:center; flex:1.5; border-right: 1px dashed var(--primary-border);">
+                                        <label class="header-stat-label" style="font-size:0.6rem;">Inspiration
+                                            Héroïque<br>ou points de Foi</label>
+                                        <div contenteditable="true" data-name="heroic_inspiration"
+                                            class="rich-input center single-line header-stat-val-small"
+                                            style="border:none; background:transparent;"></div>
                                     </div>
-                                    <div style="grid-column: span 2;"><label>PV Temporaires</label>
-                                        <div contenteditable="true" data-name="hp_temp" class="rich-input single-line"
-                                            style="font-size: 1.25rem; font-weight: bold;">
-                                        </div>
+                                    <div style="text-align:center; flex:1;">
+                                        <label class="header-stat-label" style="font-size:0.6rem;">Vitesse</label>
+                                        <div contenteditable="true" data-name="speed"
+                                            class="rich-input center single-line header-stat-val-small"
+                                            style="border:none; background:transparent;"></div>
                                     </div>
                                 </div>
 
-                                <!-- HD Section (Aligned Labels & Inputs) -->
-                                <div class="hd-section" style="margin-top: 5px; display:flex;">
-                                    <div style="flex:0.6; display:flex; flex-direction:column;">
+                                <div class="box death-saves"
+                                    style="flex: 1.5; min-width: 130px; display:flex; flex-direction:column; justify-content:center;">
+                                    <label style="text-align:center; margin-bottom:5px;">Jets contre la mort</label>
+                                    <div class="chk-container" style="justify-content:center;">Succès: <input
+                                            type="checkbox" name="ds_s1"> <input type="checkbox" name="ds_s2"> <input
+                                            type="checkbox" name="ds_s3"></div>
+                                    <div class="chk-container" style="justify-content:center;">Échecs: <input
+                                            type="checkbox" name="ds_f1"> <input type="checkbox" name="ds_f2"> <input
+                                            type="checkbox" name="ds_f3"></div>
+                                </div>
+                            </div>
+
+                            <!-- LIGNE 2 : PV Actuels, PV Max, PV Temp, Dés de Vie, Ressource -->
+                            <div style="display: flex; gap: 10px; align-items: stretch;">
+                                <div class="box" style="flex: 1; text-align:center;">
+                                    <label>PV Actuels</label>
+                                    <div contenteditable="true" data-name="hp_current"
+                                        class="rich-input single-line center"
+                                        style="font-size: 1.5rem; font-weight: bold; border:none; background:transparent;">
+                                    </div>
+                                </div>
+                                <div class="box" style="flex: 1; text-align:center;">
+                                    <label>PV Maximum</label>
+                                    <div contenteditable="true" data-name="hp_max" class="rich-input single-line center"
+                                        style="font-size: 1.5rem; font-weight: bold; border:none; background:transparent;">
+                                    </div>
+                                </div>
+                                <div class="box" style="flex: 1; text-align:center;">
+                                    <label>PV Temp.</label>
+                                    <div contenteditable="true" data-name="hp_temp"
+                                        class="rich-input single-line center"
+                                        style="font-size: 1.5rem; font-weight: bold; border:none; background:transparent;">
+                                    </div>
+                                </div>
+
+                                <div class="box"
+                                    style="flex: 2; display: flex; align-items: center; justify-content: space-around; padding: 5px;">
+                                    <div
+                                        style="text-align:center; flex:1; border-right: 1px dashed var(--primary-border); padding-right:5px;">
                                         <label>Dés de Vie</label>
-                                        <select id="hd_type_select" name="hd_type" class="rich-input"
-                                            style="width: 100%; text-align-last: center; font-family: 'Cinzel', serif; font-size: 1.1rem; margin-top:2px;">
+                                        <select id="hd_type_select" name="hd_type" class="rich-input center"
+                                            style="width:100%; font-family:'Cinzel',serif; font-size:1.1rem; border:none; background:transparent; margin-top:5px;">
                                             <option value="d6">d6</option>
                                             <option value="d8">d8</option>
                                             <option value="d10">d10</option>
                                             <option value="d12">d12</option>
                                         </select>
                                     </div>
-
-                                    <div style="flex:1.4; display:flex; flex-direction:column; padding-left:10px;">
-                                        <label style="text-align:center;">Dés Utilisés</label>
-                                        <div class="row"
-                                            style="align-items: center; gap: 5px; justify-content: center; width: 100%; margin-top:2px;">
+                                    <div style="text-align:center; flex:1; padding-left:5px;">
+                                        <label>Dés Utilisés</label>
+                                        <div
+                                            style="display:flex; justify-content:center; align-items:center; gap:5px; margin-top:5px;">
                                             <select id="hd_current_select" name="hd_current" class="rich-input center"
-                                                style="width: 50px; text-align-last: center; font-family: 'Cinzel', serif; font-weight: bold; font-size: 1.25rem; appearance: none; -webkit-appearance: none; border-bottom: 2px solid var(--primary-border);">
-                                                <!-- Options populated by JS -->
+                                                style="width:40px; font-weight:bold; font-size:1.25rem; font-family:'Cinzel',serif; border:none; background:transparent; appearance:none; -webkit-appearance:none; padding:0;">
                                             </select>
-                                            <span style="font-weight: bold; font-size: 1.25rem;">/</span>
-                                            <div id="hd_max_display" class="rich-input single-line center"
-                                                style="width: 40px; border:none; font-weight:bold; cursor: default; font-size: 1.25rem;">
+                                            <span style="font-size:1.25rem; font-weight:bold;">/</span>
+                                            <div id="hd_max_display"
+                                                style="width:30px; font-size:1.25rem; font-weight:bold; cursor:default;">
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- COLONNE DROITE : JETS CONTRE LA MORT + RESSOURCES -->
-                            <div class="vitals-side-col" style="display:flex; flex-direction:column; gap:10px;">
-                                <div class="box death-saves">
-                                    <label>Jets contre la mort</label>
-                                    <div class="chk-container">Succès: <input type="checkbox" name="ds_s1"> <input
-                                            type="checkbox" name="ds_s2"> <input type="checkbox" name="ds_s3"></div>
-                                    <div class="chk-container">Échecs: <input type="checkbox" name="ds_f1"> <input
-                                            type="checkbox" name="ds_f2"> <input type="checkbox" name="ds_f3"></div>
-                                </div>
-
-                                <!-- RESSOURCE DE CLASSE (RAGES, KI, ETC.) -->
                                 <div id="class-resource-box" class="box"
-                                    style="display:none; border:2px solid var(--accent-color);">
+                                    style="flex: 1.5; min-width: 130px; display:flex; flex-direction:column; justify-content:center; align-items:center; border:2px solid var(--accent-color);">
                                     <label style="color:var(--accent-color); text-align:center;"
                                         id="class-resource-label">Ressource</label>
                                     <div id="class-resource-slots"></div>
@@ -398,9 +409,45 @@
                                 <input type="checkbox" name="prof_armor_heavy"> Lourdes
                                 <input type="checkbox" name="prof_armor_shield"> Boucliers
                             </div>
+
+                            <!-- TABLEAU D'ARMURES -->
+                            <label>Armures port&#233;es</label>
+                            <div class="scroll-table-container" style="max-height: 220px; margin-top: 6px;">
+                                <table class="data-table armors-table">
+                                    <thead>
+                                        <tr>
+                                            <th width="22%">Nom</th>
+                                            <th width="8%">CA</th>
+                                            <th width="8%">For min</th>
+                                            <th width="10%" title="D&eacute;savantage Discr&eacute;tion">Discr. d&eacute;sav.</th>
+                                            <th width="8%">Poids</th>
+                                            <th width="10%">Prix</th>
+                                            <th>Commentaire</th>
+                                            <th width="8%" style="text-align:center;">&Eacute;quip&eacute;e</th>
+                                            <th style="width:20px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="armors_body"></tbody>
+                                </table>
+                            </div>
+                            <div class="add-row-btn" onclick="addArmorRow()">+ Ajouter une armure</div>
                         </div>
                         <div class="box rest-block-compact" style="margin-top:20px;">
                             <h3>⚔️ Repos ⚔️</h3>
+
+                            <!-- FATIGUE D&D 2024 -->
+                            <div
+                                style="display:flex; align-items:center; gap:10px; margin-bottom:12px; border-bottom: 1px dashed var(--primary-border); padding-bottom: 10px;">
+                                <label style="font-size:0.8rem; white-space:nowrap; flex-shrink:0;">Fatigue
+                                    (0-6)</label>
+                                <input type="number" id="fatigue_level" name="fatigue_level" min="0" max="6" value="0"
+                                    class="rich-input center"
+                                    style="width:50px; font-size:1.2rem; font-weight:bold; text-align:center; padding:2px;"
+                                    aria-label="Niveau de Fatigue (0 = aucune, 6 = mort)">
+                                <span id="fatigue-description"
+                                    style="font-size:0.72rem; color: var(--text-muted, #888); font-style:italic;"></span>
+                            </div>
+
                             <div class="rest-buttons-compact"
                                 style="display: flex; justify-content: space-around; gap: 10px; margin-top: 10px;">
                                 <button class="btn btn-short-rest" id="btn-short-rest" type="button" style="flex:1;">

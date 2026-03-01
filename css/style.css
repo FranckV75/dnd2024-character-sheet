@@ -1401,6 +1401,12 @@ input[type="checkbox"].square {
     min-height: 20px;
 }
 
+/* === ARMORS TABLE STYLING === */
+.armors-table .rich-input {
+    font-size: 0.70rem;
+    min-height: 20px;
+}
+
 .add-row-btn {
     width: 100%;
     padding: 6px;

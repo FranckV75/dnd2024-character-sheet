@@ -280,8 +280,10 @@ window.onload = function () {
     // Initialiser le systÃ¨me d'onglets
     initTabs();
 
-    // Initialiser le systÃ¨me de repos
+    // Initialiser le système de repos
     initRestSystem();
+    // Initialiser l'affichage de la Fatigue D&D 2024
+    initFatigueDisplay();
     setupHeaderAutoFit();
 };
 
@@ -370,7 +372,69 @@ function addWeaponRow(data = null) {
     bindStyleEvents();
 }
 
+// =============================================================================
+// ARMURES — Tableau dynamique (Story 5)
+// =============================================================================
+
+const FATIGUE_DESCRIPTIONS = [
+    '',
+    '-1D aux jets de d20',
+    'Vitesse réduite de moitié',
+    'Désavantage aux jets de sauvegarde',
+    'PV maximum réduits de moitié',
+    'Vitesse réduite à 1,50 m',
+    '⚠️ MORT'
+];
+
+function initFatigueDisplay() {
+    const input = document.getElementById('fatigue_level');
+    const desc = document.getElementById('fatigue-description');
+    if (!input || !desc) return;
+
+    const update = () => {
+        const val = Math.max(0, Math.min(6, parseInt(input.value) || 0));
+        desc.textContent = FATIGUE_DESCRIPTIONS[val] || '';
+        desc.style.color = val >= 5 ? 'var(--danger-color, #e74c3c)' : (val >= 3 ? 'var(--warning-color, #e67e22)' : '');
+    };
+    input.addEventListener('input', update);
+    input.addEventListener('change', () => { saveData(); });
+    update();
+}
+
+function addArmorRow(data = null) {
+    const body = document.getElementById('armors_body');
+    if (!body) return;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td><div contenteditable="true" class="rich-input single-line armor-name"></div></td>
+        <td><div contenteditable="true" class="rich-input single-line armor-ca"></div></td>
+        <td><div contenteditable="true" class="rich-input single-line armor-str"></div></td>
+        <td style="text-align:center;"><input type="checkbox" class="armor-stealth" aria-label="Désavantage Discrétion"></td>
+        <td><div contenteditable="true" class="rich-input single-line armor-weight"></div></td>
+        <td><div contenteditable="true" class="rich-input single-line armor-price"></div></td>
+        <td><div contenteditable="true" class="rich-input single-line armor-comment"></div></td>
+        <td style="text-align:center;"><input type="checkbox" class="armor-equipped" aria-label="Armure équipée"></td>
+        <td><button class="del-btn" aria-label="Supprimer l'armure" onclick="this.closest('tr').remove(); saveData();">x</button></td>
+    `;
+    body.appendChild(tr);
+    if (data) {
+        tr.querySelector('.armor-name').innerHTML = data.name || '';
+        tr.querySelector('.armor-ca').innerHTML = data.ca || '';
+        tr.querySelector('.armor-str').innerHTML = data.str || '';
+        tr.querySelector('.armor-stealth').checked = data.stealth || false;
+        tr.querySelector('.armor-weight').innerHTML = data.weight || '';
+        tr.querySelector('.armor-price').innerHTML = data.price || '';
+        tr.querySelector('.armor-comment').innerHTML = data.comment || '';
+        tr.querySelector('.armor-equipped').checked = data.equipped || false;
+    }
+    // Sauvegarde auto au changement des checkboxes
+    tr.querySelector('.armor-stealth').addEventListener('change', saveData);
+    tr.querySelector('.armor-equipped').addEventListener('change', saveData);
+    bindStyleEvents();
+}
+
 let weaponAutocompleteContainer = null;
+
 
 function setupWeaponAutocomplete(input, tr) {
     if (!weaponAutocompleteContainer) {
