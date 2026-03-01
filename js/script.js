@@ -48,8 +48,8 @@ function populateSelectOptions() {
 }
 
 /**
- * Met Ã  jour le select des Sous-Classes selon la Classe sÃ©lectionnÃ©e
- * @param {string} className - Nom de la classe sÃ©lectionnÃ©e
+ * Met à jour le select des Sous-Classes selon la Classe sélectionnée
+ * @param {string} className - Nom de la classe sélectionnée
  */
 function updateSubclassOptions(className) {
     const subclassSelect = document.getElementById('char_subclass');
@@ -59,30 +59,82 @@ function updateSubclassOptions(className) {
 
     if (!className) return;
 
-    // Trouver la clÃ© de la classe
-    let classKey = null;
     for (const [key, classData] of Object.entries(DD_RULES.classes)) {
-        if (classData.nameFr === className) {
-            classKey = key;
+        if (classData.nameFr === className && classData.subclasses) {
+            classData.subclasses.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub;
+                option.textContent = sub;
+                subclassSelect.appendChild(option);
+            });
             break;
-        }
-    }
-
-    if (!classKey) return;
-
-    // Filtrer les sous-classes pour cette classe
-    for (const [key, subclassData] of Object.entries(DD_RULES.subclasses)) {
-        if (subclassData.class === classKey) {
-            const option = document.createElement('option');
-            option.value = subclassData.nameFr;
-            option.textContent = subclassData.nameFr;
-            subclassSelect.appendChild(option);
         }
     }
 }
 
 /**
- * Remplit le select du Destin HÃ©roÃ¯que (Module OdyssÃ©e)
+ * Initialise les selects de Dons (Feats)
+ */
+function initFeatSelects() {
+    if (typeof FEATS_DATA === 'undefined') return;
+
+    const featSelects = document.querySelectorAll('.feat-select');
+
+    // Trier les dons par Type puis par Ordre Alphabétique
+    const featsArray = Object.keys(FEATS_DATA).map(key => ({
+        id: key,
+        ...FEATS_DATA[key]
+    })).sort((a, b) => {
+        if (a.type !== b.type) return a.type.localeCompare(b.type);
+        return a.name.localeCompare(b.name);
+    });
+
+    featSelects.forEach(select => {
+        // Sauvegarder la valeur sélectionnée si elle existe
+        const currentValue = select.value;
+        select.innerHTML = '<option value="">-- Choisir un don --</option>';
+
+        let currentOptGroup = null;
+
+        featsArray.forEach(feat => {
+            if (!currentOptGroup || currentOptGroup.label !== `Dons ${feat.type}`) {
+                currentOptGroup = document.createElement('optgroup');
+                currentOptGroup.label = `Dons ${feat.type}`;
+                select.appendChild(currentOptGroup);
+            }
+
+            const option = document.createElement('option');
+            option.value = feat.id;
+            option.textContent = feat.name;
+            currentOptGroup.appendChild(option);
+        });
+
+        if (currentValue) select.value = currentValue;
+
+        // Gérer le changement
+        select.addEventListener('change', function () {
+            const container = this.closest('.feat-container');
+            const asiSpan = container.querySelector('.feat-asi');
+            const descBox = container.querySelector('.feat-desc-box');
+
+            const featId = this.value;
+            if (featId && FEATS_DATA[featId]) {
+                const feat = FEATS_DATA[featId];
+                asiSpan.textContent = feat.asi === "Aucune" ? "" : feat.asi;
+                descBox.innerHTML = `<strong>Prérequis:</strong> ${feat.prereq}<br/>${feat.desc}`;
+                descBox.style.display = "block";
+            } else {
+                asiSpan.textContent = "";
+                descBox.innerHTML = "";
+                descBox.style.display = "none";
+            }
+            saveData();
+        });
+    });
+}
+
+/**
+ * Remplit le select du Destin Hhroéque (Module Odysséee)
  */
 function populateHeroicDestiny() {
     const heroicDestinySelect = document.getElementById('heroic_destiny');
@@ -194,6 +246,7 @@ window.onload = function () {
     initSpells();
     populateSelectOptions(); // Remplir les menus déroulants
     populateHeroicDestiny(); // Remplir le menu Destin Héroïque
+    initFeatSelects(); // Initialiser les listes déroulantes de Dons
     updatePalier(); // Initialiser le Palier Odyssée au chargement
     initPremiumReveal(); // Initialiser le fade-in au scroll
     initPremiumTooltips(); // Tooltips custom sur éléments title
@@ -501,84 +554,6 @@ function addArmorRow(data = null) {
     bindStyleEvents();
 }
 
-let featAutocompleteContainer = null;
-
-function initFeatsAutocomplete() {
-    if (typeof FEATS_DATA === 'undefined') return;
-    const featsInputs = document.querySelectorAll('#feats-list [data-name^="feat_"]');
-    featsInputs.forEach(input => {
-        setupFeatAutocomplete(input);
-    });
-}
-
-function setupFeatAutocomplete(input) {
-    if (!featAutocompleteContainer) {
-        featAutocompleteContainer = document.createElement('div');
-        featAutocompleteContainer.id = 'feat-autocomplete';
-        featAutocompleteContainer.style.position = 'absolute';
-        featAutocompleteContainer.style.zIndex = '99999';
-        featAutocompleteContainer.style.backgroundColor = 'var(--bg-color, #2a2a2a)';
-        featAutocompleteContainer.style.border = '1px solid var(--primary-border, #ccc)';
-        featAutocompleteContainer.style.maxHeight = '250px';
-        featAutocompleteContainer.style.overflowY = 'auto';
-        featAutocompleteContainer.style.display = 'none';
-        featAutocompleteContainer.style.boxShadow = '0 4px 6px rgba(0,0,0,0.5)';
-        featAutocompleteContainer.style.minWidth = '220px';
-        document.body.appendChild(featAutocompleteContainer);
-
-        document.addEventListener('click', function (e) {
-            if (featAutocompleteContainer.style.display !== 'none' && e.target !== input && !featAutocompleteContainer.contains(e.target)) {
-                featAutocompleteContainer.style.display = 'none';
-            }
-        });
-    }
-
-    input.addEventListener('input', function () {
-        let val = this.innerText.trim();
-        featAutocompleteContainer.innerHTML = '';
-
-        if (!val || typeof FEATS_DATA === 'undefined') {
-            featAutocompleteContainer.style.display = 'none';
-            return;
-        }
-
-        const q = val.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        let matches = FEATS_DATA.filter(f => {
-            const fName = f.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-            return fName.includes(q);
-        });
-
-        if (matches.length === 0) {
-            featAutocompleteContainer.style.display = 'none';
-            return;
-        }
-
-        const rect = input.getBoundingClientRect();
-        featAutocompleteContainer.style.left = (rect.left + window.scrollX) + 'px';
-        featAutocompleteContainer.style.top = (rect.bottom + window.scrollY + 2) + 'px';
-        featAutocompleteContainer.style.display = 'block';
-
-        matches.forEach(f => {
-            let item = document.createElement('div');
-            item.innerHTML = `<strong>${f.name}</strong> <span style="font-size:0.75em; color:var(--accent-color);">[${f.type}]</span><br>
-                              <span style="font-size:0.7em; color:var(--text-muted);">${f.prereq ? 'Préreq: ' + f.prereq : 'Aucun prérequis'}</span>`;
-            item.style.padding = '8px';
-            item.style.cursor = 'pointer';
-            item.style.borderBottom = '1px solid var(--table-border, #444)';
-            item.className = 'autocomplete-item';
-
-            item.addEventListener('mousedown', function (e) { e.preventDefault(); });
-            item.addEventListener('click', function () {
-                input.innerText = f.name;
-
-                featAutocompleteContainer.style.display = 'none';
-                saveData();
-                bindStyleEvents();
-            });
-            featAutocompleteContainer.appendChild(item);
-        });
-    });
-}
 
 let armorAutocompleteContainer = null;
 

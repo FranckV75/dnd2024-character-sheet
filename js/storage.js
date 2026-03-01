@@ -232,8 +232,8 @@ function getFormData() {
 }
 
 /**
- * Applique les données au formulaire
- * @param {Object} d - Données à appliquer
+ * Applique les donnÃ©es au formulaire
+ * @param {Object} d - DonnÃ©es Ã  appliquer
  */
 function applyFormData(d) {
     document.querySelectorAll('input, select').forEach(el => {
@@ -246,6 +246,15 @@ function applyFormData(d) {
         let key = el.dataset.name || el.id;
         if (key && d.hasOwnProperty(key)) {
             el.innerHTML = d[key];
+        }
+    });
+
+    // Mettre à jour l'affichage des dons après restauration
+    document.querySelectorAll('.feat-select').forEach(select => {
+        let key = select.dataset.name;
+        if (key && d.hasOwnProperty(key)) {
+            select.value = d[key];
+            select.dispatchEvent(new Event('change'));
         }
     });
 

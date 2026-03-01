@@ -505,59 +505,107 @@
                     <div class="box">
                         <h3>⭐ Dons</h3>
                         <div id="feats-list">
-                            <!-- Rangée don 1 -->
-                            <div class="feat-row"
-                                style="display: grid; grid-template-columns: auto 1fr; gap: 6px; align-items: center; margin-bottom: 8px;">
-                                <span class="feat-level-badge"
-                                    style="font-size: 0.7rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 2px 6px; white-space: nowrap;">Niv.
-                                    —</span>
-                                <div contenteditable="true" data-name="feat_1" class="rich-input single-line"
-                                    style="font-size: 0.9rem;" placeholder="Nom du don..." aria-label="Don 1"></div>
+                            <!-- Niveau 1 -->
+                            <div class="feat-container" data-level="1" style="margin-bottom: 12px;">
+                                <div class="feat-header" style="display:flex; gap:10px; align-items:center;">
+                                    <span class="feat-level-badge"
+                                        style="font-size: 0.8rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 4px 8px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">Niv.
+                                        1</span>
+                                    <select class="feat-select rich-input" data-name="feat_1"
+                                        style="flex:1; font-size: 1rem; padding: 6px;">
+                                        <option value="">-- Choisir un don --</option>
+                                    </select>
+                                    <span class="feat-asi"
+                                        style="font-size: 0.8rem; font-weight: bold; color: var(--text-color, #e0d0b0); min-width: 60px; text-align: right;"></span>
+                                </div>
+                                <div class="feat-desc-box"
+                                    style="display:none; margin-top: 6px; padding: 10px; font-size: 0.85rem; background: rgba(0,0,0,0.25); border-left: 3px solid var(--accent-color, #8b4513); border-radius: 0 4px 4px 0; line-height: 1.4;">
+                                </div>
                             </div>
-                            <!-- Rangée don 2 -->
-                            <div class="feat-row"
-                                style="display: grid; grid-template-columns: auto 1fr; gap: 6px; align-items: center; margin-bottom: 8px;">
-                                <span class="feat-level-badge"
-                                    style="font-size: 0.7rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 2px 6px; white-space: nowrap;">Niv.
-                                    —</span>
-                                <div contenteditable="true" data-name="feat_2" class="rich-input single-line"
-                                    style="font-size: 0.9rem;" aria-label="Don 2"></div>
+                            <!-- Niveau 4 -->
+                            <div class="feat-container" data-level="4" style="margin-bottom: 12px;">
+                                <div class="feat-header" style="display:flex; gap:10px; align-items:center;">
+                                    <span class="feat-level-badge"
+                                        style="font-size: 0.8rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 4px 8px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">Niv.
+                                        4</span>
+                                    <select class="feat-select rich-input" data-name="feat_4"
+                                        style="flex:1; font-size: 1rem; padding: 6px;">
+                                        <option value="">-- Choisir un don --</option>
+                                    </select>
+                                    <span class="feat-asi"
+                                        style="font-size: 0.8rem; font-weight: bold; color: var(--text-color, #e0d0b0); min-width: 60px; text-align: right;"></span>
+                                </div>
+                                <div class="feat-desc-box"
+                                    style="display:none; margin-top: 6px; padding: 10px; font-size: 0.85rem; background: rgba(0,0,0,0.25); border-left: 3px solid var(--accent-color, #8b4513); border-radius: 0 4px 4px 0; line-height: 1.4;">
+                                </div>
                             </div>
-                            <!-- Rangée don 3 -->
-                            <div class="feat-row"
-                                style="display: grid; grid-template-columns: auto 1fr; gap: 6px; align-items: center; margin-bottom: 8px;">
-                                <span class="feat-level-badge"
-                                    style="font-size: 0.7rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 2px 6px; white-space: nowrap;">Niv.
-                                    —</span>
-                                <div contenteditable="true" data-name="feat_3" class="rich-input single-line"
-                                    style="font-size: 0.9rem;" aria-label="Don 3"></div>
+                            <!-- Niveau 8 -->
+                            <div class="feat-container" data-level="8" style="margin-bottom: 12px;">
+                                <div class="feat-header" style="display:flex; gap:10px; align-items:center;">
+                                    <span class="feat-level-badge"
+                                        style="font-size: 0.8rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 4px 8px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">Niv.
+                                        8</span>
+                                    <select class="feat-select rich-input" data-name="feat_8"
+                                        style="flex:1; font-size: 1rem; padding: 6px;">
+                                        <option value="">-- Choisir un don --</option>
+                                    </select>
+                                    <span class="feat-asi"
+                                        style="font-size: 0.8rem; font-weight: bold; color: var(--text-color, #e0d0b0); min-width: 60px; text-align: right;"></span>
+                                </div>
+                                <div class="feat-desc-box"
+                                    style="display:none; margin-top: 6px; padding: 10px; font-size: 0.85rem; background: rgba(0,0,0,0.25); border-left: 3px solid var(--accent-color, #8b4513); border-radius: 0 4px 4px 0; line-height: 1.4;">
+                                </div>
                             </div>
-                            <!-- Rangée don 4 -->
-                            <div class="feat-row"
-                                style="display: grid; grid-template-columns: auto 1fr; gap: 6px; align-items: center; margin-bottom: 8px;">
-                                <span class="feat-level-badge"
-                                    style="font-size: 0.7rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 2px 6px; white-space: nowrap;">Niv.
-                                    —</span>
-                                <div contenteditable="true" data-name="feat_4" class="rich-input single-line"
-                                    style="font-size: 0.9rem;" aria-label="Don 4"></div>
+                            <!-- Niveau 12 -->
+                            <div class="feat-container" data-level="12" style="margin-bottom: 12px;">
+                                <div class="feat-header" style="display:flex; gap:10px; align-items:center;">
+                                    <span class="feat-level-badge"
+                                        style="font-size: 0.8rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 4px 8px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">Niv.
+                                        12</span>
+                                    <select class="feat-select rich-input" data-name="feat_12"
+                                        style="flex:1; font-size: 1rem; padding: 6px;">
+                                        <option value="">-- Choisir un don --</option>
+                                    </select>
+                                    <span class="feat-asi"
+                                        style="font-size: 0.8rem; font-weight: bold; color: var(--text-color, #e0d0b0); min-width: 60px; text-align: right;"></span>
+                                </div>
+                                <div class="feat-desc-box"
+                                    style="display:none; margin-top: 6px; padding: 10px; font-size: 0.85rem; background: rgba(0,0,0,0.25); border-left: 3px solid var(--accent-color, #8b4513); border-radius: 0 4px 4px 0; line-height: 1.4;">
+                                </div>
                             </div>
-                            <!-- Rangée don 5 -->
-                            <div class="feat-row"
-                                style="display: grid; grid-template-columns: auto 1fr; gap: 6px; align-items: center; margin-bottom: 8px;">
-                                <span class="feat-level-badge"
-                                    style="font-size: 0.7rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 2px 6px; white-space: nowrap;">Niv.
-                                    —</span>
-                                <div contenteditable="true" data-name="feat_5" class="rich-input single-line"
-                                    style="font-size: 0.9rem;" aria-label="Don 5"></div>
+                            <!-- Niveau 16 -->
+                            <div class="feat-container" data-level="16" style="margin-bottom: 12px;">
+                                <div class="feat-header" style="display:flex; gap:10px; align-items:center;">
+                                    <span class="feat-level-badge"
+                                        style="font-size: 0.8rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 4px 8px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">Niv.
+                                        16</span>
+                                    <select class="feat-select rich-input" data-name="feat_16"
+                                        style="flex:1; font-size: 1rem; padding: 6px;">
+                                        <option value="">-- Choisir un don --</option>
+                                    </select>
+                                    <span class="feat-asi"
+                                        style="font-size: 0.8rem; font-weight: bold; color: var(--text-color, #e0d0b0); min-width: 60px; text-align: right;"></span>
+                                </div>
+                                <div class="feat-desc-box"
+                                    style="display:none; margin-top: 6px; padding: 10px; font-size: 0.85rem; background: rgba(0,0,0,0.25); border-left: 3px solid var(--accent-color, #8b4513); border-radius: 0 4px 4px 0; line-height: 1.4;">
+                                </div>
                             </div>
-                            <!-- Rangée don 6 -->
-                            <div class="feat-row"
-                                style="display: grid; grid-template-columns: auto 1fr; gap: 6px; align-items: center; margin-bottom: 4px;">
-                                <span class="feat-level-badge"
-                                    style="font-size: 0.7rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 2px 6px; white-space: nowrap;">Niv.
-                                    —</span>
-                                <div contenteditable="true" data-name="feat_6" class="rich-input single-line"
-                                    style="font-size: 0.9rem;" aria-label="Don 6"></div>
+                            <!-- Niveau 19 -->
+                            <div class="feat-container" data-level="19" style="margin-bottom: 4px;">
+                                <div class="feat-header" style="display:flex; gap:10px; align-items:center;">
+                                    <span class="feat-level-badge"
+                                        style="font-size: 0.8rem; background: var(--accent-color, #8b4513); color: #fff; border-radius: 4px; padding: 4px 8px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">Niv.
+                                        19</span>
+                                    <select class="feat-select rich-input" data-name="feat_19"
+                                        style="flex:1; font-size: 1rem; padding: 6px;">
+                                        <option value="">-- Choisir un don --</option>
+                                    </select>
+                                    <span class="feat-asi"
+                                        style="font-size: 0.8rem; font-weight: bold; color: var(--text-color, #e0d0b0); min-width: 60px; text-align: right;"></span>
+                                </div>
+                                <div class="feat-desc-box"
+                                    style="display:none; margin-top: 6px; padding: 10px; font-size: 0.85rem; background: rgba(0,0,0,0.25); border-left: 3px solid var(--accent-color, #8b4513); border-radius: 0 4px 4px 0; line-height: 1.4;">
+                                </div>
                             </div>
                         </div>
                     </div>
