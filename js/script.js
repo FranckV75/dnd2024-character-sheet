@@ -389,16 +389,16 @@ function generateSkillsHTML() {
     // Ajout d'un bloc combiné Outils/Langues dans la 6ème case vide de la grille
     h += `<div class="skill-group" style="display: flex; flex-direction: column; justify-content: space-between; background: transparent; border: none; box-shadow: none; gap: 4px;">`;
 
-    // Outils : petite police
+    // Outils : petite police, max-height de 2 lignes
     h += `<div class="box text-left" style="margin: 0; padding: 4px 8px; display: flex; flex-direction: column;">`;
     h += `<h3 style="margin-top:0; font-size: 0.75rem; padding-bottom: 2px; border-bottom: 1px solid var(--primary-border); margin-bottom: 2px;">Outils</h3>`;
-    h += `<div contenteditable="true" data-name="profs_tools" class="rich-input multi-line custom-scrollbar" style="min-height: 20px; overflow-y: auto; font-size: 0.75rem; line-height: 1.2;"></div>`;
+    h += `<div contenteditable="true" data-name="profs_tools" class="rich-input multi-line custom-scrollbar" style="min-height: 20px; max-height: 29px; overflow-y: auto; font-size: 0.75rem; line-height: 1.2;"></div>`;
     h += `</div>`;
 
-    // Langues : petite police, plus grand espace
+    // Langues : petite police, plus grand espace, max-height de 5 lignes
     h += `<div class="box text-left" style="margin: 0; padding: 4px 8px; display: flex; flex-direction: column; flex: 1;">`;
     h += `<h3 style="margin-top:0; font-size: 0.75rem; padding-bottom: 2px; border-bottom: 1px solid var(--primary-border); margin-bottom: 2px;">Langues</h3>`;
-    h += `<div contenteditable="true" data-name="langs" class="rich-input multi-line custom-scrollbar" style="min-height: 60px; overflow-y: auto; font-size: 0.75rem; line-height: 1.2;"></div>`;
+    h += `<div contenteditable="true" data-name="langs" class="rich-input multi-line custom-scrollbar" style="min-height: 60px; max-height: 72px; overflow-y: auto; font-size: 0.75rem; line-height: 1.2;"></div>`;
     h += `</div>`;
 
     h += `</div>`;
