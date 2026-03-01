@@ -369,8 +369,16 @@ function addWeaponRow(data = null) {
         if (data.category) {
             tr.dataset.category = data.category;
         } else if (typeof DD_RULES !== 'undefined' && DD_RULES.weapons) {
-            const cleanName = (data.name || '').trim().toLowerCase();
-            const foundWeapon = DD_RULES.weapons.find(w => w.name.toLowerCase() === cleanName);
+            let cleanName = (data.name || '').trim().toLowerCase();
+            // Retirer les pluriels "s", les suffixes (1), etc. pour maximiser les chances de match
+            cleanName = cleanName.replace(/\(\d+\)/g, '').trim();
+            if (cleanName.endsWith('s') && cleanName.length > 3) cleanName = cleanName.slice(0, -1);
+
+            const foundWeapon = DD_RULES.weapons.find(w => {
+                const wName = w.name.toLowerCase();
+                return cleanName.includes(wName) || wName.includes(cleanName);
+            });
+
             if (foundWeapon && foundWeapon.category) {
                 tr.dataset.category = foundWeapon.category;
             } else {
@@ -432,11 +440,11 @@ function filterWeapons(btn, filter) {
 
 const FATIGUE_DESCRIPTIONS = [
     '',
-    '-1D aux jets de d20',
-    'Vitesse réduite de moitié',
-    'Désavantage aux jets de sauvegarde',
-    'PV maximum réduits de moitié',
-    'Vitesse réduite à 1,50 m',
+    '-2 aux tests de d20 ; vitesse -1,5 m',
+    '-4 aux tests de d20 ; vitesse -3 m',
+    '-6 aux tests de d20 ; vitesse -4,5 m',
+    '-8 aux tests de d20 ; vitesse -6 m',
+    '-10 aux tests de d20 ; vitesse -7,5 m',
     '⚠️ MORT'
 ];
 
