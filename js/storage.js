@@ -147,7 +147,8 @@ function getFormData() {
                 prop: tr.querySelector('.wpn-prop') ? tr.querySelector('.wpn-prop').innerHTML : '',
                 prof: tr.querySelector('.wpn-prof') ? tr.querySelector('.wpn-prof').innerHTML : '',
                 ammo: tr.querySelector('.wpn-ammo') ? tr.querySelector('.wpn-ammo').innerHTML : '',
-                note: tr.querySelector('.wpn-note') ? tr.querySelector('.wpn-note').innerHTML : ''
+                note: tr.querySelector('.wpn-note') ? tr.querySelector('.wpn-note').innerHTML : '',
+                category: tr.dataset.category || ''
             });
         });
     }
@@ -364,12 +365,14 @@ function applyFormData(d) {
 /**
  * Sauvegarde les données dans localStorage et synchronise avec Supabase
  */
-async function saveData() {
+async function saveData(silent = true) {
     const data = getFormData();
 
     // 1. Sauvegarde locale (immédiate)
     localStorage.setItem('dd2024_char', JSON.stringify(data));
-    showModal('Sauvegardé localement !');
+    if (!silent) {
+        showModal('Sauvegardé localement !');
+    }
 
     // 2. Synchronisation Cloud (si connecté)
     if (currentUser) {
