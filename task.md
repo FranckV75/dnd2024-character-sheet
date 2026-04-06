@@ -58,7 +58,7 @@
 - [x] Gérer la rétrocompatibilité des sauvegardes existantes (si coché = 1)
 
 ## Story 11 : Refonte du Panneau de Gestion & Export
-- [ ] Renommer "Sauvegarder / Exporter" en "⬇️ Exporter au format JSON"
-- [ ] Renommer "Charger / Importer" en "⬆️ Importer depuis un fichier"
-- [ ] Modifier l'impression PDF (`@media print` CSS) pour étaler les sous-onglets sur plusieurs pages (`page-break-before: always;`)
-- [ ] Nettoyer l'esthétique du PDF imprimé (texte sombre forcé, pas de fond d'écran, etc.)
+- [x] Renommer "Sauvegarder / Exporter" en "⬆️ Exporter au format JSON"
+- [x] Renommer "Charger / Importer" en "⬇️ Importer depuis un fichier"
+- [x] Modifier l'impression PDF (`@media print` CSS) pour étaler les sous-onglets sur plusieurs pages (`page-break-before: always;`)
+- [x] Nettoyer l'esthétique du PDF imprimé (texte sombre forcé, pas de fond d'écran, etc.)
