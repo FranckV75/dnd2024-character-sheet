@@ -2256,10 +2256,12 @@ input[type=range] {
     * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+        color: #1a1a1a !important;
+        text-shadow: none !important;
     }
 
     body {
-        background: white;
+        background: white !important;
         padding: 0;
         margin: 0;
         background-image: none !important;
@@ -2267,22 +2269,39 @@ input[type=range] {
     }
 
     .sheet-container {
-        box-shadow: none;
-        margin: 0;
+        box-shadow: none !important;
+        margin: 0 !important;
         width: 100% !important;
         max-width: 100% !important;
-        border: none;
+        border: none !important;
         display: block !important;
         background: white !important;
-        backdrop-filter: none;
+        backdrop-filter: none !important;
     }
 
     #toolbar,
     #style-editor,
     #custom-modal,
+    #gallery-modal,
     .add-row-btn,
-    .del-btn {
+    .del-btn,
+    .tab-navigation,
+    #tab-navigation,
+    .tab-btn,
+    .spell-filter-bar {
         display: none !important;
+    }
+
+    /* Affichage en cascade de tous les onglets */
+    .tab-content {
+        display: block !important;
+        page-break-before: always;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .tab-content:first-of-type {
+        page-break-before: auto;
     }
 
     .page-break {
@@ -2292,10 +2311,11 @@ input[type=range] {
         height: 1px;
     }
 
-    .rich-input {
-        border: none;
-        resize: none;
-        border-bottom: 1px solid #ccc;
+    .rich-input, select {
+        border: none !important;
+        resize: none !important;
+        border-bottom: 1px solid #333 !important;
+        background: transparent !important;
     }
 
     .scroll-table-container,
@@ -2305,11 +2325,15 @@ input[type=range] {
         border: none !important;
     }
 
+    /* Éviter les coupures de boîtes en plein milieu */
     .box,
-    .stat-box {
+    .stat-box,
+    .odyssey-box,
+    .skills-container-box {
         page-break-inside: avoid;
         break-inside: avoid;
-        border: 1px solid #333;
+        border: 1px solid #333 !important;
+        background: white !important;
     }
 }
 
