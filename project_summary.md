@@ -1,34 +1,38 @@
 # Projet : Feuille de Personnage D&D 2024 - Bilan d'Étape
 
-## État au 22 Février 2026 - POLISH, ODYSSÉE & RESPONSIVE
+## État au 6 Avril 2026 - REFONTE STRUCTURELLE V2.4 TERMINÉE
 
-### ✅ Fonctionnalités Récentes Implémentées
+### ✅ Fonctionnalités Récentes Implémentées (Stories 1 à 10)
 
-1. **Refonte Encadré "Odyssée des Seigneurs Dragons"** ⚔️ :
-    - Inversion des champs "Renommée" et "Points de Renommée".
-    - Le champ "Points" accepte des valeurs de 0 à 20 maximum.
-    - Ajout du calcul dynamique via `updatePalier()` dans `script.js` : le libellé "Palier" se met à jour automatiquement en lisant le nombre de points (Ex: 1-5 = Célébrité locale, 19-20 = Divin).
-    - Ajustement visuel des ratios CSS (`class="odyssey-box"`) pour privilégier l'espace alloué au texte du Palier (read-only) par rapport aux points numériques.
+1. **Architecture Globale à 4 Onglets** 📑 :
+    - La navigation est refaite sur 4 onglets : Caractéristiques & Combat, Aptitudes & Traits, Compétences & Histoire, Magie & Équipement.
+    - Le `localStorage` et les champs existants (`data-name`) ont survécu au déplacement HTML.
 
-2. **Affichage sur Tablette (iPad 11" & Portrait)** 📱 :
-    - Correction lourde de la réactivité pour le mode Portrait (limité à ~820px de large).
-    - **Gestion du débordement** : Ajout d'un zoom arrière forcé (`zoom: 0.9` en paysage, et `0.75` en portrait) sur le `.sheet-container` pour s'assurer que la feuille entière (1100px nativement) tienne à l'écran sans créer de barre de défilement horizontale désagréable.
-    - **Barre d'outils rétractable** : Modification de la Media Query (`max-width: 1100px` au lieu de `900px`). Dès qu'on passe sur un iPad, le panneau noir `#toolbar` se plie sur le côté et révèle son contenu entier uniquement au `hover`, empêchant tout chevauchement avec la zone des Trésors (PO, PP).
-    - **Bugfix (Grille Combat)** : Restauration de la colonne des caractéristiques (Force, Dex...) à gauche via la classe ré-intégrée `.combat-grid` qui gère correctement le flex en mobile.
+2. **Refonte D&D 2024 (Armes, Armures & Dons)** ⚔️🛡️ :
+    - Scraping exhaustif de plus de 70 dons D&D 2024 (`feats-data.js`) avec affichage dynamique par palier d'ASI (Niv 1, 4, 8, etc.) en gérant les prérequis et descriptions automatiques.
+    - Les armes ont gagné les colonnes Maîtrise, Propriétés et Munitions avec autocomplétion des données 2024.
+    - Le bloc Armures gère désormais l'encombrement, la Furtivité et intègre les règles 2024.
+    - Une case "Niveau de Fatigue D&D 2024" (de 0 à 6) a été intégrée dans la section Repos.
 
-3. **Mode Cinéma & Galerie (Récap)** 🎬 :
-    - Mode Cinéma opérationnel via effet glassmorphism (transition 1.2s).
-    - Galerie optimisée (WebP), sliders de recadrage (Position Y, Zoom) restorés et persistants.
+3. **Optimisations Esthétiques & Grimoire** 🎨 :
+    - Ajustement chirurgical des boîtes "Outils" et "Langues" dans l'onglet Compétences avec un ascenseur propre (max 2/5 lignes) pour correspondre au design premium du Charisme.
+    - Ajout du cartouche "Alignement".
+    - La très laborieuse case à cocher "Préparé" du Grimoire a été repensée comme une **zone de texte centré** avec totale rétrocompatibilité.
+
+4. **Correctifs Multiples & Persistance** 💾 :
+    - Les menus de "Sous-classe" reconnaissent bien l'architecture des règles révisée.
+    - Les données des Dons dans l'onglet des Traits (basées sur `.dataset.name` et non leur `.name`) sont maintenant scannées adéquatement par les fonctions de `localStorage`/`Supabase`.
 
 ### 🔑 Données Clés
 - **URL de Production** : `https://franckv75.github.io/dnd2024-character-sheet/`
+- **Sauvegarde Cloud** : Supabase implémenté.
 
 ### 📋 Prochaines Priorités Techniques (Prêt pour les Agents)
 
-La prochaine session sera dédiée à une **Refonte Structurelle Majeure** pilotée par des schémas de l'utilisateur :
-- [ ] **Création de l'Onglet 4 ("Aptitudes & Traits")** : Déporter les blocs denses (Traits, Dons, Capacités de classe) pour alléger l'onglet 2.
-- [ ] **Refonte de l'Onglet 1 & 2** : Déplacer des blocs depuis l'Onglet 2 vers l'Onglet 1 selon le nouveau design.
-- [ ] **Restructuration de l'Onglet 3 (Armes & Grimoire)** : Sous-onglets pour l'équipement, alignement des inputs Att/DD et Dégâts.
-- [ ] **Grimoire Avancé & Multi-Perso** : Lier les sorts au PDF officiel et préparer l'intégration Supabase.
+La prochaine session (identifiée comme la **Story 11**) débutera sur le plan technique suivant, validé par l'utilisateur :
+- [ ] **Refonte du Panneau de Gestion Latéral** :
+    - Écarter la confusion de nommage ("Sauvegarder/Exporter" vers "Exporter au format JSON", etc.).
+- [ ] **Sauvetage du Mode d'Impression PDF** :
+    - Plutôt que supprimer l'export, réécriture du CSS `@media print`. Forcer écriture noire sur fond papier blanc, et surtout décomposer la feuille pour imprimer **Un onglet par page séparée** (`page-break-before: always;`).
 
-*Dernière mise à jour : 25/02/2026*
+*Dernière mise à jour : 06/04/2026*
