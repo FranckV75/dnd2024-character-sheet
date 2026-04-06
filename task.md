@@ -17,6 +17,7 @@
 - [x] Scinder "Traits & Dons" en 2 sous-blocs (Traits + Dons avec 6 emplacements)
 - [x] Scinder "Capacités de Classe" en 2 sous-blocs (Capacités + Compagnons/Familiers)
 - [x] Ajouter le bloc "Synergie entre les joueurs"
+- [x] Ajouter le bloc "Alignement" (1 ligne, texte centré) au-dessus de "Traits de Personnage"
 - [x] Persistance OK : les champs `data-name` sont collectés automatiquement par `getFormData()`
 
 ## Story 4 : Refonte du Bloc Armes (Onglet 1)
@@ -44,3 +45,14 @@
 - [x] Dans `index.html`, créer les 6 blocs (1 pour chaque niveau de don : 0/1, 4, 8, 12, 16, 19).
 - [x] Connecter chaque bloc à un menu déroulant dynamique triant par "Origine", "Général" ou "Épique" basé sur `feats-data.js`.
 - [x] Afficher la description du don sélectionné dans le HTML (`<div class="feat-desc-box">`).
+
+## Story 8 : Correctifs Variés
+- [x] Corriger le menu déroulant de la sous-classe dans l'en-tête (Désynchronisation entre `script.js` et la nouvelle structure de `dd_rules.js`)
+
+## Story 9 : Résolution des bugs de sauvegarde
+- [x] Corriger la sauvegarde des Dons (les menus déroulants sont oubliés par la boucle de sauvegarde)
+- [x] Vérifier et corriger la sauvegarde des Armes (vérification passée avec succès : autosauvegarde fonctionnelle en cas de frappe directe)
+
+## Story 10 : Optimisations du Grimoire
+- [x] Remplacer la case à cocher "Préparé" par un champ libre (numérique/textuel)
+- [x] Gérer la rétrocompatibilité des sauvegardes existantes (si coché = 1)

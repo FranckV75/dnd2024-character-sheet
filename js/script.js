@@ -1031,7 +1031,7 @@ function addSpellRow(data = null) {
     if (!body) return;
     const tr = document.createElement('tr');
     tr.innerHTML = `
-        <td class="prep-cell"><input type="checkbox" class="spl-prep" onchange="saveData()" title="Préparé"></td>
+        <td class="prep-cell"><div contenteditable="true" class="rich-input single-line center spl-prep" spellcheck="false" title="Préparation / Charges" style="width:100%; min-height:22px; padding:2px;"></div></td>
         <td>
             <select class="spl-lvl std-input" onchange="saveData()">
                 <option value="0">0</option>
@@ -1072,7 +1072,14 @@ function addSpellRow(data = null) {
         tr.querySelector('.spl-r').checked = data.r || false;
         tr.querySelector('.spl-m').checked = data.m || false;
         // New fields (backward compatible)
-        if (data.prep !== undefined) tr.querySelector('.spl-prep').checked = data.prep;
+        const prepEl = tr.querySelector('.spl-prep');
+        if (data.prep !== undefined) {
+            if (typeof data.prep === "boolean") {
+                prepEl.innerHTML = data.prep ? '1' : '';
+            } else {
+                prepEl.innerHTML = data.prep;
+            }
+        }
         if (data.school) setSchoolBadge(tr.querySelector('.spl-school'), data.school);
     }
     // Attach autocomplete to spell name field
