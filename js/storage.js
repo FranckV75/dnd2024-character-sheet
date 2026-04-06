@@ -118,9 +118,10 @@ function cleanLegacyData(data) {
 function getFormData() {
     const d = {};
     document.querySelectorAll('input, select').forEach(el => {
-        if (el.name) {
-            if (el.type === 'checkbox') d[el.name] = el.checked;
-            else d[el.name] = el.value;
+        const key = el.name || el.dataset.name;
+        if (key) {
+            if (el.type === 'checkbox') d[key] = el.checked;
+            else d[key] = el.value;
         }
     });
     document.querySelectorAll('[contenteditable="true"]').forEach(el => {
