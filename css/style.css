@@ -839,21 +839,16 @@ input[type="checkbox"].square {
     border-color: #d4af37;
 }
 
-/* Prepared Checkbox */
+/* Prepared Checkbox/Field */
 .prep-cell {
     text-align: center;
-    width: 30px;
+    width: 35px;
+    padding: 0 4px;
 }
 
 .spl-prep {
-    width: 16px;
-    height: 16px;
-    accent-color: #d4af37;
-    cursor: pointer;
-}
-
-.spl-prep:checked {
-    box-shadow: 0 0 4px rgba(212, 175, 55, 0.5);
+    font-size: 0.95rem;
+    font-weight: bold;
 }
 
 /* School Badge System */
