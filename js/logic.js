@@ -103,34 +103,3 @@ function getClassResourceInfo(level, className, mods) {
     return { count, label };
 }
 
-/**
- * Calcule les statistiques dérivées (Initiative, DD Sorts, Attaque Sorts)
- * Version pure qui retourne un objet au lieu de modifier le DOM
- * @param {Object} stats - { dex, int, wis, cha, level, spellAbility }
- * @returns {Object} - { initiative, spellDC, spellAttack }
- */
-function calculateDerivedStats(stats) {
-    const { dex, int, wis, cha, level, spellAbility } = stats;
-    const pb = calculateProficiencyBonus(level);
-
-    // Initiative = Modificateur de Dextérité
-    const initiative = dex;
-
-    // DD Sorts et Attaque Sorts
-    let spellDC = null;
-    let spellAttack = null;
-
-    if (spellAbility && spellAbility !== 'none') {
-        let abilityMod = 0;
-        switch (spellAbility) {
-            case 'int': abilityMod = int; break;
-            case 'wis': abilityMod = wis; break;
-            case 'cha': abilityMod = cha; break;
-        }
-
-        spellDC = 8 + pb + abilityMod;
-        spellAttack = pb + abilityMod;
-    }
-
-    return { initiative, spellDC, spellAttack };
-}

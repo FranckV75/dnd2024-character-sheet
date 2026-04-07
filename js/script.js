@@ -1,6 +1,20 @@
-﻿
+// =============================================================================
+// AUTO-SAVE GLOBAL (Debounced)
+// =============================================================================
 
+let _autoSaveTimer = null;
+const AUTO_SAVE_DELAY = 1500; // ms
 
+/**
+ * Déclenche une sauvegarde silencieuse après un délai d'inactivité.
+ * Chaque nouvel appel réinitialise le timer (debounce).
+ */
+function debouncedSave() {
+    if (_autoSaveTimer) clearTimeout(_autoSaveTimer);
+    _autoSaveTimer = setTimeout(() => {
+        saveData();
+    }, AUTO_SAVE_DELAY);
+}
 
 // =============================================================================
 // MENUS DÃ‰ROULANTS DYNAMIQUES
@@ -294,11 +308,18 @@ window.onload = function () {
 
     const sheetForm = document.getElementById('sheet-form');
     if (sheetForm) {
+        // Recalcul + auto-save sur les événements 'input' (texte, contenteditable)
         sheetForm.addEventListener('input', (e) => {
             if (e.target.name && e.target.name.startsWith('class_res_')) {
                 return;
             }
             calcStats();
+            debouncedSave();
+        });
+
+        // Auto-save sur les événements 'change' (select, checkbox)
+        sheetForm.addEventListener('change', (e) => {
+            debouncedSave();
         });
     }
 
