@@ -361,13 +361,20 @@ function performLongRest() {
         '💡 N\'oubliez pas de préparer vos sorts';
 
     // Feedback visuel
-    showModal(
-        '🛏️ Repos Long Terminé',
-        feedback,
-        [
-            { label: 'OK', callback: () => { if(typeof saveData === 'function') saveData(); if(typeof calcStats === 'function') calcStats(); } }
-        ]
-    );
+    showModal((txt, btns, inp, area, close) => {
+        txt.innerHTML = `<h3>🛏️ Repos Long Terminé</h3><div style="text-align:left; font-size:0.9rem; line-height:1.5;">${feedback.replace(/\n/g, '<br>')}</div>`;
+
+        const btnOk = document.createElement('button');
+        btnOk.className = 'btn btn-save';
+        btnOk.innerText = 'OK';
+        btnOk.onclick = () => {
+            if (typeof saveData === 'function') saveData();
+            if (typeof calcStats === 'function') calcStats();
+            close();
+        };
+
+        btns.appendChild(btnOk);
+    });
 
     console.log('✅ Repos Long terminé');
 }
