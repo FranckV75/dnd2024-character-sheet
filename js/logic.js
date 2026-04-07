@@ -40,14 +40,16 @@ function calculateSkillBonus(statMod, isProficient, hasExpertise, proficiencyBon
  * @param {number} level - Niveau du personnage
  * @param {string} className - Nom de la classe
  * @param {Object} mods - Modificateurs de caractéristiques { str, dex, con, int, wis, cha }
- * @returns {Object} - { count: number, label: string }
+ * @returns {Object} - { count: number, label: string, reset: string }
+ *   reset can be 'none' (no short rest recovery), 'all' (recovers all on short rest), 'one' (recovers 1 on short rest)
  */
 function getClassResourceInfo(level, className, mods) {
-    if (!className) return { count: 0, label: "" };
+    if (!className) return { count: 0, label: "", reset: "none" };
 
     let clsClean = className.trim().toLowerCase();
     let count = 0;
     let label = "";
+    let reset = "none"; // Par défaut, pas de récupération au repos court
 
     if (clsClean.includes('barbar')) {
         label = "Rages";
@@ -56,50 +58,62 @@ function getClassResourceInfo(level, className, mods) {
         if (level >= 6) count = 4;
         if (level >= 12) count = 5;
         if (level >= 17) count = 6;
+        reset = "one"; // D&D 2024 : 1 Rage récupérée au repos court
     }
     else if (clsClean.includes('bard')) {
         label = "Inspiration Bardique";
         count = Math.max(1, mods['cha']);
+        reset = level >= 5 ? "all" : "none"; // D&D 2024: Font of Inspiration au niv 5
     }
     else if (clsClean.includes('clerc') || clsClean.includes('cleric')) {
         label = "Conduit Divin";
         count = 2;
         if (level >= 6) count = 3;
         if (level >= 18) count = 4;
+        reset = "one"; // D&D 2024: Restaure 1 utilisation au repos court
     }
     else if (clsClean.includes('druid')) {
         label = "Formes Sauvages";
         count = 2;
         if (level >= 6) count = 3;
         if (level >= 14) count = 4;
+        reset = "one"; // D&D 2024: Restaure 1 utilisation au repos court
+    }
+    else if (clsClean.includes('guerrier') || clsClean.includes('fighter')) {
+        label = "Second Souffle";
+        count = 2;
+        if (level >= 4) count = 3;
+        if (level >= 10) count = 4;
+        reset = "one"; // D&D 2024: Restaure 1 utilisation au repos court
     }
     else if (clsClean.includes('ensorceleur') || clsClean.includes('sorcer')) {
-        label = "Sorcellerie Innée";
-        count = 2;
+        label = "Points de Sorcellerie";
+        count = level; // Ensorceleur génère 1 pt / niveau
+        reset = "none";
     }
     else if (clsClean.includes('moine') || clsClean.includes('monk')) {
-        label = "Points de KI";
+        label = "Points de Discipline (Ki)";
         count = level;
+        reset = "all"; // D&D 2024: Restaure tout au repos court
     }
     else if (clsClean.includes('paladin')) {
         if (level >= 3) {
             label = "Conduit Divin";
             count = 2;
-            // 2024 Paladin: 2 CD à lvl 3, 3 CD à lvl 11.
             if (level >= 11) count = 3;
+            reset = "one"; // D&D 2024: Restaure 1 utilisation au repos court
         }
     }
     else if (clsClean.includes('rôdeur') || clsClean.includes('ranger')) {
-        label = "Ennemi Juré";
-        // Rôdeur (Ranger) 2024 : Favored Enemy uses (Hunter's Mark free casts)
-        // Lvl 1: 2, Lvl 5: 3, Lvl 9: 4, Lvl 13: 5, Lvl 17: 6
+        label = "Marque du Chasseur";
         count = 2;
         if (level >= 5) count = 3;
         if (level >= 9) count = 4;
         if (level >= 13) count = 5;
         if (level >= 17) count = 6;
+        reset = "none"; // D&D 2024: Long rest only 
     }
 
-    return { count, label };
+    return { count, label, reset };
 }
 

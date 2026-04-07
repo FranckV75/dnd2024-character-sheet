@@ -13,12 +13,72 @@ const LONG_REST_DURATION = 2000; // 2 secondes
 function performShortRest() {
     console.log('⚔️ Repos Court commencé...');
 
-    // Restaurer les ressources de classe (décocher toutes les cases)
-    const resSlots = document.getElementById('class-resource-slots');
-    if (resSlots) {
-        resSlots.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            checkbox.checked = false;
+    // Récupérer la classe et le niveau pour la restauration ciblée
+    let clsName = '';
+    const classSelect = document.getElementById('char_class');
+    if (classSelect) {
+        clsName = classSelect.value || classSelect.innerText || '';
+    } else {
+        const clsContent = document.querySelector('[data-name="char_class"]');
+        if (clsContent) clsName = clsContent.innerText || '';
+    }
+
+    let lvl = 1;
+    const lvlEl = document.getElementById('char_level') || document.querySelector('[data-name="char_level"]');
+    if (lvlEl) lvl = parseInt(lvlEl.value || lvlEl.innerText) || 1;
+
+    let mods = { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 };
+    if (typeof getVal === 'function' && typeof calcMod === 'function') {
+        ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(s => {
+            let sc = getVal(s + '_score');
+            if (!sc) sc = parseInt(document.querySelector(`[data-name="${s}_score"]`)?.innerText) || 10;
+            mods[s] = calcMod(sc);
         });
+    }
+
+    // Récupérer l'info de reset spécifique
+    const resInfo = typeof getClassResourceInfo === 'function' ? getClassResourceInfo(lvl, clsName, mods) : { reset: 'none' };
+
+    // Restaurer les ressources de classe de manière intelligente
+    const resSlots = document.getElementById('class-resource-slots');
+    let restoredResourcesCount = 0;
+    if (resSlots && resInfo.reset !== 'none') {
+        const checkboxes = Array.from(resSlots.querySelectorAll('input[type="checkbox"]'));
+        if (resInfo.reset === 'all') {
+            checkboxes.forEach(cb => { 
+                if(cb.checked) { cb.checked = false; restoredResourcesCount++; }
+            });
+        } else if (resInfo.reset === 'one') {
+            // Find the first checked box and uncheck it
+            const checkedBox = checkboxes.find(cb => cb.checked);
+            if (checkedBox) {
+                checkedBox.checked = false;
+                restoredResourcesCount++;
+            }
+        }
+    }
+
+    // Restauration de la Magie de Pacte (Sorcier/Warlock)
+    let warlockSlotsRestored = false;
+    if (clsName.toLowerCase().includes('sorcier') || clsName.toLowerCase().includes('warlock')) {
+        const savedSlots = JSON.parse(localStorage.getItem('spell_slots') || '{}');
+        let slotsChanged = false;
+        // Le sorcier n'utilise que des slots de pacte, qui reviennent au repos court.
+        for (const key in savedSlots) {
+            if (key.startsWith('used_')) {
+                const level = parseInt(key.replace('used_', ''));
+                if (level > 0 && savedSlots[key] > 0) {
+                    savedSlots[key] = 0;
+                    slotsChanged = true;
+                }
+            }
+        }
+        if (slotsChanged) {
+            localStorage.setItem('spell_slots', JSON.stringify(savedSlots));
+            warlockSlotsRestored = true;
+            if (typeof updateSpellCount === 'function') updateSpellCount();
+            if (typeof filterSpells === 'function') filterSpells(); // Force refresh ui
+        }
     }
 
     // Récupérer les infos de dés de vie depuis l'onglet 1
@@ -32,16 +92,20 @@ function performShortRest() {
 
     const conMod = calcMod(getVal('con_score'));
 
+    let recoveryDetails = '';
+    if (restoredResourcesCount > 0) recoveryDetails += '✅ '+restoredResourcesCount+' Ressource(s) de classe restaurée(s)<br>';
+    if (warlockSlotsRestored) recoveryDetails += '✅ Emplacements de Pacte restaurés<br>';
+
     if (hdAvailable <= 0) {
         showModal((txt, btns, inp, area, close) => {
             txt.innerHTML = '🌙 <b>Repos Court Terminé</b><br><br>' +
-                '✅ Ressources de classe restaurées<br><br>' +
-                '⚠️ Plus de dés de vie disponibles';
+                recoveryDetails +
+                '<br>⚠️ Plus de dés de vie disponibles';
 
             const btnOk = document.createElement('button');
             btnOk.className = 'btn btn-save';
             btnOk.innerText = 'OK';
-            btnOk.onclick = () => { saveData(); close(); };
+            btnOk.onclick = () => { if(typeof saveData === 'function') saveData(); close(); };
             btns.appendChild(btnOk);
         });
         return;
@@ -57,10 +121,11 @@ function performShortRest() {
 function showRestHitDiceModal(hdAvailable, hdType, conMod, hdUsed) {
     showModal((txt, btns, inp, area, close) => {
         const conSign = conMod >= 0 ? '+' : '';
+        // Récupération des détails (s'ils existent) depuis l'affichage précédent s'il y a eu un re-render, sinon on les omet pour simplifier
         txt.innerHTML = `🌙 <b>Repos Court - Dés de Vie</b><br><br>` +
             `Dés disponibles : <b>${hdAvailable} ${hdType}</b><br>` +
             `Bonus Constitution : <b>${conSign}${conMod}</b><br><br>` +
-            `✅ Ressources de classe restaurées`;
+            `<small><i>Vos ressources à récupération courte ont été restaurées.</i></small>`;
 
         const btnRoll = document.createElement('button');
         btnRoll.className = 'btn btn-save';
@@ -217,9 +282,50 @@ function performLongRest() {
     const hpTemp = document.querySelector('[data-name="hp_temp"]');
     if (hpTemp) hpTemp.innerText = '';
 
-    // Restaurer les dés de vie (remettre à 0 utilisés)
-    const hdSpent = document.querySelector('[data-name="hd_spent"]');
-    if (hdSpent) hdSpent.innerText = '0';
+    // Restaurer les dés de vie à hauteur de la moitié du max (minimum 1)
+    const hdMaxDisplay = document.getElementById('hd_max_display');
+    const hdCurrentSelect = document.getElementById('hd_current_select');
+    let recoveredHD = 0;
+    if (hdMaxDisplay && hdCurrentSelect) {
+        const maxHD = parseInt(hdMaxDisplay.innerText) || 1;
+        const usedHD = parseInt(hdCurrentSelect.value) || 0;
+        
+        if (usedHD > 0) {
+            recoveredHD = Math.max(1, Math.floor(maxHD / 2));
+            const newUsedHD = Math.max(0, usedHD - recoveredHD);
+            hdCurrentSelect.value = newUsedHD;
+            recoveredHD = usedHD - newUsedHD; // Actual amount recovered
+        }
+    }
+
+    // Réduire la fatigue de 1 (si existante)
+    let fatigueReduced = false;
+    const fatigueInput = document.getElementById('fatigue_level');
+    if (fatigueInput) {
+        const val = parseInt(fatigueInput.value) || 0;
+        if (val > 0) {
+            fatigueInput.value = val - 1;
+            fatigueReduced = true;
+            fatigueInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    }
+
+    // Restaurer tous les emplacements de sorts
+    const savedSlots = JSON.parse(localStorage.getItem('spell_slots') || '{}');
+    let slotsChanged = false;
+    for (const key in savedSlots) {
+        if (key.startsWith('used_')) {
+            if (savedSlots[key] > 0) {
+                savedSlots[key] = 0;
+                slotsChanged = true;
+            }
+        }
+    }
+    if (slotsChanged) {
+        localStorage.setItem('spell_slots', JSON.stringify(savedSlots));
+        if (typeof updateSpellCount === 'function') updateSpellCount();
+        if (typeof filterSpells === 'function') filterSpells(); // Force refresh ui
+    }
 
     // Restaurer les ressources de classe
     const resSlots = document.getElementById('class-resource-slots');
@@ -235,17 +341,31 @@ function performLongRest() {
         if (checkbox) checkbox.checked = false;
     });
 
+    // Construction du feedback visuel
+    let feedback = 'Vous avez pris un repos de 8 heures.\n\n' +
+        '✅ PV restaurés au maximum\n';
+    
+    if (recoveredHD > 0) {
+        feedback += `✅ ${recoveredHD} Dés de vie regagné(s)\n`;
+    }
+    feedback += '✅ Ressources de classe restaurées\n';
+    
+    if (slotsChanged) {
+        feedback += '✅ Emplacements de sorts restaurés\n';
+    }
+    if (fatigueReduced) {
+        feedback += '✅ Niveau de Fatigue réduit de 1\n';
+    }
+    
+    feedback += '✅ Jets contre la mort réinitialisés\n' +
+        '💡 N\'oubliez pas de préparer vos sorts';
+
     // Feedback visuel
     showModal(
         '🛏️ Repos Long Terminé',
-        'Vous avez pris un repos de 8 heures.\n\n' +
-        '✅ PV restaurés au maximum\n' +
-        '✅ Dés de vie restaurés\n' +
-        '✅ Ressources de classe restaurées\n' +
-        '✅ Jets contre la mort réinitialisés\n' +
-        '💡 N\'oubliez pas de préparer vos sorts',
+        feedback,
         [
-            { label: 'OK', callback: () => { saveData(); calcStats(); } }
+            { label: 'OK', callback: () => { if(typeof saveData === 'function') saveData(); if(typeof calcStats === 'function') calcStats(); } }
         ]
     );
 
