@@ -192,7 +192,7 @@ function getFormData() {
                 c: tr.querySelector('.spl-c').checked,
                 r: tr.querySelector('.spl-r').checked,
                 m: tr.querySelector('.spl-m').checked,
-                prep: tr.querySelector('.spl-prep') ? tr.querySelector('.spl-prep').innerHTML : '',
+                prep: tr.querySelector('.spl-prep-btn') ? tr.querySelector('.spl-prep-btn').dataset.prepared === 'true' : false,
                 school: tr.querySelector('.spl-school') ? tr.querySelector('.spl-school').textContent : ''
             });
         });
