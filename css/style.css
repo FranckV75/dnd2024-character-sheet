@@ -844,17 +844,63 @@ input[type="checkbox"].square {
     border-color: #d4af37;
 }
 
-/* Prepared Checkbox/Field */
+/* Prepared Button (Losange togâgle) */
 .prep-cell {
     text-align: center;
     width: 35px;
     padding: 0 4px;
 }
 
-.spl-prep {
-    font-size: 0.95rem;
-    font-weight: bold;
+.spl-prep-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--table-border, #aaa);
+    padding: 2px 4px;
+    border-radius: 4px;
+    min-width: 22px;
+    min-height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease, transform 0.15s ease;
+    line-height: 1;
 }
+
+.spl-prep-btn:hover:not([data-disabled="true"]) {
+    color: #d4af37;
+    transform: scale(1.2);
+}
+
+.spl-prep-btn.prepared {
+    color: #d4af37;
+    text-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+}
+
+.spl-prep-btn.cantrip {
+    color: var(--text-muted, #888);
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: default;
+}
+
+/* Compteur sorts préparés */
+.prepared-count {
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    color: #d4af37;
+    font-weight: 600;
+    padding: 4px 10px;
+    min-height: 1.2em;
+    letter-spacing: 0.03em;
+    transition: opacity 0.3s ease;
+}
+
+.prepared-count:empty {
+    display: none;
+}
+
 
 /* School Badge System */
 .school-cell {
@@ -960,9 +1006,10 @@ input[type="checkbox"].square {
 /* === SPELL SLOTS TRACKER === */
 .spell-slots-tracker {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
-    padding: 12px 15px;
+    gap: 8px 10px;
+    padding: 10px 15px;
     margin-bottom: 10px;
     background: linear-gradient(135deg, #2c1810 0%, #3d2417 100%);
     border-radius: 8px;
@@ -1032,8 +1079,9 @@ input[type="checkbox"].square {
 
 .slots-container {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
+    gap: 6px 8px;
 }
 
 .slot-checkbox {

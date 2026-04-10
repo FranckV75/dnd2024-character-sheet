@@ -1081,9 +1081,9 @@ function addSpellRow(data = null) {
     if (!body) return;
     const tr = document.createElement('tr');
     tr.innerHTML = `
-        <td class="prep-cell"><div contenteditable="true" class="rich-input single-line center spl-prep" spellcheck="false" title="Préparation / Charges" style="width:100%; min-height:22px; padding:2px;"></div></td>
+        <td class="prep-cell"><button class="spl-prep-btn" title="Préparé" data-prepared="false" aria-label="Sort préparé"></button></td>
         <td>
-            <select class="spl-lvl std-input" onchange="saveData()">
+            <select class="spl-lvl std-input" onchange="updatePrepCell(this.closest('tr')); saveData();">
                 <option value="0">0</option>
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -1106,9 +1106,21 @@ function addSpellRow(data = null) {
             <div><label>M</label><input type="checkbox" class="spl-m"></div>
         </td>
         <td><div contenteditable="true" class="rich-input single-line spl-note"></div></td>
-        <td><button class="del-btn" aria-label="Supprimer le sort" onclick="this.closest('tr').remove(); saveData();">x</button></td>
+        <td><button class="del-btn" aria-label="Supprimer le sort" onclick="this.closest('tr').remove(); saveData(); if(typeof updateSpellCount==='function') updateSpellCount();">x</button></td>
     `;
     body.appendChild(tr);
+
+    // Toggle préparation avec le losange doré + mise à jour compteur
+    const prepBtn = tr.querySelector('.spl-prep-btn');
+    prepBtn.addEventListener('click', () => {
+        if (prepBtn.dataset.disabled === 'true') return;
+        const isPrepared = prepBtn.dataset.prepared === 'true';
+        prepBtn.dataset.prepared = isPrepared ? 'false' : 'true';
+        prepBtn.textContent = isPrepared ? '' : '◆';
+        prepBtn.classList.toggle('prepared', !isPrepared);
+        saveData();
+        if (typeof updateSpellCount === 'function') updateSpellCount();
+    });
 
     if (data) {
         // Clean legacy HTML from level value
@@ -1121,17 +1133,17 @@ function addSpellRow(data = null) {
         tr.querySelector('.spl-c').checked = data.c || false;
         tr.querySelector('.spl-r').checked = data.r || false;
         tr.querySelector('.spl-m').checked = data.m || false;
-        // New fields (backward compatible)
-        const prepEl = tr.querySelector('.spl-prep');
-        if (data.prep !== undefined) {
-            if (typeof data.prep === "boolean") {
-                prepEl.innerHTML = data.prep ? '1' : '';
-            } else {
-                prepEl.innerHTML = data.prep;
-            }
+        // Restauration de l'état préparé (nouveau format: booléen, ancien format: HTML)
+        const prepBtn = tr.querySelector('.spl-prep-btn');
+        if (prepBtn && data.prep !== undefined && data.prep !== '' && data.prep !== false && data.prep !== '0') {
+            prepBtn.dataset.prepared = 'true';
+            prepBtn.textContent = '◆';
+            prepBtn.classList.add('prepared');
         }
         if (data.school) setSchoolBadge(tr.querySelector('.spl-school'), data.school);
     }
+    // Init de la cellule préparation (cantrip = ∞)
+    updatePrepCell(tr);
     // Attach autocomplete to spell name field
     initSpellAutocomplete(tr.querySelector('.spl-name'));
     bindStyleEvents();
@@ -1139,6 +1151,36 @@ function addSpellRow(data = null) {
 
 // === SPELL FILTERING SYSTEM (Multi-select) ===
 let activeSpellFilters = new Set(); // Vide = tous les niveaux
+
+/**
+ * Met à jour l'état visuel de la case Préparation selon le niveau.
+ * Niveau 0 (Cantrip) = symbole ∞ fixé, button désactivé.
+ * Autres niveaux = bouton losange normal.
+ */
+function updatePrepCell(tr) {
+    const lvlSelect = tr.querySelector('.spl-lvl');
+    const prepBtn = tr.querySelector('.spl-prep-btn');
+    if (!lvlSelect || !prepBtn) return;
+    const isCantrip = lvlSelect.value === '0';
+    if (isCantrip) {
+        prepBtn.dataset.disabled = 'true';
+        prepBtn.textContent = '∞';
+        prepBtn.classList.add('cantrip');
+        prepBtn.classList.remove('prepared');
+        prepBtn.style.color = 'var(--text-muted, #888)';
+        prepBtn.style.cursor = 'default';
+        prepBtn.title = 'Sort Mineur : toujours disponible';
+    } else {
+        const wasPrepared = prepBtn.dataset.prepared === 'true';
+        prepBtn.dataset.disabled = 'false';
+        prepBtn.classList.remove('cantrip');
+        prepBtn.textContent = wasPrepared ? '◆' : '';
+        prepBtn.classList.toggle('prepared', wasPrepared);
+        prepBtn.style.color = '';
+        prepBtn.style.cursor = 'pointer';
+        prepBtn.title = 'Cliquer pour marquer comme préparé';
+    }
+}
 
 /**
  * Retourne les emplacements par défaut pour la classe et le niveau actuels.
@@ -1175,20 +1217,29 @@ function isSpellRowEmpty(row) {
  */
 function updateSpellCount() {
     const counter = document.getElementById('spell-count');
+    const prepCounter = document.getElementById('prepared-count');
     if (!counter) return;
     const rows = document.querySelectorAll('#spells_body tr');
     let total = 0;
     let visible = 0;
+    let prepared = 0;
     rows.forEach(row => {
         if (!isSpellRowEmpty(row)) {
             total++;
             if (row.style.display !== 'none') visible++;
+            const prepBtn = row.querySelector('.spl-prep-btn');
+            const lvlSel = row.querySelector('.spl-lvl');
+            const isCantrip = lvlSel && lvlSel.value === '0';
+            if (prepBtn && prepBtn.dataset.prepared === 'true' && !isCantrip) prepared++;
         }
     });
     if (activeSpellFilters.size === 0) {
         counter.textContent = `${total} sort${total > 1 ? 's' : ''}`;
     } else {
         counter.textContent = `${visible} / ${total} sort${total > 1 ? 's' : ''}`;
+    }
+    if (prepCounter) {
+        prepCounter.textContent = prepared > 0 ? `◆ Préparés : ${prepared}` : '';
     }
 }
 
