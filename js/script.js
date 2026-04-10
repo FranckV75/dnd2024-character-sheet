@@ -566,7 +566,7 @@ function addArmorRow(data = null) {
     tr.innerHTML = `
         <td><div contenteditable="true" class="rich-input single-line armor-name"></div></td>
         <td>
-            <select class="armor-type" style="width:100%; background:transparent; color:var(--text-color); border:none; outline:none; font-size:0.85rem; padding:2px; appearance:none; cursor:pointer;" title="Type d'équipement défensif">
+            <select class="armor-type rich-input" style="width:100%; background:transparent; color:var(--text-color); border:none; outline:none; font-size:0.7rem; cursor:pointer;" title="Type d'équipement défensif">
                 <option value="none">Standard / Aucun</option>
                 <option value="Légère">Légère (+Dex)</option>
                 <option value="Interméd.">Intermédiaire (+Dex max 2)</option>
