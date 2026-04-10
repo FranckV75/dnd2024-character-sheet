@@ -1081,7 +1081,7 @@ function addSpellRow(data = null) {
     if (!body) return;
     const tr = document.createElement('tr');
     tr.innerHTML = `
-        <td class="prep-cell"><button class="spl-prep-btn" title="Préparé" data-prepared="false" aria-label="Sort préparé"></button></td>
+        <td class="prep-cell"><button type="button" class="spl-prep-btn" title="Préparé" data-prepared="false" aria-label="Sort préparé"></button></td>
         <td>
             <select class="spl-lvl std-input" onchange="updatePrepCell(this.closest('tr')); saveData();">
                 <option value="0">0</option>
@@ -1112,7 +1112,9 @@ function addSpellRow(data = null) {
 
     // Toggle préparation avec le losange doré + mise à jour compteur
     const prepBtn = tr.querySelector('.spl-prep-btn');
-    prepBtn.addEventListener('click', () => {
+    prepBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         if (prepBtn.dataset.disabled === 'true') return;
         const isPrepared = prepBtn.dataset.prepared === 'true';
         prepBtn.dataset.prepared = isPrepared ? 'false' : 'true';

@@ -889,12 +889,16 @@ input[type="checkbox"].square {
 .prepared-count {
     font-family: 'Cinzel', serif;
     font-size: 0.78rem;
-    color: #d4af37;
-    font-weight: 600;
+    color: var(--accent-color, #3e1c02);
+    font-weight: 700;
     padding: 4px 10px;
     min-height: 1.2em;
     letter-spacing: 0.03em;
     transition: opacity 0.3s ease;
+}
+
+[data-theme="dark"] .prepared-count {
+    color: #d4af37;
 }
 
 .prepared-count:empty {
