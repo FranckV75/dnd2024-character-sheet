@@ -162,6 +162,7 @@ function getFormData() {
         aBody.querySelectorAll('tr').forEach(tr => {
             armors.push({
                 name: tr.querySelector('.armor-name') ? tr.querySelector('.armor-name').innerHTML : '',
+                type: tr.querySelector('.armor-type') ? tr.querySelector('.armor-type').value : 'none',
                 ca: tr.querySelector('.armor-ca') ? tr.querySelector('.armor-ca').innerHTML : '',
                 str: tr.querySelector('.armor-str') ? tr.querySelector('.armor-str').innerHTML : '',
                 stealth: tr.querySelector('.armor-stealth') ? tr.querySelector('.armor-stealth').checked : false,

@@ -264,11 +264,11 @@
                             style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
                             <!-- LIGNE 1 : CA, Initi, Perce, [Maîtrise|Inspi|Vitesse], Jets de mort -->
                             <div style="display: flex; gap: 10px; align-items: stretch;">
-                                <div class="ac-hex" style="flex: 0 0 140px; padding: 35px 5px 15px; min-height: 130px;">
+                                <div class="ac-hex" style="flex: 0 0 140px; padding: 35px 5px 15px; min-height: 130px;" title="Calculé automatiquement selon les armures équipées">
                                     <label style="font-size: 0.65rem;">Classe d'Armure</label>
-                                    <div contenteditable="true" data-name="ac"
+                                    <div id="ac-calculated" data-name="ac"
                                         class="rich-input center single-line header-stat-val-large"
-                                        style="border:none; background:transparent;"></div>
+                                        style="border:none; background:transparent; font-weight:bold; cursor:default; pointer-events:none;">10</div>
                                 </div>
                                 <div class="box vitals-box" style="flex: 1; min-width: 60px;">
                                     <label style="text-align:center">Initiative</label>
@@ -417,7 +417,7 @@
                             <div class="add-row-btn" onclick="addWeaponRow()">+ Ajouter une arme ou un sort mineur</div>
                         </div>
                         <div class="box">
-                            <h3>Armures et Boucliers</h3>
+                            <h3 style="font-size: 1rem; margin-bottom: 5px;">Armures, Boucliers & Autres avantages défensifs <small style="display:block; font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(objets magiques, sorts, etc...)</small></h3>
                             <label>Maîtrises d'Armures</label>
                             <div class="chk-container">
                                 <input type="checkbox" name="prof_armor_light"> Légères
@@ -432,15 +432,15 @@
                                 <table class="data-table armors-table">
                                     <thead>
                                         <tr>
-                                            <th width="22%">Nom</th>
+                                            <th width="15%">Nom</th>
+                                            <th width="15%">Type</th>
                                             <th width="8%">CA</th>
                                             <th width="8%">For min</th>
-                                            <th width="10%" title="D&eacute;savantage Discr&eacute;tion">Discr.
-                                                d&eacute;sav.</th>
+                                            <th width="10%" title="D&eacute;savantage Discr&eacute;tion">Discr. d&eacute;sav.</th>
                                             <th width="8%">Poids</th>
-                                            <th width="10%">Prix</th>
+                                            <th width="8%">Prix</th>
                                             <th>Commentaire</th>
-                                            <th width="8%" style="text-align:center;">&Eacute;quip&eacute;e</th>
+                                            <th width="10%" style="text-align:center;">&Eacute;quip&eacute;e / Actif</th>
                                             <th style="width:20px;"></th>
                                         </tr>
                                     </thead>
