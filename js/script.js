@@ -565,6 +565,15 @@ function addArmorRow(data = null) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
         <td><div contenteditable="true" class="rich-input single-line armor-name"></div></td>
+        <td>
+            <select class="armor-type" style="width:100%; background:transparent; color:var(--text-color); border:none; outline:none; font-size:0.85rem; padding:2px; appearance:none; cursor:pointer;" title="Type d'équipement défensif">
+                <option value="none">Standard / Aucun</option>
+                <option value="Légère">Légère (+Dex)</option>
+                <option value="Interméd.">Intermédiaire (+Dex max 2)</option>
+                <option value="Lourde">Lourde (Fixe)</option>
+                <option value="Bouclier">Bouclier / Bonus</option>
+            </select>
+        </td>
         <td><div contenteditable="true" class="rich-input single-line armor-ca"></div></td>
         <td><div contenteditable="true" class="rich-input single-line armor-str"></div></td>
         <td style="text-align:center;"><input type="checkbox" class="armor-stealth" aria-label="Désavantage Discrétion"></td>
@@ -572,11 +581,12 @@ function addArmorRow(data = null) {
         <td><div contenteditable="true" class="rich-input single-line armor-price"></div></td>
         <td><div contenteditable="true" class="rich-input single-line armor-comment"></div></td>
         <td style="text-align:center;"><input type="checkbox" class="armor-equipped" aria-label="Armure équipée"></td>
-        <td><button class="del-btn" aria-label="Supprimer l'armure" onclick="this.closest('tr').remove(); saveData();">x</button></td>
+        <td><button class="del-btn" aria-label="Supprimer l'armure" onclick="this.closest('tr').remove(); saveData(); if(typeof calcStats==='function') calcStats();">x</button></td>
     `;
     body.appendChild(tr);
     if (data) {
         tr.querySelector('.armor-name').innerHTML = data.name || '';
+        if (data.type) tr.querySelector('.armor-type').value = data.type;
         tr.querySelector('.armor-ca').innerHTML = data.ca || '';
         tr.querySelector('.armor-str').innerHTML = data.str || '';
         tr.querySelector('.armor-stealth').checked = data.stealth || false;
@@ -585,9 +595,12 @@ function addArmorRow(data = null) {
         tr.querySelector('.armor-comment').innerHTML = data.comment || '';
         tr.querySelector('.armor-equipped').checked = data.equipped || false;
     }
-    // Sauvegarde auto au changement des checkboxes
+    // Sauvegarde auto au changement des checkboxes et type
     tr.querySelector('.armor-stealth').addEventListener('change', saveData);
-    tr.querySelector('.armor-equipped').addEventListener('change', saveData);
+    tr.querySelector('.armor-type').addEventListener('change', () => { saveData(); if(typeof calcStats==='function') calcStats(); });
+    tr.querySelector('.armor-equipped').addEventListener('change', () => { saveData(); if(typeof calcStats==='function') calcStats(); });
+    // Recalculer quand on tape manuellement dans CA
+    tr.querySelector('.armor-ca').addEventListener('input', () => { if(typeof calcStats==='function') calcStats(); });
 
     // Autocomplétion Armures D&D 2024
     if (typeof EQUIPMENT_DATA !== 'undefined' && EQUIPMENT_DATA.armors) {
@@ -659,7 +672,22 @@ function setupArmorAutocomplete(input, tr) {
             item.addEventListener('mousedown', function (e) { e.preventDefault(); });
             item.addEventListener('click', function () {
                 input.innerText = a.name;
-                tr.querySelector('.armor-ca').innerText = a.ca || '';
+                
+                // Pré-saisie du Type si correspondant
+                if (a.type) {
+                    const typeSel = tr.querySelector('.armor-type');
+                    if (typeSel) typeSel.value = a.type;
+                }
+                
+                // Extraction de la CA pure pour ne pas polluer l'interface avec "+ Dex"
+                let cleanCa = a.ca || '';
+                const match = cleanCa.match(/-?\d+/);
+                if (match) cleanCa = match[0];
+                if (a.type === 'Bouclier' && parseInt(cleanCa) > 0 && !cleanCa.startsWith('+')) {
+                    cleanCa = '+' + cleanCa;
+                }
+
+                tr.querySelector('.armor-ca').innerText = cleanCa;
                 tr.querySelector('.armor-str').innerText = a.str || '';
                 tr.querySelector('.armor-stealth').checked = a.stealth || false;
                 tr.querySelector('.armor-weight').innerText = a.weight || '';
@@ -667,6 +695,7 @@ function setupArmorAutocomplete(input, tr) {
 
                 armorAutocompleteContainer.style.display = 'none';
                 saveData();
+                if(typeof calcStats === 'function') calcStats();
                 bindStyleEvents();
             });
             armorAutocompleteContainer.appendChild(item);
@@ -1445,31 +1474,92 @@ function calcDerivedStats() {
         const spellAbility = spellAbilitySelect.value;
 
         if (spellAbility && spellAbility !== 'none') {
-            let abilityMod = 0;
-            switch (spellAbility) {
-                case 'int': abilityMod = intMod; break;
-                case 'wis': abilityMod = wisMod; break;
-                case 'cha': abilityMod = chaMod; break;
-            }
-
-            const spellDC = 8 + pb + abilityMod;
-            const spellAttack = pb + abilityMod;
-
+            const mod = getStatMod(spellAbility);
             const dcEl = document.getElementById('spell_save_dc');
             const atkEl = document.getElementById('spell_atk_bonus');
-
-            if (dcEl) dcEl.innerText = spellDC;
-            if (atkEl) atkEl.innerText = (spellAttack >= 0 ? '+' : '') + spellAttack;
-
-
+            if (dcEl) dcEl.innerText = 8 + pb + mod;
+            if (atkEl) atkEl.innerText = (pb + mod >= 0 ? '+' : '') + (pb + mod);
         } else {
-            // Pas de caractÃ©ristique d'incantation sÃ©lectionnÃ©e
             const dcEl = document.getElementById('spell_save_dc');
             const atkEl = document.getElementById('spell_atk_bonus');
             if (dcEl) dcEl.innerText = '-';
             if (atkEl) atkEl.innerText = '-';
         }
     }
+
+    // === CLASSE D'ARMURE ===
+    calcArmorClass(dexMod, getStatMod('con'), getStatMod('wis'));
+}
+
+/**
+ * Calcule la Classe d'Armure (CA) selon les armures équipées, les boucliers, bonus et défenses sans armure.
+ * @param {number} dexMod - Modificateur de Dextérité
+ * @param {number} conMod - Modificateur de Constitution
+ * @param {number} wisMod - Modificateur de Sagesse
+ */
+function calcArmorClass(dexMod, conMod, wisMod) {
+    const acHex = document.getElementById('ac-calculated');
+    if (!acHex) return;
+
+    let baseAC = 0;
+    let bonusAC = 0;
+    let hasBodyArmor = false;
+
+    // Analyse du tableau des armures
+    const armorsBody = document.getElementById('armors_body');
+    if (armorsBody) {
+        armorsBody.querySelectorAll('tr').forEach(tr => {
+            const isEquipped = tr.querySelector('.armor-equipped');
+            if (!isEquipped || !isEquipped.checked) return;
+
+            const typeSelect = tr.querySelector('.armor-type');
+            const type = typeSelect ? typeSelect.value : 'none';
+            const caField = tr.querySelector('.armor-ca');
+            // Regex pour extraire le premier nombre (ex: "14 + Dex" -> 14, "+2" -> 2)
+            let caValue = 0;
+            if (caField) {
+                const textVal = caField.innerText || caField.value || '';
+                const match = textVal.match(/-?\d+/);
+                if (match) caValue = parseInt(match[0]);
+            }
+
+            if (type === 'Bouclier' || type === 'shield') {
+                bonusAC += caValue;
+            } else if (type === 'Légère' || type === 'light') {
+                hasBodyArmor = true;
+                const total = caValue + dexMod;
+                if (total > baseAC) baseAC = total;
+            } else if (type === 'Interméd.' || type === 'medium') {
+                hasBodyArmor = true;
+                const total = caValue + Math.min(2, dexMod);
+                if (total > baseAC) baseAC = total;
+            } else if (type === 'Lourde' || type === 'heavy') {
+                hasBodyArmor = true;
+                if (caValue > baseAC) baseAC = caValue;
+            }
+        });
+    }
+
+    // Défenses sans armure (si aucune armure de corps n'est équipée)
+    if (!hasBodyArmor) {
+        const clsEl = document.getElementById('char_class') || document.querySelector('[data-name="char_class"]');
+        const cls = clsEl ? (clsEl.value || clsEl.innerText).toLowerCase() : '';
+        
+        let unarmoredAC = 10 + dexMod; // Base standard
+
+        if (cls.includes('barbare') || cls.includes('barbarian')) {
+            const barbAC = 10 + dexMod + conMod;
+            if (barbAC > unarmoredAC) unarmoredAC = barbAC;
+        } else if (cls.includes('moine') || cls.includes('monk')) {
+            const monkAC = 10 + dexMod + wisMod;
+            if (monkAC > unarmoredAC) unarmoredAC = monkAC;
+        }
+
+        baseAC = unarmoredAC;
+    }
+
+    const finalAC = baseAC + bonusAC;
+    acHex.innerText = finalAC;
 }
 
 function calcStats() {
