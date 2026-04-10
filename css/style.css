@@ -377,6 +377,11 @@ select {
     color: var(--input-color);
 }
 
+select option {
+    background-color: var(--light-bg);
+    color: var(--input-color);
+}
+
 select.large-select {
     font-size: 1.3rem;
     color: var(--accent-color);
