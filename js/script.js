@@ -1302,7 +1302,7 @@ function filterSpells(level) {
     } else {
         tracker.style.display = 'flex';
         // Afficher les slots pour tous les niveaux sélectionnés (hors 0)
-        const levelsForSlots = [...activeSpellFilters].filter(l => l !== '0').map(Number);
+        const levelsForSlots = [...activeSpellFilters].filter(l => l !== '0').map(Number).sort((a, b) => a - b);
         if (levelsForSlots.length > 0) {
             updateSpellSlots(levelsForSlots);
         } else {
@@ -1394,7 +1394,7 @@ function removeSpellSlot(level) {
 
 function refreshSpellSlots(fallbackLevel) {
     if (typeof activeSpellFilters !== 'undefined' && activeSpellFilters.size > 0) {
-        const levelsForSlots = [...activeSpellFilters].filter(l => l !== '0').map(Number);
+        const levelsForSlots = [...activeSpellFilters].filter(l => l !== '0').map(Number).sort((a, b) => a - b);
         if (levelsForSlots.length > 0) {
             updateSpellSlots(levelsForSlots);
             return;
