@@ -727,18 +727,18 @@ function renderCombatBuffs() {
 
     if (clsClean.includes('barbar')) {
         const active = activeCombatBuffs.rage ? 'active' : '';
-        html += '<button type="button" class="combat-buff-btn ' + active + '" data-buff="rage" title="Rage (+' + getRageBonus(lvl) + ' d\u00e9g\u00e2ts FOR)">\uD83D\uDD25 Rage (+' + getRageBonus(lvl) + ')</button>';
+        html += '<button type="button" class="combat-buff-btn ' + active + '" data-buff="rage" title="Rage (+' + getRageBonus(lvl) + ' d\u00e9g\u00e2ts FOR)"><span class="buff-icon">\uD83D\uDD25</span> Rage (+' + getRageBonus(lvl) + ')</button>';
     }
 
     if (clsClean.includes('roublard') || clsClean.includes('rogue')) {
         const sneakDice = Math.ceil(lvl / 2);
         const active = activeCombatBuffs.sneakAttack ? 'active' : '';
-        html += '<button type="button" class="combat-buff-btn ' + active + '" data-buff="sneakAttack" title="Attaque Sournoise (' + sneakDice + 'd6)">\uD83D\uDDE1\uFE0F Sournoise (' + sneakDice + 'd6)</button>';
+        html += '<button type="button" class="combat-buff-btn ' + active + '" data-buff="sneakAttack" title="Attaque Sournoise (' + sneakDice + 'd6)"><span class="buff-icon">\uD83D\uDDE1\uFE0F</span> Sournoise (' + sneakDice + 'd6)</button>';
     }
 
     if (clsClean.includes('rodeur') || clsClean.includes('r\u00f4deur') || clsClean.includes('ranger')) {
         const active = activeCombatBuffs.hunterMark ? 'active' : '';
-        html += '<button type="button" class="combat-buff-btn ' + active + '" data-buff="hunterMark" title="Marque du Chasseur (+1d6 Force)">\uD83C\uDFF9 Marque (+1d6)</button>';
+        html += '<button type="button" class="combat-buff-btn ' + active + '" data-buff="hunterMark" title="Marque du Chasseur (+1d6 Force)"><span class="buff-icon">\uD83C\uDFF9</span> Marque (+1d6)</button>';
     }
 
     container.innerHTML = html;
