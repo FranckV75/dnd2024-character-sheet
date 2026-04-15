@@ -143,13 +143,14 @@ function getFormData() {
         wBody.querySelectorAll('tr').forEach(tr => {
             weapons.push({
                 name: tr.querySelector('.wpn-name') ? tr.querySelector('.wpn-name').innerHTML : '',
-                atk: tr.querySelector('.wpn-atk') ? tr.querySelector('.wpn-atk').innerHTML : '',
-                dmg: tr.querySelector('.wpn-dmg') ? tr.querySelector('.wpn-dmg').innerHTML : '',
                 prop: tr.querySelector('.wpn-prop') ? tr.querySelector('.wpn-prop').innerHTML : '',
                 prof: tr.querySelector('.wpn-prof') ? tr.querySelector('.wpn-prof').innerHTML : '',
                 ammo: tr.querySelector('.wpn-ammo') ? tr.querySelector('.wpn-ammo').innerHTML : '',
                 note: tr.querySelector('.wpn-note') ? tr.querySelector('.wpn-note').innerHTML : '',
-                category: tr.dataset.category || ''
+                category: tr.dataset.category || '',
+                atkKey: tr.dataset.atkKey || '',
+                baseDmg: tr.dataset.baseDmg || '',
+                weaponConfig: tr.dataset.weaponConfig || ''
             });
         });
     }
