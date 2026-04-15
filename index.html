@@ -383,22 +383,24 @@
                             <div
                                 style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                                 <h3>Armes</h3>
-                                <div id="weapon-filters" style="display:flex; gap:5px;">
-                                    <button type="button" class="filter-btn active" data-filter="all"
-                                        onclick="filterWeapons(this, 'all')">Toutes</button>
-                                    <button type="button" class="filter-btn" data-filter="courante"
-                                        onclick="filterWeapons(this, 'courante')"
-                                        title="Armes Courantes">Courantes</button>
-                                    <button type="button" class="filter-btn" data-filter="guerre"
-                                        onclick="filterWeapons(this, 'guerre')" title="Armes de Guerre">Guerre</button>
-                                    <button type="button" class="filter-btn" data-filter="cac"
-                                        onclick="filterWeapons(this, 'cac')" title="Corps à Corps">CàC</button>
-                                    <button type="button" class="filter-btn" data-filter="distance"
-                                        onclick="filterWeapons(this, 'distance')">Distance</button>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <div id="weapon-filters" style="display:flex; gap:5px;">
+                                        <button type="button" class="filter-btn active" data-filter="all"
+                                            onclick="filterWeapons(this, 'all')">Toutes</button>
+                                        <button type="button" class="filter-btn" data-filter="courante"
+                                            onclick="filterWeapons(this, 'courante')"
+                                            title="Armes Courantes">Courantes</button>
+                                        <button type="button" class="filter-btn" data-filter="guerre"
+                                            onclick="filterWeapons(this, 'guerre')" title="Armes de Guerre">Guerre</button>
+                                        <button type="button" class="filter-btn" data-filter="cac"
+                                            onclick="filterWeapons(this, 'cac')" title="Corps à Corps">CàC</button>
+                                        <button type="button" class="filter-btn" data-filter="distance"
+                                            onclick="filterWeapons(this, 'distance')">Distance</button>
+                                    </div>
+                                    <!-- Buffs de combat conditionnels (Rage, Sournoise, Marque...) -->
+                                    <div id="combat-buffs" class="combat-buffs-container" style="display:none;"></div>
                                 </div>
                             </div>
-                            <!-- Buffs de combat conditionnels (Rage, Sournoise, Marque...) -->
-                            <div id="combat-buffs" class="combat-buffs-container" style="display:none;"></div>
                             <div class="scroll-table-container" style="max-height: 250px;">
                                 <table class="data-table weapons-table">
                                     <thead>
