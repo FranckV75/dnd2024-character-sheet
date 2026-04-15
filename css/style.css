@@ -908,9 +908,6 @@ input[type="checkbox"].square {
 /* === WEAPON CALCULATED FIELDS === */
 .wpn-calc-field {
     display: inline-block;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--accent-color);
     cursor: help;
     padding: 2px 4px;
     min-height: 1em;
@@ -947,8 +944,7 @@ input[type="checkbox"].square {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    padding: 6px 8px;
-    margin-bottom: 6px;
+    align-items: center;
 }
 
 .combat-buff-btn {
