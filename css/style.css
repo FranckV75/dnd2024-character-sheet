@@ -911,7 +911,6 @@ input[type="checkbox"].square {
     cursor: help;
     padding: 2px 4px;
     min-height: 1em;
-    white-space: nowrap;
 }
 
 /* Bouton engrenage de configuration d'arme */
