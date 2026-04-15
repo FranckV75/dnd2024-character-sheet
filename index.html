@@ -382,23 +382,23 @@
                         <div class="box">
                             <div
                                 style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                                <h3>Armes</h3>
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <div id="weapon-filters" style="display:flex; gap:5px;">
-                                        <button type="button" class="filter-btn active" data-filter="all"
-                                            onclick="filterWeapons(this, 'all')">Toutes</button>
-                                        <button type="button" class="filter-btn" data-filter="courante"
-                                            onclick="filterWeapons(this, 'courante')"
-                                            title="Armes Courantes">Courantes</button>
-                                        <button type="button" class="filter-btn" data-filter="guerre"
-                                            onclick="filterWeapons(this, 'guerre')" title="Armes de Guerre">Guerre</button>
-                                        <button type="button" class="filter-btn" data-filter="cac"
-                                            onclick="filterWeapons(this, 'cac')" title="Corps à Corps">CàC</button>
-                                        <button type="button" class="filter-btn" data-filter="distance"
-                                            onclick="filterWeapons(this, 'distance')">Distance</button>
-                                    </div>
+                                <div style="display:flex; align-items:center; gap:15px;">
+                                    <h3 style="margin:0;">Armes</h3>
                                     <!-- Buffs de combat conditionnels (Rage, Sournoise, Marque...) -->
                                     <div id="combat-buffs" class="combat-buffs-container" style="display:none;"></div>
+                                </div>
+                                <div id="weapon-filters" style="display:flex; gap:5px;">
+                                    <button type="button" class="filter-btn active" data-filter="all"
+                                        onclick="filterWeapons(this, 'all')">Toutes</button>
+                                    <button type="button" class="filter-btn" data-filter="courante"
+                                        onclick="filterWeapons(this, 'courante')"
+                                        title="Armes Courantes">Courantes</button>
+                                    <button type="button" class="filter-btn" data-filter="guerre"
+                                        onclick="filterWeapons(this, 'guerre')" title="Armes de Guerre">Guerre</button>
+                                    <button type="button" class="filter-btn" data-filter="cac"
+                                        onclick="filterWeapons(this, 'cac')" title="Corps à Corps">CàC</button>
+                                    <button type="button" class="filter-btn" data-filter="distance"
+                                        onclick="filterWeapons(this, 'distance')">Distance</button>
                                 </div>
                             </div>
                             <div class="scroll-table-container" style="max-height: 250px;">
@@ -407,11 +407,11 @@
                                         <tr>
                                             <th width="20%">Nom</th>
                                             <th width="10%">Bonus Att</th>
-                                            <th width="15%">Dégâts</th>
-                                            <th width="15%">Propriétés</th>
-                                            <th width="15%">Botte d'arme</th>
+                                            <th width="18%">Dégâts</th>
+                                            <th width="18%">Propriétés</th>
+                                            <th width="14%">Botte d'arme</th>
                                             <th width="10%">Munitions</th>
-                                            <th>Notes</th>
+                                            <th width="10%">Notes</th>
                                             <th style="width:20px"></th>
                                         </tr>
                                     </thead>
