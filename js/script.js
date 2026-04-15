@@ -443,30 +443,46 @@ function addWeaponRow(data = null) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
         <td style="position: relative;"><div contenteditable="true" class="rich-input single-line wpn-name"></div></td>
-        <td><div contenteditable="true" class="rich-input single-line wpn-atk"></div></td>
-        <td><div contenteditable="true" class="rich-input single-line wpn-dmg"></div></td>
+        <td><span class="wpn-atk wpn-calc-field" title="Calculé automatiquement"></span></td>
+        <td><span class="wpn-dmg wpn-calc-field" title="Calculé automatiquement"></span></td>
         <td><div contenteditable="true" class="rich-input single-line wpn-prop"></div></td>
         <td><div contenteditable="true" class="rich-input single-line wpn-prof"></div></td>
         <td><div contenteditable="true" class="rich-input single-line wpn-ammo"></div></td>
         <td><div contenteditable="true" class="rich-input single-line wpn-note"></div></td>
-        <td><button class="del-btn" aria-label="Supprimer l'arme" onclick="this.closest('tr').remove(); saveData();">x</button></td>
+        <td class="wpn-actions-cell"><button type="button" class="wpn-config-btn" aria-label="Configurer l'arme" title="Configurer l'arme">⚙️</button><button class="del-btn" aria-label="Supprimer l'arme" onclick="this.closest('tr').remove(); saveData();">x</button></td>
     `;
     body.appendChild(tr);
+
+    // Bouton Configurer : ouvre la modale de configuration
+    tr.querySelector('.wpn-config-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openWeaponConfig(tr);
+    });
+
     if (data) {
         tr.querySelector('.wpn-name').innerHTML = data.name || '';
-        tr.querySelector('.wpn-atk').innerHTML = data.atk || '';
-        tr.querySelector('.wpn-dmg').innerHTML = data.dmg || '';
         tr.querySelector('.wpn-prop').innerHTML = data.prop || '';
         tr.querySelector('.wpn-prof').innerHTML = data.prof || '';
         tr.querySelector('.wpn-ammo').innerHTML = data.ammo || '';
         tr.querySelector('.wpn-note').innerHTML = data.note || '';
+
+        // Restaurer les données brutes de DD_RULES pour le recalcul
+        if (data.atkKey) tr.dataset.atkKey = data.atkKey;
+        if (data.baseDmg) tr.dataset.baseDmg = data.baseDmg;
+
+        // Restaurer la configuration personnalisée
+        if (data.weaponConfig) {
+            tr.dataset.weaponConfig = typeof data.weaponConfig === 'string'
+                ? data.weaponConfig
+                : JSON.stringify(data.weaponConfig);
+        }
 
         // Assigner la catégorie: soit depuis la sauvegarde, soit devinée depuis DD_RULES
         if (data.category) {
             tr.dataset.category = data.category;
         } else if (typeof DD_RULES !== 'undefined' && DD_RULES.weapons) {
             let cleanName = (data.name || '').trim().toLowerCase();
-            // Retirer les pluriels "s", les suffixes (1), etc. pour maximiser les chances de match
             cleanName = cleanName.replace(/\(\d+\)/g, '').trim();
             if (cleanName.endsWith('s') && cleanName.length > 3) cleanName = cleanName.slice(0, -1);
 
@@ -527,6 +543,217 @@ function filterWeapons(btn, filter) {
         // Exemption : toujours afficher les lignes complètement vides (pour pouvoir en ajouter des nouvelles facilement sous un filtre)
         const name = row.querySelector('.wpn-name').innerText.trim();
         if (name === '') row.style.display = '';
+    });
+}
+
+// =============================================================================
+// MOTEUR DE CALCUL D'ARMES AUTOMATIQUE
+// =============================================================================
+
+/** État global des buffs de combat */
+let activeCombatBuffs = {};
+
+/**
+ * Recalcule ATK et DMG de toutes les lignes d'armes.
+ * Appelé depuis calcDerivedStats() et à chaque modification d'arme.
+ */
+function calcAllWeapons() {
+    const rows = document.querySelectorAll('#weapons_body tr');
+    if (rows.length === 0) return;
+
+    const getStatMod = (s) => { const v = getVal(s + '_score'); return v ? calcMod(v) : 0; };
+    const mods = {
+        str: getStatMod('str'), dex: getStatMod('dex'),
+        con: getStatMod('con'), int: getStatMod('int'),
+        wis: getStatMod('wis'), cha: getStatMod('cha')
+    };
+    const lvl = getVal('char_level') || 1;
+    const pb = Math.ceil(lvl / 4) + 1;
+    const clsEl = document.getElementById('char_class') || document.querySelector('[data-name="char_class"]');
+    const cls = clsEl ? (clsEl.tagName === 'SELECT' ? clsEl.value : clsEl.innerText) : '';
+    const clsClean = cls.trim().toLowerCase();
+
+    rows.forEach(tr => {
+        const atkKey = tr.dataset.atkKey || '';
+        const baseDmg = tr.dataset.baseDmg || '';
+        const nameEl = tr.querySelector('.wpn-name');
+        const name = nameEl ? nameEl.innerText.trim() : '';
+
+        if (!atkKey || !name) {
+            const atkEl = tr.querySelector('.wpn-atk');
+            const dmgEl = tr.querySelector('.wpn-dmg');
+            if (atkEl) { atkEl.textContent = ''; atkEl.title = ''; }
+            if (dmgEl) { dmgEl.textContent = ''; dmgEl.title = ''; }
+            return;
+        }
+
+        const config = getWeaponConfig(tr);
+        const magicBonus = config.magicBonus || 0;
+        const statOverride = config.statOverride || '';
+        const dmgDieOverride = config.dmgDieOverride || '';
+        const dmgTypeOverride = config.dmgTypeOverride || '';
+
+        const extraDmg = [];
+        const prop = tr.querySelector('.wpn-prop') ? tr.querySelector('.wpn-prop').innerText : '';
+        const propLow = prop.toLowerCase();
+        const isRanged = propLow.includes('munitions');
+        const { stat } = resolveWeaponAttackStat(atkKey, prop, mods, statOverride);
+
+        // Rage (Barbare D&D 2024 : attaque utilisant FOR)
+        if (activeCombatBuffs.rage && stat === 'FOR') {
+            extraDmg.push({ die: '+' + getRageBonus(lvl), type: 'Rage' });
+        }
+        // Marque du Chasseur (Rôdeur)
+        if (activeCombatBuffs.hunterMark) {
+            extraDmg.push({ die: '1d6', type: 'Force' });
+        }
+        // Attaque Sournoise (Roublard : Finesse ou Distance)
+        if (activeCombatBuffs.sneakAttack) {
+            if (propLow.includes('finesse') || isRanged) {
+                extraDmg.push({ die: Math.ceil(lvl / 2) + 'd6', type: 'Sournoise' });
+            }
+        }
+
+        // Arts Martiaux (Moine : override du dé si supérieur)
+        let finalDmgDie = dmgDieOverride;
+        if (clsClean.includes('moine') || clsClean.includes('monk')) {
+            if (isMartialArtsWeapon(tr.dataset.category || '', isRanged, prop)) {
+                finalDmgDie = finalDmgDie || getMartialArtsDie(lvl);
+            }
+        }
+
+        const atkResult = calcWeaponAttack(atkKey, prop, mods, pb, magicBonus, statOverride);
+        const atkEl = tr.querySelector('.wpn-atk');
+        if (atkEl) { atkEl.textContent = atkResult.text; atkEl.title = atkResult.tooltip; }
+
+        const dmgResult = calcWeaponDamage(baseDmg, prop, mods, magicBonus, statOverride, finalDmgDie, dmgTypeOverride, atkKey, extraDmg);
+        const dmgEl = tr.querySelector('.wpn-dmg');
+        if (dmgEl) { dmgEl.textContent = dmgResult.text; dmgEl.title = dmgResult.tooltip; }
+    });
+}
+
+/**
+ * Ouvre la modale de configuration d'une arme.
+ */
+function openWeaponConfig(tr) {
+    const name = tr.querySelector('.wpn-name').innerText.trim() || 'Arme';
+    const config = getWeaponConfig(tr);
+
+    showModal((txt, btns, inp, area, close) => {
+        txt.innerHTML = '<strong>\u2699\uFE0F Configuration : ' + name + '</strong>';
+
+        const form = document.createElement('div');
+        form.style.cssText = 'display:flex; flex-direction:column; gap:12px; margin-top:10px;';
+
+        form.innerHTML =
+            '<label style="font-weight:600; color:var(--label-color);">Caract\u00e9ristique d\'attaque</label>' +
+            '<select id="cfg-stat" class="std-input" style="padding:6px;">' +
+                '<option value="">Auto (bas\u00e9e sur les propri\u00e9t\u00e9s)</option>' +
+                '<option value="str"' + (config.statOverride === 'str' ? ' selected' : '') + '>Force</option>' +
+                '<option value="dex"' + (config.statOverride === 'dex' ? ' selected' : '') + '>Dext\u00e9rit\u00e9</option>' +
+                '<option value="cha"' + (config.statOverride === 'cha' ? ' selected' : '') + '>Charisme (Pacte Lame)</option>' +
+                '<option value="wis"' + (config.statOverride === 'wis' ? ' selected' : '') + '>Sagesse (Shillelagh)</option>' +
+                '<option value="int"' + (config.statOverride === 'int' ? ' selected' : '') + '>Intelligence</option>' +
+            '</select>' +
+
+            '<label style="font-weight:600; color:var(--label-color);">Bonus d\'arme magique</label>' +
+            '<select id="cfg-magic" class="std-input" style="padding:6px;">' +
+                '<option value="0"' + ((config.magicBonus || 0) === 0 ? ' selected' : '') + '>+0 (Normale)</option>' +
+                '<option value="1"' + (config.magicBonus === 1 ? ' selected' : '') + '>+1</option>' +
+                '<option value="2"' + (config.magicBonus === 2 ? ' selected' : '') + '>+2</option>' +
+                '<option value="3"' + (config.magicBonus === 3 ? ' selected' : '') + '>+3</option>' +
+            '</select>' +
+
+            '<label style="font-weight:600; color:var(--label-color);">Override du d\u00e9 de d\u00e9g\u00e2ts <small>(optionnel)</small></label>' +
+            '<input id="cfg-die" class="std-input" style="padding:6px;" placeholder="Ex: 1d8, 2d6..." value="' + (config.dmgDieOverride || '') + '">' +
+
+            '<label style="font-weight:600; color:var(--label-color);">Type de d\u00e9g\u00e2ts <small>(optionnel)</small></label>' +
+            '<select id="cfg-dmgtype" class="std-input" style="padding:6px;">' +
+                '<option value="">Auto (depuis les donn\u00e9es)</option>' +
+                '<option value="TRAN"' + (config.dmgTypeOverride === 'TRAN' ? ' selected' : '') + '>Tranchant</option>' +
+                '<option value="CONT"' + (config.dmgTypeOverride === 'CONT' ? ' selected' : '') + '>Contondant</option>' +
+                '<option value="PERF"' + (config.dmgTypeOverride === 'PERF' ? ' selected' : '') + '>Per\u00e7ant</option>' +
+                '<option value="FEU"' + (config.dmgTypeOverride === 'FEU' ? ' selected' : '') + '>Feu</option>' +
+                '<option value="FROID"' + (config.dmgTypeOverride === 'FROID' ? ' selected' : '') + '>Froid</option>' +
+                '<option value="NECR"' + (config.dmgTypeOverride === 'NECR' ? ' selected' : '') + '>N\u00e9crotique</option>' +
+                '<option value="RADI"' + (config.dmgTypeOverride === 'RADI' ? ' selected' : '') + '>Radiant</option>' +
+                '<option value="FORCE"' + (config.dmgTypeOverride === 'FORCE' ? ' selected' : '') + '>Force</option>' +
+                '<option value="PSYCH"' + (config.dmgTypeOverride === 'PSYCH' ? ' selected' : '') + '>Psychique</option>' +
+                '<option value="POISON"' + (config.dmgTypeOverride === 'POISON' ? ' selected' : '') + '>Poison</option>' +
+            '</select>';
+
+        area.appendChild(form);
+
+        const btnSave = document.createElement('button');
+        btnSave.className = 'btn btn-save';
+        btnSave.innerText = 'Appliquer';
+        btnSave.onclick = () => {
+            const newConfig = {
+                statOverride: document.getElementById('cfg-stat').value || '',
+                magicBonus: parseInt(document.getElementById('cfg-magic').value) || 0,
+                dmgDieOverride: document.getElementById('cfg-die').value.trim() || '',
+                dmgTypeOverride: document.getElementById('cfg-dmgtype').value || ''
+            };
+            tr.dataset.weaponConfig = JSON.stringify(newConfig);
+            saveData();
+            calcAllWeapons();
+            close();
+        };
+        const btnCancel = document.createElement('button');
+        btnCancel.className = 'btn';
+        btnCancel.innerText = 'Annuler';
+        btnCancel.onclick = close;
+        btns.appendChild(btnSave);
+        btns.appendChild(btnCancel);
+    });
+}
+
+/**
+ * Génère les boutons de Buffs de combat selon la classe du personnage.
+ */
+function renderCombatBuffs() {
+    const container = document.getElementById('combat-buffs');
+    if (!container) return;
+
+    const clsEl = document.getElementById('char_class') || document.querySelector('[data-name="char_class"]');
+    const cls = clsEl ? (clsEl.tagName === 'SELECT' ? clsEl.value : clsEl.innerText) : '';
+    const clsClean = cls.trim().toLowerCase();
+    const lvl = getVal('char_level') || 1;
+
+    const savedBuffs = JSON.parse(localStorage.getItem('combat_buffs') || '{}');
+    activeCombatBuffs = savedBuffs;
+
+    let html = '';
+
+    if (clsClean.includes('barbar')) {
+        const active = activeCombatBuffs.rage ? 'active' : '';
+        html += '<button type="button" class="combat-buff-btn ' + active + '" data-buff="rage" title="Rage (+' + getRageBonus(lvl) + ' d\u00e9g\u00e2ts FOR)">\uD83D\uDD25 Rage (+' + getRageBonus(lvl) + ')</button>';
+    }
+
+    if (clsClean.includes('roublard') || clsClean.includes('rogue')) {
+        const sneakDice = Math.ceil(lvl / 2);
+        const active = activeCombatBuffs.sneakAttack ? 'active' : '';
+        html += '<button type="button" class="combat-buff-btn ' + active + '" data-buff="sneakAttack" title="Attaque Sournoise (' + sneakDice + 'd6)">\uD83D\uDDE1\uFE0F Sournoise (' + sneakDice + 'd6)</button>';
+    }
+
+    if (clsClean.includes('rodeur') || clsClean.includes('r\u00f4deur') || clsClean.includes('ranger')) {
+        const active = activeCombatBuffs.hunterMark ? 'active' : '';
+        html += '<button type="button" class="combat-buff-btn ' + active + '" data-buff="hunterMark" title="Marque du Chasseur (+1d6 Force)">\uD83C\uDFF9 Marque (+1d6)</button>';
+    }
+
+    container.innerHTML = html;
+    container.style.display = html ? 'flex' : 'none';
+
+    container.querySelectorAll('.combat-buff-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const buff = this.dataset.buff;
+            activeCombatBuffs[buff] = !activeCombatBuffs[buff];
+            this.classList.toggle('active', activeCombatBuffs[buff]);
+            localStorage.setItem('combat_buffs', JSON.stringify(activeCombatBuffs));
+            saveData();
+            calcAllWeapons();
+        });
     });
 }
 
@@ -772,14 +999,16 @@ function setupWeaponAutocomplete(input, tr) {
 
             item.addEventListener('click', function () {
                 input.innerHTML = w.name;
-                tr.querySelector('.wpn-atk').innerHTML = w.atk;
-                tr.querySelector('.wpn-dmg').innerHTML = w.dmg;
+                // Stocker les données brutes pour le moteur de calcul
+                tr.dataset.atkKey = w.atk;   // "FOR" ou "DEX"
+                tr.dataset.baseDmg = w.dmg;  // "1d12 tran." etc.
                 tr.querySelector('.wpn-prop').innerHTML = w.prop;
                 tr.querySelector('.wpn-prof').innerHTML = w.prof;
-                tr.dataset.category = w.category || ''; // Injection pour le filtrage
-                // ammo n'est pas rempli automatiquement pour que l'utilisateur gère (ex: 15/20)
+                tr.dataset.category = w.category || '';
                 weaponAutocompleteContainer.style.display = 'none';
                 saveData();
+                // Recalculer toutes les armes
+                if (typeof calcAllWeapons === 'function') calcAllWeapons();
 
                 // Réappliquer le filtre actif si nécessaire
                 const activeFilter = document.querySelector('#weapon-filters .filter-btn.active');
@@ -1542,6 +1771,10 @@ function calcDerivedStats() {
 
     // === CLASSE D'ARMURE ===
     calcArmorClass(dexMod, getStatMod('con'), getStatMod('wis'));
+
+    // === ARMES : Recalcul automatique ATK/DMG ===
+    renderCombatBuffs();
+    calcAllWeapons();
 }
 
 /**
