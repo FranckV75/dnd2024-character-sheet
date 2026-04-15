@@ -601,7 +601,7 @@ function calcAllWeapons() {
 
         // Rage (Barbare D&D 2024 : attaque utilisant FOR)
         if (activeCombatBuffs.rage && stat === 'FOR') {
-            extraDmg.push({ die: '+' + getRageBonus(lvl), type: 'Rage' });
+            extraDmg.push({ die: '' + getRageBonus(lvl), type: 'Rage' });
         }
         // Marque du Chasseur (Rôdeur)
         if (activeCombatBuffs.hunterMark) {
