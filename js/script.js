@@ -682,7 +682,7 @@ function openWeaponConfig(tr) {
                 '<option value="POISON"' + (config.dmgTypeOverride === 'POISON' ? ' selected' : '') + '>Poison</option>' +
             '</select>';
 
-        area.appendChild(form);
+        txt.appendChild(form);
 
         const btnSave = document.createElement('button');
         btnSave.className = 'btn btn-save';
