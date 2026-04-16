@@ -260,7 +260,7 @@ function initPremiumTooltips() {
     }
 }
 
-window.onload = function () {
+window.onload = async function () {
     generateSkillsHTML();
     initWeapons();
     initSpells();
@@ -272,7 +272,7 @@ window.onload = function () {
     initPremiumTooltips(); // Tooltips custom sur éléments title
 
 
-    // Event listener pour mise Ã  jour Sous-Classe
+    // Event listener pour mise à jour Sous-Classe
     const classSelect = document.getElementById('char_class');
     if (classSelect) {
         classSelect.addEventListener('change', function () {
@@ -305,7 +305,9 @@ window.onload = function () {
         if (ySlider) ySlider.value = posY;
     }
 
-    loadData();
+    // CRITIQUE : attendre que les données soient complètement chargées
+    // AVANT d'attacher les listeners d'auto-save pour éviter les race conditions
+    await loadData();
 
     const sheetForm = document.getElementById('sheet-form');
     if (sheetForm) {
