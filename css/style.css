@@ -349,7 +349,7 @@ h3 {
     overflow-y: auto;
     white-space: pre-wrap;
     border: 1px solid #cbb69d;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.25);
     border-radius: 3px;
 }
 
@@ -913,6 +913,8 @@ input[type="checkbox"].square {
     min-height: 1em;
     font-family: 'Cinzel', serif;
     font-size: 0.70rem;
+    font-weight: bold;
+    color: var(--input-color);
 }
 
 /* Bouton engrenage de configuration d'arme */
@@ -1435,7 +1437,7 @@ input[type="checkbox"].square {
 .ac-hex {
     width: 100%;
     min-height: 120px;
-    background-image: url("data:image/svg+xml,%3Csvg width='144' height='130' viewBox='0 0 144 130' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M72 5 L139 35 L139 95 L72 125 L5 95 L5 35 Z' fill='rgba(255, 255, 255, 0.5)' stroke='%238b4513' stroke-width='2' /%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='144' height='130' viewBox='0 0 144 130' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M72 5 L139 35 L139 95 L72 125 L5 95 L5 35 Z' fill='rgba(0, 0, 0, 0.25)' stroke='%238b4513' stroke-width='2' /%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
@@ -2769,4 +2771,180 @@ body.cinema-mode #cinema-btn {
     background: rgba(0, 0, 0, 0.3);
     border-color: rgba(255, 255, 255, 0.4);
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+/* ========================================================================= */
+/* --- MODE VERROUILLÉ (LOCK MODE) --- */
+/* ========================================================================= */
+body.locked-mode .rich-input,
+body.locked-mode .std-input,
+body.locked-mode [contenteditable],
+body.locked-mode input,
+body.locked-mode textarea,
+body.locked-mode select,
+body.locked-mode .btn,
+body.locked-mode .combat-buff-btn,
+body.locked-mode .del-btn,
+body.locked-mode .add-row-btn {
+    pointer-events: none !important;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+body.locked-mode .tabs,
+body.locked-mode .tabs *,
+body.locked-mode #cinema-btn,
+body.locked-mode #lock-btn,
+body.locked-mode #side-panel,
+body.locked-mode #side-panel *,
+body.locked-mode .spell-filter-btn,
+body.locked-mode .spell-class-filter,
+body.locked-mode .spell-count,
+body.locked-mode .spell-tooltip,
+body.locked-mode .spell-tooltip * {
+    pointer-events: auto !important;
+}
+
+body.locked-mode .box {
+    border-color: rgba(212, 175, 55, 0.15);
+}
+body.locked-mode .rich-input, 
+body.locked-mode .std-input {
+    border-bottom-color: transparent !important;
+    background-color: transparent !important;
+}
+
+body.locked-mode .add-row-btn,
+body.locked-mode .del-btn {
+    display: none !important;
+}
+
+body.locked-mode .spl-name {
+    pointer-events: auto !important;
+    cursor: help;
+}
+body.locked-mode .spl-name:focus {
+    outline: none;
+}
+
+/* Boutons fixes */
+#lock-btn {
+    position: fixed;
+    top: 45px;
+    left: 10px;
+    z-index: 10001;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+#lock-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+body.locked-mode #lock-btn {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: rgba(212, 175, 55, 0.5);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+[data-theme="light"] #lock-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================================================= */
+/* --- INFO-BULLES DES SORTS (TOOLTIP) --- */
+/* ========================================================================= */
+.spell-tooltip {
+    position: absolute;
+    z-index: 10000;
+    width: 380px;
+    background: rgba(13, 13, 18, 0.95);
+    border: 1px solid var(--accent-color, #d4af37);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), 0 0 8px rgba(212, 175, 55, 0.2);
+    border-radius: 8px;
+    padding: 0;
+    color: #e8dbc5;
+    font-size: 0.85rem;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-body, 'Segoe UI', sans-serif);
+    backdrop-filter: blur(5px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+[data-theme="light"] .spell-tooltip {
+    background: rgba(253, 251, 247, 0.95);
+    color: #2c241b;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 8px rgba(212, 175, 55, 0.3);
+}
+
+.spell-tooltip-header {
+    background: rgba(212, 175, 55, 0.15);
+    padding: 10px 15px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 8px 8px 0 0;
+}
+
+.spell-tooltip-header strong {
+    font-family: var(--font-title, 'Cinzel', serif);
+    font-size: 1.1rem;
+    color: var(--accent-color, #d4af37);
+    display: block;
+    margin-bottom: 5px;
+}
+
+.spell-tooltip-meta {
+    font-size: 0.75rem;
+    opacity: 0.8;
+    line-height: 1.4;
+}
+
+.tool-icon {
+    display: inline-block;
+    background: var(--accent-color, #d4af37);
+    color: #000;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+    text-align: center;
+    font-size: 0.6rem;
+    margin-left: 3px;
+    vertical-align: middle;
+}
+
+.spell-tooltip-body {
+    padding: 12px 15px;
+    line-height: 1.5;
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.spell-tooltip-body p {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+.spell-tooltip-body p:last-child {
+    margin-bottom: 0;
+}
+.spell-tooltip-body strong {
+    color: var(--accent-color, #d4af37);
+    font-weight: 600;
+}
+[data-theme="light"] .spell-tooltip-body strong {
+    color: #8c6a23;
 }
