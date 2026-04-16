@@ -11,7 +11,6 @@ const LONG_REST_DURATION = 2000; // 2 secondes
  * Restaure : ressources de classe + interface pour utiliser des dés de vie
  */
 function performShortRest() {
-    console.log('⚔️ Repos Court commencé...');
 
     // Récupérer la classe et le niveau pour la restauration ciblée
     let clsName = '';
@@ -261,7 +260,6 @@ function applyHitDiceHealing(healing, diceUsed, currentHdUsed, dieResult, conMod
         }
     });
 
-    console.log(`✅ Repos Court : +${healing} PV (${dieResult} ${conSign}${conMod})`);
 }
 
 /**
@@ -269,7 +267,6 @@ function applyHitDiceHealing(healing, diceUsed, currentHdUsed, dieResult, conMod
  * Restaure : PV, dés de vie, emplacements de sorts, ressources de classe
  */
 function performLongRest() {
-    console.log('🛏️ Repos Long commencé...');
 
     // Restaurer les PV au maximum
     const hpMax = document.querySelector('[data-name="hp_max"]');
@@ -376,7 +373,6 @@ function performLongRest() {
         btns.appendChild(btnOk);
     });
 
-    console.log('✅ Repos Long terminé');
 }
 
 /**
@@ -447,7 +443,6 @@ function initRestSystem() {
 
                 const elapsed = Date.now() - longRestStartTime;
                 if (elapsed < LONG_REST_DURATION) {
-                    console.log('⏱️ Repos Long annulé (appui trop court)');
                 }
             }
         });
@@ -458,7 +453,6 @@ function initRestSystem() {
                 clearInterval(longRestTimer);
                 longRestTimer = null;
                 cleanupLongRestFeedback(btnLongRest);
-                console.log('⏱️ Repos Long annulé (souris sortie)');
             }
         });
 
@@ -489,7 +483,6 @@ function initRestSystem() {
 
                 const elapsed = Date.now() - longRestStartTime;
                 if (elapsed < LONG_REST_DURATION) {
-                    console.log('⏱️ Repos Long annulé (appui tactile trop court)');
                 }
             }
         });
