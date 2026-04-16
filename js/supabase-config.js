@@ -15,7 +15,6 @@ window.currentUser = null;
 
 // Initialisation au chargement
 async function checkUser() {
-    console.log('🔍 Supabase : Vérification de la session...');
     const { data: { user }, error } = await supabase.auth.getUser();
     if (error) console.error('❌ Supabase Auth Error:', error.message);
     updateUIForUser(user);
@@ -25,7 +24,6 @@ setTimeout(checkUser, 500);
 
 async function updateUIForUser(user) {
     window.currentUser = user;
-    console.log('👤 Utilisateur actuel :', user ? user.email : 'Non connecté');
 
     const authStatus = document.getElementById('auth-status');
     const authBtn = document.getElementById('auth-btn');
@@ -59,7 +57,6 @@ async function signOut() {
     showModal('Déconnecté !');
 }
 
-console.log('✨ Supabase : Instance client connectée et prête');
 
 /**
  * AUTHENTIFICATION UI

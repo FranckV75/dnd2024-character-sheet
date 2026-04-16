@@ -389,7 +389,6 @@ async function saveData(silent = true) {
     // 2. Synchronisation Cloud (si connecté)
     if (currentUser) {
         try {
-            console.log('☁️ Supabase : Tentative de synchronisation...');
             const { error } = await supabase
                 .from('characters')
                 .upsert({
@@ -400,7 +399,6 @@ async function saveData(silent = true) {
                 }, { onConflict: 'name, user_id' });
 
             if (error) throw error;
-            console.log('✅ Supabase : Synchronisé avec succès');
         } catch (err) {
             console.warn('❌ Supabase : Échec de synchronisation', err.message);
         }
@@ -414,7 +412,6 @@ async function loadData() {
     // 1. Essayer de charger depuis Supabase si connecté
     if (window.currentUser) {
         try {
-            console.log('☁️ Supabase : Chargement des données pour', window.currentUser.id);
             const { data, error } = await supabase
                 .from('characters')
                 .select('data')
@@ -424,13 +421,11 @@ async function loadData() {
                 .single();
 
             if (data && data.data) {
-                console.log('✅ Supabase : Données cloud chargées');
                 const cleanedData = cleanLegacyData(data.data);
                 applyFormData(cleanedData);
                 return;
             }
         } catch (err) {
-            console.log('ℹ️ Supabase : Pas de données cloud pour cet utilisateur');
         }
     }
 

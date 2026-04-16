@@ -51,6 +51,8 @@ css/
 4. **Esthétique Premium** : animations fluides, transitions cubic-bezier
 5. **Accessibilité** : aria-labels, contrastes suffisants
 6. **Sources Officielles** : Des manuels au format PDF sont disponibles dans `/MANUELS`. Consulte-les prioritairement pour valider toute règle complexe (ex: Odyssée des Seigneurs Dragons, règles D&D 2024).
+7. **Homogénéité Typographique UI/UX** : Toute modification d'un tableau, d'un champ ou création de champs dynamiques/calculés doit obligatoirement reprendre **EXACTEMENT** la même typographie, graisse (font-weight), couleur et taille de police que les autres champs adjacents (souvent `Cinzel`, `0.70rem` ou hérité). Ne jamais coder "en dur" des polices différentes (ex: gras ou couleurs vives) pour différencier les éléments générés informatiquement. Le design doit être 100% "seamless".
+8. **Test Mode Nuit / Mode Jour** : Chaque ajout de couleur, texte ou fond doit être obligatoirement évalué (contraste et lisibilité) dans les deux thèmes avant validation finale.
 
 ## Commits
 
