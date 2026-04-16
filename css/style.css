@@ -911,6 +911,8 @@ input[type="checkbox"].square {
     cursor: help;
     padding: 2px 4px;
     min-height: 1em;
+    font-family: 'Cinzel', serif;
+    font-size: 0.70rem;
 }
 
 /* Bouton engrenage de configuration d'arme */
