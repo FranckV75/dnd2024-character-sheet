@@ -2147,3 +2147,159 @@ window.addEventListener('load', setupHitDiceLogic);
 
 
 
+// --- INFO-BULLES SORTS ---
+let configTooltipsEnabled = true;
+
+function toggleSpellTooltips() {
+    configTooltipsEnabled = !configTooltipsEnabled;
+    const btn = document.getElementById('toggle-tooltips-btn');
+    if (configTooltipsEnabled) {
+        btn.classList.add('active');
+        btn.style.opacity = '1';
+    } else {
+        btn.classList.remove('active');
+        btn.style.opacity = '0.5';
+    }
+    localStorage.setItem('dd2024_spell_tooltips', configTooltipsEnabled);
+}
+
+// Initialisation au chargement pour bulles et lock
+document.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('dd2024_spell_tooltips');
+    if (saved !== null) {
+        configTooltipsEnabled = saved === 'true';
+        const btn = document.getElementById('toggle-tooltips-btn');
+        if (btn) {
+            if (configTooltipsEnabled) {
+                btn.classList.add('active');
+                btn.style.opacity = '1';
+            } else {
+                btn.classList.remove('active');
+                btn.style.opacity = '0.5';
+            }
+        }
+    }
+
+    const spellsBody = document.getElementById('spells_body');
+    if (spellsBody) {
+        let tooltipHideTimeout;
+        spellsBody.addEventListener('mouseover', (e) => {
+            if (!configTooltipsEnabled || isLockedMode) return;
+            const target = e.target.closest('.spl-name');
+            if (target) {
+                showSpellTooltip(target);
+                clearTimeout(tooltipHideTimeout);
+            }
+        });
+        spellsBody.addEventListener('mouseout', (e) => {
+            const target = e.target.closest('.spl-name');
+            if (target) {
+                tooltipHideTimeout = setTimeout(hideSpellTooltip, 100);
+            }
+        });
+        // Click on tablet (especially in locked mode)
+        spellsBody.addEventListener('click', (e) => {
+            if (!configTooltipsEnabled) return;
+            const target = e.target.closest('.spl-name');
+            if (target && isLockedMode) {
+                showSpellTooltip(target);
+            }
+        });
+    }
+    
+    document.addEventListener('click', (e) => {
+        const tooltip = document.getElementById('spell-tooltip');
+        if (tooltip && tooltip.style.display === 'block') {
+            if (!e.target.closest('.spl-name') && !e.target.closest('.spell-tooltip')) {
+                hideSpellTooltip();
+            }
+        }
+    });
+
+    initLockMode();
+});
+
+function showSpellTooltip(element) {
+    const spellName = element.textContent.trim().toLowerCase();
+    if (!spellName) return;
+    
+    const spell = SPELLS_DATA.find(s => s.name.toLowerCase() === spellName);
+    if (!spell || !spell.desc) return;
+    
+    const tooltip = document.getElementById('spell-tooltip');
+    if (!tooltip) return;
+    
+    const components = spell.components || '';
+    const icons = [];
+    if (spell.concentration) icons.push('<span class="tool-icon">C</span>');
+    if (spell.ritual) icons.push('<span class="tool-icon">R</span>');
+
+    const html = `
+        <div class="spell-tooltip-header">
+            <strong>${spell.name}</strong>
+            <div class="spell-tooltip-meta">⌛ ${spell.castTime} | 🎯 ${spell.range} | ⏳ ${spell.duration} | 🧩 ${components} ${icons.join(' ')}</div>
+        </div>
+        <div class="spell-tooltip-body">${spell.desc}</div>
+    `;
+    
+    tooltip.innerHTML = html;
+    tooltip.style.display = 'block';
+    
+    const rect = element.getBoundingClientRect();
+    let top = rect.top + window.scrollY - tooltip.offsetHeight - 10;
+    let left = rect.left + window.scrollX;
+    
+    if (top < window.scrollY) {
+        top = Math.max(0, rect.bottom + window.scrollY + 10);
+    }
+    if (top < 0) top = 10;
+    if (left + tooltip.offsetWidth > window.innerWidth) {
+        left = window.innerWidth - tooltip.offsetWidth - 20;
+    }
+    if (left < 0) left = 10;
+    
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
+}
+
+function hideSpellTooltip() {
+    const tooltip = document.getElementById('spell-tooltip');
+    if (tooltip) tooltip.style.display = 'none';
+}
+
+// --- LOCK MODE ---
+let isLockedMode = false;
+
+function initLockMode() {
+    const saved = localStorage.getItem('dd2024_lock_mode');
+    setTimeout(() => {
+        if (saved === 'true') {
+            toggleLockMode(true);
+        }
+    }, 500);
+}
+
+function toggleLockMode(forceState = null) {
+    if (forceState !== null) {
+        isLockedMode = forceState;
+    } else {
+        isLockedMode = !isLockedMode;
+    }
+    
+    localStorage.setItem('dd2024_lock_mode', isLockedMode);
+    
+    const btn = document.getElementById('lock-btn');
+    if (isLockedMode) {
+        document.body.classList.add('locked-mode');
+        if (btn) btn.innerHTML = '🔒';
+        document.querySelectorAll('[contenteditable="true"]').forEach(el => el.setAttribute('contenteditable', 'false'));
+    } else {
+        document.body.classList.remove('locked-mode');
+        if (btn) btn.innerHTML = '🔓';
+        document.querySelectorAll('.rich-input, [data-name], .spl-name').forEach(el => {
+            if (el.tagName.toLowerCase() !== 'input' && el.tagName.toLowerCase() !== 'textarea') {
+                el.setAttribute('contenteditable', 'true');
+            }
+        });
+    }
+}

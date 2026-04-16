@@ -8,12 +8,14 @@
     <meta name="google" content="notranslate">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Segoe+UI:wght@400;600&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=2.8">
+    <link rel="stylesheet" href="css/style.css?v=2.9">
 </head>
 
 <body data-theme="light">
     <!-- Bouton Mode Cinéma (Isolé) -->
     <button id="cinema-btn" onclick="toggleCinemaMode()" title="Mode Cinéma (Masquer l'interface)">👁️</button>
+    <!-- Bouton Lock Mode -->
+    <button id="lock-btn" onclick="toggleLockMode()" title="Verrouiller/Déverrouiller la fiche (Lecture Seule)">🔓</button>
 
     <!-- MODAL -->
     <div id="custom-modal">
@@ -771,6 +773,7 @@
                             <option value="paladin">Paladin</option>
                             <option value="ranger">Rôdeur</option>
                         </select>
+                        <button type="button" id="toggle-tooltips-btn" class="spell-filter-btn active" onclick="toggleSpellTooltips()" title="Activer/Désactiver les bulles d'informations des sorts" style="margin-left:auto; font-size:1.1rem; border:none; background:transparent;">💬</button>
                         <span id="spell-count" class="spell-count"></span>
                     </div>
                     <!-- Compteur de sorts préparés -->
@@ -883,15 +886,18 @@
     <script src="js/data.js"></script>
     <script src="js/equipment-data.js"></script>
     <script src="js/feats-data.js"></script>
-    <script src="js/spells-data.js"></script>
+    <script src="js/spells-data.js?v=2.9"></script>
     <script src="js/logic.js"></script>
     <script src="js/storage.js"></script>
-    <script src="js/theme.js"></script>
+    <!-- SPELL TOOLTIP CONTAINER -->
+    <div id="spell-tooltip" class="spell-tooltip" style="display: none;"></div>
+
+    <script src="js/theme.js?v=2.8"></script>
     <script src="js/ui-gallery.js"></script>
     <script src="js/ui-rest.js"></script>
     <script src="js/ui-modals.js"></script>
     <script src="js/ui-toolbar.js"></script>
-    <script src="js/script.js?v=2.4"></script>
+    <script src="js/script.js?v=2.9"></script>
     <script>
         // Initialize theme and attach event listener
         document.addEventListener('DOMContentLoaded', function () {
