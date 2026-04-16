@@ -124,7 +124,7 @@ function getFormData() {
             else d[key] = el.value;
         }
     });
-    document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+    document.querySelectorAll('[contenteditable]').forEach(el => {
         let key = el.dataset.name || el.id;
         if (key) {
             if (!el.classList.contains('wpn-name') && !el.classList.contains('wpn-atk') &&
@@ -245,7 +245,7 @@ function applyFormData(d) {
             else el.value = d[el.name];
         }
     });
-    document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+    document.querySelectorAll('[contenteditable]').forEach(el => {
         let key = el.dataset.name || el.id;
         if (key && d.hasOwnProperty(key)) {
             el.innerHTML = d[key];

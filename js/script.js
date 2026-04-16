@@ -10,6 +10,7 @@ const AUTO_SAVE_DELAY = 1500; // ms
  * Chaque nouvel appel réinitialise le timer (debounce).
  */
 function debouncedSave() {
+    if (typeof _lockToggling !== "undefined" && _lockToggling) return;
     if (_autoSaveTimer) clearTimeout(_autoSaveTimer);
     _autoSaveTimer = setTimeout(() => {
         saveData();
@@ -2279,6 +2280,8 @@ function initLockMode() {
     }, 500);
 }
 
+let _lockToggling = false;
+
 function toggleLockMode(forceState = null) {
     if (forceState !== null) {
         isLockedMode = forceState;
@@ -2287,6 +2290,10 @@ function toggleLockMode(forceState = null) {
     }
     
     localStorage.setItem('dd2024_lock_mode', isLockedMode);
+    
+    // Empêcher l'auto-save pendant la bascule (les changements de contenteditable
+    // déclenchent des événements change/input qui appelleraient debouncedSave)
+    _lockToggling = true;
     
     const btn = document.getElementById('lock-btn');
     if (isLockedMode) {
@@ -2302,4 +2309,6 @@ function toggleLockMode(forceState = null) {
             }
         });
     }
+    
+    _lockToggling = false;
 }
