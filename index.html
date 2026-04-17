@@ -49,15 +49,18 @@
 
     <!-- TOOLBAR -->
     <div id="toolbar">
-        <div id="toolbar-header">
-            <span class="toolbar-title">GESTION</span>
-            <div id="auth-status" class="auth-status">HORS-LIGNE</div>
-            <div class="toolbar-controls">
-                <button id="cinema-btn" class="minimize-btn" onclick="toggleCinemaMode()" title="Mode Cinéma">👁️</button>
-                <button id="lock-btn" class="minimize-btn" onclick="toggleLockMode()" title="Verrouiller/Déverrouiller">🔓</button>
+        <div id="toolbar-header" style="flex-direction: column; align-items: stretch; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <span class="toolbar-title" style="font-size: 1rem;">GESTION</span>
+                <div id="auth-status" class="auth-status" style="font-size: 0.70rem; max-width: none; text-align: right;">HORS-LIGNE</div>
+            </div>
+            <div class="toolbar-controls" style="justify-content: space-between; width: 100%;">
                 <button id="theme-toggle" class="theme-toggle minimize-btn" title="Mode sombre">🌙</button>
-                <button id="minimize-btn" class="minimize-btn" onpointerdown="toggleToolbar(event)"
-                    title="Réduire/Agrandir">_</button>
+                <div style="display: flex; gap: 5px;">
+                    <button id="cinema-btn" class="minimize-btn" onclick="toggleCinemaMode()" title="Mode Cinéma">👁️</button>
+                    <button id="lock-btn" class="minimize-btn" onclick="toggleLockMode()" title="Verrouiller/Déverrouiller">🔓</button>
+                    <button id="minimize-btn" class="minimize-btn" onclick="toggleToolbar(event)" title="Réduire/Agrandir">_</button>
+                </div>
             </div>
         </div>
         <div id="toolbar-content">
