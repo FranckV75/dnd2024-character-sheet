@@ -2948,13 +2948,7 @@ body.locked-mode .add-row-btn {
     -webkit-user-select: none;
 }
 
-body.locked-mode .rich-input,
-body.locked-mode .std-input,
-body.locked-mode [contenteditable],
-body.locked-mode [contenteditable="false"] {
-    user-select: none;
-    -webkit-user-select: none;
-}
+
 
 body.locked-mode .tabs,
 body.locked-mode .tabs *,
