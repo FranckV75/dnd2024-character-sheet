@@ -2,6 +2,9 @@
 // STORAGE.JS - GESTION DE LA PERSISTANCE (localStorage, import/export)
 // =============================================================================
 
+// Verrou global : empêche les sauvegardes pendant le chargement des données
+let _isLoading = false;
+
 // =============================================================================
 // NETTOYAGE DES DONNÉES LEGACY
 // =============================================================================
@@ -239,6 +242,7 @@ function getFormData() {
  * @param {Object} d - DonnÃ©es Ã  appliquer
  */
 function applyFormData(d) {
+    _isLoading = true; // Bloquer toute sauvegarde pendant la restauration
     document.querySelectorAll('input, select').forEach(el => {
         if (el.name && d.hasOwnProperty(el.name)) {
             if (el.type === 'checkbox') el.checked = d[el.name];
@@ -368,6 +372,7 @@ function applyFormData(d) {
             if (ySlider) ySlider.value = vp.bgPosY;
         }
     }
+    _isLoading = false; // Restauration terminee, sauvegardes autorisees
 }
 
 // =============================================================================
@@ -378,6 +383,8 @@ function applyFormData(d) {
  * Sauvegarde les données dans localStorage et synchronise avec Supabase
  */
 async function saveData(silent = true) {
+    // Ne pas sauvegarder pendant le chargement (évite d'écraser les données partielles)
+    if (_isLoading) return;
     const data = getFormData();
 
     // 1. Sauvegarde locale (immédiate)
