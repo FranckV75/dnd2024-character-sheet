@@ -12,7 +12,8 @@ const DEFAULT_BGS = [
     "Fond_Odyssée.webp",
     "Fond_Iria.webp",
     "Fond_Hedera.webp",
-    "Fond_Cephalus.webp"
+    "Fond_Cephalus.webp",
+    "Fond_La_Team.webp"
 ];
 
 /**
