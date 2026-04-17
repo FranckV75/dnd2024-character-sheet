@@ -2936,9 +2936,6 @@ body.cinema-mode .modal-overlay {
 /* ========================================================================= */
 /* --- MODE VERROUILLÉ (LOCK MODE) --- */
 /* ========================================================================= */
-body.locked-mode .rich-input,
-body.locked-mode .std-input,
-body.locked-mode [contenteditable],
 body.locked-mode input,
 body.locked-mode textarea,
 body.locked-mode select,
@@ -2947,6 +2944,14 @@ body.locked-mode .combat-buff-btn,
 body.locked-mode .del-btn,
 body.locked-mode .add-row-btn {
     pointer-events: none !important;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+body.locked-mode .rich-input,
+body.locked-mode .std-input,
+body.locked-mode [contenteditable],
+body.locked-mode [contenteditable="false"] {
     user-select: none;
     -webkit-user-select: none;
 }
