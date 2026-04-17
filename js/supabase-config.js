@@ -109,3 +109,69 @@ async function handleAuthAction(type) {
         showModal('Erreur: ' + err.message);
     }
 }
+
+// =============================================================================
+// GESTION MULTI-PERSONNAGES (Cloud)
+// =============================================================================
+
+/**
+ * Récupère la liste de tous les personnages de l'utilisateur connecté
+ * @returns {Array} - Tableau de {name, updated_at}
+ */
+async function fetchCharacters() {
+    if (!window.currentUser) return [];
+    try {
+        const { data, error } = await supabase
+            .from('characters')
+            .select('name, updated_at')
+            .eq('user_id', window.currentUser.id)
+            .order('updated_at', { ascending: false });
+        if (error) throw error;
+        return data || [];
+    } catch (err) {
+        console.warn('❌ fetchCharacters:', err.message);
+        return [];
+    }
+}
+
+/**
+ * Supprimer un personnage du Cloud
+ * @param {string} charName - Nom du personnage à supprimer
+ */
+async function deleteCharacter(charName) {
+    if (!window.currentUser || !charName) return;
+    try {
+        const { error } = await supabase
+            .from('characters')
+            .delete()
+            .eq('user_id', window.currentUser.id)
+            .eq('name', charName);
+        if (error) throw error;
+    } catch (err) {
+        console.warn('❌ deleteCharacter:', err.message);
+    }
+}
+
+/**
+ * Renomme un personnage dans le Cloud (séquence delete + insert)
+ * @param {string} oldName - Ancien nom
+ * @param {string} newName - Nouveau nom
+ * @param {Object} data    - Données actuelles du personnage
+ */
+async function renameCharacter(oldName, newName, data) {
+    await deleteCharacter(oldName);
+    if (!window.currentUser || !newName) return;
+    try {
+        const { error } = await supabase
+            .from('characters')
+            .upsert({
+                name: newName,
+                data: data,
+                user_id: window.currentUser.id,
+                updated_at: new Date()
+            }, { onConflict: 'name, user_id' });
+        if (error) throw error;
+    } catch (err) {
+        console.warn('❌ renameCharacter:', err.message);
+    }
+}

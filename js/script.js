@@ -1934,9 +1934,9 @@ function calcStats() {
 
 function triggerReset() {
     showModal((txt, btns, inp, area, close) => {
-        txt.innerHTML = "Effacer toute la fiche ?";
+        txt.innerHTML = "📄 Effacer la fiche pour créer un nouveau personnage ?";
         const btnYes = document.createElement('button');
-        btnYes.className = 'btn btn-save'; btnYes.innerText = 'Oui';
+        btnYes.className = 'btn btn-save'; btnYes.innerText = 'Oui, nouvelle fiche';
         btnYes.onclick = () => {
             document.getElementById('sheet-form').reset();
             document.querySelectorAll('[contenteditable]').forEach(el => {
@@ -1947,24 +1947,23 @@ function triggerReset() {
             });
 
             let wBody = document.getElementById('weapons_body');
-            if (wBody) {
-                wBody.innerHTML = '';
-                for (let i = 0; i < 4; i++) addWeaponRow();
-            }
+            if (wBody) { wBody.innerHTML = ''; for (let i = 0; i < 4; i++) addWeaponRow(); }
             let sBody = document.getElementById('spells_body');
-            if (sBody) {
-                sBody.innerHTML = '';
-                for (let i = 0; i < 6; i++) addSpellRow();
-            }
+            if (sBody) { sBody.innerHTML = ''; for (let i = 0; i < 6; i++) addSpellRow(); }
+            let aBody = document.getElementById('armors_body');
+            if (aBody) aBody.innerHTML = '';
 
             let pp = document.getElementById('passive_perc');
             if (pp) delete pp.dataset.manual;
             localStorage.removeItem('dd2024_char');
+            localStorage.removeItem('dd2024_active_char_name');
+            // Réinitialiser le tracking du nom actif (nouveau départ)
+            try { _activeCharName = null; } catch(e) {}
             calcStats();
             close();
         };
         const btnNo = document.createElement('button');
-        btnNo.className = 'btn'; btnNo.innerText = 'Non'; btnNo.onclick = close;
+        btnNo.className = 'btn'; btnNo.innerText = 'Annuler'; btnNo.onclick = close;
         btns.appendChild(btnYes); btns.appendChild(btnNo);
     });
 }

@@ -5,6 +5,10 @@
 // Verrou global : empêche les sauvegardes pendant le chargement des données
 let _isLoading = false;
 
+// Nom du personnage actif (traqué pour détecter les renommages)
+let _activeCharName = null;
+
+
 // =============================================================================
 // NETTOYAGE DES DONNÉES LEGACY
 // =============================================================================
@@ -380,28 +384,29 @@ function applyFormData(d) {
 // =============================================================================
 
 /**
- * Sauvegarde les données dans localStorage et synchronise avec Supabase
+ * Exécute la sauvegarde réelle, sans intercepteur.
+ * @param {string} charName - Le nom à utiliser comme clé de sauvegarde
+ * @param {Object} data - Les données collectées du formulaire
  */
-async function saveData(silent = true) {
-    // Ne pas sauvegarder pendant le chargement (évite d'écraser les données partielles)
-    if (_isLoading) return;
-    const data = getFormData();
-
+async function performSave(charName, data) {
     // 1. Sauvegarde locale (immédiate)
     localStorage.setItem('dd2024_char', JSON.stringify(data));
-    if (!silent) {
-        showModal('Sauvegardé localement !');
+
+    // Mettre à jour le nom actif en mémoire
+    _activeCharName = charName || null;
+    if (_activeCharName) {
+        localStorage.setItem('dd2024_active_char_name', _activeCharName);
     }
 
     // 2. Synchronisation Cloud (si connecté)
-    if (currentUser) {
+    if (window.currentUser) {
         try {
             const { error } = await supabase
                 .from('characters')
                 .upsert({
-                    name: data.char_name || 'Sans nom',
+                    name: charName || 'Sans nom',
                     data: data,
-                    user_id: currentUser.id,
+                    user_id: window.currentUser.id,
                     updated_at: new Date()
                 }, { onConflict: 'name, user_id' });
 
@@ -413,26 +418,103 @@ async function saveData(silent = true) {
 }
 
 /**
- * Charge les données depuis Supabase (priorité si connecté) avec fallback localStorage
+ * Point d'entrée principal de sauvegarde.
+ * Intercepte les changements de nom et propose Renommer / Copier / Annuler.
+ * @param {boolean} silent - Si false, affiche un message de confirmation
  */
-async function loadData() {
+async function saveData(silent = true) {
+    // Ne pas sauvegarder pendant le chargement (évite d'écraser les données partielles)
+    if (_isLoading) return;
+    const data = getFormData();
+
+    // Extraire le nom actuel proprement (champ contenteditable)
+    const nameEl = document.querySelector('[data-name="char_name"]');
+    const currentName = nameEl ? nameEl.innerText.trim().replace(/\s+/g, ' ') : '';
+
+    // --- Intercepteur de renommage ---
+    // Si on a déjà un nom actif ET qu'il diffère du nom actuel dans la fiche
+    if (_activeCharName && currentName && currentName !== _activeCharName) {
+        // Mettre en pause et demander à l'utilisateur son intention
+        showModal((txt, btns, inp, area, close) => {
+            txt.innerHTML = `<b>Changement de nom détecté</b><br>
+                Le personnage <em style="color:var(--accent-color)">${_activeCharName}</em>
+                a été renommé en <em style="color:var(--accent-color)">${currentName}</em>.<br><br>
+                Que souhaitez-vous faire ?`;
+
+            const btnRename = document.createElement('button');
+            btnRename.className = 'btn btn-save';
+            btnRename.innerText = `✏️ Renommer "${_activeCharName}"`;
+            btnRename.onclick = async () => {
+                close();
+                // Supprimer l'ancienne entrée Cloud, puis sauvegarder sous le nouveau nom
+                if (typeof deleteCharacter === 'function') {
+                    await deleteCharacter(_activeCharName);
+                }
+                await performSave(currentName, data);
+                if (!silent) showModal('Personnage renommé !');
+            };
+
+            const btnCopy = document.createElement('button');
+            btnCopy.className = 'btn';
+            btnCopy.innerText = `📋 Créer une copie "${currentName}"`;
+            btnCopy.onclick = async () => {
+                close();
+                // Ne pas supprimer l'ancien, juste créer un nouveau profil
+                await performSave(currentName, data);
+                if (!silent) showModal('Copie créée !');
+            };
+
+            const btnCancel = document.createElement('button');
+            btnCancel.className = 'btn btn-bg';
+            btnCancel.innerText = '✖ Annuler';
+            btnCancel.onclick = () => {
+                // Remettre l'ancien nom dans le champ
+                if (nameEl) nameEl.innerText = _activeCharName;
+                close();
+            };
+
+            btns.appendChild(btnRename);
+            btns.appendChild(btnCopy);
+            btns.appendChild(btnCancel);
+        });
+        return; // Ne pas sauvegarder tant que l'utilisateur n'a pas choisi
+    }
+    // --- Fin intercepteur ---
+
+    await performSave(currentName, data);
+    if (!silent) showModal('Sauvegardé !');
+}
+
+/**
+ * Charge les données depuis Supabase (priorité si connecté) avec fallback localStorage
+ * @param {string|null} targetName - Si défini, charge ce personnage précis
+ */
+async function loadData(targetName = null) {
     // 1. Essayer de charger depuis Supabase si connecté
     if (window.currentUser) {
         try {
-            const { data, error } = await supabase
+            let query = supabase
                 .from('characters')
-                .select('data')
-                .eq('user_id', window.currentUser.id)
-                .order('updated_at', { ascending: false })
-                .limit(1)
-                .single();
+                .select('data, name')
+                .eq('user_id', window.currentUser.id);
+
+            if (targetName) {
+                query = query.eq('name', targetName).single();
+            } else {
+                query = query.order('updated_at', { ascending: false }).limit(1).single();
+            }
+
+            const { data, error } = await query;
 
             if (data && data.data) {
                 const cleanedData = cleanLegacyData(data.data);
                 applyFormData(cleanedData);
+                _activeCharName = data.name || targetName;
+                localStorage.setItem('dd2024_active_char_name', _activeCharName);
                 return;
             }
         } catch (err) {
+            // Silencieux, on tombe sur le localStorage
         }
     }
 
@@ -442,6 +524,9 @@ async function loadData() {
         const rawData = JSON.parse(d);
         const cleanedData = cleanLegacyData(rawData);
         applyFormData(cleanedData);
+        // Récupérer le nom depuis la fiche restaurée
+        const nameEl = document.querySelector('[data-name="char_name"]');
+        _activeCharName = nameEl ? nameEl.innerText.trim() : (localStorage.getItem('dd2024_active_char_name') || null);
     }
 }
 
