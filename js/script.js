@@ -2312,7 +2312,8 @@ function toggleLockMode(forceState = null) {
             btn.classList.remove('is-locked');
         }
         document.querySelectorAll('.rich-input, [data-name], .spl-name').forEach(el => {
-            if (el.tagName.toLowerCase() !== 'input' && el.tagName.toLowerCase() !== 'textarea') {
+            const tag = el.tagName.toLowerCase();
+            if (tag !== 'input' && tag !== 'textarea' && tag !== 'select') {
                 el.setAttribute('contenteditable', 'true');
             }
         });
