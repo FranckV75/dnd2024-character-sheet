@@ -110,7 +110,7 @@ function setupDrag() {
     let isDragging = false; let startX, startY, initialLeft, initialTop;
     function getCoords(e) { return e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY }; }
     function start(e) {
-        if (e.target.id === 'minimize-btn') return;
+        if (e.target.closest('.minimize-btn') || e.target.closest('button')) return;
         isDragging = true; const c = getCoords(e); startX = c.x; startY = c.y;
         const r = toolbar.getBoundingClientRect(); initialLeft = r.left; initialTop = r.top;
         toolbar.style.bottom = 'auto'; toolbar.style.right = 'auto'; toolbar.style.left = initialLeft + 'px'; toolbar.style.top = initialTop + 'px';
