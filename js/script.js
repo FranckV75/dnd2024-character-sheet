@@ -2300,11 +2300,17 @@ function toggleLockMode(forceState = null) {
     const btn = document.getElementById('lock-btn');
     if (isLockedMode) {
         document.body.classList.add('locked-mode');
-        if (btn) btn.innerHTML = '🔒';
+        if (btn) {
+            btn.innerHTML = '🔒';
+            btn.classList.add('is-locked');
+        }
         document.querySelectorAll('[contenteditable="true"]').forEach(el => el.setAttribute('contenteditable', 'false'));
     } else {
         document.body.classList.remove('locked-mode');
-        if (btn) btn.innerHTML = '🔓';
+        if (btn) {
+            btn.innerHTML = '🔓';
+            btn.classList.remove('is-locked');
+        }
         document.querySelectorAll('.rich-input, [data-name], .spl-name').forEach(el => {
             if (el.tagName.toLowerCase() !== 'input' && el.tagName.toLowerCase() !== 'textarea') {
                 el.setAttribute('contenteditable', 'true');

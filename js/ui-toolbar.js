@@ -210,6 +210,7 @@ function applyFontSize(size) { applyFormat('fontSize', size); }
 function toggleCinemaMode() {
     const body = document.body;
     const btn = document.getElementById('cinema-btn');
+    const toolbar = document.getElementById('toolbar');
     if (!body || !btn) return;
 
     body.classList.toggle('cinema-mode');
@@ -217,6 +218,13 @@ function toggleCinemaMode() {
     if (body.classList.contains('cinema-mode')) {
         btn.innerHTML = '❌';
         btn.title = "Quitter le mode Cinéma";
+        
+        // Réduire automatiquement la toolbar en mode cinéma pour dégager la vue
+        if (toolbar && !toolbar.classList.contains('minimized')) {
+            toolbar.classList.add('minimized');
+            const minBtn = document.getElementById('minimize-btn');
+            if (minBtn) minBtn.innerHTML = '&#9744;';
+        }
     } else {
         btn.innerHTML = '👁️';
         btn.title = "Mode Cinéma (Masquer l'interface)";

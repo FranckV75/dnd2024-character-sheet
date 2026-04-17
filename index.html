@@ -12,10 +12,7 @@
 </head>
 
 <body data-theme="light">
-    <!-- Bouton Mode Cinéma (Isolé) -->
-    <button id="cinema-btn" onclick="toggleCinemaMode()" title="Mode Cinéma (Masquer l'interface)">👁️</button>
-    <!-- Bouton Lock Mode -->
-    <button id="lock-btn" onclick="toggleLockMode()" title="Verrouiller/Déverrouiller la fiche (Lecture Seule)">🔓</button>
+    <!-- Boutons déplacés dans la toolbar -->
 
     <!-- MODAL -->
     <div id="custom-modal">
@@ -56,7 +53,9 @@
             <span class="toolbar-title">GESTION</span>
             <div id="auth-status" class="auth-status">HORS-LIGNE</div>
             <div class="toolbar-controls">
-                <button id="theme-toggle" class="theme-toggle" title="Mode sombre">🌙</button>
+                <button id="cinema-btn" class="minimize-btn" onclick="toggleCinemaMode()" title="Mode Cinéma">👁️</button>
+                <button id="lock-btn" class="minimize-btn" onclick="toggleLockMode()" title="Verrouiller/Déverrouiller">🔓</button>
+                <button id="theme-toggle" class="theme-toggle minimize-btn" title="Mode sombre">🌙</button>
                 <button id="minimize-btn" class="minimize-btn" onpointerdown="toggleToolbar(event)"
                     title="Réduire/Agrandir">_</button>
             </div>
