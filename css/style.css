@@ -145,17 +145,54 @@ body {
     }
 
     /* On casse la grille principale pour tout empiler */
+    .combat-layout-grid,
     .grid-3,
     .combat-grid {
         display: flex;
         flex-direction: column;
     }
 
+    .combat-layout-grid>*,
     .grid-3>*,
     .combat-grid>* {
         width: 100%;
         grid-column: auto !important;
         /* Reset du span 2 precedent */
+    }
+
+    /* Header adaptatif */
+    header .row {
+        flex-wrap: wrap;
+    }
+
+    header .row > div {
+        flex: 1 1 calc(50% - 10px) !important;
+    }
+
+    /* Vitals flexibles */
+    .vitals-row-1 {
+        flex-wrap: wrap;
+    }
+
+    .vitals-row-1 > div {
+        flex: 1 1 200px !important;
+    }
+
+    .vitals-row-1 .ac-hex {
+        flex: 0 0 140px !important;
+    }
+
+    .vitals-row-2 {
+        flex-wrap: wrap;
+    }
+
+    .vitals-row-2 > div {
+        flex: 1 1 150px !important;
+    }
+
+    #weapon-filters {
+        flex-wrap: wrap;
+        justify-content: flex-end;
     }
 
     .grid-header,
@@ -229,6 +266,19 @@ body {
     /* Ratio ajusté : Espèce (1.2) - Sous-Classe (2.5) - Taille (0.5) - PX (0.7) */
     grid-template-columns: 1.2fr 2.5fr 0.5fr 0.7fr;
     gap: 10px;
+}
+
+.combat-layout-grid {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 20px;
+}
+
+.vitals-row-1,
+.vitals-row-2 {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
 }
 
 .combat-grid {
@@ -3087,4 +3137,148 @@ body.locked-mode #lock-btn {
 }
 [data-theme="light"] .spell-tooltip-body strong {
     color: #8c6a23;
+}
+
+/* =============================================================================
+   SYSTEME D'IMPRESSION (PDF & PAPIER)
+   ============================================================================= */
+@media print {
+    /* Forcer le rendu en noir sur blanc pour économiser le papier et l'encre */
+    body, html {
+        background-color: #ffffff !important;
+        background-image: none !important;
+        color: #000000 !important;
+        font-size: 10pt !important;
+    }
+
+    .sheet-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        background: #ffffff !important;
+    }
+
+    /* Masquer les éléments interactifs et fioritures de l'application */
+    #toolbar, 
+    #custom-modal, 
+    #gallery-modal, 
+    #style-editor, 
+    #tab-navigation,
+    .add-row-btn, 
+    .del-btn, 
+    .wpn-config-btn,
+    .desktop-only,
+    .vitals-add-btn,
+    .slots-add-btn,
+    .slots-remove-btn {
+        display: none !important;
+    }
+
+    /* Forcer l'affichage de TOUS les onglets pour l'impression en continu */
+    .tab-content {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        /* Forcer un saut de page physique avant chaque nouvel onglet */
+        page-break-before: always !important;
+        break-before: page !important;
+        width: 100% !important;
+    }
+
+    /* Le premier onglet n'a pas besoin de saut de page (il fait suite au header principal) */
+    #tab-combat {
+        page-break-before: avoid !important;
+        break-before: avoid !important;
+    }
+
+    /* Assurer que la grille de combat est bien disposée pour l'impression */
+    .combat-layout-grid {
+        display: grid !important;
+        grid-template-columns: 100px 1fr !important;
+        gap: 15px !important;
+    }
+
+    .stats-column {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100px !important;
+    }
+
+    /* Améliorer la lisibilité et les contrastes sur papier */
+    .box, 
+    .stat-box, 
+    .skill-group, 
+    .odyssey-box,
+    .scroll-table-container {
+        background: #ffffff !important;
+        border: 1px solid #000000 !important;
+        box-shadow: none !important;
+        color: #000000 !important;
+        overflow: visible !important;
+        max-height: none !important;
+    }
+
+    /* Entêtes de sections et tables légères */
+    .skill-group-header, 
+    .stat-mod, 
+    .odyssey-box h3, 
+    table th, 
+    .prepared-count {
+        background: #f0f0f0 !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+
+    .rich-input, 
+    select, 
+    input[type="number"],
+    div[contenteditable] {
+        color: #000000 !important;
+        background: transparent !important;
+        border: none !important;
+        border-bottom: 1px solid #000000 !important;
+    }
+
+    /* Masquer les placeholders de saisie à l'impression */
+    div[contenteditable]:empty::before {
+        content: "" !important;
+    }
+
+    h1, h2, h3, h4, label, strong {
+        color: #000000 !important;
+        text-shadow: none !important;
+    }
+
+    /* Éviter les coupures de blocs malheureuses au milieu d'une page */
+    .box, 
+    .stat-box, 
+    .skill-group, 
+    .odyssey-box,
+    tr, 
+    thead {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    /* Tables de combat et sorts */
+    .data-table {
+        border: 1px solid #000000 !important;
+    }
+
+    .data-table td, 
+    .data-table th {
+        border: 1px solid #000000 !important;
+        color: #000000 !important;
+        padding: 4px !important;
+    }
+
+    /* Assurer que la grille d'aptitudes se répartit proprement */
+    .grid-3 {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 15px !important;
+    }
 }

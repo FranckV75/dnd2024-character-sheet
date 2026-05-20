@@ -1,8 +1,8 @@
 # Projet : Feuille de Personnage D&D 2024 - Bilan d'Étape
 
-## État au 17 Avril 2026 - V2.9 (MULTI-PERSONNAGES & ERGONOMIE TABLETTE)
+## État au 20 Mai 2026 - V2.9.5 (RESPONSIVE TABLETTE & IMPRESSION PDF)
 
-### ✅ Fonctionnalités Récentes Implémentées (Stories 1 à 10)
+### ✅ Fonctionnalités Récentes Implémentées (Stories 1 à 11)
 
 1. **Architecture Globale à 4 Onglets** 📑 :
     - La navigation est refaite sur 4 onglets : Caractéristiques & Combat, Aptitudes & Traits, Compétences & Histoire, Magie & Équipement.
@@ -37,24 +37,23 @@
     - Ajustement du design du curseur d'opacité avec le symbole "Brouillard" (🌫️) pour harmoniser la barre de gestion.
     - Intégration de l'image de fond `Fond_La_Team.webp` à la galerie par défaut.
 
+7. **Story 11 : Responsive Tablette standard (850px) & Mode Impression PDF** 🖨️ :
+    - **Refonte de la barre de gestion** : Les boutons d'exportation ont été clarifiés ("Exportation" dans la modale) et le panneau de gestion se minimise désormais automatiquement au chargement si la largeur d'écran est inférieure à 1100px.
+    - **Résolution des débordements (850px)** : Remplacement des styles de grilles et conteneurs flex en ligne rigides par des classes CSS responsives. Wrap dynamique de l'en-tête (2x2), de la ligne vitals 1 (CA, Initiative, Perception, Mort) et vitals 2 (PV, Ressource) empêchant tout rognage ou scrollbar horizontal à 850px.
+    - **Mode Impression PDF Pro** : Ajout d'une règle `@media print` exhaustive forçant le noir sur blanc haute lisibilité, masquant les outils d'interface superflus, affichant tous les onglets en continu et insérant un saut de page physique (`page-break-before: always;`) avant chaque onglet (4 pages distinctes).
+
 ### 🔑 Données Clés
 - **URL de Production** : `https://franckv75.github.io/dnd2024-character-sheet/`
 - **Sauvegarde Cloud** : Supabase implémenté.
 
-### 📋 Prochaines Priorités Techniques (Prêt pour les Agents)
-
-La prochaine session (identifiée comme la **Story 11**) débutera sur le plan technique suivant, validé par l'utilisateur :
-- [ ] **Refonte du Panneau de Gestion Latéral** :
-    - Écarter la confusion de nommage ("Sauvegarder/Exporter" vers "Exporter au format JSON", etc.).
-- [ ] **Sauvetage du Mode d'Impression PDF** :
-    - Plutôt que supprimer l'export, réécriture du CSS `@media print`. Forcer écriture noire sur fond papier blanc, et surtout décomposer la feuille pour imprimer **Un onglet par page séparée** (`page-break-before: always;`).
-
+### 📋 Prochaines Priorités Techniques (Prêt pour la suite)
+- [ ] Valider l'impression PDF en conditions réelles avec le navigateur physique de l'utilisateur.
+- [ ] Recueillir les retours de l'utilisateur pour de futures extensions (par exemple, d'autres automatisations de règles D&D 2024).
 
 ### 💎 Règles d'Or : Homogénéité et Accessibilité
-*Ces règles ont été ajoutées suite à plusieurs régressions visuelles lors d'ajouts de fonctionnalités.*
 - **Champs dynamiques (calculés) = Champs éditables classiques**.
 - Pour toute nouvelle colonne, tout nouveau champ ou modification HTML induisant des calculs dynamiques : **il est IMPÉRATIF que la police, la graisse (font-weight), la couleur et la taille de la police (généralement `Cinzel`, `0.70rem` ou hérité) correspondent EXACTEMENT aux autres champs adjacents**.
 - Ne jamais coder en dur de la couleur ou du gras (`font-weight: 600`) sur un champ généré pour le différencier, sauf accord express de l'utilisateur. Priorité absolue au design "seamless" (intégration parfaite sans distinction des champs codés).
 - **Vérification systématique Mode Nuit / Mode Jour** : Chaque modification de couleur, de texte ou d'encadré doit être obligatoirement testée dans les deux thèmes. Il arrive fréquemment qu'une couleur ajoutée soit illisible (manque de contraste) lors du passage de l'un à l'autre.
 
-*Dernière mise à jour : 17/04/2026*
+*Dernière mise à jour : 20/05/2026*
