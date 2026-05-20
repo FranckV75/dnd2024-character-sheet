@@ -1,6 +1,6 @@
 # Projet : Feuille de Personnage D&D 2024 - Bilan d'Étape
 
-## État au 20 Mai 2026 - V2.9.5 (RESPONSIVE TABLETTE & IMPRESSION PDF)
+## État au 20 Mai 2026 - V2.9.7 (RESPONSIVE TABLETTE & OPTIMISATION IMPRESSION PDF 4 PAGES PRO)
 
 ### ✅ Fonctionnalités Récentes Implémentées (Stories 1 à 11)
 
@@ -37,17 +37,23 @@
     - Ajustement du design du curseur d'opacité avec le symbole "Brouillard" (🌫️) pour harmoniser la barre de gestion.
     - Intégration de l'image de fond `Fond_La_Team.webp` à la galerie par défaut.
 
-7. **Story 11 : Responsive Tablette standard (850px) & Mode Impression PDF** 🖨️ :
+7: **Story 11 : Responsive Tablette standard (850px) & Mode Impression PDF** 🖨️ :
     - **Refonte de la barre de gestion** : Les boutons d'exportation ont été clarifiés ("Exportation" dans la modale) et le panneau de gestion se minimise désormais automatiquement au chargement si la largeur d'écran est inférieure à 1100px.
     - **Résolution des débordements (850px)** : Remplacement des styles de grilles et conteneurs flex en ligne rigides par des classes CSS responsives. Wrap dynamique de l'en-tête (2x2), de la ligne vitals 1 (CA, Initiative, Perception, Mort) et vitals 2 (PV, Ressource) empêchant tout rognage ou scrollbar horizontal à 850px.
     - **Mode Impression PDF Pro** : Ajout d'une règle `@media print` exhaustive forçant le noir sur blanc haute lisibilité, masquant les outils d'interface superflus, affichant tous les onglets en continu et insérant un saut de page physique (`page-break-before: always;`) avant chaque onglet (4 pages distinctes).
+    - **Correction de la visibilité d'impression (V2.9.6)** : Résolution du bug d'affichage où les pages 2, 3 et 4 s'imprimaient blanches (classe de révélation progressive `.premium-reveal` forcée à opacité 1).
+    - **Optimisation contre la troncature** : Changement de la disposition des tableaux (`table-layout: auto !important`) et activation du retour à la ligne automatique (`white-space: normal !important`) avec césure des mots trop longs (`word-break: break-word !important`) pour empêcher toute troncature ou coupure de texte.
+    - **Ajustement & Alignement des Encadrés (V2.9.7)** : 
+      - Restauration de la disposition verticale en colonne unique pour l'onglet 2 (`#tab-traits`), correspondant exactement à l'affichage de la feuille de personnage à l'écran.
+      - Ajout de la compacité dynamique sous impression : réduction de la hauteur minimale par défaut des blocs multilignes vides (`.rich-input.multi-line`) de 80px à 35px, permettant aux blocs non renseignés de s'effacer discrètement tout en s'agrandissant automatiquement si remplis.
+      - Compactage chirurgical des compétences (lignes de compétences de 18px, paddings réduits) et des marges sur l'onglet 3 (`#tab-role`) pour interdire formellement tout débordement sur une 5ème page fictive. Rendu garanti sur **exactement 4 pages**.
 
 ### 🔑 Données Clés
 - **URL de Production** : `https://franckv75.github.io/dnd2024-character-sheet/`
 - **Sauvegarde Cloud** : Supabase implémenté.
 
 ### 📋 Prochaines Priorités Techniques (Prêt pour la suite)
-- [ ] Valider l'impression PDF en conditions réelles avec le navigateur physique de l'utilisateur.
+- [x] Valider l'impression PDF en conditions réelles avec le navigateur physique de l'utilisateur (v2.9.7 complétée).
 - [ ] Recueillir les retours de l'utilisateur pour de futures extensions (par exemple, d'autres automatisations de règles D&D 2024).
 
 ### 💎 Règles d'Or : Homogénéité et Accessibilité
