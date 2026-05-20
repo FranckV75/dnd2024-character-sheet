@@ -115,7 +115,7 @@ body {
 /* --- RESPONSIVE DESIGN --- */
 
 /* Tablette (Portrait paysage et petits laptops) : < 1100px */
-@media (max-width: 1100px) {
+@media screen and (max-width: 1100px) {
     .sheet-container {
         max-width: 100%;
         padding: 15px;
@@ -137,7 +137,7 @@ body {
 }
 
 /* Tablette Portrait et Gros Mobile : < 900px */
-@media (max-width: 900px) {
+@media screen and (max-width: 900px) {
     .sheet-container {
         display: flex;
         flex-direction: column;
@@ -234,8 +234,8 @@ body {
 
 /* --- IMPRESSION : CACHER SUR MOBILE/TABLETTE --- */
 /* Cache le bouton si l'écran est petit OU si l'appareil est tactile */
-@media (max-width: 1024px),
-(pointer: coarse) {
+@media screen and (max-width: 1024px),
+screen and (pointer: coarse) {
     .desktop-only {
         display: none !important;
     }
@@ -1465,7 +1465,7 @@ input[type="checkbox"].square {
 }
 
 /* Responsive: 1 column on smaller tablets */
-@media (max-width: 900px) {
+@media screen and (max-width: 900px) {
     .skills-list {
         grid-template-columns: 1fr;
     }
@@ -1686,7 +1686,7 @@ input[type="checkbox"].square {
 }
 
 /* Panneau rétractable sur tablettes portrait (<900px) */
-@media (max-width: 900px) {
+@media screen and (max-width: 900px) {
     #toolbar {
         width: 60px;
         overflow: hidden;
@@ -1999,7 +1999,7 @@ input[type=range] {
 /* ============================================================================= */
 
 /* --- MOBILE : TRANSFORMATION TABLEAUX EN CARTES --- */
-@media (max-width: 900px) {
+@media screen and (max-width: 900px) {
 
     /* === ERGONOMIE TACTILE : ZONES CLIQUABLES 44PX === */
     input[type="checkbox"] {
@@ -2414,7 +2414,7 @@ input[type=range] {
 }
 
 /* === RESPONSIVE MOBILE ONGLETS ET REPOS === */
-@media (max-width: 900px) {
+@media screen and (max-width: 900px) {
     .tab-navigation {
         position: relative;
         /* Pas de sticky sur mobile */
@@ -2450,91 +2450,6 @@ input[type=range] {
 }
 
 /* Media query 600px (téléphones) supprimée - support tablettes/desktop uniquement */
-
-@media print {
-    * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-        color: #1a1a1a !important;
-        text-shadow: none !important;
-    }
-
-    body {
-        background: white !important;
-        padding: 0;
-        margin: 0;
-        background-image: none !important;
-        background-color: white !important;
-    }
-
-    .sheet-container {
-        box-shadow: none !important;
-        margin: 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        border: none !important;
-        display: block !important;
-        background: white !important;
-        backdrop-filter: none !important;
-    }
-
-    #toolbar,
-    #style-editor,
-    #custom-modal,
-    #gallery-modal,
-    .add-row-btn,
-    .del-btn,
-    .tab-navigation,
-    #tab-navigation,
-    .tab-btn,
-    .spell-filter-bar {
-        display: none !important;
-    }
-
-    /* Affichage en cascade de tous les onglets */
-    .tab-content {
-        display: block !important;
-        page-break-before: always;
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-
-    .tab-content:first-of-type {
-        page-break-before: auto;
-    }
-
-    .page-break {
-        page-break-before: always;
-        margin-top: 20px;
-        display: block;
-        height: 1px;
-    }
-
-    .rich-input, select {
-        border: none !important;
-        resize: none !important;
-        border-bottom: 1px solid #333 !important;
-        background: transparent !important;
-    }
-
-    .scroll-table-container,
-    .rich-input.multi-line {
-        max-height: none !important;
-        overflow: visible !important;
-        border: none !important;
-    }
-
-    /* Éviter les coupures de boîtes en plein milieu */
-    .box,
-    .stat-box,
-    .odyssey-box,
-    .skills-container-box {
-        page-break-inside: avoid;
-        break-inside: avoid;
-        border: 1px solid #333 !important;
-        background: white !important;
-    }
-}
 
 /* ALIGNEMENT HEADER STATS (Agent 3) */
 .header-stat-col {
@@ -3143,15 +3058,31 @@ body.locked-mode #lock-btn {
    SYSTEME D'IMPRESSION (PDF & PAPIER)
    ============================================================================= */
 @media print {
-    /* Forcer le rendu en noir sur blanc pour économiser le papier et l'encre */
-    body, html {
+    /* Configuration de la page A4 avec marges compactes */
+    @page {
+        size: A4 portrait;
+        margin: 8mm 8mm 8mm 8mm;
+    }
+
+    /* Force le noir sur blanc pour économie d'encre et de papier */
+    html, body {
         background-color: #ffffff !important;
         background-image: none !important;
         color: #000000 !important;
-        font-size: 10pt !important;
+        font-size: 8.5pt !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
     }
 
+    /* Conteneur principal sans ombrages ni bordures décoratives */
+    /* CRITICAL FIX: display: block !important; ensures that the print engine breaks pages correctly.
+       Blink/Chromium print engines do not support page breaks inside CSS Grid or CSS Flexbox containers. */
     .sheet-container {
+        display: block !important;
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 !important;
@@ -3159,9 +3090,11 @@ body.locked-mode #lock-btn {
         box-shadow: none !important;
         border: none !important;
         background: #ffffff !important;
+        backdrop-filter: none !important;
+        overflow: visible !important;
     }
 
-    /* Masquer les éléments interactifs et fioritures de l'application */
+    /* Masquage des éléments interactifs et de navigation */
     #toolbar, 
     #custom-modal, 
     #gallery-modal, 
@@ -3173,41 +3106,114 @@ body.locked-mode #lock-btn {
     .desktop-only,
     .vitals-add-btn,
     .slots-add-btn,
-    .slots-remove-btn {
+    .slots-remove-btn,
+    .filter-btn,
+    #weapon-filters,
+    .spell-filter-bar,
+    #spell-slots-tracker,
+    .rest-block-compact,
+    .theme-toggle,
+    #toggle-tooltips-btn,
+    .theme-toggle:hover,
+    th:last-child,
+    td:last-child {
         display: none !important;
     }
 
-    /* Forcer l'affichage de TOUS les onglets pour l'impression en continu */
+    /* Force l'affichage séquentiel de tous les onglets */
     .tab-content {
         display: block !important;
         opacity: 1 !important;
         visibility: visible !important;
-        /* Forcer un saut de page physique avant chaque nouvel onglet */
+        width: 100% !important;
+        margin: 0 0 15px 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        /* Force un saut de page physique strict avant chaque nouvel onglet */
         page-break-before: always !important;
         break-before: page !important;
-        width: 100% !important;
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+        overflow: visible !important;
+        height: auto !important;
     }
 
-    /* Le premier onglet n'a pas besoin de saut de page (il fait suite au header principal) */
+    /* Le premier onglet (Combat) s'affiche sous le header principal sans saut de page */
     #tab-combat {
         page-break-before: avoid !important;
         break-before: avoid !important;
     }
 
-    /* Assurer que la grille de combat est bien disposée pour l'impression */
-    .combat-layout-grid {
-        display: grid !important;
-        grid-template-columns: 100px 1fr !important;
-        gap: 15px !important;
+    /* Force l'affichage de tous les panneaux dotés de lazy reveal en mode impression */
+    .premium-reveal {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
     }
 
-    .stats-column {
+    /* --- EN-TÊTE DU PERSONNAGE --- */
+    header {
+        margin-bottom: 10px !important;
+        width: 100% !important;
+    }
+
+    header .row {
         display: flex !important;
-        flex-direction: column !important;
-        width: 100px !important;
+        flex-direction: row !important;
+        gap: 8px !important;
+        margin-bottom: 6px !important;
     }
 
-    /* Améliorer la lisibilité et les contrastes sur papier */
+    header .grid-header-2 {
+        display: grid !important;
+        grid-template-columns: 1.2fr 2.5fr 0.5fr 0.7fr !important;
+        gap: 8px !important;
+    }
+
+    /* --- FORMULAIRES & INPUTS --- */
+    .rich-input, 
+    select, 
+    input[type="number"],
+    input[type="text"],
+    div[contenteditable] {
+        color: #000000 !important;
+        background: transparent !important;
+        border: none !important;
+        border-bottom: 1px solid #000000 !important;
+        font-size: 9pt !important;
+        font-weight: 600 !important;
+        padding: 2px !important;
+        min-height: 0 !important;
+    }
+
+    /* Enlever les flèches des selects pour imprimer uniquement la valeur textuelle propre */
+    select {
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        text-indent: 1px !important;
+        text-overflow: '' !important;
+    }
+
+    /* Masquer les placeholders vides sous impression */
+    div[contenteditable]:empty::before {
+        content: "" !important;
+    }
+
+    /* Contraste maximum des titres et étiquettes */
+    h1, h2, h3, h4, label, strong {
+        color: #000000 !important;
+        text-shadow: none !important;
+    }
+
+    label {
+        font-size: 0.65rem !important;
+        margin-bottom: 1px !important;
+    }
+
+    /* --- BOÎTES DE CONTENU --- */
     .box, 
     .stat-box, 
     .skill-group, 
@@ -3217,42 +3223,344 @@ body.locked-mode #lock-btn {
         border: 1px solid #000000 !important;
         box-shadow: none !important;
         color: #000000 !important;
+        padding: 4px 6px !important;
+        border-radius: 4px !important;
         overflow: visible !important;
         max-height: none !important;
     }
 
-    /* Entêtes de sections et tables légères */
+    .scroll-table-container {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    /* --- TABLEAUX DE DONNÉES --- */
+    .data-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin: 4px 0 !important;
+        font-size: 7.5pt !important;
+        border: 1px solid #000000 !important;
+        table-layout: auto !important; /* Permet un redimensionnement dynamique des colonnes */
+    }
+
+    .data-table th, 
+    .data-table td {
+        border: 1px solid #000000 !important;
+        padding: 3px 5px !important;
+        color: #000000 !important;
+        white-space: normal !important; /* Permet le retour à la ligne automatique */
+        word-break: break-word !important; /* Évite que des mots longs ne cassent le tableau */
+    }
+
+    .data-table th {
+        background-color: #f0f0f0 !important;
+        font-family: 'Cinzel', serif !important;
+        font-weight: bold !important;
+    }
+
     .skill-group-header, 
     .stat-mod, 
-    .odyssey-box h3, 
-    table th, 
-    .prepared-count {
+    .odyssey-box h3 {
         background: #f0f0f0 !important;
         color: #000000 !important;
         border-color: #000000 !important;
     }
 
-    .rich-input, 
-    select, 
-    input[type="number"],
-    div[contenteditable] {
-        color: #000000 !important;
-        background: transparent !important;
+    /* --- ONGLET 1 : CARACTÉRISTIQUES & COMBAT --- */
+    .combat-layout-grid {
+        display: grid !important;
+        grid-template-columns: 95px 1fr !important;
+        gap: 12px !important;
+        width: 100% !important;
+    }
+
+    .stats-column {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 95px !important;
+    }
+
+    .stat-box {
+        padding: 4px !important;
+        border: 1px solid #000000 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+
+    .stat-val {
+        font-size: 1.25rem !important;
+        height: 22px !important;
+        min-height: 22px !important;
         border: none !important;
-        border-bottom: 1px solid #000000 !important;
     }
 
-    /* Masquer les placeholders de saisie à l'impression */
-    div[contenteditable]:empty::before {
-        content: "" !important;
+    .stat-mod {
+        width: 32px !important;
+        height: 22px !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        margin-top: 2px !important;
+        border: 1px solid #000000 !important;
+        font-size: 0.9rem !important;
     }
 
-    h1, h2, h3, h4, label, strong {
+    .stat-save {
+        margin-top: 2px !important;
+        font-size: 0.6rem !important;
+    }
+
+    /* Force l'affichage des vitals horizontaux sur une seule ligne */
+    .vitals-row-1 {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .ac-hex {
+        flex: 0 0 110px !important;
+        min-height: 100px !important;
+        padding: 20px 5px 10px !important;
+        background-image: url("data:image/svg+xml,%3Csvg width='144' height='130' viewBox='0 0 144 130' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M72 5 L139 35 L139 95 L72 125 L5 95 L5 35 Z' fill='none' stroke='%23000000' stroke-width='2' /%3E%3C/svg%3E") !important;
+    }
+
+    .ac-hex label {
+        font-size: 0.55rem !important;
+    }
+
+    .header-stat-val-large {
+        font-size: 1.6rem !important;
+    }
+
+    .vitals-row-2 {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+    }
+
+    .vitals-row-2 > .box {
+        flex: 1 !important;
+        padding: 4px !important;
+        text-align: center !important;
+    }
+
+    /* Checkboxes noirs en impression */
+    input[type="checkbox"] {
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        border: 1px solid #000000 !important;
+        background: transparent !important;
+        width: 12px !important;
+        height: 12px !important;
+        border-radius: 50% !important;
+        print-color-adjust: exact !important;
+        -webkit-print-color-adjust: exact !important;
+    }
+
+    input[type="checkbox"]:checked {
+        background: #000000 !important;
+        box-shadow: inset 0 0 0 2px #ffffff !important;
+    }
+
+    input[type="checkbox"].square {
+        border-radius: 2px !important;
+    }
+
+    /* --- ONGLET 2 : APTITUDES & TRAITS --- */
+    #tab-traits > div {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        margin-top: 5px !important;
+    }
+
+    #tab-traits .feat-container {
+        margin-bottom: 4px !important;
+    }
+
+    #tab-traits .feat-select {
+        font-size: 8.5pt !important;
+        padding: 2px !important;
+    }
+
+    .feat-level-badge {
+        background: #000000 !important;
+        color: #ffffff !important;
+        box-shadow: none !important;
+        border: 1px solid #000000 !important;
+        font-size: 0.7rem !important;
+        padding: 1px 4px !important;
+    }
+
+    /* --- ONGLET 3 : COMPÉTENCES & HISTOIRE --- */
+    #tab-role .skills-container-box {
+        margin: 5px 0 !important;
+    }
+
+    #tab-role h3 {
+        margin: 2px 0 4px 0 !important;
+    }
+
+    #tab-role .skills-list {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 4px 8px !important;
+    }
+
+    .skill-group {
+        border: 1px solid #000000 !important;
+        padding: 0 !important;
+    }
+
+    .skill-group-header {
+        padding: 2px 4px !important;
+        font-size: 8pt !important;
+    }
+
+    .skill-row {
+        padding: 1px 4px !important;
+        min-height: 18px !important;
+        font-size: 7.5pt !important;
+    }
+
+    #tab-role > .row {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 8px !important;
+        margin-top: 5px !important;
+    }
+
+    #tab-role > .row > .box {
+        flex: 1 !important;
+    }
+
+    #tab-role > .row > .box:last-child {
+        flex: 2 !important;
+    }
+
+    /* --- ONGLET 4 : MAGIE & INVENTAIRE --- */
+    #tab-magic {
+        display: grid !important;
+        grid-template-columns: 1.2fr 1fr !important;
+        gap: 15px !important;
+        margin-top: 10px !important;
+    }
+
+    #tab-magic > .grid-3 {
+        grid-column: span 2 !important;
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 10px !important;
+        margin-top: 0 !important;
+    }
+
+    #tab-magic > .spells-box {
+        grid-column: 1 !important;
+        margin-top: 0 !important;
+    }
+
+    #tab-magic > .box:not(.spells-box) {
+        grid-column: 2 !important;
+        margin-top: 0 !important;
+    }
+
+    #tab-magic .data-table {
+        font-size: 7.2pt !important;
+    }
+
+    #tab-magic .data-table td, 
+    #tab-magic .data-table th {
+        padding: 2px 4px !important;
+    }
+
+    .treasury-row {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 5px !important;
+        margin-top: 8px !important;
+    }
+
+    .coin-field {
+        display: flex !important;
+        align-items: center !important;
+        gap: 3px !important;
+        flex: 1 !important;
+    }
+
+    .coin-icon {
+        font-size: 0.65rem !important;
+        padding: 2px 4px !important;
+        border: 1px solid #000000 !important;
+        background: #f0f0f0 !important;
         color: #000000 !important;
-        text-shadow: none !important;
+        border-radius: 3px !important;
+        font-weight: bold !important;
+        font-family: 'Cinzel', serif !important;
     }
 
-    /* Éviter les coupures de blocs malheureuses au milieu d'une page */
+    /* --- RÉGLAGES DES ENTREES DE SAISIE POUR ÉVITER TOUTE TRONCATION (Anti-overflow/Anti-truncation) --- */
+    .rich-input, 
+    div[contenteditable],
+    textarea {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+    }
+
+    .rich-input.single-line {
+        white-space: normal !important;
+        overflow: visible !important;
+        height: auto !important;
+        text-overflow: clip !important;
+    }
+
+    .rich-input.multi-line {
+        height: auto !important;
+        min-height: 35px !important;
+        max-height: none !important;
+        overflow: visible !important;
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+        background: transparent !important;
+        border: 1px solid #000000 !important;
+        border-radius: 4px !important;
+        padding: 4px !important;
+    }
+
+    /* Redimensionnement compact pour les inputs de tableaux sous impression */
+    .data-table .rich-input,
+    .data-table div[contenteditable] {
+        font-size: 7.2pt !important;
+        font-weight: 500 !important;
+        border: none !important;
+        padding: 1px !important;
+        background: transparent !important;
+        min-height: 0 !important;
+        height: auto !important;
+        white-space: normal !important; /* Permet le retour à la ligne */
+        overflow: visible !important;
+        word-break: break-word !important; /* Empêche les mots trop longs de déborder */
+    }
+
+    .data-table select {
+        font-size: 7.2pt !important;
+        font-weight: 500 !important;
+        border: none !important;
+        padding: 1px !important;
+        height: auto !important;
+        white-space: normal !important;
+    }
+
+    /* Évite tout débordement ou coupures de boîte malheureuses */
     .box, 
     .stat-box, 
     .skill-group, 
@@ -3261,24 +3569,5 @@ body.locked-mode #lock-btn {
     thead {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
-    }
-
-    /* Tables de combat et sorts */
-    .data-table {
-        border: 1px solid #000000 !important;
-    }
-
-    .data-table td, 
-    .data-table th {
-        border: 1px solid #000000 !important;
-        color: #000000 !important;
-        padding: 4px !important;
-    }
-
-    /* Assurer que la grille d'aptitudes se répartit proprement */
-    .grid-3 {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 15px !important;
     }
 }
