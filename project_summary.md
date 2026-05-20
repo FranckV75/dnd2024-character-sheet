@@ -1,6 +1,6 @@
 # Projet : Feuille de Personnage D&D 2024 - Bilan d'Étape
 
-## État au 6 Avril 2026 - REFONTE STRUCTURELLE V2.4 TERMINÉE
+## État au 17 Avril 2026 - V2.9 (MULTI-PERSONNAGES & ERGONOMIE TABLETTE)
 
 ### ✅ Fonctionnalités Récentes Implémentées (Stories 1 à 10)
 
@@ -22,6 +22,20 @@
 4. **Correctifs Multiples & Persistance** 💾 :
     - Les menus de "Sous-classe" reconnaissent bien l'architecture des règles révisée.
     - Les données des Dons dans l'onglet des Traits (basées sur `.dataset.name` et non leur `.name`) sont maintenant scannées adéquatement par les fonctions de `localStorage`/`Supabase`.
+    - L'interception stricte avec le flag `_isLoading` empêche les auto-sauvegardes d'écraser les données lors du chargement initial de la page.
+
+5. **Multi-Personnages & Gestion de Roster (Supabase)** 👥 :
+    - La fiche supporte la gestion de multiples personnages par compte grâce à un intercepteur intelligent sur le champ "Nom".
+    - Lorsqu'on renomme la fiche, le système propose : "Renommer l'existant" ou "Créer une copie".
+    - Ajout d'une modale "Mes Personnages" pour lister, charger, ou supprimer un personnage directement depuis le Cloud.
+    - Le bouton "Réinitialiser" a été repensé en "📄 Nouvelle fiche" pour redémarrer une création vierge sans corrompre le personnage actif.
+
+6. **Ergonomie Tablette & Lock Mode (v2.9)** 📱 :
+    - Déplacement des boutons "Mode Cinéma" (👁️) et "Cadenas" (🔓) au sommet de la barre de gestion avec une zone de clic agrandie.
+    - **Fix Critique (Lock Mode)** : Résolution du bug destructeur où le cadenas convertissait accidentellement les menus déroulants (Dons) en texte éditable, corrompant les sauvegardes.
+    - **Fix Scroll Tablette** : Restauration du défilement tactile (`scroll`) sur les blocs de texte verrouillés (Historique, Traits) en supprimant le blocage CSS agressif `user-select: none`.
+    - Ajustement du design du curseur d'opacité avec le symbole "Brouillard" (🌫️) pour harmoniser la barre de gestion.
+    - Intégration de l'image de fond `Fond_La_Team.webp` à la galerie par défaut.
 
 ### 🔑 Données Clés
 - **URL de Production** : `https://franckv75.github.io/dnd2024-character-sheet/`
@@ -43,4 +57,4 @@ La prochaine session (identifiée comme la **Story 11**) débutera sur le plan t
 - Ne jamais coder en dur de la couleur ou du gras (`font-weight: 600`) sur un champ généré pour le différencier, sauf accord express de l'utilisateur. Priorité absolue au design "seamless" (intégration parfaite sans distinction des champs codés).
 - **Vérification systématique Mode Nuit / Mode Jour** : Chaque modification de couleur, de texte ou d'encadré doit être obligatoirement testée dans les deux thèmes. Il arrive fréquemment qu'une couleur ajoutée soit illisible (manque de contraste) lors du passage de l'un à l'autre.
 
-*Dernière mise à jour : 16/04/2026*
+*Dernière mise à jour : 17/04/2026*
