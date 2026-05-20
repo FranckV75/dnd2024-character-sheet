@@ -53,7 +53,7 @@ function openExportMenu() {
     let defName = `DD2024_${n}.json`;
 
     showModal((txt, btns, inp, area, close) => {
-        txt.innerHTML = "<b>Sauvegarde & Export</b><br>Sur tablette, utilisez 'Copier' si le téléchargement est bloqué.";
+        txt.innerHTML = "<b>Exportation</b><br>Sur tablette, utilisez 'Copier' si le téléchargement est bloqué.";
 
         const btnFile = document.createElement('button');
         btnFile.className = 'btn btn-save';

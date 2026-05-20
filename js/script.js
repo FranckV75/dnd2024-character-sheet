@@ -368,6 +368,16 @@ window.onload = async function () {
     initFatigueDisplay();
     // Initialiser l'autocomplétion des Dons D&D 2024
     initFeatsAutocomplete();
+    // Auto-minimisation de la toolbar sur tablette (< 1100px)
+    if (window.innerWidth < 1100) {
+        const t = document.getElementById('toolbar');
+        if (t) {
+            t.classList.add('minimized');
+            const btn = document.getElementById('minimize-btn');
+            if (btn) btn.innerHTML = '&#9744;';
+        }
+    }
+
     setupHeaderAutoFit();
 };
 

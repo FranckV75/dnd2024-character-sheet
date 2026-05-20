@@ -195,7 +195,7 @@
             <!-- ================================================================= -->
             <div class="tab-content active" id="tab-combat">
 
-                <div style="display: grid; grid-template-columns: 100px 1fr; gap: 20px;">
+                <div class="combat-layout-grid">
                     <!-- STATS -->
                     <aside class="stats-column">
                         <div class="stat-box">
@@ -271,7 +271,7 @@
                         <div class="vitals-new-layout"
                             style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
                             <!-- LIGNE 1 : CA, Initi, Perce, [Maîtrise|Inspi|Vitesse], Jets de mort -->
-                            <div style="display: flex; gap: 10px; align-items: stretch;">
+                            <div class="vitals-row-1">
                                 <div class="ac-hex" style="flex: 0 0 140px; padding: 35px 5px 15px; min-height: 130px;" title="Calculé automatiquement selon les armures équipées">
                                     <label style="font-size: 0.65rem;">Classe d'Armure</label>
                                     <div id="ac-calculated" data-name="ac"
@@ -328,7 +328,7 @@
                             </div>
 
                             <!-- LIGNE 2 : PV Actuels, PV Max, PV Temp, Dés de Vie, Ressource -->
-                            <div style="display: flex; gap: 10px; align-items: stretch;">
+                            <div class="vitals-row-2">
                                 <div class="box" style="flex: 1; text-align:center;">
                                     <label>PV Actuels</label>
                                     <div contenteditable="true" data-name="hp_current"
