@@ -1,8 +1,8 @@
 # Projet : Feuille de Personnage D&D 2024 - Bilan d'Étape
 
-## État au 20 Mai 2026 - V2.9.7 (RESPONSIVE TABLETTE & OPTIMISATION IMPRESSION PDF 4 PAGES PRO)
+## État au 6 Juin 2026 - V2.9.8 (AJUSTEMENT CA MANUEL, VISIBILITÉ INFOBULLES & LOCK MODE FIX)
 
-### ✅ Fonctionnalités Récentes Implémentées (Stories 1 à 11)
+### ✅ Fonctionnalités Récentes Implémentées (Stories 1 à 11+)
 
 1. **Architecture Globale à 4 Onglets** 📑 :
     - La navigation est refaite sur 4 onglets : Caractéristiques & Combat, Aptitudes & Traits, Compétences & Histoire, Magie & Équipement.
@@ -37,7 +37,7 @@
     - Ajustement du design du curseur d'opacité avec le symbole "Brouillard" (🌫️) pour harmoniser la barre de gestion.
     - Intégration de l'image de fond `Fond_La_Team.webp` à la galerie par défaut.
 
-7: **Story 11 : Responsive Tablette standard (850px) & Mode Impression PDF** 🖨️ :
+7. **Story 11 : Responsive Tablette standard (850px) & Mode Impression PDF** 🖨️ :
     - **Refonte de la barre de gestion** : Les boutons d'exportation ont été clarifiés ("Exportation" dans la modale) et le panneau de gestion se minimise désormais automatiquement au chargement si la largeur d'écran est inférieure à 1100px.
     - **Résolution des débordements (850px)** : Remplacement des styles de grilles et conteneurs flex en ligne rigides par des classes CSS responsives. Wrap dynamique de l'en-tête (2x2), de la ligne vitals 1 (CA, Initiative, Perception, Mort) et vitals 2 (PV, Ressource) empêchant tout rognage ou scrollbar horizontal à 850px.
     - **Mode Impression PDF Pro** : Ajout d'une règle `@media print` exhaustive forçant le noir sur blanc haute lisibilité, masquant les outils d'interface superflus, affichant tous les onglets en continu et insérant un saut de page physique (`page-break-before: always;`) avant chaque onglet (4 pages distinctes).
@@ -47,6 +47,11 @@
       - Restauration de la disposition verticale en colonne unique pour l'onglet 2 (`#tab-traits`), correspondant exactement à l'affichage de la feuille de personnage à l'écran.
       - Ajout de la compacité dynamique sous impression : réduction de la hauteur minimale par défaut des blocs multilignes vides (`.rich-input.multi-line`) de 80px à 35px, permettant aux blocs non renseignés de s'effacer discrètement tout en s'agrandissant automatiquement si remplis.
       - Compactage chirurgical des compétences (lignes de compétences de 18px, paddings réduits) et des marges sur l'onglet 3 (`#tab-role`) pour interdire formellement tout débordement sur une 5ème page fictive. Rendu garanti sur **exactement 4 pages**.
+
+8. **Ajustements de Combat & Visibilité des Sorts (V2.9.8)** ⚔️💬 :
+    - **Calcul de la Classe d'Armure** : Intégration de nouveaux types d'armure "Bonus" et "Maîtrise" dans le tableau d'équipement d'armure pour permettre l'application de modificateurs personnalisés (ex: capacité spéciale ajoutant le bonus de maîtrise ou un bonus fixe à la CA).
+    - **Visibilité du Bouton d'Infobulle (💬)** : Refonte complète du bouton d'activation des infobulles (auparavant presque invisible) avec des états actifs/inactifs clairs (filtre de niveaux de gris, trait rouge diagonal de désactivation barré) et animation fluide, compatible mode Jour / mode Nuit.
+    - **Fix Tooltips en Mode Verrouillé** : Correction du blocage des événements mouseover sur les infobulles de sorts quand le cadenas est verrouillé, permettant ainsi la consultation fluide du grimoire en cours de jeu sans risquer de modifier accidentellement les textes.
 
 ### 🔑 Données Clés
 - **URL de Production** : `https://franckv75.github.io/dnd2024-character-sheet/`
@@ -62,4 +67,4 @@
 - Ne jamais coder en dur de la couleur ou du gras (`font-weight: 600`) sur un champ généré pour le différencier, sauf accord express de l'utilisateur. Priorité absolue au design "seamless" (intégration parfaite sans distinction des champs codés).
 - **Vérification systématique Mode Nuit / Mode Jour** : Chaque modification de couleur, de texte ou d'encadré doit être obligatoirement testée dans les deux thèmes. Il arrive fréquemment qu'une couleur ajoutée soit illisible (manque de contraste) lors du passage de l'un à l'autre.
 
-*Dernière mise à jour : 20/05/2026*
+*Dernière mise à jour : 06/06/2026*
