@@ -809,7 +809,9 @@ function addArmorRow(data = null) {
                 <option value="Légère">Légère (+Dex)</option>
                 <option value="Interméd.">Intermédiaire (+Dex max 2)</option>
                 <option value="Lourde">Lourde (Fixe)</option>
-                <option value="Bouclier">Bouclier / Bonus</option>
+                <option value="Bouclier">Bouclier</option>
+                <option value="Bonus">Bonus (+CA fixe)</option>
+                <option value="Maîtrise">Maîtrise (+Bonus Maîtrise)</option>
             </select>
         </td>
         <td><div contenteditable="true" class="rich-input single-line armor-ca"></div></td>
@@ -1781,7 +1783,7 @@ function calcDerivedStats() {
     }
 
     // === CLASSE D'ARMURE ===
-    calcArmorClass(dexMod, getStatMod('con'), getStatMod('wis'));
+    calcArmorClass(dexMod, getStatMod('con'), getStatMod('wis'), pb);
 
     // === ARMES : Recalcul automatique ATK/DMG ===
     renderCombatBuffs();
@@ -1793,8 +1795,9 @@ function calcDerivedStats() {
  * @param {number} dexMod - Modificateur de Dextérité
  * @param {number} conMod - Modificateur de Constitution
  * @param {number} wisMod - Modificateur de Sagesse
+ * @param {number} pb - Bonus de maîtrise (pour le type Maîtrise)
  */
-function calcArmorClass(dexMod, conMod, wisMod) {
+function calcArmorClass(dexMod, conMod, wisMod, pb) {
     const acHex = document.getElementById('ac-calculated');
     if (!acHex) return;
 
@@ -1822,6 +1825,10 @@ function calcArmorClass(dexMod, conMod, wisMod) {
 
             if (type === 'Bouclier' || type === 'shield') {
                 bonusAC += caValue;
+            } else if (type === 'Bonus') {
+                bonusAC += caValue;
+            } else if (type === 'Maîtrise') {
+                bonusAC += (pb || 0);
             } else if (type === 'Légère' || type === 'light') {
                 hasBodyArmor = true;
                 const total = caValue + dexMod;
@@ -2165,10 +2172,8 @@ function toggleSpellTooltips() {
     const btn = document.getElementById('toggle-tooltips-btn');
     if (configTooltipsEnabled) {
         btn.classList.add('active');
-        btn.style.opacity = '1';
     } else {
         btn.classList.remove('active');
-        btn.style.opacity = '0.5';
     }
     localStorage.setItem('dd2024_spell_tooltips', configTooltipsEnabled);
 }
@@ -2182,10 +2187,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btn) {
             if (configTooltipsEnabled) {
                 btn.classList.add('active');
-                btn.style.opacity = '1';
             } else {
                 btn.classList.remove('active');
-                btn.style.opacity = '0.5';
             }
         }
     }
@@ -2194,7 +2197,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (spellsBody) {
         let tooltipHideTimeout;
         spellsBody.addEventListener('mouseover', (e) => {
-            if (!configTooltipsEnabled || isLockedMode) return;
+            if (!configTooltipsEnabled) return;
             const target = e.target.closest('.spl-name');
             if (target) {
                 showSpellTooltip(target);
@@ -2207,11 +2210,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 tooltipHideTimeout = setTimeout(hideSpellTooltip, 100);
             }
         });
-        // Click on tablet (especially in locked mode)
+        // Click toggle (tablet support + all modes)
         spellsBody.addEventListener('click', (e) => {
             if (!configTooltipsEnabled) return;
             const target = e.target.closest('.spl-name');
-            if (target && isLockedMode) {
+            if (target) {
+                const tooltip = document.getElementById('spell-tooltip');
+                const currentSpell = target.textContent.trim();
+                if (tooltip && tooltip.style.display === 'block' && tooltip.dataset.currentSpell === currentSpell) {
+                    hideSpellTooltip();
+                    return;
+                }
                 showSpellTooltip(target);
             }
         });
@@ -2230,6 +2239,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function showSpellTooltip(element) {
+    if (typeof SPELLS_DATA === 'undefined') return;
     const spellName = element.textContent.trim().toLowerCase();
     if (!spellName) return;
     
@@ -2238,6 +2248,7 @@ function showSpellTooltip(element) {
     
     const tooltip = document.getElementById('spell-tooltip');
     if (!tooltip) return;
+    tooltip.dataset.currentSpell = element.textContent.trim();
     
     const components = spell.components || '';
     const icons = [];
@@ -2274,7 +2285,10 @@ function showSpellTooltip(element) {
 
 function hideSpellTooltip() {
     const tooltip = document.getElementById('spell-tooltip');
-    if (tooltip) tooltip.style.display = 'none';
+    if (tooltip) {
+        tooltip.style.display = 'none';
+        delete tooltip.dataset.currentSpell;
+    }
 }
 
 // --- LOCK MODE ---
