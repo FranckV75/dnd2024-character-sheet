@@ -856,6 +856,46 @@ input[type="checkbox"].square {
     box-shadow: 0 2px 10px rgba(212, 175, 55, 0.4);
 }
 
+/* Tooltip Toggle Button (💬) */
+.tooltip-toggle-btn {
+    margin-left: auto;
+    padding: 4px 10px;
+    font-size: 1.15rem;
+    border: 2px solid var(--accent-color, #8b5a2b);
+    border-radius: 6px;
+    background: var(--box-bg, transparent);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0.45;
+    filter: grayscale(100%);
+    position: relative;
+}
+
+.tooltip-toggle-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(139, 90, 43, 0.3);
+}
+
+.tooltip-toggle-btn.active {
+    opacity: 1;
+    filter: none;
+    background: linear-gradient(135deg, rgba(139, 90, 43, 0.15) 0%, rgba(166, 124, 82, 0.15) 100%);
+    border-color: var(--accent-color, #d4af37);
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.25);
+}
+
+.tooltip-toggle-btn:not(.active)::after {
+    content: '';
+    position: absolute;
+    top: 45%;
+    left: 15%;
+    width: 70%;
+    height: 2px;
+    background: var(--accent-color, #8b4513);
+    transform: rotate(-45deg);
+    opacity: 0.8;
+}
+
 /* Spell Class Filter Dropdown */
 .spell-class-filter {
     padding: 6px 10px;
@@ -2922,6 +2962,7 @@ body.locked-mode #lock-btn,
 body.locked-mode #side-panel,
 body.locked-mode #side-panel *,
 body.locked-mode .spell-filter-btn,
+body.locked-mode .tooltip-toggle-btn,
 body.locked-mode .spell-class-filter,
 body.locked-mode .spell-count,
 body.locked-mode .spell-tooltip,
@@ -2986,6 +3027,7 @@ body.locked-mode #lock-btn {
     display: flex;
     flex-direction: column;
     font-family: var(--font-body, 'Segoe UI', sans-serif);
+    -webkit-backdrop-filter: blur(5px);
     backdrop-filter: blur(5px);
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
