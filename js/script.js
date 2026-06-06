@@ -366,8 +366,6 @@ window.onload = async function () {
     initRestSystem();
     // Initialiser l'affichage de la Fatigue D&D 2024
     initFatigueDisplay();
-    // Initialiser l'autocomplétion des Dons D&D 2024
-    initFeatsAutocomplete();
     // Auto-minimisation de la toolbar sur tablette (< 1100px)
     if (window.innerWidth < 1100) {
         const t = document.getElementById('toolbar');
