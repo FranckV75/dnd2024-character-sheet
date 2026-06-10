@@ -282,8 +282,11 @@ window.onload = async function () {
     }
 
     let bg = localStorage.getItem('dd2024_bg');
-    if (bg) document.body.style.backgroundImage = `url('${bg}')`;
-
+    if (bg) {
+        // Validation sécurité : seuls les URLs d'image légitimes sont acceptées
+        const isSafeUrl = /^(Fond_|img\/|data:image\/|https?:\/\/)/.test(bg) && !bg.includes(')');
+        if (isSafeUrl) document.body.style.backgroundImage = `url('${bg}')`;
+    }
     let op = localStorage.getItem('dd2024_opacity');
     if (op) {
         document.documentElement.style.setProperty('--sheet-opacity', op);
@@ -472,11 +475,11 @@ function addWeaponRow(data = null) {
     });
 
     if (data) {
-        tr.querySelector('.wpn-name').innerHTML = data.name || '';
-        tr.querySelector('.wpn-prop').innerHTML = data.prop || '';
-        tr.querySelector('.wpn-prof').innerHTML = data.prof || '';
-        tr.querySelector('.wpn-ammo').innerHTML = data.ammo || '';
-        tr.querySelector('.wpn-note').innerHTML = data.note || '';
+        setRichHTML(tr.querySelector('.wpn-name'), data.name || '');
+        setRichHTML(tr.querySelector('.wpn-prop'), data.prop || '');
+        setRichHTML(tr.querySelector('.wpn-prof'), data.prof || '');
+        setRichHTML(tr.querySelector('.wpn-ammo'), data.ammo || '');
+        setRichHTML(tr.querySelector('.wpn-note'), data.note || '');
 
         // Restaurer les données brutes de DD_RULES pour le recalcul
         if (data.atkKey) tr.dataset.atkKey = data.atkKey;
@@ -651,7 +654,10 @@ function openWeaponConfig(tr) {
     const config = getWeaponConfig(tr);
 
     showModal((txt, btns, inp, area, close) => {
-        txt.innerHTML = '<strong>\u2699\uFE0F Configuration : ' + name + '</strong>';
+        const titleEl = document.createElement('strong');
+        titleEl.textContent = '\u2699\uFE0F Configuration : ' + name;
+        txt.innerHTML = '';
+        txt.appendChild(titleEl);
 
         const form = document.createElement('div');
         form.style.cssText = 'display:flex; flex-direction:column; gap:12px; margin-top:10px;';
@@ -825,14 +831,14 @@ function addArmorRow(data = null) {
     `;
     body.appendChild(tr);
     if (data) {
-        tr.querySelector('.armor-name').innerHTML = data.name || '';
+        setRichHTML(tr.querySelector('.armor-name'), data.name || '');
         if (data.type) tr.querySelector('.armor-type').value = data.type;
-        tr.querySelector('.armor-ca').innerHTML = data.ca || '';
-        tr.querySelector('.armor-str').innerHTML = data.str || '';
+        setRichHTML(tr.querySelector('.armor-ca'), data.ca || '');
+        setRichHTML(tr.querySelector('.armor-str'), data.str || '');
         tr.querySelector('.armor-stealth').checked = data.stealth || false;
-        tr.querySelector('.armor-weight').innerHTML = data.weight || '';
-        tr.querySelector('.armor-price').innerHTML = data.price || '';
-        tr.querySelector('.armor-comment').innerHTML = data.comment || '';
+        setRichHTML(tr.querySelector('.armor-weight'), data.weight || '');
+        setRichHTML(tr.querySelector('.armor-price'), data.price || '');
+        setRichHTML(tr.querySelector('.armor-comment'), data.comment || '');
         tr.querySelector('.armor-equipped').checked = data.equipped || false;
     }
     // Sauvegarde auto au changement des checkboxes et type
@@ -1011,12 +1017,12 @@ function setupWeaponAutocomplete(input, tr) {
             item.addEventListener('mouseout', () => item.style.backgroundColor = '');
 
             item.addEventListener('click', function () {
-                input.innerHTML = w.name;
+                input.textContent = w.name;
                 // Stocker les données brutes pour le moteur de calcul
                 tr.dataset.atkKey = w.atk;   // "FOR" ou "DEX"
                 tr.dataset.baseDmg = w.dmg;  // "1d12 tran." etc.
-                tr.querySelector('.wpn-prop').innerHTML = w.prop;
-                tr.querySelector('.wpn-prof').innerHTML = w.prof;
+                tr.querySelector('.wpn-prop').textContent = w.prop;
+                tr.querySelector('.wpn-prof').textContent = w.prof;
                 tr.dataset.category = w.category || '';
                 weaponAutocompleteContainer.style.display = 'none';
                 saveData();
@@ -1370,10 +1376,10 @@ function addSpellRow(data = null) {
         // Clean legacy HTML from level value
         const cleanLvl = String(data.lvl || '0').replace(/<[^>]*>/g, '').trim();
         tr.querySelector('.spl-lvl').value = cleanLvl || '0';
-        tr.querySelector('.spl-name').innerHTML = data.name || '';
-        tr.querySelector('.spl-time').innerHTML = data.time || '';
-        tr.querySelector('.spl-range').innerHTML = data.range || '';
-        tr.querySelector('.spl-note').innerHTML = data.note || '';
+        setRichHTML(tr.querySelector('.spl-name'), data.name || '');
+        setRichHTML(tr.querySelector('.spl-time'), data.time || '');
+        setRichHTML(tr.querySelector('.spl-range'), data.range || '');
+        setRichHTML(tr.querySelector('.spl-note'), data.note || '');
         tr.querySelector('.spl-c').checked = data.c || false;
         tr.querySelector('.spl-r').checked = data.r || false;
         tr.querySelector('.spl-m').checked = data.m || false;

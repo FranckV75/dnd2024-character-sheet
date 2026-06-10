@@ -2,6 +2,32 @@
 // STORAGE.JS - GESTION DE LA PERSISTANCE (localStorage, import/export)
 // =============================================================================
 
+// =============================================================================
+// PROTECTION XSS — HELPER CENTRALISÉ
+// =============================================================================
+
+/**
+ * Injecte du HTML purifié dans un élément DOM.
+ * Neutralise tout XSS (scripts, event handlers, iframes…)
+ * tout en préservant le formatage légitime (gras, italique, br…).
+ * Fallback : si DOMPurify n'est pas disponible, utilise textContent.
+ * @param {HTMLElement} el - Élément cible
+ * @param {string} html - HTML brut à purifier
+ */
+function setRichHTML(el, html) {
+    if (!el) return;
+    if (typeof DOMPurify !== 'undefined') {
+        el.innerHTML = DOMPurify.sanitize(html || '', {
+            ALLOWED_TAGS: ['b', 'i', 'u', 'em', 'strong', 'br', 'span', 'sub', 'sup', 'mark'],
+            ALLOWED_ATTR: ['style', 'class'],
+            ALLOW_DATA_ATTR: false
+        });
+    } else {
+        // Fallback sécurisé : texte brut si DOMPurify indisponible
+        el.textContent = html || '';
+    }
+}
+
 // Verrou global : empêche les sauvegardes pendant le chargement des données
 let _isLoading = false;
 
@@ -256,7 +282,7 @@ function applyFormData(d) {
     document.querySelectorAll('[contenteditable]').forEach(el => {
         let key = el.dataset.name || el.id;
         if (key && d.hasOwnProperty(key)) {
-            el.innerHTML = d[key];
+            setRichHTML(el, d[key]);
         }
     });
 
@@ -272,7 +298,7 @@ function applyFormData(d) {
     // Legacy migration
     if (d.profs_other && !d.profs_weapons) {
         let el = document.querySelector('[data-name="profs_weapons"]');
-        if (el) el.innerHTML = d.profs_other;
+        if (el) setRichHTML(el, d.profs_other);
     }
 
     const tbodyW = document.getElementById('weapons_body');
@@ -436,10 +462,26 @@ async function saveData(silent = true) {
     if (_activeCharName && currentName && currentName !== _activeCharName) {
         // Mettre en pause et demander à l'utilisateur son intention
         showModal((txt, btns, inp, area, close) => {
-            txt.innerHTML = `<b>Changement de nom détecté</b><br>
-                Le personnage <em style="color:var(--accent-color)">${_activeCharName}</em>
-                a été renommé en <em style="color:var(--accent-color)">${currentName}</em>.<br><br>
-                Que souhaitez-vous faire ?`;
+            txt.innerHTML = '<b>Changement de nom détecté</b><br>';
+            const msgP = document.createElement('span');
+            msgP.textContent = 'Le personnage ';
+            const oldNameEm = document.createElement('em');
+            oldNameEm.style.color = 'var(--accent-color)';
+            oldNameEm.textContent = _activeCharName;
+            const midText = document.createTextNode(' a été renommé en ');
+            const newNameEm = document.createElement('em');
+            newNameEm.style.color = 'var(--accent-color)';
+            newNameEm.textContent = currentName;
+            const endText = document.createTextNode('.');
+            msgP.appendChild(oldNameEm);
+            msgP.appendChild(midText);
+            msgP.appendChild(newNameEm);
+            msgP.appendChild(endText);
+            txt.appendChild(msgP);
+            txt.appendChild(document.createElement('br'));
+            txt.appendChild(document.createElement('br'));
+            const askText = document.createTextNode('Que souhaitez-vous faire ?');
+            txt.appendChild(askText);
 
             const btnRename = document.createElement('button');
             btnRename.className = 'btn btn-save';
