@@ -30,7 +30,7 @@ async function updateUIForUser(user) {
     if (user) {
         if (authStatus) {
             const shortName = user.email.split('@')[0].toUpperCase().substring(0, 10);
-            authStatus.innerHTML = '<span style="color:#2ec27e">✥</span> ' + shortName;
+            authStatus.textContent = '✥ ' + shortName;
         }
         if (authBtn) {
             authBtn.textContent = '👤 Déconnexion';
@@ -106,7 +106,7 @@ async function handleAuthAction(type) {
             showModal('Connexion réussie !');
         }
     } catch (err) {
-        showModal('Erreur: ' + err.message);
+        showModal('Erreur: ' + (err.message || '').replace(/<[^>]*>/g, ''));
     }
 }
 

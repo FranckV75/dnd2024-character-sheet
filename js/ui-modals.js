@@ -152,7 +152,7 @@ function openImportMenu() {
         btnPaste.onclick = () => {
             try {
                 if (!area.value) return;
-                applyFormData(JSON.parse(area.value));
+                applyFormData(cleanLegacyData(JSON.parse(area.value)));
                 showModal("Fiche chargée !");
                 close();
             } catch (e) { showModal("Code invalide."); }
@@ -214,7 +214,16 @@ async function openCharactersModal() {
                     row.style.cssText = itemStyle;
 
                     const nameSpan = document.createElement('div');
-                    nameSpan.innerHTML = `<strong style="font-family:'Cinzel',serif; font-size:0.85rem;">${char.name}</strong><br><span style="font-size:0.68rem; color:var(--text-muted,#888);">${date}</span>`;
+                    const nameStrong = document.createElement('strong');
+                    nameStrong.style.cssText = "font-family:'Cinzel',serif; font-size:0.85rem;";
+                    nameStrong.textContent = char.name;
+                    const dateBr = document.createElement('br');
+                    const dateSpan = document.createElement('span');
+                    dateSpan.style.cssText = 'font-size:0.68rem; color:var(--text-muted,#888);';
+                    dateSpan.textContent = date;
+                    nameSpan.appendChild(nameStrong);
+                    nameSpan.appendChild(dateBr);
+                    nameSpan.appendChild(dateSpan);
 
                     const actionsDiv = document.createElement('div');
                     actionsDiv.style.cssText = 'display:flex; gap:6px; flex-shrink:0;';
@@ -226,7 +235,7 @@ async function openCharactersModal() {
                     btnLoad.onclick = async () => {
                         close();
                         await loadData(char.name);
-                        showModal(`Personnage <strong>${char.name}</strong> chargé !`);
+                        showModal('Personnage charg\u00e9 : ' + char.name);
                     };
 
                     const btnDel = document.createElement('button');
@@ -236,7 +245,18 @@ async function openCharactersModal() {
                     btnDel.title = `Supprimer ${char.name}`;
                     btnDel.onclick = () => {
                         showModal((txt2, btns2, i2, a2, close2) => {
-                            txt2.innerHTML = `Supprimer définitivement <strong>${char.name}</strong> du cloud ?<br><small style="color:#c0392b">Cette action est irréversible.</small>`;
+                            const msg = document.createTextNode('Supprimer d\u00e9finitivement ');
+                            const nameB = document.createElement('strong');
+                            nameB.textContent = char.name;
+                            const msg2 = document.createTextNode(' du cloud ?');
+                            txt2.appendChild(msg);
+                            txt2.appendChild(nameB);
+                            txt2.appendChild(msg2);
+                            txt2.appendChild(document.createElement('br'));
+                            const warn = document.createElement('small');
+                            warn.style.color = '#c0392b';
+                            warn.textContent = 'Cette action est irr\u00e9versible.';
+                            txt2.appendChild(warn);
                             const confirmBtn = document.createElement('button');
                             confirmBtn.className = 'btn btn-bg';
                             confirmBtn.style.color = '#c0392b';
