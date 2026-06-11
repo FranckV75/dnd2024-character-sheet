@@ -427,7 +427,7 @@ async function performSave(charName, data) {
     // 2. Synchronisation Cloud (si connecté)
     if (window.currentUser) {
         try {
-            const { error } = await supabase
+            const { error } = await sb
                 .from('characters')
                 .upsert({
                     name: charName || 'Sans nom',
@@ -535,7 +535,7 @@ async function loadData(targetName = null) {
     // 1. Essayer de charger depuis Supabase si connecté
     if (window.currentUser) {
         try {
-            let query = supabase
+            let query = sb
                 .from('characters')
                 .select('data, name')
                 .eq('user_id', window.currentUser.id);
