@@ -13,6 +13,9 @@ DROP POLICY IF EXISTS "Les utilisateurs peuvent lire leurs propres personnages" 
 DROP POLICY IF EXISTS "Les utilisateurs peuvent créer leurs propres personnages" ON characters;
 DROP POLICY IF EXISTS "Les utilisateurs peuvent modifier leurs propres personnages" ON characters;
 DROP POLICY IF EXISTS "Les utilisateurs peuvent supprimer leurs propres personnages" ON characters;
+DROP POLICY IF EXISTS "Users create their own characters" ON characters;
+DROP POLICY IF EXISTS "Users see their own characters" ON characters;
+DROP POLICY IF EXISTS "Users update their own characters" ON characters;
 
 -- 2. Politique de lecture (SELECT)
 -- Un utilisateur connecté ne peut lire que ses propres personnages.
