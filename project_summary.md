@@ -1,6 +1,6 @@
 # Projet : Feuille de Personnage D&D 2024 - Bilan d'Étape
 
-## État au 10 Juin 2026 - V2.9.9 (PLAN DE QUALITÉ - STORY A IMPLÉMENTÉE)
+## État au 11 Juin 2026 - V2.9.10 (PLAN DE QUALITÉ - STORIES A & B IMPLÉMENTÉES)
 
 ### ✅ Fonctionnalités Récentes Implémentées (Stories 1 à 11+)
 
@@ -57,14 +57,20 @@
     - **Intégration de DOMPurify 3.1.5** : Chargement de la bibliothèque via CDN avec hash d'intégrité SRI (`integrity` + `crossorigin`).
     - **Helper `setRichHTML()`** : Création d'une fonction de purification globale (`storage.js`) avec une whitelist restreinte (`b, i, u, em, strong, br, span, sub, sup, mark` et attributs `style, class`) pour conserver le formatage riche tout en bloquant le XSS.
     - **Sécurisation de 22 points d'injection** : Remplacement de tous les `innerHTML` risqués par `setRichHTML()` ou `textContent` dans `storage.js`, `script.js`, `ui-modals.js` et `supabase-config.js`.
-    - **Validation automatique** : Vérification de la syntaxe JS (`node -c`) et déploiement via commit conventionnel.
+
+10. **Story B : Sécuriser et documenter Supabase / RLS (V2.9.10)** 🔒 :
+    - **Épinglage du SDK Supabase `@2.43.4`** avec hash d'intégrité SRI (`integrity` + `crossorigin`) dans `index.html`.
+    - **Isolation et masquage du client global** : Renommage de `window.supabase` en `window.sb` dans `js/supabase-config.js` pour éviter les accès directs non sollicités.
+    - **Mise à jour des références** : Réécriture de toutes les fonctions de sauvegarde et de chargement (`storage.js` et `supabase-config.js`) de `supabase.` vers `sb.`.
+    - **Création et sécurisation du script RLS** : Écriture de `supabase/policies.sql` versionnant l'activation du Row Level Security et les politiques d'accès utilisateur (`auth.uid() = user_id`) avec clause d'écrasement sécurisée.
+
 
 ### 🔑 Données Clés
 - **URL de Production** : `https://franckv75.github.io/dnd2024-character-sheet/`
 - **Sauvegarde Cloud** : Supabase implémenté.
 
 ### 📋 Prochaines Priorités Techniques (Corrections Post-Audit)
-- [ ] **Story B** : Sécuriser et documenter Supabase / RLS (Policies SQL, SDK Supabase épinglé, renommage `window.sb`).
+- [x] **Story B** : Sécuriser et documenter Supabase / RLS (Code complété, déploiement SQL en cours).
 - [ ] **Story C** : Fiabiliser la synchronisation et le démarrage (gestion des conflits de versions, try/catch JSON, onAuthStateChange).
 - [ ] **Story D** : Tests unitaires, Prettier/ESLint, correction de l'encodage UTF-8 (mojibake).
 - [ ] **Story E** : Optimisation des performances (defer scripts, recompression webp, suppression Google Font Segoe+UI).
@@ -78,4 +84,4 @@
 - Ne jamais coder en dur de la couleur ou du gras (`font-weight: 600`) sur un champ généré pour le différencier, sauf accord express de l'utilisateur. Priorité absolue au design "seamless" (intégration parfaite sans distinction des champs codés).
 - **Vérification systématique Mode Nuit / Mode Jour** : Chaque modification de couleur, de texte ou d'encadré doit être obligatoirement testée dans les deux thèmes. Il arrive fréquemment qu'une couleur ajoutée soit illisible (manque de contraste) lors du passage de l'un à l'autre.
 
-*Dernière mise à jour : 10/06/2026*
+*Dernière mise à jour : 11/06/2026*
