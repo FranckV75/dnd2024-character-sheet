@@ -8,6 +8,12 @@
 -- 1. Activer la sécurité au niveau des lignes (RLS)
 ALTER TABLE characters ENABLE ROW LEVEL SECURITY;
 
+-- Suppression des anciennes politiques si elles existent pour éviter les conflits au déploiement
+DROP POLICY IF EXISTS "Les utilisateurs peuvent lire leurs propres personnages" ON characters;
+DROP POLICY IF EXISTS "Les utilisateurs peuvent créer leurs propres personnages" ON characters;
+DROP POLICY IF EXISTS "Les utilisateurs peuvent modifier leurs propres personnages" ON characters;
+DROP POLICY IF EXISTS "Les utilisateurs peuvent supprimer leurs propres personnages" ON characters;
+
 -- 2. Politique de lecture (SELECT)
 -- Un utilisateur connecté ne peut lire que ses propres personnages.
 CREATE POLICY "Les utilisateurs peuvent lire leurs propres personnages"
