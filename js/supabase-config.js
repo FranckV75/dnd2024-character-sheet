@@ -6,16 +6,17 @@
 const SUPABASE_URL = 'https://yhblszojptpcyrmyogvo.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_TUhtpo9_mc6BRiIqHMmgQA_PanYvpe7';
 
-// On utilise window.supabase pour accéder à la librairie chargée par le CDN
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-window.supabase = supabaseClient;
+// Créer le client Supabase à partir de la librairie CDN, puis exposer sous window.sb
+// (window.sb évite d'écraser window.supabase qui contient la librairie elle-même)
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+window.sb = sb;
 
 // Etat de l'utilisateur (Global pour être accessible partout)
 window.currentUser = null;
 
 // Initialisation au chargement
 async function checkUser() {
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const { data: { user }, error } = await sb.auth.getUser();
     if (error) console.error('❌ Supabase Auth Error:', error.message);
     updateUIForUser(user);
 }
@@ -52,7 +53,7 @@ async function updateUIForUser(user) {
 }
 
 async function signOut() {
-    await supabase.auth.signOut();
+    await sb.auth.signOut();
     updateUIForUser(null);
     showModal('Déconnecté !');
 }
@@ -94,11 +95,11 @@ async function handleAuthAction(type) {
 
     try {
         if (type === 'signup') {
-            const { error } = await supabase.auth.signUp({ email, password: pwd });
+            const { error } = await sb.auth.signUp({ email, password: pwd });
             if (error) throw error;
             showModal('Compte créé ! Vous pouvez maintenant vous connecter.');
         } else {
-            const { error, data } = await supabase.auth.signInWithPassword({ email, password: pwd });
+            const { error, data } = await sb.auth.signInWithPassword({ email, password: pwd });
             if (error) throw error;
             updateUIForUser(data.user);
             const modal = document.getElementById('custom-modal');
@@ -121,7 +122,7 @@ async function handleAuthAction(type) {
 async function fetchCharacters() {
     if (!window.currentUser) return [];
     try {
-        const { data, error } = await supabase
+        const { data, error } = await sb
             .from('characters')
             .select('name, updated_at')
             .eq('user_id', window.currentUser.id)
@@ -141,7 +142,7 @@ async function fetchCharacters() {
 async function deleteCharacter(charName) {
     if (!window.currentUser || !charName) return;
     try {
-        const { error } = await supabase
+        const { error } = await sb
             .from('characters')
             .delete()
             .eq('user_id', window.currentUser.id)
@@ -162,7 +163,7 @@ async function renameCharacter(oldName, newName, data) {
     await deleteCharacter(oldName);
     if (!window.currentUser || !newName) return;
     try {
-        const { error } = await supabase
+        const { error } = await sb
             .from('characters')
             .upsert({
                 name: newName,
