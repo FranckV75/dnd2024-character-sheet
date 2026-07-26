@@ -268,8 +268,8 @@ function getFormData() {
 }
 
 /**
- * Applique les donnÃ©es au formulaire
- * @param {Object} d - DonnÃ©es Ã  appliquer
+ * Applique les données au formulaire
+ * @param {Object} d - Données à appliquer
  */
 function applyFormData(d) {
     _isLoading = true; // Bloquer toute sauvegarde pendant la restauration

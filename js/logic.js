@@ -253,3 +253,21 @@ function getMartialArtsDie(level) {
     if (level >= 5) return '1d8';
     return '1d6';
 }
+
+// Export CommonJS pour les tests Node.js (ne casse pas le navigateur)
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        calcMod,
+        calculateProficiencyBonus,
+        calculateSkillBonus,
+        getClassResourceInfo,
+        getWeaponConfig,
+        resolveWeaponAttackStat,
+        calcWeaponAttack,
+        calcWeaponDamage,
+        getRageBonus,
+        isMartialArtsWeapon,
+        getMartialArtsDie
+    };
+}
+

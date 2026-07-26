@@ -1,12 +1,14 @@
 {
   "name": "dnd2024-character-sheet",
-  "version": "2.2.0",
-  "description": "Feuille de Personnage D&D 2024 - Mobile Ready",
+  "version": "2.9.12",
+  "description": "Feuille de Personnage D&D 2024 - Tablet Ready & Cloud Sync",
   "main": "index.html",
   "scripts": {
     "start": "npx serve .",
     "dev": "npx serve .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test tests/*.test.js",
+    "lint": "npx eslint js/",
+    "format": "npx prettier --write js/ css/"
   },
   "keywords": [
     "dnd",

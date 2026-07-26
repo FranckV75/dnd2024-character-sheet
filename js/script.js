@@ -18,11 +18,11 @@ function debouncedSave() {
 }
 
 // =============================================================================
-// MENUS DÃ‰ROULANTS DYNAMIQUES
+// MENUS DÉROULANTS DYNAMIQUES
 // =============================================================================
 
 /**
- * Remplit les menus dÃ©roulants avec les donnÃ©es de DD_RULES
+ * Remplit les menus déroulants avec les données de DD_RULES
  */
 function populateSelectOptions() {
     // Remplir le select des Classes
@@ -37,7 +37,7 @@ function populateSelectOptions() {
         }
     }
 
-    // Remplir le select des EspÃ¨ces
+    // Remplir le select des Espèces
     const speciesSelect = document.getElementById('char_species');
     if (speciesSelect) {
         speciesSelect.innerHTML = '<option value="">-- Choisir --</option>';
@@ -362,7 +362,7 @@ window.onload = async function () {
 
     setupDrag();
 
-    // Initialiser le systÃ¨me d'onglets
+    // Initialiser le système d'onglets
     initTabs();
 
     // Initialiser le système de repos
@@ -1744,11 +1744,11 @@ function updateClassResource(lvl, cls, mods) {
 // =============================================================================
 
 /**
- * Calcule les statistiques dÃ©rivÃ©es (Initiative, DD Sorts, Attaque Sorts)
- * avec gestion sÃ©curisÃ©e des valeurs nulles/invalides
+ * Calcule les statistiques dérivées (Initiative, DD Sorts, Attaque Sorts)
+ * avec gestion sécurisée des valeurs nulles/invalides
  */
 function calcDerivedStats() {
-    // RÃ©cupÃ©rer les modificateurs de caractÃ©ristiques de maniÃ¨re sÃ©curisÃ©e
+    // Récupérer les modificateurs de caractéristiques de manière sécurisée
     const getStatMod = (statName) => {
         const val = getVal(statName + '_score');
         return val ? calcMod(val) : 0;
@@ -2024,7 +2024,7 @@ function switchTab(tabName) {
 }
 
 /**
- * Initialise le systÃ¨me d'onglets
+ * Initialise le système d'onglets
  */
 function initTabs() {
     // Ajouter les event listeners sur tous les boutons d'onglets
@@ -2040,7 +2040,7 @@ function initTabs() {
     if (savedTab) {
         switchTab(savedTab);
     }
-    // Sinon, l'onglet "combat" est actif par dÃ©faut (dÃ©jÃ  dans le HTML)
+    // Sinon, l'onglet "combat" est actif par défaut (déjà dans le HTML)
 }
 
 // =============================================================================
@@ -2050,8 +2050,8 @@ function initTabs() {
 
 
 /**
- * Configure l'ajustement automatique du texte pour l'entÃªte
- * RÃ©duit la police si le texte dÃ©passe la largeur
+ * Configure l'ajustement automatique du texte pour l'en-tête
+ * Réduit la police si le texte dépasse la largeur
  */
 function setupHeaderAutoFit() {
     const headerInputs = document.querySelectorAll('header .rich-input');
@@ -2059,7 +2059,7 @@ function setupHeaderAutoFit() {
     const fitText = (el) => {
         if (!el) return;
 
-        // Reset Ã  la taille de base (avec priority important pour surcharger le CSS)
+        // Reset à la taille de base (avec priority important pour surcharger le CSS)
         el.style.setProperty('font-size', '1.5rem', 'important');
 
         // Logique pour les SELECT
@@ -2075,7 +2075,7 @@ function setupHeaderAutoFit() {
 
         // Logique pour les DIV/INPUT (scrollWidth)
         let size = 1.5;
-        // Tant que le contenu dÃ©borde (scrollWidth > clientWidth), on rÃ©duit
+        // Tant que le contenu déborde (scrollWidth > clientWidth), on réduit
         while (el.scrollWidth > el.clientWidth && size > 0.8) {
             size -= 0.1;
             el.style.setProperty('font-size', `${size}rem`, 'important');
@@ -2086,7 +2086,7 @@ function setupHeaderAutoFit() {
         // Appliquer au chargement
         fitText(el);
 
-        // Appliquer Ã  la modification
+        // Appliquer à la modification
         el.addEventListener('input', () => fitText(el)); // Pour div
         el.addEventListener('change', () => fitText(el)); // Pour select
         el.addEventListener('blur', () => fitText(el));
