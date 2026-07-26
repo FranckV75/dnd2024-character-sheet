@@ -16,7 +16,13 @@ function openGallery() {
  */
 function getSavedBackgrounds() {
     let saved = localStorage.getItem('dd2024_saved_bgs');
-    return saved ? JSON.parse(saved) : [];
+    if (!saved) return [];
+    try {
+        return JSON.parse(saved);
+    } catch (e) {
+        console.warn('⚠️ Données galerie corrompues.', e.message);
+        return [];
+    }
 }
 
 /**

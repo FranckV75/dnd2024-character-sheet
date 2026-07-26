@@ -410,6 +410,28 @@ function applyFormData(d) {
 // =============================================================================
 
 /**
+ * Affiche un toast non-bloquant signalant un échec de sauvegarde cloud.
+ * Disparaît automatiquement après 5 secondes.
+ * @param {string} message - Message à afficher
+ */
+function showCloudError(message) {
+    const existing = document.getElementById('cloud-error-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'cloud-error-toast';
+    toast.textContent = '⚠️ ' + message;
+    document.body.appendChild(toast);
+
+    // Déclencher l'animation d'apparition
+    requestAnimationFrame(() => toast.classList.add('visible'));
+    setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 400);
+    }, 5000);
+}
+
+/**
  * Exécute la sauvegarde réelle, sans intercepteur.
  * @param {string} charName - Le nom à utiliser comme clé de sauvegarde
  * @param {Object} data - Les données collectées du formulaire
@@ -417,6 +439,7 @@ function applyFormData(d) {
 async function performSave(charName, data) {
     // 1. Sauvegarde locale (immédiate)
     localStorage.setItem('dd2024_char', JSON.stringify(data));
+    localStorage.setItem('dd2024_last_saved', new Date().toISOString());
 
     // Mettre à jour le nom actif en mémoire
     _activeCharName = charName || null;
@@ -439,6 +462,7 @@ async function performSave(charName, data) {
             if (error) throw error;
         } catch (err) {
             console.warn('❌ Supabase : Échec de synchronisation', err.message);
+            showCloudError('Sauvegarde cloud échouée. Vos données sont conservées localement.');
         }
     }
 }
@@ -537,7 +561,7 @@ async function loadData(targetName = null) {
         try {
             let query = sb
                 .from('characters')
-                .select('data, name')
+                .select('data, name, updated_at')
                 .eq('user_id', window.currentUser.id);
 
             if (targetName) {
@@ -549,6 +573,72 @@ async function loadData(targetName = null) {
             const { data, error } = await query;
 
             if (data && data.data) {
+                // --- Détection de conflit cloud vs local ---
+                const localSavedAt = localStorage.getItem('dd2024_last_saved');
+                const cloudUpdatedAt = data.updated_at;
+
+                // Ne vérifier le conflit que pour le chargement automatique (pas un clic explicite)
+                if (!targetName && localSavedAt && cloudUpdatedAt) {
+                    const localDate = new Date(localSavedAt);
+                    const cloudDate = new Date(cloudUpdatedAt);
+
+                    // Si le local est plus récent que le cloud (> 5 secondes de marge)
+                    if (localDate.getTime() - cloudDate.getTime() > 5000) {
+                        // Proposer le choix à l'utilisateur
+                        const formatDate = (d) => d.toLocaleDateString('fr-FR', {
+                            day: '2-digit', month: '2-digit', year: '2-digit',
+                            hour: '2-digit', minute: '2-digit'
+                        });
+
+                        showModal((txt, btns, inp, area, close) => {
+                            txt.innerHTML = '<b>⚔️ Conflit de synchronisation</b><br><br>';
+                            const msg = document.createElement('span');
+                            msg.style.fontSize = '0.80rem';
+                            msg.textContent = 'Votre fiche locale est plus récente que la version cloud.';
+                            txt.appendChild(msg);
+                            txt.appendChild(document.createElement('br'));
+                            txt.appendChild(document.createElement('br'));
+
+                            const cloudInfo = document.createElement('div');
+                            cloudInfo.style.cssText = 'font-size:0.75rem; text-align:left; padding:6px 10px; border-radius:6px; background:rgba(139,69,19,0.08); border:1px solid rgba(139,69,19,0.2); margin-bottom:8px;';
+                            cloudInfo.textContent = '☁️ Cloud : ' + formatDate(cloudDate);
+                            txt.appendChild(cloudInfo);
+
+                            const localInfo = document.createElement('div');
+                            localInfo.style.cssText = 'font-size:0.75rem; text-align:left; padding:6px 10px; border-radius:6px; background:rgba(139,69,19,0.08); border:1px solid rgba(139,69,19,0.2); margin-bottom:12px;';
+                            localInfo.textContent = '💾 Local : ' + formatDate(localDate);
+                            txt.appendChild(localInfo);
+
+                            const btnCloud = document.createElement('button');
+                            btnCloud.className = 'btn';
+                            btnCloud.innerText = '☁️ Charger le Cloud';
+                            btnCloud.onclick = () => {
+                                close();
+                                const cleanedData = cleanLegacyData(data.data);
+                                applyFormData(cleanedData);
+                                _activeCharName = data.name || targetName;
+                                localStorage.setItem('dd2024_active_char_name', _activeCharName);
+                            };
+
+                            const btnLocal = document.createElement('button');
+                            btnLocal.className = 'btn btn-save';
+                            btnLocal.innerText = '💾 Garder le local';
+                            btnLocal.onclick = () => {
+                                close();
+                                // Charger le localStorage et re-pousser vers le cloud
+                                _loadFromLocalStorage();
+                                // Forcer une resync vers le cloud
+                                setTimeout(() => saveData(true), 500);
+                            };
+
+                            btns.appendChild(btnCloud);
+                            btns.appendChild(btnLocal);
+                        });
+                        return; // Attendre le choix utilisateur
+                    }
+                }
+                // --- Fin détection de conflit ---
+
                 const cleanedData = cleanLegacyData(data.data);
                 applyFormData(cleanedData);
                 _activeCharName = data.name || targetName;
@@ -556,14 +646,29 @@ async function loadData(targetName = null) {
                 return;
             }
         } catch (err) {
-            // Silencieux, on tombe sur le localStorage
+            console.warn('⚠️ Erreur Supabase au chargement, utilisation du localStorage.', err.message);
         }
     }
 
     // 2. Fallback sur localStorage
+    _loadFromLocalStorage();
+}
+
+/**
+ * Charge les données depuis le localStorage (fallback ou choix utilisateur).
+ * Fonction interne réutilisée par la résolution de conflit.
+ */
+function _loadFromLocalStorage() {
     let d = localStorage.getItem('dd2024_char');
     if (d) {
-        const rawData = JSON.parse(d);
+        let rawData;
+        try {
+            rawData = JSON.parse(d);
+        } catch (parseErr) {
+            console.warn('⚠️ Données locales corrompues, réinitialisation.', parseErr.message);
+            localStorage.removeItem('dd2024_char');
+            return; // Charger une fiche vierge
+        }
         const cleanedData = cleanLegacyData(rawData);
         applyFormData(cleanedData);
         // Récupérer le nom depuis la fiche restaurée
@@ -595,11 +700,3 @@ function importData(el) {
     r.readAsText(f);
     el.value = '';
 }
-
-// Note: openAuthModal et handleAuthAction ont été migrés vers supabase-config.js
-
-
-// AGENT 3 : Force Update Hit Dice Logic after load
-if (typeof updateHitDiceType === 'function') updateHitDiceType();
-if (typeof updateHitDiceCount === 'function') updateHitDiceCount();
-
