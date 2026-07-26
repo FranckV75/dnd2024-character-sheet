@@ -1,6 +1,6 @@
 # Projet : Feuille de Personnage D&D 2024 - Bilan d'Étape
 
-## État au 26 Juillet 2026 - V2.9.12 (PLAN DE QUALITÉ - STORIES A, B, C & D IMPLÉMENTÉES)
+## État au 26 Juillet 2026 - V2.9.13 (PLAN DE QUALITÉ - STORIES A, B, C, D & E IMPLÉMENTÉES)
 
 ### ✅ Fonctionnalités Récentes Implémentées (Stories 1 à 11+)
 
@@ -78,6 +78,12 @@
     - **Configuration d'analyse statique et formatage** : Ajout de `.eslintrc.json`, `.prettierrc`, `.eslintignore` et `.editorconfig`.
     - **Intégration Continue (CI)** : Création de la GitHub Action `.github/workflows/ci.yml` exécutant les tests et la validation de syntaxe JS à chaque push.
 
+13. **Story E : Optimisation des Performances et du Chargement (V2.9.13)** ⚡ :
+    - **Attribut `defer` sur 15 balises `<script>`** (`index.html`) : Déblocage de l'analyse du DOM tout en préservant l'ordre d'exécution séquentiel.
+    - **Nettoyage Google Fonts** : Suppression de la requête parasite `Segoe+UI` ne conservant que `Cinzel:wght@400;700`.
+    - **Externalisation & Lazy-loading des sorts** : Allègement du bundle JS de **446 Ko** en transférant `SPELLS_DATA` vers `data/spells.json` chargé de façon asynchrone via `fetch()`.
+    - **Recompression des images d'arrière-plan WebP** : Poids total des 7 images `Fond_*.webp` réduit de **8.8 Mo à 1.16 Mo (gain de > 7.6 Mo / -87%)**, toutes les images étant désormais sous les 400 Ko.
+
 
 ### 🔑 Données Clés
 - **URL de Production** : `https://franckv75.github.io/dnd2024-character-sheet/`
@@ -87,7 +93,7 @@
 - [x] **Story B** : Sécuriser et documenter Supabase / RLS *(Claude Sonnet / Opus 4.6)*
 - [x] **Story C** : Fiabiliser la synchronisation et le démarrage *(Claude Opus 4.6 (Thinking) — complété)*
 - [x] **Story D** : Tests unitaires, Prettier/ESLint, encodage UTF-8 *(Gemini 3.6 Flash (High) — complété)*
-- [ ] **Story E** : Optimisation des performances *(Gemini 3.6 Flash (High))*
+- [x] **Story E** : Optimisation des performances *(Gemini 3.6 Flash (High) — complété)*
 - [ ] **Story F** : Alignement de la documentation *(Gemini 3.6 Flash (High))*
 - [ ] **Story G** : Modules ES & État centralisé *(Claude Opus 4.6 (Thinking))*
 - [ ] **Story H** : Accessibilité ARIA & Modals *(Gemini 3.6 Flash (High))*
