@@ -1,8 +1,9 @@
 {
   "name": "dnd2024-character-sheet",
-  "version": "2.9.12",
+  "version": "2.9.13",
   "description": "Feuille de Personnage D&D 2024 - Tablet Ready & Cloud Sync",
   "main": "index.html",
+  "type": "module",
   "scripts": {
     "start": "npx serve .",
     "dev": "npx serve .",

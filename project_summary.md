@@ -1,6 +1,6 @@
 # Projet : Feuille de Personnage D&D 2024 - Bilan d'Étape
 
-## État au 26 Juillet 2026 - V2.9.13 (PLAN DE QUALITÉ - STORIES A, B, C, D, E & F IMPLÉMENTÉES)
+## État au 26 Juillet 2026 - V3.0.0 (PLAN DE QUALITÉ - STORIES A, B, C, D, E, F & G IMPLÉMENTÉES)
 
 ### ✅ Fonctionnalités Récentes Implémentées (Stories 1 à 11+)
 
@@ -89,6 +89,12 @@
     - **Actualisation de `docs/ARCHITECTURE.md`** : Arborescence complète incluant `spells.json`, `feats-data.js`, `supabase-config.js`, `policies.sql`, `tests/logic.test.js` et `ci.yml`. Documentation des flux de données et spécifications sécurité/performance.
     - **Mise à jour de `docs/CHANGELOG.md`** : Retracement exhaustif des versions de 2.2.0 jusqu'à 2.9.13 avec le détail de toutes les stories du Plan de Qualité (A, B, C, D, E, F).
 
+15. **Story G : Modules ES & État Centralisé (V3.0.0)** 🏗️ :
+    - **Création du Store Centralisé (`js/store.js`)** : Définition de `defaultCharacterState` et implémentation du pattern Pub/Sub (`getState`, `setState`, `subscribe`, `resetState`) servant de source unique de vérité.
+    - **Refonte intégrale en Modules ES6 (`type="module"`)** : Conversion de l'ensemble des modules JS (`logic.js`, `storage.js`, `supabase-config.js`, `dd_rules.js`, `feats-data.js`, `equipment-data.js`, `ui-*.js`, `theme.js`, `script.js`) en syntaxe d'importation/exportation ES6 standard.
+    - **Simplification d'HTML (`index.html`)** : Remplacement de 14 balises de scripts globales par le seul point d'entrée `<script type="module" src="js/script.js?v=3.0"></script>`.
+    - **Maintien des tests & compatibilité** : Exécution native ESM des 22 tests unitaires via `node --test tests/logic.test.js` avec `"type": "module"` dans `package.json`.
+
 
 ### 🔑 Données Clés
 - **URL de Production** : `https://franckv75.github.io/dnd2024-character-sheet/`
@@ -100,7 +106,7 @@
 - [x] **Story D** : Tests unitaires, Prettier/ESLint, encodage UTF-8 *(Gemini 3.6 Flash (High) — complété)*
 - [x] **Story E** : Optimisation des performances *(Gemini 3.6 Flash (High) — complété)*
 - [x] **Story F** : Alignement de la documentation *(Gemini 3.6 Flash (High) — complété)*
-- [ ] **Story G** : Modules ES & État centralisé *(Claude Opus 4.6 (Thinking))*
+- [x] **Story G** : Modules ES & État centralisé *(Claude Opus 4.6 (Thinking) / Gemini 3.6 Flash — complété)*
 - [ ] **Story H** : Accessibilité ARIA & Modals *(Gemini 3.6 Flash (High))*
 
 ### 💎 Règles d'Or : Homogénéité et Accessibilité

@@ -1,18 +1,11 @@
-/**
- * UI-MODALS.JS
- * Système de modales, import et export de données
- * Extrait de script.js lors du refactoring Option B
- */
-
 // =============================================================================
-// SYSTÈME DE MODALES
+// UI-MODALS.JS - SYSTÈME DE MODALES & APIS D'IMPORT/EXPORT (MODULE ES6)
 // =============================================================================
 
-/**
- * Affiche une modale personnalisée
- * @param {string|Function} contentHtml - Contenu HTML ou fonction de configuration
- */
-function showModal(contentHtml) {
+import { getFormData, applyFormData, cleanLegacyData, loadData } from './storage.js';
+import { fetchCharacters, deleteCharacter } from './supabase-config.js';
+
+export function showModal(contentHtml) {
     const m = document.getElementById('custom-modal');
     const txt = document.getElementById('modal-text');
     const btns = document.getElementById('modal-actions');
@@ -39,14 +32,7 @@ function showModal(contentHtml) {
     m.style.display = 'flex';
 }
 
-// =============================================================================
-// SYSTÈME D'EXPORT
-// =============================================================================
-
-/**
- * Ouvre le menu d'export avec options de téléchargement ou copie
- */
-function openExportMenu() {
+export function openExportMenu() {
     let nEl = document.querySelector('[data-name="char_name"]');
     let n = nEl ? nEl.innerText.trim().replace(/<[^>]*>/g, "") : "perso";
     if (!n) n = "perso";
@@ -80,11 +66,7 @@ function openExportMenu() {
     });
 }
 
-/**
- * Copie du texte dans le presse-papiers (API moderne avec fallback)
- * @param {string} text - Texte à copier
- */
-function copyToClipboard(text) {
+export function copyToClipboard(text) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(() => showModal("Données copiées !"))
             .catch(() => fallbackCopy(text));
@@ -93,11 +75,7 @@ function copyToClipboard(text) {
     }
 }
 
-/**
- * Fallback pour la copie dans le presse-papiers (anciens navigateurs)
- * @param {string} text - Texte à copier
- */
-function fallbackCopy(text) {
+export function fallbackCopy(text) {
     const ta = document.createElement("textarea");
     ta.value = text;
     ta.style.position = "fixed"; ta.style.left = "0"; ta.style.top = "0";
@@ -112,11 +90,7 @@ function fallbackCopy(text) {
     document.body.removeChild(ta);
 }
 
-/**
- * Télécharge les données du formulaire en fichier JSON
- * @param {string} fileName - Nom du fichier à télécharger
- */
-function downloadFile(fileName) {
+export function downloadFile(fileName) {
     const data = JSON.stringify(getFormData(), null, 2);
     const b = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(b);
@@ -126,14 +100,7 @@ function downloadFile(fileName) {
     document.body.removeChild(a); window.URL.revokeObjectURL(url);
 }
 
-// =============================================================================
-// SYSTÈME D'IMPORT
-// =============================================================================
-
-/**
- * Ouvre le menu d'import avec options fichier ou texte collé
- */
-function openImportMenu() {
+export function openImportMenu() {
     showModal((txt, btns, inp, area, close) => {
         txt.innerHTML = "<b>Importation</b>";
         const btnFile = document.createElement('button');
@@ -163,18 +130,10 @@ function openImportMenu() {
     });
 }
 
-// =============================================================================
-// MODALE "MES PERSONNAGES"
-// =============================================================================
-
-/**
- * Ouvre la modale de gestion de tous les personnages sauvegardés dans le Cloud.
- */
-async function openCharactersModal() {
+export async function openCharactersModal() {
     showModal((txt, btns, inp, area, close) => {
         txt.innerHTML = '<b>👥 Mes Personnages</b><br><small style="color:var(--text-muted,#888)">Chargement...</small>';
 
-        // Styles intégrés pour la liste
         const listStyle = `
             display:flex; flex-direction:column; gap:8px; margin-top:12px;
             max-height:300px; overflow-y:auto;
@@ -189,15 +148,14 @@ async function openCharactersModal() {
         listEl.style.cssText = listStyle;
         txt.appendChild(listEl);
 
-        // Remplir la liste de façon async
         (async () => {
             let chars = [];
             if (typeof fetchCharacters === 'function') {
                 chars = await fetchCharacters();
             }
 
-            // Mettre à jour le titre
-            txt.querySelector('small').remove();
+            const small = txt.querySelector('small');
+            if (small) small.remove();
 
             if (!window.currentUser) {
                 listEl.innerHTML = '<p style="color:var(--text-muted,#888); font-size:0.8rem; text-align:center; padding:16px 0;">Connectez-vous pour accéder à vos personnages cloud.<br><em>En mode hors-ligne, la fiche actuelle est sauvegardée localement.</em></p>';
@@ -235,7 +193,7 @@ async function openCharactersModal() {
                     btnLoad.onclick = async () => {
                         close();
                         await loadData(char.name);
-                        showModal('Personnage charg\u00e9 : ' + char.name);
+                        showModal('Personnage chargé : ' + char.name);
                     };
 
                     const btnDel = document.createElement('button');
@@ -245,7 +203,7 @@ async function openCharactersModal() {
                     btnDel.title = `Supprimer ${char.name}`;
                     btnDel.onclick = () => {
                         showModal((txt2, btns2, i2, a2, close2) => {
-                            const msg = document.createTextNode('Supprimer d\u00e9finitivement ');
+                            const msg = document.createTextNode('Supprimer définitivement ');
                             const nameB = document.createElement('strong');
                             nameB.textContent = char.name;
                             const msg2 = document.createTextNode(' du cloud ?');
@@ -255,7 +213,7 @@ async function openCharactersModal() {
                             txt2.appendChild(document.createElement('br'));
                             const warn = document.createElement('small');
                             warn.style.color = '#c0392b';
-                            warn.textContent = 'Cette action est irr\u00e9versible.';
+                            warn.textContent = 'Cette action est irréversible.';
                             txt2.appendChild(warn);
                             const confirmBtn = document.createElement('button');
                             confirmBtn.className = 'btn btn-bg';
@@ -264,7 +222,7 @@ async function openCharactersModal() {
                             confirmBtn.onclick = async () => {
                                 await deleteCharacter(char.name);
                                 close2();
-                                openCharactersModal(); // Rafraîchir la liste
+                                openCharactersModal();
                             };
                             const cancelBtn = document.createElement('button');
                             cancelBtn.className = 'btn'; cancelBtn.innerText = 'Annuler'; cancelBtn.onclick = close2;
@@ -288,3 +246,11 @@ async function openCharactersModal() {
         btns.appendChild(closeBtn);
     });
 }
+
+window.showModal = showModal;
+window.openExportMenu = openExportMenu;
+window.copyToClipboard = copyToClipboard;
+window.fallbackCopy = fallbackCopy;
+window.downloadFile = downloadFile;
+window.openImportMenu = openImportMenu;
+window.openCharactersModal = openCharactersModal;

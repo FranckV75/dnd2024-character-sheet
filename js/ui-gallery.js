@@ -1,20 +1,16 @@
 // =============================================================================
-// UI-GALLERY.JS - GESTION DE LA GALERIE DE FONDS D'ÉCRAN
+// UI-GALLERY.JS - GESTION DE LA GALERIE DE FONDS D'ÉCRAN (MODULE ES6)
 // =============================================================================
 
-/**
- * Ouvre la modal de la galerie
- */
-function openGallery() {
-    document.getElementById('gallery-modal').style.display = 'flex';
+import { DEFAULT_BGS } from './data.js';
+
+export function openGallery() {
+    const modal = document.getElementById('gallery-modal');
+    if (modal) modal.style.display = 'flex';
     renderGallery();
 }
 
-/**
- * Récupère les fonds sauvegardés par l'utilisateur
- * @returns {Array} Liste des URLs des fonds utilisateur
- */
-function getSavedBackgrounds() {
+export function getSavedBackgrounds() {
     let saved = localStorage.getItem('dd2024_saved_bgs');
     if (!saved) return [];
     try {
@@ -25,16 +21,14 @@ function getSavedBackgrounds() {
     }
 }
 
-/**
- * Génère le contenu de la galerie
- */
-function renderGallery() {
+export function renderGallery() {
     const grid = document.getElementById('gallery-grid');
+    if (!grid) return;
     grid.innerHTML = '';
 
-    // Combine defaults and user saved
+    const defaultList = window.DEFAULT_BGS || DEFAULT_BGS || [];
     const userBgs = getSavedBackgrounds();
-    const allBgs = ["none", ...DEFAULT_BGS, ...userBgs];
+    const allBgs = ["none", ...defaultList, ...userBgs];
 
     let currentBg = document.body.style.backgroundImage || "";
     currentBg = currentBg.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
@@ -62,16 +56,13 @@ function renderGallery() {
         };
         item.appendChild(img);
 
-        // Name Label
         let name = url;
-        // Si c'est une URL locale/fichier
         const parts = url.split('/');
         const filename = parts[parts.length - 1];
-        // Nettoyer le nom
         name = filename.replace(/\.(webp|png|jpg|jpeg)$/i, '')
-            .replace(/^Fond[ _-]?/, '') // Enlever "Fond_" ou "Fond " ou "Fond-"
-            .replace(/_/g, ' ')         // Remplacer underscores par espaces
-            .replace(/%20/g, ' ');      // Remplacer %20 par espaces
+            .replace(/^Fond[ _-]?/, '')
+            .replace(/_/g, ' ')
+            .replace(/%20/g, ' ');
 
         const label = document.createElement('div');
         label.className = 'gallery-label';
@@ -82,18 +73,17 @@ function renderGallery() {
         label.style.whiteSpace = 'nowrap';
         label.style.overflow = 'hidden';
         label.style.textOverflow = 'ellipsis';
-        label.title = name; // Tooltip full name
+        label.title = name;
         item.appendChild(label);
 
-        // Delete button (only for user bgs)
-        if (idx > DEFAULT_BGS.length) {
+        if (idx > defaultList.length) {
             const btn = document.createElement('button');
             btn.className = 'gallery-del';
             btn.innerHTML = 'x';
             btn.title = "Supprimer";
             btn.onclick = (e) => {
                 e.stopPropagation();
-                removeBackground(idx - (DEFAULT_BGS.length + 1));
+                removeBackground(idx - (defaultList.length + 1));
             };
             item.appendChild(btn);
         }
@@ -102,11 +92,7 @@ function renderGallery() {
     });
 }
 
-/**
- * Sélectionne un fond d'écran
- * @param {string} url - URL du fond
- */
-function selectBackground(url) {
+export function selectBackground(url) {
     document.body.style.backgroundImage = `url('${url}')`;
     document.body.style.backgroundSize = 'cover';
     document.body.style.backgroundPosition = 'center';
@@ -115,11 +101,9 @@ function selectBackground(url) {
     renderGallery();
 }
 
-/**
- * Ajoute un nouveau fond depuis une URL
- */
-function addNewBackground() {
+export function addNewBackground() {
     const input = document.getElementById('new-bg-url');
+    if (!input) return;
     const url = input.value.trim();
     if (!url) return;
 
@@ -131,13 +115,16 @@ function addNewBackground() {
     renderGallery();
 }
 
-/**
- * Supprime un fond utilisateur
- * @param {number} userIndex - Index dans la liste des fonds utilisateur
- */
-function removeBackground(userIndex) {
+export function removeBackground(userIndex) {
     let saved = getSavedBackgrounds();
     saved.splice(userIndex, 1);
     localStorage.setItem('dd2024_saved_bgs', JSON.stringify(saved));
     renderGallery();
 }
+
+window.openGallery = openGallery;
+window.getSavedBackgrounds = getSavedBackgrounds;
+window.renderGallery = renderGallery;
+window.selectBackground = selectBackground;
+window.addNewBackground = addNewBackground;
+window.removeBackground = removeBackground;

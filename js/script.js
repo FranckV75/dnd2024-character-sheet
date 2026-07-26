@@ -1,4 +1,22 @@
 // =============================================================================
+// SCRIPT.JS - POINT D'ENTRÉE PRINCIPAL (MODULE ES6)
+// =============================================================================
+
+import { getState, setState, subscribe, resetState } from './store.js';
+import { calcMod, calculateProficiencyBonus, calculateSkillBonus, getClassResourceInfo, getWeaponConfig, resolveWeaponAttackStat, calcWeaponAttack, calcWeaponDamage, getRageBonus, isMartialArtsWeapon, getMartialArtsDie } from './logic.js';
+import { setRichHTML, cleanLegacyData, getFormData, applyFormData, saveData, loadData, importData, showCloudError, performSave } from './storage.js';
+import { sb, updateUIForUser, signOut, openAuthModal, handleAuthAction, fetchCharacters, deleteCharacter, renameCharacter } from './supabase-config.js';
+import { DD_RULES } from './dd_rules.js';
+import { FEATS_DATA } from './feats-data.js';
+import { EQUIPMENT_DATA } from './equipment-data.js';
+import { DEFAULT_BGS, SKILLS, SKILLS_BY_STAT, STAT_LABELS } from './data.js';
+import { initTheme, setTheme, toggleTheme } from './theme.js';
+import { openGallery, renderGallery, selectBackground, addNewBackground, removeBackground } from './ui-gallery.js';
+import { performShortRest, performLongRest, initRestSystem, showRestHitDiceModal, rollAndApplyHitDice, showManualHitDiceInput, applyHitDiceHealing, updateLongRestProgress, cleanupLongRestFeedback } from './ui-rest.js';
+import { showModal, openExportMenu, openImportMenu, openCharactersModal, copyToClipboard, fallbackCopy, downloadFile } from './ui-modals.js';
+import { updateOpacity, changeBackground, updateBgZoom, updateBgPosY, bindStyleEvents, handleRightClick, setupDrag, toggleToolbar, showStyleEditor, applyFormat, applyColor, applyFontSize, toggleCinemaMode } from './ui-toolbar.js';
+
+// =============================================================================
 // AUTO-SAVE GLOBAL (Debounced)
 // =============================================================================
 
@@ -261,6 +279,11 @@ function initPremiumTooltips() {
 }
 
 window.onload = async function () {
+    initTheme();
+    const themeBtn = document.getElementById('theme-toggle');
+    if (themeBtn) {
+        themeBtn.addEventListener('click', toggleTheme);
+    }
     generateSkillsHTML();
     initWeapons();
     initSpells();
@@ -2348,3 +2371,31 @@ function toggleLockMode(forceState = null) {
     
     _lockToggling = false;
 }
+
+window.debouncedSave = debouncedSave;
+window.populateSelectOptions = populateSelectOptions;
+window.updateSubclassOptions = updateSubclassOptions;
+window.initFeatSelects = initFeatSelects;
+window.populateHeroicDestiny = populateHeroicDestiny;
+window.updatePalier = updatePalier;
+window.generateSkillsHTML = generateSkillsHTML;
+window.initWeapons = initWeapons;
+window.addWeaponRow = addWeaponRow;
+window.filterWeapons = filterWeapons;
+window.calcAllWeapons = calcAllWeapons;
+window.openWeaponConfig = openWeaponConfig;
+window.renderCombatBuffs = renderCombatBuffs;
+window.initFatigueDisplay = initFatigueDisplay;
+window.toggleLockMode = toggleLockMode;
+window.initLockMode = initLockMode;
+if (typeof calcStats !== 'undefined') window.calcStats = calcStats;
+if (typeof calcArmorAC !== 'undefined') window.calcArmorAC = calcArmorAC;
+if (typeof addArmorRow !== 'undefined') window.addArmorRow = addArmorRow;
+if (typeof addSpellRow !== 'undefined') window.addSpellRow = addSpellRow;
+if (typeof filterSpells !== 'undefined') window.filterSpells = filterSpells;
+if (typeof updateSpellCount !== 'undefined') window.updateSpellCount = updateSpellCount;
+if (typeof setupWeaponAutocomplete !== 'undefined') window.setupWeaponAutocomplete = setupWeaponAutocomplete;
+if (typeof initTabs !== 'undefined') window.initTabs = initTabs;
+if (typeof switchTab !== 'undefined') window.switchTab = switchTab;
+if (typeof getVal !== 'undefined') window.getVal = getVal;
+

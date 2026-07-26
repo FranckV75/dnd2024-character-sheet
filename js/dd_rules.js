@@ -782,6 +782,6 @@ const DD_RULES = {
 };
 
 // Exporter pour utilisation dans d'autres scripts
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = DD_RULES;
-}
+window.DD_RULES = DD_RULES;
+export { DD_RULES };
+export default DD_RULES;

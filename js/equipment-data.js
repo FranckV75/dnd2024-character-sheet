@@ -26,3 +26,7 @@ const EQUIPMENT_DATA = {
         { name: "Bouclier", type: "Bouclier", ca: "+2", str: "-", stealth: false, weight: "3 kg", price: "10 po" }
     ]
 };
+
+window.EQUIPMENT_DATA = EQUIPMENT_DATA;
+export { EQUIPMENT_DATA };
+export default EQUIPMENT_DATA;
