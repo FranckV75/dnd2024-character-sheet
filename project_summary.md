@@ -71,7 +71,7 @@
 
 ### 📋 Prochaines Priorités Techniques & Modèles Recommandés
 - [x] **Story B** : Sécuriser et documenter Supabase / RLS *(Claude Sonnet / Opus 4.6)*
-- [ ] **Story C** : Fiabiliser la synchronisation et le démarrage *(Claude Sonnet 4.6 (Thinking) ou Gemini 3.6 Flash (High))*
+- [ ] **Story C** : Fiabiliser la synchronisation et le démarrage *(Claude Opus 4.6 (Thinking))*
 - [ ] **Story D** : Tests unitaires, Prettier/ESLint, encodage UTF-8 *(Gemini 3.6 Flash (High))*
 - [ ] **Story E** : Optimisation des performances *(Gemini 3.6 Flash (High))*
 - [ ] **Story F** : Alignement de la documentation *(Gemini 3.6 Flash (High))*
