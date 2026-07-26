@@ -69,19 +69,20 @@
 - **URL de Production** : `https://franckv75.github.io/dnd2024-character-sheet/`
 - **Sauvegarde Cloud** : Supabase implémenté.
 
-### 📋 Prochaines Priorités Techniques (Corrections Post-Audit)
-- [x] **Story B** : Sécuriser et documenter Supabase / RLS (Code complété, déploiement SQL en cours).
-- [ ] **Story C** : Fiabiliser la synchronisation et le démarrage (gestion des conflits de versions, try/catch JSON, onAuthStateChange).
-- [ ] **Story D** : Tests unitaires, Prettier/ESLint, correction de l'encodage UTF-8 (mojibake).
-- [ ] **Story E** : Optimisation des performances (defer scripts, recompression webp, suppression Google Font Segoe+UI).
-- [ ] **Story F** : Alignement de la documentation (README, CHANGELOG, ARCHITECTURE).
-- [ ] **Story G** : Modules ES & État centralisé (architecture).
-- [ ] **Story H** : Accessibilité (Aria attributes, tooltips clavier, focus modals).
+### 📋 Prochaines Priorités Techniques & Modèles Recommandés
+- [x] **Story B** : Sécuriser et documenter Supabase / RLS *(Claude Sonnet / Opus 4.6)*
+- [ ] **Story C** : Fiabiliser la synchronisation et le démarrage *(Claude Sonnet 4.6 (Thinking) ou Gemini 3.6 Flash (High))*
+- [ ] **Story D** : Tests unitaires, Prettier/ESLint, encodage UTF-8 *(Gemini 3.6 Flash (High))*
+- [ ] **Story E** : Optimisation des performances *(Gemini 3.6 Flash (High))*
+- [ ] **Story F** : Alignement de la documentation *(Gemini 3.6 Flash (High))*
+- [ ] **Story G** : Modules ES & État centralisé *(Claude Opus 4.6 (Thinking))*
+- [ ] **Story H** : Accessibilité ARIA & Modals *(Gemini 3.6 Flash (High))*
 
 ### 💎 Règles d'Or : Homogénéité et Accessibilité
 - **Champs dynamiques (calculés) = Champs éditables classiques**.
 - Pour toute nouvelle colonne, tout nouveau champ ou modification HTML induisant des calculs dynamiques : **il est IMPÉRATIF que la police, la graisse (font-weight), la couleur et la taille de la police (généralement `Cinzel`, `0.70rem` ou hérité) correspondent EXACTEMENT aux autres champs adjacents**.
 - Ne jamais coder en dur de la couleur ou du gras (`font-weight: 600`) sur un champ généré pour le différencier, sauf accord express de l'utilisateur. Priorité absolue au design "seamless" (intégration parfaite sans distinction des champs codés).
-- **Vérification systématique Mode Nuit / Mode Jour** : Chaque modification de couleur, de texte ou d'encadré doit être obligatoirement testée dans les deux thèmes. Il arrive fréquemment qu'une couleur ajoutée soit illisible (manque de contraste) lors du passage de l'un à l'autre.
+- **Vérification systématique Mode Nuit / Mode Jour** : Chaque modification de couleur, de texte ou d'encadré doit être obligatoirement testée dans les deux thèmes. Il arrive fréquemment qu’une couleur ajoutée soit illisible (manque de contraste) lors du passage de l'un à l'autre.
 
-*Dernière mise à jour : 11/06/2026*
+*Dernière mise à jour : 26/07/2026*
+
