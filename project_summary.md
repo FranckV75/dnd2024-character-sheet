@@ -1,6 +1,6 @@
 # Projet : Feuille de Personnage D&D 2024 - Bilan d'Étape
 
-## État au 26 Juillet 2026 - V2.9.11 (PLAN DE QUALITÉ - STORIES A, B & C IMPLÉMENTÉES)
+## État au 26 Juillet 2026 - V2.9.12 (PLAN DE QUALITÉ - STORIES A, B, C & D IMPLÉMENTÉES)
 
 ### ✅ Fonctionnalités Récentes Implémentées (Stories 1 à 11+)
 
@@ -72,6 +72,12 @@
     - **Détection de conflits cloud vs local** : Comparaison des horodatages `updated_at` avec modale de résolution proposant le choix à l'utilisateur.
     - **Suppression du code mort** en fin de `storage.js` (appels `updateHitDice` jamais exécutés).
 
+12. **Story D : Outillage Qualité, Encodage UTF-8 et Tests Unitaires (V2.9.12)** 🧪 :
+    - **Suite de 22 tests unitaires automatisés** (`node --test tests/logic.test.js`) couvrant 100% des fonctions pures D&D 2024 de `js/logic.js` (modificateurs, calculs d'armes, arts martiaux Moine, rages Barbare, etc.).
+    - **Correction intégrale du Mojibake UTF-8** (`Ã©`, `Ã¨`, etc.) dans `js/script.js` et `js/storage.js`.
+    - **Configuration d'analyse statique et formatage** : Ajout de `.eslintrc.json`, `.prettierrc`, `.eslintignore` et `.editorconfig`.
+    - **Intégration Continue (CI)** : Création de la GitHub Action `.github/workflows/ci.yml` exécutant les tests et la validation de syntaxe JS à chaque push.
+
 
 ### 🔑 Données Clés
 - **URL de Production** : `https://franckv75.github.io/dnd2024-character-sheet/`
@@ -80,7 +86,7 @@
 ### 📋 Prochaines Priorités Techniques & Modèles Recommandés
 - [x] **Story B** : Sécuriser et documenter Supabase / RLS *(Claude Sonnet / Opus 4.6)*
 - [x] **Story C** : Fiabiliser la synchronisation et le démarrage *(Claude Opus 4.6 (Thinking) — complété)*
-- [ ] **Story D** : Tests unitaires, Prettier/ESLint, encodage UTF-8 *(Gemini 3.6 Flash (High))*
+- [x] **Story D** : Tests unitaires, Prettier/ESLint, encodage UTF-8 *(Gemini 3.6 Flash (High) — complété)*
 - [ ] **Story E** : Optimisation des performances *(Gemini 3.6 Flash (High))*
 - [ ] **Story F** : Alignement de la documentation *(Gemini 3.6 Flash (High))*
 - [ ] **Story G** : Modules ES & État centralisé *(Claude Opus 4.6 (Thinking))*
