@@ -82,3 +82,11 @@ const STAT_LABELS = {
     wis: { icon: '👁️', name: 'SAGESSE' },
     cha: { icon: '✨', name: 'CHARISME' }
 };
+
+window.DEFAULT_BGS = DEFAULT_BGS;
+window.SKILLS = SKILLS;
+window.SKILLS_BY_STAT = SKILLS_BY_STAT;
+window.STAT_LABELS = STAT_LABELS;
+
+export { DEFAULT_BGS, SKILLS, SKILLS_BY_STAT, STAT_LABELS };
+export default { DEFAULT_BGS, SKILLS, SKILLS_BY_STAT, STAT_LABELS };

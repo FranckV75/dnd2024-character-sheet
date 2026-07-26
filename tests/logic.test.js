@@ -3,9 +3,9 @@
  * Exécuté via Node.js native test runner: `npm test`
  */
 
-const { test, describe } = require('node:test');
-const assert = require('node:assert/strict');
-const {
+import { test, describe } from 'node:test';
+import assert from 'node:assert/strict';
+import {
     calcMod,
     calculateProficiencyBonus,
     calculateSkillBonus,
@@ -17,7 +17,7 @@ const {
     getRageBonus,
     isMartialArtsWeapon,
     getMartialArtsDie
-} = require('../js/logic.js');
+} from '../js/logic.js';
 
 describe('1. Modificateurs de caractéristiques (calcMod)', () => {
     test('Calcule correctement les modificateurs pour tous les scores (1-30)', () => {

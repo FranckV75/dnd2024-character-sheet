@@ -888,39 +888,16 @@
             integrity="sha256-ILCzhApz2lHTpmxR8HPj7W2hBCs3QcWGHBt6Nmk9ySg="
             crossorigin="anonymous" defer></script>
 
-    <!-- Supabase SDK & Config -->
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.min.js"
             integrity="sha384-BV2dqVU6K3gwMR3iiAIxuWbMYbnQYo7u3jQXlR9cCWtBUVeIrrcuzn50r50eu9zk"
             crossorigin="anonymous" defer></script>
-    <script src="js/supabase-config.js" defer></script>
 
-    <!-- JavaScript Modules - Chargement dans l'ordre de dépendance -->
-    <script src="js/dd_rules.js" defer></script>
-    <script src="js/data.js" defer></script>
-    <script src="js/equipment-data.js" defer></script>
-    <script src="js/feats-data.js" defer></script>
-    <script src="js/spells-data.js?v=2.9" defer></script>
-    <script src="js/logic.js" defer></script>
-    <script src="js/storage.js" defer></script>
     <!-- SPELL TOOLTIP CONTAINER -->
     <div id="spell-tooltip" class="spell-tooltip" style="display: none;"></div>
 
-    <script src="js/theme.js?v=2.8" defer></script>
-    <script src="js/ui-gallery.js" defer></script>
-    <script src="js/ui-rest.js" defer></script>
-    <script src="js/ui-modals.js" defer></script>
-    <script src="js/ui-toolbar.js" defer></script>
-    <script src="js/script.js?v=2.9" defer></script>
-    <script>
-        // Initialize theme and attach event listener
-        document.addEventListener('DOMContentLoaded', function () {
-            initTheme();
-            const themeBtn = document.getElementById('theme-toggle');
-            if (themeBtn) {
-                themeBtn.addEventListener('click', toggleTheme);
-            }
-        });
-    </script>
+    <!-- JavaScript ES Modules — Entrypoint script.js -->
+    <script type="module" src="js/script.js?v=3.0"></script>
 
 </body>
 

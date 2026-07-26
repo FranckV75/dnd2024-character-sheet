@@ -1,20 +1,13 @@
 // =============================================================================
-// DARK MODE MANAGEMENT
+// DARK MODE MANAGEMENT (MODULE ES6)
 // =============================================================================
 
-/**
- * Initialise le thème au chargement de la page
- */
-function initTheme() {
+export function initTheme() {
     const savedTheme = localStorage.getItem('dd2024_theme') || 'light';
     setTheme(savedTheme);
 }
 
-/**
- * Applique le thème spécifié
- * @param {string} theme - 'light' ou 'dark'
- */
-function setTheme(theme) {
+export function setTheme(theme) {
     document.body.dataset.theme = theme;
     const btn = document.getElementById('theme-toggle');
     if (btn) {
@@ -23,17 +16,17 @@ function setTheme(theme) {
     }
     localStorage.setItem('dd2024_theme', theme);
 
-    // Réappliquer l'opacité avec la bonne couleur de fond
     const savedOpacity = localStorage.getItem('dd2024_opacity');
-    if (savedOpacity && typeof updateOpacity === 'function') {
-        updateOpacity(savedOpacity);
+    if (savedOpacity && typeof window.updateOpacity === 'function') {
+        window.updateOpacity(savedOpacity);
     }
 }
 
-/**
- * Bascule entre le mode clair et sombre
- */
-function toggleTheme() {
+export function toggleTheme() {
     const current = document.body.dataset.theme || 'light';
     setTheme(current === 'light' ? 'dark' : 'light');
 }
+
+window.initTheme = initTheme;
+window.setTheme = setTheme;
+window.toggleTheme = toggleTheme;

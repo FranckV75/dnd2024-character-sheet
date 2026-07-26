@@ -530,3 +530,7 @@ const FEATS_DATA = {
         "desc": "Vous bénéficiez des avantages suivants. <br><strong>Maîtrise de l'Initiative</strong>. Lorsque vous lancez l'Initiative, vous pouvez ajouter votre bonus de maîtrise à votre jet. <br><strong>Échange d'Initiative</strong>. Immédiatement après avoir lancé une Initiative, vous pouvez échanger votre Initiative avec celle d'un allié consentant au cours du même combat. Cet échange est impossible si vous ou l'allié êtes Incapable d'agir."
     }
 };
+
+window.FEATS_DATA = FEATS_DATA;
+export { FEATS_DATA };
+export default FEATS_DATA;
