@@ -1,6 +1,6 @@
 # Projet : Feuille de Personnage D&D 2024 - Bilan d'Étape
 
-## État au 11 Juin 2026 - V2.9.10 (PLAN DE QUALITÉ - STORIES A & B IMPLÉMENTÉES)
+## État au 26 Juillet 2026 - V2.9.11 (PLAN DE QUALITÉ - STORIES A, B & C IMPLÉMENTÉES)
 
 ### ✅ Fonctionnalités Récentes Implémentées (Stories 1 à 11+)
 
@@ -64,6 +64,14 @@
     - **Mise à jour des références** : Réécriture de toutes les fonctions de sauvegarde et de chargement (`storage.js` et `supabase-config.js`) de `supabase.` vers `sb.`.
     - **Création et sécurisation du script RLS** : Écriture de `supabase/policies.sql` versionnant l'activation du Row Level Security et les politiques d'accès utilisateur (`auth.uid() = user_id`) avec clause d'écrasement sécurisée.
 
+11. **Story C : Fiabiliser le démarrage et la synchronisation (V2.9.11)** 🔄 :
+    - **Remplacement du `setTimeout(checkUser, 500)` par `sb.auth.onAuthStateChange()`** : Détection réactive et instantanée de l'état d'authentification, sans délai arbitraire.
+    - **Sécurisation des `JSON.parse` critiques** : Protection par `try/catch` dans `loadData()`, `getSavedBackgrounds()` pour éviter tout crash sur données corrompues.
+    - **Inversion de l'ordre dans `renameCharacter()`** : Création de la nouvelle entrée AVANT suppression de l'ancienne, empêchant toute perte irréversible de personnage.
+    - **Toast d'alerte cloud** : Notification visuelle non-bloquante (`showCloudError()`) lors d'un échec de synchronisation Supabase, compatible Mode Jour/Nuit.
+    - **Détection de conflits cloud vs local** : Comparaison des horodatages `updated_at` avec modale de résolution proposant le choix à l'utilisateur.
+    - **Suppression du code mort** en fin de `storage.js` (appels `updateHitDice` jamais exécutés).
+
 
 ### 🔑 Données Clés
 - **URL de Production** : `https://franckv75.github.io/dnd2024-character-sheet/`
@@ -71,7 +79,7 @@
 
 ### 📋 Prochaines Priorités Techniques & Modèles Recommandés
 - [x] **Story B** : Sécuriser et documenter Supabase / RLS *(Claude Sonnet / Opus 4.6)*
-- [ ] **Story C** : Fiabiliser la synchronisation et le démarrage *(Claude Opus 4.6 (Thinking))*
+- [x] **Story C** : Fiabiliser la synchronisation et le démarrage *(Claude Opus 4.6 (Thinking) — complété)*
 - [ ] **Story D** : Tests unitaires, Prettier/ESLint, encodage UTF-8 *(Gemini 3.6 Flash (High))*
 - [ ] **Story E** : Optimisation des performances *(Gemini 3.6 Flash (High))*
 - [ ] **Story F** : Alignement de la documentation *(Gemini 3.6 Flash (High))*
