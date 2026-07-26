@@ -14,14 +14,28 @@ window.sb = sb;
 // Etat de l'utilisateur (Global pour être accessible partout)
 window.currentUser = null;
 
-// Initialisation au chargement
-async function checkUser() {
-    const { data: { user }, error } = await sb.auth.getUser();
-    if (error) console.error('❌ Supabase Auth Error:', error.message);
+// Flag pour éviter le double-chargement (INITIAL_SESSION + SIGNED_IN)
+let _initialLoadDone = false;
+
+// Écoute réactive de l'état d'authentification Supabase
+// Remplace l'ancien setTimeout(checkUser, 500) — plus fiable et instantané.
+sb.auth.onAuthStateChange((event, session) => {
+    const user = session?.user ?? null;
+
+    // Éviter le double-appel de loadData au démarrage
+    // (onAuthStateChange émet INITIAL_SESSION puis potentiellement SIGNED_IN)
+    if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+        if (_initialLoadDone) return;
+        _initialLoadDone = true;
+    }
+
+    // Réinitialiser le flag lors d'une déconnexion
+    if (event === 'SIGNED_OUT') {
+        _initialLoadDone = false;
+    }
+
     updateUIForUser(user);
-}
-// On attend un petit peu que storage.js soit chargé avant de checker l'user
-setTimeout(checkUser, 500);
+});
 
 async function updateUIForUser(user) {
     window.currentUser = user;
@@ -160,9 +174,9 @@ async function deleteCharacter(charName) {
  * @param {Object} data    - Données actuelles du personnage
  */
 async function renameCharacter(oldName, newName, data) {
-    await deleteCharacter(oldName);
     if (!window.currentUser || !newName) return;
     try {
+        // 1. D'abord : créer/mettre à jour sous le nouveau nom
         const { error } = await sb
             .from('characters')
             .upsert({
@@ -172,7 +186,15 @@ async function renameCharacter(oldName, newName, data) {
                 updated_at: new Date()
             }, { onConflict: 'name, user_id' });
         if (error) throw error;
+
+        // 2. Seulement après succès : supprimer l'ancien
+        if (oldName !== newName) {
+            await deleteCharacter(oldName);
+        }
     } catch (err) {
         console.warn('❌ renameCharacter:', err.message);
+        if (typeof showModal === 'function') {
+            showModal('⚠️ Le renommage a échoué. Votre personnage est intact sous son ancien nom.');
+        }
     }
 }

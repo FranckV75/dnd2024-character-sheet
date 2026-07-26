@@ -3613,3 +3613,40 @@ body.locked-mode #lock-btn {
         break-inside: avoid !important;
     }
 }
+
+/* =============================================================================
+   TOAST — Alerte non-bloquante (erreurs cloud, conflits)
+   ============================================================================= */
+#cloud-error-toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(139, 69, 19, 0.95);
+    color: #fffaf0;
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid rgba(210, 165, 116, 0.4);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    max-width: 90vw;
+    text-align: center;
+}
+
+#cloud-error-toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+[data-theme="dark"] #cloud-error-toast {
+    background: rgba(40, 40, 60, 0.95);
+    color: #e8dbc5;
+    border-color: rgba(212, 165, 116, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
