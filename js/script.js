@@ -402,6 +402,22 @@ window.onload = async function () {
         }
     }
 
+    // Gestionnaire de fermeture globale des modales via la touche Échap
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const customModal = document.getElementById('custom-modal');
+            if (customModal && customModal.style.display === 'flex') {
+                const btnCancel = customModal.querySelector('#modal-actions button');
+                if (btnCancel) btnCancel.click();
+                else customModal.style.display = 'none';
+            }
+            const galleryModal = document.getElementById('gallery-modal');
+            if (galleryModal && galleryModal.style.display !== 'none') {
+                galleryModal.style.display = 'none';
+            }
+        }
+    });
+
     setupHeaderAutoFit();
 };
 
@@ -2027,9 +2043,11 @@ function triggerReset() {
  * @param {string} tabName - Nom de l'onglet (combat, role, magic)
  */
 function switchTab(tabName) {
-    // Retirer la classe active de tous les boutons et sections
+function switchTab(tabName) {
+    // Retirer la classe active et aria-selected de tous les boutons et sections
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
     });
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
@@ -2039,7 +2057,10 @@ function switchTab(tabName) {
     const targetBtn = document.querySelector(`[data-tab="${tabName}"]`);
     const targetContent = document.getElementById(`tab-${tabName}`);
 
-    if (targetBtn) targetBtn.classList.add('active');
+    if (targetBtn) {
+        targetBtn.classList.add('active');
+        targetBtn.setAttribute('aria-selected', 'true');
+    }
     if (targetContent) targetContent.classList.add('active');
 
     // Sauvegarder l'onglet actif dans localStorage

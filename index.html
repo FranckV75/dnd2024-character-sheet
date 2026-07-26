@@ -15,124 +15,122 @@
     <!-- Boutons déplacés dans la toolbar -->
 
     <!-- MODAL -->
-    <div id="custom-modal">
+    <div id="custom-modal" role="dialog" aria-modal="true" aria-labelledby="modal-text">
         <div class="modal-content">
             <div class="modal-msg" id="modal-text">Message</div>
-            <input type="text" id="modal-input" placeholder="Nom du fichier..." autocomplete="off">
-            <textarea id="modal-textarea" placeholder="Collez le code de sauvegarde ici..."></textarea>
+            <input type="text" id="modal-input" placeholder="Nom du fichier..." autocomplete="off" aria-label="Champ de saisie modale">
+            <textarea id="modal-textarea" placeholder="Collez le code de sauvegarde ici..." aria-label="Zone de texte modale"></textarea>
             <div class="modal-buttons" id="modal-actions"></div>
-
-
         </div>
     </div>
 
     <!-- GALLERY MODAL -->
-    <div id="gallery-modal" class="modal-overlay" style="display:none;">
+    <div id="gallery-modal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="gallery-title">
         <div class="modal-content gallery-content">
-            <h3>Galerie d'arrières-plans</h3>
+            <h3 id="gallery-title">Galerie d'arrières-plans</h3>
             <div class="gallery-controls">
-                <input type="text" id="new-bg-url" placeholder="https://mon-site.free.fr/mon-image.jpg" style="flex:1;">
-                <button class="btn btn-save" onclick="addNewBackground()">Ajouter</button>
+                <input type="text" id="new-bg-url" placeholder="https://mon-site.free.fr/mon-image.jpg" style="flex:1;" aria-label="URL du nouvel arrière-plan">
+                <button class="btn btn-save" onclick="addNewBackground()" aria-label="Ajouter le fond par URL">Ajouter</button>
             </div>
             <p style="font-size:0.8rem; margin-top:5px; color:#666;">Images stockées via lien (URL). Idéal pour Free.fr
                 ou autres hébergeurs.</p>
-            <div id="gallery-grid" class="gallery-grid">
+            <div id="gallery-grid" class="gallery-grid" role="region" aria-label="Sélection des fonds d'écran">
                 <!-- Images will be injected here -->
             </div>
             <button class="btn" onclick="document.getElementById('gallery-modal').style.display='none'"
-                style="margin-top:15px;">Fermer</button>
+                style="margin-top:15px;" aria-label="Fermer la galerie d'arrière-plans">Fermer</button>
         </div>
     </div>
 
-    <input type="file" id="file-import" style="display: none;" accept=".json" onchange="importData(this)">
-    <input type="file" id="bg-import" style="display: none;" accept="image/*" onchange="changeBackground(this)">
+    <input type="file" id="file-import" style="display: none;" accept=".json" onchange="importData(this)" aria-label="Fichier à importer">
+    <input type="file" id="bg-import" style="display: none;" accept="image/*" onchange="changeBackground(this)" aria-label="Image de fond personnalisée">
 
     <!-- TOOLBAR -->
-    <div id="toolbar">
+    <div id="toolbar" role="region" aria-label="Panneau de gestion du personnage">
         <div id="toolbar-header" style="flex-direction: column; align-items: stretch; gap: 8px;">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <span class="toolbar-title" style="font-size: 1rem;">GESTION</span>
                 <div id="auth-status" class="auth-status" style="font-size: 0.70rem; max-width: none; text-align: right;">HORS-LIGNE</div>
             </div>
             <div class="toolbar-controls" style="justify-content: space-between; width: 100%;">
-                <button id="theme-toggle" class="theme-toggle minimize-btn" title="Mode sombre">🌙</button>
+                <button id="theme-toggle" class="theme-toggle minimize-btn" title="Mode sombre" aria-label="Basculer le thème clair/sombre">🌙</button>
                 <div style="display: flex; gap: 5px;">
-                    <button id="cinema-btn" class="minimize-btn" onclick="toggleCinemaMode()" title="Mode Cinéma">👁️</button>
-                    <button id="lock-btn" class="minimize-btn" onclick="toggleLockMode()" title="Verrouiller/Déverrouiller">🔓</button>
-                    <button id="minimize-btn" class="minimize-btn" onclick="toggleToolbar(event)" title="Réduire/Agrandir">_</button>
+                    <button id="cinema-btn" class="minimize-btn" onclick="toggleCinemaMode()" title="Mode Cinéma" aria-label="Activer ou désactiver le mode cinéma">👁️</button>
+                    <button id="lock-btn" class="minimize-btn" onclick="toggleLockMode()" title="Verrouiller/Déverrouiller" aria-label="Verrouiller ou déverrouiller l'édition de la fiche">🔓</button>
+                    <button id="minimize-btn" class="minimize-btn" onclick="toggleToolbar(event)" title="Réduire/Agrandir" aria-label="Réduire ou agrandir la toolbar">_</button>
                 </div>
             </div>
         </div>
         <div id="toolbar-content">
-            <button class="btn btn-bg" onclick="openGallery()">🖼️ Galerie Fonds</button>
+            <button class="btn btn-bg" onclick="openGallery()" aria-label="Ouvrir la galerie d'arrière-plans">🖼️ Galerie Fonds</button>
 
             <div class="slider-label">Cadrage Fond</div>
             <div style="display: flex; gap: 5px; align-items: center;">
                 <span title="Position Verticale" style="font-size: 1.2rem; cursor: help;">↕️</span>
                 <input type="range" id="bg-pos-y" min="0" max="100" step="1" value="50"
-                    oninput="updateBgPosY(this.value)" style="flex: 1;">
+                    oninput="updateBgPosY(this.value)" style="flex: 1;" aria-label="Position verticale de l'arrière-plan">
             </div>
             <div style="display: flex; gap: 5px; align-items: center; margin-top: 5px;">
                 <span title="Zoom" style="font-size: 1.2rem; cursor: help;">🔍</span>
                 <input type="range" id="bg-zoom" min="20" max="200" step="5" value="100"
-                    oninput="updateBgZoom(this.value)" style="flex: 1;">
+                    oninput="updateBgZoom(this.value)" style="flex: 1;" aria-label="Niveau de zoom de l'arrière-plan">
             </div>
 
             <div style="display: flex; gap: 5px; align-items: center; margin-top: 10px;">
                 <span title="Opacité de la fiche" style="font-size: 1.2rem; cursor: help;">🌫️</span>
                 <input type="range" id="opacity-slider" min="0.2" max="1" step="0.05" value="0.85"
-                    oninput="updateOpacity(this.value)" style="flex: 1;">
+                    oninput="updateOpacity(this.value)" style="flex: 1;" aria-label="Niveau d'opacité de la feuille">
             </div>
             <div style="height: 5px;"></div>
-            <button class="btn btn-save" onclick="openExportMenu()">⬆️ Exporter au format JSON</button>
-            <button class="btn" onclick="openImportMenu()">⬇️ Importer depuis un fichier</button>
+            <button class="btn btn-save" onclick="openExportMenu()" aria-label="Exporter la fiche au format JSON">⬆️ Exporter au format JSON</button>
+            <button class="btn" onclick="openImportMenu()" aria-label="Importer une fiche depuis un fichier">⬇️ Importer depuis un fichier</button>
             <div style="height: 5px;"></div>
-            <button id="auth-btn" class="btn btn-bg" onclick="openAuthModal()">👤 Se connecter</button>
+            <button id="auth-btn" class="btn btn-bg" onclick="openAuthModal()" aria-label="Accéder au compte utilisateur">👤 Se connecter</button>
             <div style="height: 5px;"></div>
-            <button class="btn btn-bg" onclick="openCharactersModal()">👥 Mes Personnages</button>
+            <button class="btn btn-bg" onclick="openCharactersModal()" aria-label="Ouvrir la liste de mes personnages cloud">👥 Mes Personnages</button>
             <div style="height: 5px;"></div>
-            <button class="btn" onclick="saveData(false)">💾 Sauvegarde Rapide</button>
-            <button class="btn desktop-only" onclick="window.print()">🖨️ Imprimer / PDF</button>
-            <button class="btn" onclick="triggerReset()">📄 Nouvelle fiche</button>
+            <button class="btn" onclick="saveData(false)" aria-label="Exécuter une sauvegarde rapide">💾 Sauvegarde Rapide</button>
+            <button class="btn desktop-only" onclick="window.print()" aria-label="Imprimer ou enregistrer en PDF">🖨️ Imprimer / PDF</button>
+            <button class="btn" onclick="triggerReset()" aria-label="Réinitialiser pour créer une nouvelle fiche">📄 Nouvelle fiche</button>
         </div>
     </div>
 
     <!-- STYLE EDITOR -->
-    <div id="style-editor" class="no-focus-loss">
+    <div id="style-editor" class="no-focus-loss" role="toolbar" aria-label="Éditeur de style de texte">
         <div
             style="margin-bottom: 8px; border-bottom: 1px solid #8b4513; padding-bottom: 5px; font-weight:bold; font-size:0.8rem; color:#5e2c04; font-family:'Cinzel', serif;">
             STYLE</div>
         <label>Format:</label>
         <div style="margin-bottom: 10px;">
             <button class="style-btn" onmousedown="event.preventDefault(); applyFormat('bold')"
-                title="Gras"><b>B</b></button>
+                title="Gras" aria-label="Appliquer le style gras"><b>B</b></button>
             <button class="style-btn" onmousedown="event.preventDefault(); applyFormat('italic')"
-                title="Italique"><i>I</i></button>
+                title="Italique" aria-label="Appliquer le style italique"><i>I</i></button>
             <button class="style-btn" onmousedown="event.preventDefault(); applyFormat('underline')"
-                title="Souligné"><u>U</u></button>
+                title="Souligné" aria-label="Appliquer le style souligné"><u>U</u></button>
         </div>
         <label>Taille:</label>
         <div style="margin-bottom: 10px; display: flex; gap: 2px;">
-            <button class="style-btn size-btn" onmousedown="event.preventDefault(); applyFontSize('1')">TP</button>
-            <button class="style-btn size-btn" onmousedown="event.preventDefault(); applyFontSize('2')">P</button>
-            <button class="style-btn size-btn" onmousedown="event.preventDefault(); applyFontSize('3')">N</button>
-            <button class="style-btn size-btn" onmousedown="event.preventDefault(); applyFontSize('5')">G</button>
-            <button class="style-btn size-btn" onmousedown="event.preventDefault(); applyFontSize('7')">TG</button>
+            <button class="style-btn size-btn" onmousedown="event.preventDefault(); applyFontSize('1')" aria-label="Taille Très Petite">TP</button>
+            <button class="style-btn size-btn" onmousedown="event.preventDefault(); applyFontSize('2')" aria-label="Taille Petite">P</button>
+            <button class="style-btn size-btn" onmousedown="event.preventDefault(); applyFontSize('3')" aria-label="Taille Normale">N</button>
+            <button class="style-btn size-btn" onmousedown="event.preventDefault(); applyFontSize('5')" aria-label="Taille Grande">G</button>
+            <button class="style-btn size-btn" onmousedown="event.preventDefault(); applyFontSize('7')" aria-label="Taille Très Grande">TG</button>
         </div>
         <label>Couleur:</label>
         <div style="display:flex; flex-wrap:wrap;">
             <div class="color-swatch" style="background: #1a1a1a;"
-                onmousedown="event.preventDefault(); applyColor('#1a1a1a')"></div>
+                onmousedown="event.preventDefault(); applyColor('#1a1a1a')" role="button" aria-label="Couleur noir"></div>
             <div class="color-swatch" style="background: #8b0000;"
-                onmousedown="event.preventDefault(); applyColor('#8b0000')"></div>
+                onmousedown="event.preventDefault(); applyColor('#8b0000')" role="button" aria-label="Couleur rouge foncé"></div>
             <div class="color-swatch" style="background: #00008b;"
-                onmousedown="event.preventDefault(); applyColor('#00008b')"></div>
+                onmousedown="event.preventDefault(); applyColor('#00008b')" role="button" aria-label="Couleur bleu foncé"></div>
             <div class="color-swatch" style="background: #006400;"
-                onmousedown="event.preventDefault(); applyColor('#006400')"></div>
+                onmousedown="event.preventDefault(); applyColor('#006400')" role="button" aria-label="Couleur vert foncé"></div>
             <div class="color-swatch" style="background: #6a0dad;"
-                onmousedown="event.preventDefault(); applyColor('#6a0dad')"></div>
+                onmousedown="event.preventDefault(); applyColor('#6a0dad')" role="button" aria-label="Couleur violet"></div>
             <div class="color-swatch" style="background: #d2691e;"
-                onmousedown="event.preventDefault(); applyColor('#d2691e')"></div>
+                onmousedown="event.preventDefault(); applyColor('#d2691e')" role="button" aria-label="Couleur marron"></div>
         </div>
     </div>
 
@@ -142,50 +140,50 @@
             <header>
                 <div class="row" style="margin-bottom: 10px;">
                     <div style="flex: 2;">
-                        <label>Nom du Personnage</label>
-                        <div contenteditable="true" data-name="char_name" class="rich-input single-line"></div>
+                        <label for="char_name_input">Nom du Personnage</label>
+                        <div contenteditable="true" data-name="char_name" class="rich-input single-line" id="char_name_input" aria-label="Nom du personnage"></div>
                     </div>
-                    <div style="flex: 1;"><label>Classe</label>
-                        <select id="char_class" name="char_class" class="large-select" onchange="calcStats()">
+                    <div style="flex: 1;"><label for="char_class">Classe</label>
+                        <select id="char_class" name="char_class" class="large-select" onchange="calcStats()" aria-label="Classe du personnage">
                             <option value="">-- Choisir --</option>
                         </select>
                     </div>
-                    <div style="flex: 0.5;"><label>Niveau</label>
+                    <div style="flex: 0.5;"><label for="level">Niveau</label>
                         <div contenteditable="true" data-name="char_level" class="rich-input single-line center"
-                            id="level">1</div>
+                            id="level" aria-label="Niveau du personnage">1</div>
                     </div>
-                    <div style="flex: 1;"><label>Historique</label>
-                        <select id="char_background" name="char_background" class="large-select">
+                    <div style="flex: 1;"><label for="char_background">Historique</label>
+                        <select id="char_background" name="char_background" class="large-select" aria-label="Historique du personnage">
                             <option value="">-- Choisir --</option>
                         </select>
                     </div>
                 </div>
                 <div class="grid-header-2">
-                    <div><label>Espèce</label>
-                        <select id="char_species" name="char_species" class="large-select">
+                    <div><label for="char_species">Espèce</label>
+                        <select id="char_species" name="char_species" class="large-select" aria-label="Espèce du personnage">
                             <option value="">-- Choisir --</option>
                         </select>
                     </div>
-                    <div><label>Sous-Classe</label>
-                        <select id="char_subclass" name="char_subclass" class="large-select">
+                    <div><label for="char_subclass">Sous-Classe</label>
+                        <select id="char_subclass" name="char_subclass" class="large-select" aria-label="Sous-classe du personnage">
                             <option value="">-- Choisir --</option>
                         </select>
                     </div>
                     <div><label>Taille</label>
-                        <div contenteditable="true" data-name="char_size" class="rich-input single-line"></div>
+                        <div contenteditable="true" data-name="char_size" class="rich-input single-line" aria-label="Taille du personnage"></div>
                     </div>
                     <div><label>PX</label>
-                        <div contenteditable="true" data-name="char_xp" class="rich-input single-line"></div>
+                        <div contenteditable="true" data-name="char_xp" class="rich-input single-line" aria-label="Points d'expérience"></div>
                     </div>
                 </div>
             </header>
 
             <!-- BARRE DE NAVIGATION PAR ONGLETS -->
-            <nav class="tab-navigation" id="tab-navigation">
-                <button class="tab-btn active" data-tab="combat" type="button">✥ Caractéristiques & Combat</button>
-                <button class="tab-btn" data-tab="traits" type="button">✥ Aptitudes & Traits</button>
-                <button class="tab-btn" data-tab="role" type="button">✥ Compétences & Histoire</button>
-                <button class="tab-btn" data-tab="magic" type="button">✥ Magie, équipement & trésors</button>
+            <nav class="tab-navigation" id="tab-navigation" role="tablist" aria-label="Navigation par onglets de la feuille">
+                <button class="tab-btn active" id="tab-btn-combat" data-tab="combat" type="button" role="tab" aria-selected="true" aria-controls="tab-combat">✥ Caractéristiques & Combat</button>
+                <button class="tab-btn" id="tab-btn-traits" data-tab="traits" type="button" role="tab" aria-selected="false" aria-controls="tab-traits">✥ Aptitudes & Traits</button>
+                <button class="tab-btn" id="tab-btn-role" data-tab="role" type="button" role="tab" aria-selected="false" aria-controls="tab-role">✥ Compétences & Histoire</button>
+                <button class="tab-btn" id="tab-btn-magic" data-tab="magic" type="button" role="tab" aria-selected="false" aria-controls="tab-magic">✥ Magie, équipement & trésors</button>
             </nav>
 
             <hr style="width: 100%; border: 1px solid #8b4513;">
@@ -193,7 +191,7 @@
             <!-- ================================================================= -->
             <!-- SECTION 1 : COMBAT -->
             <!-- ================================================================= -->
-            <div class="tab-content active" id="tab-combat">
+            <div class="tab-content active" id="tab-combat" role="tabpanel" aria-labelledby="tab-btn-combat" tabindex="0">
 
                 <div class="combat-layout-grid">
                     <!-- STATS -->
@@ -502,7 +500,7 @@
             <!-- ================================================================= -->
             <!-- SECTION 2 : APTITUDES & TRAITS -->
             <!-- ================================================================= -->
-            <div class="tab-content" id="tab-traits">
+            <div class="tab-content" id="tab-traits" role="tabpanel" aria-labelledby="tab-btn-traits" tabindex="0">
                 <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
 
                     <!-- BLOC ALIGNEMENT -->
@@ -661,7 +659,7 @@
             <!-- ================================================================= -->
             <!-- SECTION 3 : COMPÉTENCES & HISTOIRE -->
             <!-- ================================================================= -->
-            <div class="tab-content" id="tab-role">
+            <div class="tab-content" id="tab-role" role="tabpanel" aria-labelledby="tab-btn-role" tabindex="0">
                 <!-- COMPÉTENCES -->
                 <div class="box skills-container-box" style="width: 100%; margin: 20px 0;">
                     <h3>Compétences</h3>
@@ -716,7 +714,7 @@
             <!-- ================================================================= -->
             <!-- SECTION 3 : MAGIE & INVENTAIRE -->
             <!-- ================================================================= -->
-            <div class="tab-content" id="tab-magic">
+            <div class="tab-content" id="tab-magic" role="tabpanel" aria-labelledby="tab-btn-magic" tabindex="0">
 
                 <!-- Caractéristique d'incantation -->
                 <div class="grid-3" style="margin-top: 20px;">
