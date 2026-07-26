@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run unit tests
+        run: node --test tests/*.test.js
+
+      - name: Validate JS syntax
+        run: |
+          node -c js/logic.js
+          node -c js/storage.js
+          node -c js/supabase-config.js
+          node -c js/script.js
+          node -c js/ui-gallery.js
+          node -c js/ui-modals.js
+          node -c js/ui-rest.js
+          node -c js/ui-toolbar.js
+          node -c js/theme.js
