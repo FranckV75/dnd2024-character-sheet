@@ -5,6 +5,8 @@
 import { getFormData, applyFormData, cleanLegacyData, loadData } from './storage.js';
 import { fetchCharacters, deleteCharacter } from './supabase-config.js';
 
+let lastActiveElement = null;
+
 export function showModal(contentHtml) {
     const m = document.getElementById('custom-modal');
     const txt = document.getElementById('modal-text');
@@ -14,9 +16,19 @@ export function showModal(contentHtml) {
 
     if (!m || !txt || !btns) return;
 
+    lastActiveElement = document.activeElement;
+
     txt.innerHTML = ''; btns.innerHTML = '';
     if (inp) inp.style.display = 'none';
     if (area) area.style.display = 'none';
+
+    const closeModal = () => {
+        m.style.display = 'none';
+        m.setAttribute('aria-hidden', 'true');
+        if (lastActiveElement && typeof lastActiveElement.focus === 'function') {
+            try { lastActiveElement.focus(); } catch (e) {}
+        }
+    };
 
     if (typeof contentHtml === 'string') {
         txt.innerHTML = contentHtml;
@@ -24,12 +36,24 @@ export function showModal(contentHtml) {
         btnOk.innerText = 'OK';
         btnOk.className = 'btn btn-action';
         btnOk.style.width = 'auto';
-        btnOk.onclick = () => { m.style.display = 'none'; };
+        btnOk.onclick = closeModal;
         btns.appendChild(btnOk);
     } else {
-        contentHtml(txt, btns, inp, area, () => m.style.display = 'none');
+        contentHtml(txt, btns, inp, area, closeModal);
     }
     m.style.display = 'flex';
+    m.setAttribute('aria-hidden', 'false');
+
+    setTimeout(() => {
+        if (inp && inp.style.display !== 'none') {
+            inp.focus();
+        } else if (area && area.style.display !== 'none') {
+            area.focus();
+        } else {
+            const firstBtn = btns.querySelector('button');
+            if (firstBtn) firstBtn.focus();
+        }
+    }, 50);
 }
 
 export function openExportMenu() {

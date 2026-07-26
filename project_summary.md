@@ -1,6 +1,6 @@
 # Projet : Feuille de Personnage D&D 2024 - Bilan d'Étape
 
-## État au 26 Juillet 2026 - V3.0.0 (PLAN DE QUALITÉ - STORIES A, B, C, D, E, F & G IMPLÉMENTÉES)
+## État au 26 Juillet 2026 - V3.1.0 (PLAN DE QUALITÉ - TOUTES LES STORIES A À H COMPLÉTÉES)
 
 ### ✅ Fonctionnalités Récentes Implémentées (Stories 1 à 11+)
 
@@ -95,6 +95,11 @@
     - **Simplification d'HTML (`index.html`)** : Remplacement de 14 balises de scripts globales par le seul point d'entrée `<script type="module" src="js/script.js?v=3.0"></script>`.
     - **Maintien des tests & compatibilité** : Exécution native ESM des 22 tests unitaires via `node --test tests/logic.test.js` avec `"type": "module"` dans `package.json`.
 
+16. **Story H : Accessibilité ARIA & Restructuration des Modales (V3.1.0)** ♿ :
+    - **Attributs WAI-ARIA 1.2** : Intégration des rôles `dialog`, `tablist`, `tab`, `tabpanel`, `toolbar`, `region` et des attributs `aria-modal="true"`, `aria-selected`, `aria-labelledby`, `aria-label` sur l'ensemble de l'interface.
+    - **Gestion du Focus & Navigation Clavier** : Mémorisation et restauration automatique du focus lors de l'ouverture et la fermeture des modales dans `js/ui-modals.js`.
+    - **Écouteur Global Touche Échap (`Escape`)** : Fermeture instantanée de toute modale ouverte (`#custom-modal`, `#gallery-modal`) via un appui sur la touche `Échap`.
+
 
 ### 🔑 Données Clés
 - **URL de Production** : `https://franckv75.github.io/dnd2024-character-sheet/`
@@ -107,7 +112,7 @@
 - [x] **Story E** : Optimisation des performances *(Gemini 3.6 Flash (High) — complété)*
 - [x] **Story F** : Alignement de la documentation *(Gemini 3.6 Flash (High) — complété)*
 - [x] **Story G** : Modules ES & État centralisé *(Claude Opus 4.6 (Thinking) / Gemini 3.6 Flash — complété)*
-- [ ] **Story H** : Accessibilité ARIA & Modals *(Gemini 3.6 Flash (High))*
+- [x] **Story H** : Accessibilité ARIA & Modals *(Gemini 3.6 Flash (High) — complété)*
 
 ### 💎 Règles d'Or : Homogénéité et Accessibilité
 - **Champs dynamiques (calculés) = Champs éditables classiques**.
