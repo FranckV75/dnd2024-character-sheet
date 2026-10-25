@@ -7,7 +7,7 @@
 // Fermer une question sans répondre = l'option la plus prudente (rien n'est écrasé).
 // =============================================================================
 
-import { el } from './dom.js';
+import { el, setIconLabel } from './dom.js';
 import { openModal, confirmModal } from './modal.js';
 import { getClient } from '../cloud/client.js';
 import { createCloudSync, SYNC_KEY } from '../cloud/controller.js';
@@ -96,7 +96,7 @@ const QUESTIONS = {
 
     'replace-unsynced': ({ name, target }) => choose('⚠️ Fiche non enregistrée en ligne', [
         el('p', { text: `La fiche ouverte (« ${name} ») n'est pas à jour dans votre compte. Ouvrir « ${target} » la remplacera dans ce navigateur.` }),
-        el('p', { class: 'muted', text: 'Pour la conserver, annulez puis utilisez « ⬇️ Exporter » ou « ☁️ Enregistrer en ligne ».' })
+        el('p', { class: 'muted', text: 'Pour la conserver, annulez puis utilisez « Exporter » ou « Enregistrer en ligne ».' })
     ], [
         { label: 'Annuler' },
         { label: `Ouvrir « ${target} » quand même`, value: 'confirm', danger: true }
@@ -123,30 +123,35 @@ export function initAccount({ store, setStatus, saveWithCharacter, saveNow }) {
     const statusLabel = el('span', { class: 'account-status', role: 'status' });
     const loginButton = el('button', { type: 'button', class: 'btn', 'aria-haspopup': 'dialog' });
     const listButton = el('button', {
-        type: 'button', class: 'btn', text: '👥 Mes personnages', 'aria-haspopup': 'dialog',
+        type: 'button', class: 'btn', 'aria-haspopup': 'dialog',
         on: { click: () => openCharactersModal() }
     });
+    setIconLabel(listButton, 'users', 'Mes personnages');
     const reattachButton = el('button', {
-        type: 'button', class: 'btn', text: '☁️ Enregistrer en ligne', hidden: true,
+        type: 'button', class: 'btn', hidden: true,
         title: 'Ajouter cette fiche à votre compte (sans rien écraser)',
         on: { click: () => sync.reattach() }
     });
-    host.replaceChildren(statusLabel, loginButton, reattachButton, listButton);
+    setIconLabel(reattachButton, 'cloud', 'Enregistrer en ligne');
+    // L'état du compte se range avec celui de l'enregistrement, à droite de la barre
+    const statusHost = document.getElementById('account-status-host');
+    statusHost?.replaceChildren(statusLabel);
+    host.replaceChildren(...(statusHost ? [] : [statusLabel]), loginButton, reattachButton, listButton);
 
     function renderBar(state = sync.getState()) {
         loginButton.disabled = !state.available;
         listButton.disabled = !state.available;
         reattachButton.hidden = !(state.user && state.detached);
         if (!state.available) {
-            statusLabel.textContent = '☁️ En ligne indisponible';
+            statusLabel.textContent = 'En ligne indisponible';
             statusLabel.title = 'La sauvegarde en ligne n\'a pas pu se charger (pas de connexion Internet ?). La fiche reste enregistrée dans ce navigateur.';
-            loginButton.textContent = '👤 Se connecter';
+            setIconLabel(loginButton, 'user', 'Se connecter');
             return;
         }
         if (!state.user) {
             statusLabel.textContent = 'Non connecté — fiche enregistrée dans ce navigateur';
             statusLabel.title = 'Non connecté : la fiche est enregistrée seulement dans ce navigateur.';
-            loginButton.textContent = '👤 Se connecter';
+            setIconLabel(loginButton, 'user', 'Se connecter');
             return;
         }
         const who = (state.user.email || '').split('@')[0].slice(0, 16);
@@ -155,13 +160,13 @@ export function initAccount({ store, setStatus, saveWithCharacter, saveNow }) {
         if (state.pending) syncLabel = 'une question attend votre réponse';
         else if (state.detached) {
             syncLabel = 'fiche ouverte gardée dans ce navigateur seulement';
-            hint = 'Cette fiche n\'est pas enregistrée dans votre compte (par exemple après l\'avoir supprimée de « Mes personnages », ou après avoir choisi « Ne rien faire »). « ☁️ Enregistrer en ligne » l\'ajoute à votre compte ; « 👥 Mes personnages » ouvre un autre personnage.';
+            hint = 'Cette fiche n\'est pas enregistrée dans votre compte (par exemple après l\'avoir supprimée de « Mes personnages », ou après avoir choisi « Ne rien faire »). « Enregistrer en ligne » l\'ajoute à votre compte ; « Mes personnages » ouvre un autre personnage.';
         } else if (state.lastError || state.needsCheck) {
             syncLabel = 'synchronisation en échec, nouvel essai automatique';
         } else if (state.dirty) syncLabel = 'enregistrement en ligne…';
         statusLabel.textContent = `Connecté (${who}) — ${syncLabel}`;
         statusLabel.title = [`Connecté : ${state.user.email}`, hint, state.lastError].filter(Boolean).join('\n');
-        loginButton.textContent = '🚪 Déconnexion';
+        setIconLabel(loginButton, 'logout', 'Déconnexion');
     }
     sync.onChange(renderBar);
     renderBar();

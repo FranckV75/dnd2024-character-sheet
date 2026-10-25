@@ -19,7 +19,7 @@
 // à la sauvegarde automatique du personnage ; au-delà de 1,5 M caractères elle n'est pas mémorisée.
 // =============================================================================
 
-import { el } from './dom.js';
+import { el, setIconLabel } from './dom.js';
 import { openModal, confirmModal } from './modal.js';
 import { setTheme } from './theme.js';
 import { DEFAULT_BGS } from '../data/constants.js';
@@ -288,6 +288,9 @@ function buildSlider({ id, short, aria, limits, value, format, onInput, onChange
         const text = format(Number.parseFloat(input.value));
         input.setAttribute('aria-valuetext', text);
         input.title = `${aria} : ${text}`;
+        // Partie remplie de la glissière (css/gallery.css)
+        const share = (Number.parseFloat(input.value) - limits.min) / (limits.max - limits.min);
+        input.style.setProperty('--fill', `${Math.round(share * 100)}%`);
     };
     refresh();
     input.addEventListener('input', () => {
@@ -357,11 +360,14 @@ export function initGallery(ctx) {
         class: 'btn appearance-gallery-btn',
         'aria-haspopup': 'dialog',
         title: "Choisir l'image de fond",
-        text: '🖼️ Fonds',
         on: { click: () => openGallery({ setStatus, commit }) }
     });
+    setIconLabel(galleryButton, 'image', 'Fonds');
 
-    container.replaceChildren(galleryButton, posY.control, zoom.control, opacity.control);
+    // « Fonds » rejoint le groupe de boutons d'affichage (thème, cinéma) quand il existe
+    const buttonGroup = document.getElementById('view-controls');
+    buttonGroup?.append(galleryButton);
+    container.replaceChildren(...(buttonGroup ? [] : [galleryButton]), posY.control, zoom.control, opacity.control);
 
     store.subscribe((state, changedKeys) => {
         if (changedKeys !== null) return;

@@ -2,15 +2,18 @@
 // TOOLBAR.JS - Barre « Gestion » de la fiche
 //
 //  - Repli : sur tablette (≤ 1100 px), la barre démarre repliée sur un seul bouton
-//    « ☰ Gestion » qui déplie les commandes (et les réglages d'apparence de gallery.js).
-//  - Verrou 🔒 / 🔓 (lock.js), mode cinéma 👁️ (masque la fiche pour voir le fond),
+//    « Gestion » qui déplie les commandes (affichage et compte compris).
+//  - Groupe « Fiche » : verrou (lock.js), puis nouvelle fiche, import, export, impression.
+//  - Groupe « Affichage » (#view-controls) : thème et mode cinéma, avant « Fonds » (gallery.js).
+//  - Boutons à icônes dessinées (dom.js) plutôt qu'à emojis : même style dans les deux thèmes.
+//  - Verrou (lock.js), mode cinéma (masque la fiche pour voir le fond),
 //    import (fichier ou texte collé), export (fichier ou presse-papiers),
 //    nouvelle fiche, impression / PDF, thème clair / sombre.
 //  - « Nouvelle fiche » et « Importer » portent la classe edit-only : masqués
 //    quand la fiche est verrouillée.
 // =============================================================================
 
-import { el } from './dom.js';
+import { el, icon, setIconLabel } from './dom.js';
 import { toggleTheme } from './theme.js';
 import { isLocked, toggleLocked } from './lock.js';
 import { openModal, confirmModal } from './modal.js';
@@ -33,13 +36,13 @@ export function initToolbar({ store, setStatus }) {
     // ---------------------------------------------------------------- Boutons
     const toggleButton = el('button', {
         type: 'button', class: 'btn toolbar-toggle', id: 'btn-toolbar-toggle',
-        'aria-expanded': 'true', 'aria-controls': 'toolbar-panel appearance-controls',
-        text: '☰ Gestion',
+        'aria-expanded': 'true', 'aria-controls': 'toolbar-panel view-group account-group',
         on: { click: () => setCollapsed(!bar.classList.contains(COLLAPSED_CLASS)) }
     });
+    setIconLabel(toggleButton, 'menu', 'Gestion');
 
     const lockButton = el('button', {
-        type: 'button', class: 'btn', id: 'btn-lock', 'aria-pressed': 'false',
+        type: 'button', class: 'btn btn-state', id: 'btn-lock', 'aria-pressed': 'false',
         on: { click: toggleLocked }
     });
 
@@ -49,36 +52,42 @@ export function initToolbar({ store, setStatus }) {
     });
 
     const importButton = el('button', {
-        type: 'button', class: 'btn edit-only', id: 'btn-import', text: '📂 Importer',
-        'aria-haspopup': 'dialog',
+        type: 'button', class: 'btn edit-only', id: 'btn-import',
+        'aria-haspopup': 'dialog', title: 'Remplacer la fiche par un fichier ou un texte exporté',
         on: { click: () => openImportModal(store, setStatus) }
     });
+    setIconLabel(importButton, 'import', 'Importer');
 
     const exportButton = el('button', {
-        type: 'button', class: 'btn', id: 'btn-export', text: '⬇️ Exporter',
-        'aria-haspopup': 'dialog',
+        type: 'button', class: 'btn', id: 'btn-export',
+        'aria-haspopup': 'dialog', title: 'Enregistrer la fiche dans un fichier ou la copier',
         on: { click: () => openExportModal(store, setStatus) }
     });
+    setIconLabel(exportButton, 'export', 'Exporter');
 
     const newButton = el('button', {
-        type: 'button', class: 'btn edit-only', id: 'btn-new', text: '📄 Nouvelle fiche',
-        'aria-haspopup': 'dialog',
+        type: 'button', class: 'btn edit-only', id: 'btn-new',
+        'aria-haspopup': 'dialog', title: 'Commencer une fiche vierge',
         on: { click: () => newCharacter(store, setStatus) }
     });
+    setIconLabel(newButton, 'file-plus', 'Nouvelle fiche');
 
     const printButton = el('button', {
-        type: 'button', class: 'btn', id: 'btn-print', text: '🖨️ Imprimer / PDF',
+        type: 'button', class: 'btn', id: 'btn-print',
         title: 'Imprimer la fiche ou l\'enregistrer en PDF',
         on: { click: () => window.print() }
     });
+    setIconLabel(printButton, 'printer', 'Imprimer');
 
     const themeButton = el('button', {
-        type: 'button', class: 'btn', id: 'btn-theme',
+        type: 'button', class: 'btn btn-icon-only', id: 'btn-theme',
         on: { click: toggleTheme }
     });
 
-    const panel = el('div', { class: 'toolbar-panel', id: 'toolbar-panel' },
-        lockButton, cinemaButton, importButton, exportButton, newButton, printButton, themeButton);
+    // Commandes de la fiche : le verrou (état), puis les actions groupées
+    const panel = el('div', { class: 'app-bar-group toolbar-panel', id: 'toolbar-panel', role: 'group', 'aria-label': 'Fiche' },
+        lockButton,
+        el('div', { class: 'btn-group' }, newButton, importButton, exportButton, printButton));
 
     host.replaceChildren(
         toggleButton,
@@ -86,11 +95,14 @@ export function initToolbar({ store, setStatus }) {
         panel
     );
 
+    // Affichage : thème et cinéma ouvrent le groupe (gallery.js y ajoute « Fonds »)
+    (document.getElementById('view-controls') || panel).append(themeButton, cinemaButton);
+
     // ---------------------------------------------------------------- Verrou
     const renderLock = () => {
         const locked = isLocked();
         lockButton.setAttribute('aria-pressed', String(locked));
-        lockButton.textContent = locked ? '🔒 Verrouillée' : '🔓 Modifiable';
+        setIconLabel(lockButton, locked ? 'lock' : 'unlock', locked ? 'Verrouillée' : 'Modifiable');
         lockButton.title = locked
             ? 'Fiche verrouillée : seuls les champs de jeu sont modifiables. Cliquer pour déverrouiller.'
             : 'Cliquer pour verrouiller la fiche (évite les modifications accidentelles en jeu)';
@@ -102,7 +114,7 @@ export function initToolbar({ store, setStatus }) {
     const renderTheme = () => {
         const dark = document.documentElement.dataset.theme === 'dark';
         // L'icône annonce le thème vers lequel on bascule (comme la v3)
-        themeButton.textContent = dark ? '☀️' : '🌙';
+        themeButton.replaceChildren(icon(dark ? 'sun' : 'moon'));
         const label = dark ? 'Passer au thème clair' : 'Passer au thème sombre';
         themeButton.setAttribute('aria-label', label);
         themeButton.title = label;
@@ -118,7 +130,7 @@ export function initToolbar({ store, setStatus }) {
     function setCinema(on) {
         document.body.classList.toggle(CINEMA_CLASS, on);
         cinemaButton.setAttribute('aria-pressed', String(on));
-        cinemaButton.textContent = on ? '✖ Quitter le mode cinéma' : '👁️ Cinéma';
+        setIconLabel(cinemaButton, on ? 'close' : 'eye', on ? 'Quitter le mode cinéma' : 'Cinéma');
         cinemaButton.title = on
             ? 'Réafficher la fiche (touche Échap)'
             : 'Mode cinéma : masquer la fiche pour admirer le fond d\'écran';
