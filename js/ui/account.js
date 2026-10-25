@@ -144,19 +144,23 @@ export function initAccount({ store, setStatus, saveWithCharacter, saveNow }) {
             return;
         }
         if (!state.user) {
-            statusLabel.textContent = 'Hors ligne';
+            statusLabel.textContent = 'Non connecté — fiche enregistrée dans ce navigateur';
             statusLabel.title = 'Non connecté : la fiche est enregistrée seulement dans ce navigateur.';
             loginButton.textContent = '👤 Se connecter';
             return;
         }
         const who = (state.user.email || '').split('@')[0].slice(0, 16);
-        let syncLabel = '☁️ à jour';
-        if (state.pending) syncLabel = '❓ en attente de votre choix';
-        else if (state.detached) syncLabel = '⚠️ fiche non synchronisée';
-        else if (state.lastError || state.needsCheck) syncLabel = '⚠️ synchronisation en échec';
-        else if (state.dirty) syncLabel = '☁️ enregistrement…';
-        statusLabel.textContent = `✥ ${who} · ${syncLabel}`;
-        statusLabel.title = `Connecté : ${state.user.email}${state.name ? ` — fiche liée à « ${state.name} »` : ''}${state.lastError ? ` — ${state.lastError}` : ''}`;
+        let syncLabel = state.name ? `fiche « ${state.name} » à jour en ligne` : 'fiche à jour';
+        let hint = '';
+        if (state.pending) syncLabel = 'une question attend votre réponse';
+        else if (state.detached) {
+            syncLabel = 'fiche ouverte gardée dans ce navigateur seulement';
+            hint = 'Cette fiche n\'est pas enregistrée dans votre compte (par exemple après l\'avoir supprimée de « Mes personnages », ou après avoir choisi « Ne rien faire »). « ☁️ Enregistrer en ligne » l\'ajoute à votre compte ; « 👥 Mes personnages » ouvre un autre personnage.';
+        } else if (state.lastError || state.needsCheck) {
+            syncLabel = 'synchronisation en échec, nouvel essai automatique';
+        } else if (state.dirty) syncLabel = 'enregistrement en ligne…';
+        statusLabel.textContent = `Connecté (${who}) — ${syncLabel}`;
+        statusLabel.title = [`Connecté : ${state.user.email}`, hint, state.lastError].filter(Boolean).join('\n');
         loginButton.textContent = '🚪 Déconnexion';
     }
     sync.onChange(renderBar);

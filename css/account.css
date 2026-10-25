@@ -9,12 +9,14 @@
     gap: 8px;
 }
 
+/* Information (pas un bouton) : texte courant en italique, sans cadre ni majuscules */
 .account-status {
-    font-family: var(--font-title);
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--accent);
-    white-space: nowrap;
+    font-family: var(--font-text);
+    font-size: 0.95rem;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--text-muted);
+    cursor: help;
 }
 
 @media (pointer: coarse) {
