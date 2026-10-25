@@ -4,7 +4,8 @@
 
 import { getState, setState, subscribe, resetState } from './store.js';
 import { calcMod, calculateProficiencyBonus, calculateSkillBonus, getClassResourceInfo, getWeaponConfig, resolveWeaponAttackStat, calcWeaponAttack, calcWeaponDamage, getRageBonus, isMartialArtsWeapon, getMartialArtsDie } from './logic.js';
-import { setRichHTML, cleanLegacyData, getFormData, applyFormData, saveData, loadData, importData, showCloudError, performSave } from './storage.js';
+import { setRichHTML, cleanLegacyData, getFormData, applyFormData, saveData, loadData, importData, showCloudError, performSave, resetActiveCharName } from './storage.js';
+import './spells-data.js';
 import { sb, updateUIForUser, signOut, openAuthModal, handleAuthAction, fetchCharacters, deleteCharacter, renameCharacter } from './supabase-config.js';
 import { DD_RULES } from './dd_rules.js';
 import { FEATS_DATA } from './feats-data.js';
@@ -2018,7 +2019,7 @@ function triggerReset() {
             localStorage.removeItem('dd2024_char');
             localStorage.removeItem('dd2024_active_char_name');
             // Réinitialiser le tracking du nom actif (nouveau départ)
-            try { _activeCharName = null; } catch(e) {}
+            resetActiveCharName();
             calcStats();
             close();
         };
@@ -2035,14 +2036,13 @@ function triggerReset() {
 
 
 // =============================================================================
-// SYSTÃˆME DE NAVIGATION PAR ONGLETS
+// SYSTÈME DE NAVIGATION PAR ONGLETS
 // =============================================================================
 
 /**
  * Change l'onglet actif
  * @param {string} tabName - Nom de l'onglet (combat, role, magic)
  */
-function switchTab(tabName) {
 function switchTab(tabName) {
     // Retirer la classe active et aria-selected de tous les boutons et sections
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -2409,6 +2409,13 @@ window.renderCombatBuffs = renderCombatBuffs;
 window.initFatigueDisplay = initFatigueDisplay;
 window.toggleLockMode = toggleLockMode;
 window.initLockMode = initLockMode;
+window.triggerReset = triggerReset;
+window.toggleSpellTooltips = toggleSpellTooltips;
+window.sortSpells = sortSpells;
+window.updatePrepCell = updatePrepCell;
+window.toggleSlot = toggleSlot;
+window.addSpellSlot = addSpellSlot;
+window.removeSpellSlot = removeSpellSlot;
 if (typeof calcStats !== 'undefined') window.calcStats = calcStats;
 if (typeof calcArmorAC !== 'undefined') window.calcArmorAC = calcArmorAC;
 if (typeof addArmorRow !== 'undefined') window.addArmorRow = addArmorRow;

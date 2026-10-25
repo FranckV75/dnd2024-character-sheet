@@ -30,6 +30,13 @@ let _isLoading = false;
 let _activeCharName = null;
 
 /**
+ * Oublie le personnage actif (utilisé par « Nouvelle fiche »)
+ */
+export function resetActiveCharName() {
+    _activeCharName = null;
+}
+
+/**
  * Nettoie les données legacy des balises HTML et convertit les types
  * @param {Object} data - Données brutes à nettoyer
  * @returns {Object} - Données nettoyées
