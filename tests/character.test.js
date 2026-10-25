@@ -1,0 +1,203 @@
+/**
+ * TESTS UNITAIRES — CHARACTER.JS (statistiques dérivées D&D 2024)
+ */
+
+import { test, describe } from 'node:test';
+import assert from 'node:assert/strict';
+import {
+    parseNumber,
+    classSlug,
+    hitDieForClass,
+    spellSlotsFor,
+    armorCategory,
+    computeArmorClass,
+    computeSpellcasting,
+    exhaustionEffects,
+    sneakAttackDice,
+    deriveCharacter
+} from '../js/rules/character.js';
+
+const MODS = { str: 3, dex: 2, con: 3, int: 0, wis: 1, cha: -1 };
+
+describe('parseNumber : lecture des valeurs saisies librement', () => {
+    test('Extrait le premier entier', () => {
+        assert.equal(parseNumber('19'), 19);
+        assert.equal(parseNumber('+3'), 3);
+        assert.equal(parseNumber('-1'), -1);
+        assert.equal(parseNumber('3?'), 3);
+        assert.equal(parseNumber('<b>17</b>'), 17);
+        assert.equal(parseNumber(12), 12);
+    });
+
+    test('Utilise la valeur par défaut si aucun nombre', () => {
+        assert.equal(parseNumber('', 10), 10);
+        assert.equal(parseNumber(null, 1), 1);
+        assert.equal(parseNumber('abc', 5), 5);
+    });
+});
+
+describe('Classes : identifiant et dé de vie', () => {
+    test('Reconnaît les noms français, anglais et identifiants', () => {
+        assert.equal(classSlug('Barbare'), 'barbarian');
+        assert.equal(classSlug('Rôdeur'), 'ranger');
+        assert.equal(classSlug('Warlock'), 'warlock');
+        assert.equal(classSlug('Sorcier'), 'warlock');
+        assert.equal(classSlug('Ensorceleur'), 'sorcerer');
+        assert.equal(classSlug(''), '');
+        assert.equal(classSlug('Inconnu'), '');
+    });
+
+    test('Dés de vie D&D 2024', () => {
+        assert.equal(hitDieForClass('Barbare'), 'd12');
+        assert.equal(hitDieForClass('Guerrier'), 'd10');
+        assert.equal(hitDieForClass('Paladin'), 'd10');
+        assert.equal(hitDieForClass('Rôdeur'), 'd10');
+        assert.equal(hitDieForClass('Clerc'), 'd8');
+        assert.equal(hitDieForClass('Sorcier'), 'd8');
+        assert.equal(hitDieForClass('Magicien'), 'd6');
+        assert.equal(hitDieForClass('Ensorceleur'), 'd6');
+    });
+});
+
+describe('Emplacements de sorts (Manuel du joueur 2024)', () => {
+    test('Paladin et Rôdeur ont 2 emplacements de niveau 1 dès le niveau 1', () => {
+        assert.deepEqual(spellSlotsFor('Paladin', 1), { 1: 2 });
+        assert.deepEqual(spellSlotsFor('Rôdeur', 1), { 1: 2 });
+        assert.deepEqual(spellSlotsFor('Paladin', 5), { 1: 4, 2: 2 });
+    });
+
+    test('Lanceur complet', () => {
+        assert.deepEqual(spellSlotsFor('Druide', 3), { 1: 4, 2: 2 });
+        assert.deepEqual(spellSlotsFor('Magicien', 20), { 1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1 });
+    });
+
+    test('Magie de pacte du Sorcier', () => {
+        assert.deepEqual(spellSlotsFor('Sorcier', 1), { 1: 1 });
+        assert.deepEqual(spellSlotsFor('Sorcier', 5), { 3: 2 });
+        assert.deepEqual(spellSlotsFor('Sorcier', 17), { 5: 4 });
+    });
+
+    test('Non-lanceurs : aucun emplacement', () => {
+        assert.deepEqual(spellSlotsFor('Barbare', 10), {});
+        assert.deepEqual(spellSlotsFor('', 10), {});
+    });
+});
+
+describe('Classe d\'Armure', () => {
+    const armor = (name, type, ca, equipped = true) => ({ name, type, ca, equipped });
+
+    test('Sans armure : 10 + DEX', () => {
+        assert.equal(computeArmorClass({ armors: [], className: 'Magicien', mods: MODS, pb: 2 }).value, 12);
+    });
+
+    test('Défense sans armure du Barbare : 10 + DEX + CON, bouclier autorisé', () => {
+        assert.equal(computeArmorClass({ armors: [], className: 'Barbare', mods: MODS, pb: 2 }).value, 15);
+        const withShield = computeArmorClass({ armors: [armor('Bouclier', 'Bouclier', '+2')], className: 'Barbare', mods: MODS, pb: 2 });
+        assert.equal(withShield.value, 17);
+    });
+
+    test('Défense sans armure du Moine : 10 + DEX + SAG, perdue avec un bouclier', () => {
+        assert.equal(computeArmorClass({ armors: [], className: 'Moine', mods: MODS, pb: 2 }).value, 13);
+        const withShield = computeArmorClass({ armors: [armor('Bouclier', 'Bouclier', '+2')], className: 'Moine', mods: MODS, pb: 2 });
+        assert.equal(withShield.value, 14); // 10 + DEX + 2 (bouclier), sans la SAG
+    });
+
+    test('Armures légère, intermédiaire (DEX max 2) et lourde', () => {
+        const dex4 = { ...MODS, dex: 4 };
+        assert.equal(computeArmorClass({ armors: [armor('Armure de cuir', 'Légère', '11 + Dex')], mods: dex4, pb: 2 }).value, 15);
+        assert.equal(computeArmorClass({ armors: [armor('Cuirasse', 'Interméd.', '14 + Dex (max 2)')], mods: dex4, pb: 2 }).value, 16);
+        assert.equal(computeArmorClass({ armors: [armor('Harnois', 'Lourde', '18')], mods: dex4, pb: 2 }).value, 18);
+    });
+
+    test('Les armures non équipées sont ignorées', () => {
+        assert.equal(computeArmorClass({ armors: [armor('Harnois', 'Lourde', '18', false)], className: 'Guerrier', mods: MODS, pb: 2 }).value, 12);
+    });
+
+    test('Types « Bonus » et « Maîtrise »', () => {
+        const res = computeArmorClass({
+            armors: [armor('Cotte de mailles', 'Lourde', '16'), armor('Anneau', 'Bonus', '+1'), armor('Défense', 'Maîtrise', '')],
+            mods: MODS, pb: 3
+        });
+        assert.equal(res.value, 20);
+    });
+
+    test('Ancienne sauvegarde sans type : catégorie déduite du nom', () => {
+        assert.equal(armorCategory({ name: 'Bouclier', ca: '+2' }), 'shield');
+        assert.equal(armorCategory({ name: 'Cotte de mailles' }), 'heavy');
+        assert.equal(armorCategory({ name: 'Objet inconnu' }), '');
+    });
+});
+
+describe('Sorts, épuisement et attaque sournoise', () => {
+    test('DD de sauvegarde = 8 + maîtrise + mod ; attaque = maîtrise + mod', () => {
+        assert.deepEqual(computeSpellcasting('wis', MODS, 2), { ability: 'wis', dc: 11, attack: 3 });
+        assert.equal(computeSpellcasting('none', MODS, 2), null);
+        assert.equal(computeSpellcasting('', MODS, 2), null);
+    });
+
+    test('Épuisement D&D 2024 : -2 par niveau, -1,5 m par niveau, mort au niveau 6', () => {
+        assert.deepEqual(exhaustionEffects(0), { level: 0, d20Penalty: -0, speedPenaltyM: 0, dead: false });
+        assert.deepEqual(exhaustionEffects(3), { level: 3, d20Penalty: -6, speedPenaltyM: 4.5, dead: false });
+        assert.equal(exhaustionEffects(6).dead, true);
+        assert.equal(exhaustionEffects(9).level, 6);
+    });
+
+    test('Attaque sournoise : 1d6 tous les 2 niveaux (arrondi supérieur)', () => {
+        assert.equal(sneakAttackDice(1), 1);
+        assert.equal(sneakAttackDice(2), 1);
+        assert.equal(sneakAttackDice(3), 2);
+        assert.equal(sneakAttackDice(20), 10);
+    });
+});
+
+describe('deriveCharacter : fiche complète à partir d\'une sauvegarde', () => {
+    const record = {
+        char_class: 'Barbare',
+        char_level: '5',
+        str_score: '19', dex_score: '16', con_score: '18', int_score: '10', wis_score: '12', cha_score: '11',
+        str_save_prof: true, con_save_prof: true, dex_save_prof: null,
+        skill_prof_athletics: true,
+        skill_prof_perception: true,
+        skill_exp_intimidation: true,
+        spell_ability: 'none',
+        fatigue_level: 1,
+        dynamic_armors: [{ name: 'Bouclier', type: 'Bouclier', ca: '+2', equipped: true }]
+    };
+    const d = deriveCharacter(record);
+
+    test('Niveau, maîtrise, modificateurs', () => {
+        assert.equal(d.level, 5);
+        assert.equal(d.pb, 3);
+        assert.deepEqual(d.mods, { str: 4, dex: 3, con: 4, int: 0, wis: 1, cha: 0 });
+    });
+
+    test('Jets de sauvegarde', () => {
+        assert.deepEqual(d.saves.str, { proficient: true, bonus: 7 });
+        assert.deepEqual(d.saves.dex, { proficient: false, bonus: 3 });
+    });
+
+    test('Compétences : maîtrise, Expertise (qui implique la maîtrise)', () => {
+        assert.equal(d.skills.athletics.bonus, 7);
+        assert.equal(d.skills.intimidation.proficient, true);
+        assert.equal(d.skills.intimidation.bonus, 6);
+        assert.equal(d.skills.stealth.bonus, 3);
+    });
+
+    test('Perception passive, initiative, CA, ressources, dé de vie', () => {
+        assert.equal(d.passivePerception, 14);
+        assert.equal(d.initiative, 3);
+        assert.equal(d.armorClass.value, 19); // 10 + 3 + 4 + bouclier 2
+        assert.equal(d.spellcasting, null);
+        assert.deepEqual(d.classResource, { count: 3, label: 'Rages', reset: 'one' });
+        assert.equal(d.hitDie, 'd12');
+        assert.equal(d.exhaustion.d20Penalty, -2);
+    });
+
+    test('Sauvegarde vide : valeurs par défaut sûres', () => {
+        const empty = deriveCharacter({});
+        assert.equal(empty.level, 1);
+        assert.equal(empty.scores.str, 10);
+        assert.equal(empty.armorClass.value, 10);
+        assert.equal(empty.passivePerception, 10);
+    });
+});

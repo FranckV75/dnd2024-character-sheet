@@ -627,9 +627,9 @@ const DD_RULES = {
             19: [4, 3, 3, 3, 3, 2, 1, 1, 1],
             20: [4, 3, 3, 3, 3, 2, 2, 1, 1]
         },
-        // Demi-lanceur : Paladin, Ranger (commence au niveau 2)
+        // Demi-lanceur : Paladin, Ranger (Incantation dès le niveau 1 en D&D 2024)
         half: {
-            1: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            1: [2, 0, 0, 0, 0, 0, 0, 0, 0],
             2: [2, 0, 0, 0, 0, 0, 0, 0, 0],
             3: [3, 0, 0, 0, 0, 0, 0, 0, 0],
             4: [3, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -724,7 +724,6 @@ const DD_RULES = {
             }
         });
         return result;
-        return result;
     },
 
     // =========================================================================
@@ -781,7 +780,4 @@ const DD_RULES = {
     ]
 };
 
-// Exporter pour utilisation dans d'autres scripts
-window.DD_RULES = DD_RULES;
 export { DD_RULES };
-export default DD_RULES;

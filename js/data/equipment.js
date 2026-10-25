@@ -27,6 +27,4 @@ const EQUIPMENT_DATA = {
     ]
 };
 
-window.EQUIPMENT_DATA = EQUIPMENT_DATA;
 export { EQUIPMENT_DATA };
-export default EQUIPMENT_DATA;
