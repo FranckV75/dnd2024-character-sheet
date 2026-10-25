@@ -76,12 +76,18 @@
         padding: 6px 9px;
     }
 
-    #app-bar #appearance-controls {
+    #app-bar #account-controls {
         order: 3;
         flex-basis: 100%;
     }
 
+    #app-bar #appearance-controls {
+        order: 4;
+        flex-basis: 100%;
+    }
+
     #app-bar.app-bar--collapsed #toolbar-panel,
+    #app-bar.app-bar--collapsed #account-controls,
     #app-bar.app-bar--collapsed #appearance-controls {
         display: none;
     }

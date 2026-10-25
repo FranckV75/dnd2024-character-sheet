@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="css/spells.css">
     <link rel="stylesheet" href="css/rest.css">
     <link rel="stylesheet" href="css/style-editor.css">
+    <link rel="stylesheet" href="css/account.css">
     <link rel="stylesheet" href="css/print.css" media="print">
 </head>
 
@@ -29,6 +30,8 @@
     <!-- Barre de gestion : construite par js/ui/toolbar.js ; #appearance-controls est rempli par js/ui/gallery.js -->
     <div class="app-bar" id="app-bar" role="region" aria-label="Gestion de la fiche">
         <div id="toolbar-feature" class="toolbar-feature"></div>
+        <!-- Compte en ligne (connexion, « Mes personnages ») : construit par js/ui/account.js -->
+        <div id="account-controls" class="account-controls"></div>
         <div id="appearance-controls" class="appearance-controls"></div>
         <span id="save-status" class="app-bar-status" role="status" aria-live="polite"></span>
     </div>
@@ -351,6 +354,10 @@
     <!-- DOMPurify : nettoie le texte riche (protection contre l'injection de code) -->
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.5/dist/purify.min.js"
         integrity="sha256-ILCzhApz2lHTpmxR8HPj7W2hBCs3QcWGHBt6Nmk9ySg=" crossorigin="anonymous" defer></script>
+    <!-- Supabase : sauvegarde en ligne (même version et même empreinte que la v3) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.min.js"
+        integrity="sha384-BV2dqVU6K3gwMR3iiAIxuWbMYbnQYo7u3jQXlR9cCWtBUVeIrrcuzn50r50eu9zk" crossorigin="anonymous"
+        defer></script>
     <script type="module" src="js/main.js"></script>
 </body>
 
