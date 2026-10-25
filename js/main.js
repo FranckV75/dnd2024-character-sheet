@@ -32,12 +32,16 @@ let statusHeldUntil = 0;
 /** Message d'une fonctionnalité (import, suppression...) : reste affiché quelques secondes */
 const setStatus = (message) => {
     status.textContent = message;
+    status.title = message; // texte complet si la barre le coupe (« … »)
     statusHeldUntil = performance.now() + STATUS_HOLD_MS;
 };
 
 /** Message de l'enregistrement automatique : ne remplace pas un message récent */
 const setAutosaveStatus = (message) => {
-    if (performance.now() >= statusHeldUntil) status.textContent = message;
+    if (performance.now() >= statusHeldUntil) {
+        status.textContent = message;
+        status.title = message;
+    }
 };
 
 initTheme();

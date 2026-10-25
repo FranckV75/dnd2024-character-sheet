@@ -165,7 +165,7 @@ export function initAccount({ store, setStatus, saveWithCharacter, saveNow }) {
             syncLabel = 'synchronisation en échec, nouvel essai automatique';
         } else if (state.dirty) syncLabel = 'enregistrement en ligne…';
         statusLabel.textContent = `Connecté (${who}) — ${syncLabel}`;
-        statusLabel.title = [`Connecté : ${state.user.email}`, hint, state.lastError].filter(Boolean).join('\n');
+        statusLabel.title = [statusLabel.textContent, `Compte : ${state.user.email}`, hint, state.lastError].filter(Boolean).join('\n');
         setIconLabel(loginButton, 'logout', 'Déconnexion');
     }
     sync.onChange(renderBar);
