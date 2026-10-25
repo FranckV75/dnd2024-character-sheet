@@ -120,6 +120,7 @@ select.input optgroup {
 
 .input-title {
     font-size: 1.15rem;
+    font-weight: 700;
 }
 
 .center {
@@ -633,7 +634,8 @@ fieldset.inline-checks {
     padding: 4px 6px;
     border-bottom: 1px solid var(--border-soft);
     font-family: var(--font-title);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
+    font-weight: 700;
     vertical-align: top;
     overflow-wrap: break-word;
     hyphens: auto;

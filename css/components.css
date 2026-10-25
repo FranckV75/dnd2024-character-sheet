@@ -86,7 +86,9 @@
     background: transparent;
     color: var(--text);
     font-family: var(--font-title);
-    font-size: 0.72rem;
+    /* Même taille et même graisse que les cellules calculées (attaque, dégâts) */
+    font-size: 0.78rem;
+    font-weight: 700;
 }
 
 .data-table .cell-input:hover,

@@ -55,9 +55,24 @@
             background: color-mix(in srgb, var(--surface) calc(var(--sheet-alpha) * 100%), transparent);
         }
 
-        /* Les boîtes se renforcent quand la fiche devient transparente : le texte reste lisible */
-        :root[data-translucent="true"] .sheet .box {
-            background: color-mix(in srgb, var(--box-strong) calc((1 - var(--sheet-alpha)) * 70%), var(--box));
+        /* Fiche transparente : l'illustration se voit AUTOUR des cadres, jamais à travers le texte.
+           Les cadres (et l'en-tête, qui n'en a pas sinon) restent presque opaques. */
+        :root[data-translucent="true"] .sheet .box,
+        :root[data-translucent="true"] .sheet .ability,
+        :root[data-translucent="true"] .sheet .skill-group {
+            background: color-mix(in srgb, var(--box-strong) 94%, transparent);
+        }
+    }
+
+    :root[data-translucent="true"] .sheet .sheet-header {
+        padding: 8px 10px;
+        border-radius: 6px;
+        background: var(--box-strong);
+    }
+
+    @supports (background: color-mix(in srgb, red 50%, transparent)) {
+        :root[data-translucent="true"] .sheet .sheet-header {
+            background: color-mix(in srgb, var(--box-strong) 94%, transparent);
         }
     }
 }
