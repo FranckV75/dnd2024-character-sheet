@@ -1,25 +1,25 @@
 // =============================================================================
-// DATA.JS - CONSTANTES ET DONNÉES STATIQUES
+// CONSTANTS.JS - Caractéristiques, compétences et fonds d'écran par défaut
 // =============================================================================
 
 /**
- * Images de fond par défaut disponibles dans la galerie
+ * Les 6 caractéristiques, dans l'ordre d'affichage de la fiche
  */
-const DEFAULT_BGS = [
-    // --- IMAGES PERMANENTES ---
-    "Fond_Equipe.webp",
-    "Fond_Fafnir.webp",
-    "Fond_Odyssée.webp",
-    "Fond_Iria.webp",
-    "Fond_Hedera.webp",
-    "Fond_Cephalus.webp",
-    "Fond_La_Team.webp"
+export const ABILITIES = [
+    { id: 'str', name: 'Force', short: 'FOR', icon: '💪' },
+    { id: 'dex', name: 'Dextérité', short: 'DEX', icon: '🎯' },
+    { id: 'con', name: 'Constitution', short: 'CON', icon: '🛡️' },
+    { id: 'int', name: 'Intelligence', short: 'INT', icon: '📚' },
+    { id: 'wis', name: 'Sagesse', short: 'SAG', icon: '👁️' },
+    { id: 'cha', name: 'Charisme', short: 'CHA', icon: '✨' }
 ];
 
+export const ABILITY_IDS = ABILITIES.map(a => a.id);
+
 /**
- * Liste des 18 compétences D&D avec leurs statistiques associées
+ * Les 18 compétences D&D 2024 (ordre alphabétique français) et leur caractéristique
  */
-const SKILLS = [
+export const SKILLS = [
     { id: 'acrobatics', name: 'Acrobaties', stat: 'dex' },
     { id: 'arcana', name: 'Arcanes', stat: 'int' },
     { id: 'athletics', name: 'Athlétisme', stat: 'str' },
@@ -41,52 +41,21 @@ const SKILLS = [
 ];
 
 /**
- * Compétences groupées par caractéristique pour l'affichage en sections
+ * Compétences groupées par caractéristique (déduit de SKILLS)
  */
-const SKILLS_BY_STAT = {
-    str: [{ id: 'athletics', name: 'Athlétisme' }],
-    dex: [
-        { id: 'acrobatics', name: 'Acrobaties' },
-        { id: 'sleight_of_hand', name: 'Escamotage' },
-        { id: 'stealth', name: 'Discrétion' }
-    ],
-    int: [
-        { id: 'arcana', name: 'Arcanes' },
-        { id: 'history', name: 'Histoire' },
-        { id: 'investigation', name: 'Investigation' },
-        { id: 'nature', name: 'Nature' },
-        { id: 'religion', name: 'Religion' }
-    ],
-    wis: [
-        { id: 'animal_handling', name: 'Dressage' },
-        { id: 'insight', name: 'Intuition' },
-        { id: 'medicine', name: 'Médecine' },
-        { id: 'perception', name: 'Perception' },
-        { id: 'survival', name: 'Survie' }
-    ],
-    cha: [
-        { id: 'deception', name: 'Tromperie' },
-        { id: 'intimidation', name: 'Intimidation' },
-        { id: 'performance', name: 'Représentation' },
-        { id: 'persuasion', name: 'Persuasion' }
-    ]
-};
+export const SKILLS_BY_STAT = Object.fromEntries(
+    ABILITY_IDS.map(id => [id, SKILLS.filter(s => s.stat === id)])
+);
 
 /**
- * Labels et icônes pour chaque caractéristique
+ * Images de fond proposées par défaut dans la galerie (assets/backgrounds/)
  */
-const STAT_LABELS = {
-    str: { icon: '💪', name: 'FORCE' },
-    dex: { icon: '🎯', name: 'DEXTÉRITÉ' },
-    int: { icon: '📚', name: 'INTELLIGENCE' },
-    wis: { icon: '👁️', name: 'SAGESSE' },
-    cha: { icon: '✨', name: 'CHARISME' }
-};
-
-window.DEFAULT_BGS = DEFAULT_BGS;
-window.SKILLS = SKILLS;
-window.SKILLS_BY_STAT = SKILLS_BY_STAT;
-window.STAT_LABELS = STAT_LABELS;
-
-export { DEFAULT_BGS, SKILLS, SKILLS_BY_STAT, STAT_LABELS };
-export default { DEFAULT_BGS, SKILLS, SKILLS_BY_STAT, STAT_LABELS };
+export const DEFAULT_BGS = [
+    'Fond_Equipe.webp',
+    'Fond_Fafnir.webp',
+    'Fond_Odyssée.webp',
+    'Fond_Iria.webp',
+    'Fond_Hedera.webp',
+    'Fond_Cephalus.webp',
+    'Fond_La_Team.webp'
+];

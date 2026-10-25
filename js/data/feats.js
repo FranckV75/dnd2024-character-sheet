@@ -34,21 +34,21 @@ const FEATS_DATA = {
     },
     "archerie": {
         "name": "Archerie",
-        "type": "Général",
+        "type": "Style de combat",
         "prereq": "capacité Style de combat",
         "asi": "Aucune",
         "desc": "Vous obtenez un bonus de +2 aux jets d'attaque effectués avec des armes à distance."
     },
     "arme_a_deux_mains": {
         "name": "Arme à deux mains",
-        "type": "Général",
+        "type": "Style de combat",
         "prereq": "capacité Style de combat",
         "asi": "Aucune",
         "desc": "Lorsque vous lancez les dégâts pour une attaque effectuée avec une arme de corps à corps tenue à deux mains, vous pouvez considérer n'importe quel 1 ou 2 sur un dé de dégâts comme un 3. L'arme doit posséder la propriété Deux mains ou Polyvalente pour obtenir cet avantage."
     },
     "arme_de_lancer": {
         "name": "Arme de lancer",
-        "type": "Général",
+        "type": "Style de combat",
         "prereq": "capacité Style de combat",
         "asi": "Aucune",
         "desc": "Lorsque vous touchez lors d'un jet d'attaque à distance avec une arme dotée de la propriété Lancer, vous obtenez un bonus de +2 aux dégâts."
@@ -90,21 +90,21 @@ const FEATS_DATA = {
     },
     "combat_a_deux_armes": {
         "name": "Combat à deux armes",
-        "type": "Général",
+        "type": "Style de combat",
         "prereq": "capacité Style de combat",
         "asi": "Aucune",
         "desc": "Lorsque vous effectuez une attaque supplémentaire grâce à une arme dotée de la propriété Légère, vous pouvez ajouter votre modificateur de caractéristique aux dégâts de cette attaque si vous ne l'ajoutez pas déjà."
     },
     "combat_a_mains_nues": {
         "name": "Combat à mains nues",
-        "type": "Général",
+        "type": "Style de combat",
         "prereq": "capacité Style de combat",
         "asi": "Aucune",
         "desc": "Lorsque vous touchez avec votre Frappe à mains nues et infligez des dégâts, vous pouvez infliger des dégâts contondants égaux à 1d6 plus votre modificateur de Force au lieu des dégâts normaux d'une Frappe à mains nues. Si vous ne tenez ni arme ni bouclier lors du jet d'attaque, le d6 devient un d8. <br>Au début de chacun de vos tours, vous pouvez infliger 1d4 dégâts contondants à une créature que vous agrippez."
     },
     "combat_en_aveugle": {
         "name": "Combat en aveugle",
-        "type": "Général",
+        "type": "Style de combat",
         "prereq": "capacité Style de combat",
         "asi": "Aucune",
         "desc": "Vous possédez Vision aveugle avec une portée de 3 mètres."
@@ -132,7 +132,7 @@ const FEATS_DATA = {
     },
     "defense": {
         "name": "Défense",
-        "type": "Général",
+        "type": "Style de combat",
         "prereq": "capacité Style de combat",
         "asi": "Aucune",
         "desc": "Lorsque vous portez une armure légère, intermédiaire ou lourde, vous obtenez un bonus de +1 à la Classe d'Armure."
@@ -153,7 +153,7 @@ const FEATS_DATA = {
     },
     "duel": {
         "name": "Duel",
-        "type": "Général",
+        "type": "Style de combat",
         "prereq": "capacité Style de combat",
         "asi": "Aucune",
         "desc": "Lorsque vous tenez une arme de corps à corps dans une main et aucune autre arme, vous obtenez un bonus de +2 aux dégâts infligés avec cette arme."
@@ -342,7 +342,7 @@ const FEATS_DATA = {
     },
     "interception": {
         "name": "Interception",
-        "type": "Général",
+        "type": "Style de combat",
         "prereq": "capacité Style de combat",
         "asi": "Aucune",
         "desc": "Lorsqu'une créature que vous pouvez voir touche une autre créature à 1,50 m ou moins de vous lors d'un jet d'attaque, vous pouvez prendre une Réaction pour réduire les dégâts infligés à la cible de 1d10 plus votre bonus de maîtrise. Vous devez tenir un bouclier ou une arme courante ou de guerre pour utiliser cette Réaction."
@@ -433,7 +433,7 @@ const FEATS_DATA = {
     },
     "protection": {
         "name": "Protection",
-        "type": "Général",
+        "type": "Style de combat",
         "prereq": "capacité Style de combat",
         "asi": "Aucune",
         "desc": "Lorsqu'une créature que vous pouvez voir attaque une cible autre que vous située à 1,50 mètre ou moins de vous, vous pouvez prendre une Réaction pour interposer votre bouclier si vous en tenez un. Vous infligez un Désavantage au jet d'attaque déclencheur et à tous les autres jets d'attaque contre la cible jusqu'au début de votre prochain tour si vous restez à 1,50 mètre ou moins de la cible."
@@ -531,6 +531,4 @@ const FEATS_DATA = {
     }
 };
 
-window.FEATS_DATA = FEATS_DATA;
 export { FEATS_DATA };
-export default FEATS_DATA;

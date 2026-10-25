@@ -1,5 +1,5 @@
 // =============================================================================
-// LOGIC.JS - CALCULS D&D PURS (SANS ACCÈS DOM, MODULE ES6)
+// LOGIC.JS - CALCULS D&D 2024 ÉLÉMENTAIRES (FONCTIONS PURES, SANS DOM)
 // =============================================================================
 
 /**
@@ -65,18 +65,24 @@ export function getClassResourceInfo(level, className, mods) {
         reset = level >= 5 ? "all" : "none";
     }
     else if (clsClean.includes('clerc') || clsClean.includes('cleric')) {
-        label = "Conduit Divin";
-        count = 2;
-        if (level >= 6) count = 3;
-        if (level >= 18) count = 4;
-        reset = "one";
+        // Conduit divin : à partir du niveau 2 (Manuel du joueur 2024)
+        if (level >= 2) {
+            label = "Conduit Divin";
+            count = 2;
+            if (level >= 6) count = 3;
+            if (level >= 18) count = 4;
+            reset = "one";
+        }
     }
     else if (clsClean.includes('druid')) {
-        label = "Formes Sauvages";
-        count = 2;
-        if (level >= 6) count = 3;
-        if (level >= 14) count = 4;
-        reset = "one";
+        // Forme sauvage : à partir du niveau 2, 4 utilisations au niveau 17
+        if (level >= 2) {
+            label = "Formes Sauvages";
+            count = 2;
+            if (level >= 6) count = 3;
+            if (level >= 17) count = 4;
+            reset = "one";
+        }
     }
     else if (clsClean.includes('guerrier') || clsClean.includes('fighter')) {
         label = "Second Souffle";
@@ -86,14 +92,20 @@ export function getClassResourceInfo(level, className, mods) {
         reset = "one";
     }
     else if (clsClean.includes('ensorceleur') || clsClean.includes('sorcer')) {
-        label = "Points de Sorcellerie";
-        count = level;
-        reset = "none";
+        // Points de sorcellerie : à partir du niveau 2
+        if (level >= 2) {
+            label = "Points de Sorcellerie";
+            count = level;
+            reset = "none";
+        }
     }
     else if (clsClean.includes('moine') || clsClean.includes('monk')) {
-        label = "Points de Discipline (Ki)";
-        count = level;
-        reset = "all";
+        // Points de discipline : à partir du niveau 2
+        if (level >= 2) {
+            label = "Points de Discipline (Ki)";
+            count = level;
+            reset = "all";
+        }
     }
     else if (clsClean.includes('paladin')) {
         if (level >= 3) {
@@ -117,14 +129,20 @@ export function getClassResourceInfo(level, className, mods) {
 }
 
 /**
- * Lit la configuration personnalisée d'une ligne d'arme.
- * @param {HTMLElement} tr
+ * Lit la configuration personnalisée d'une arme (champ `weaponConfig` de la sauvegarde).
+ * Accepte la chaîne JSON stockée en v3 ou un objet déjà décodé.
+ * @param {string|Object} raw
  * @returns {Object}
  */
-export function getWeaponConfig(tr) {
+export function parseWeaponConfig(raw) {
+    if (raw && typeof raw === 'object') return raw;
+    if (!raw) return {};
     try {
-        return tr.dataset.weaponConfig ? JSON.parse(tr.dataset.weaponConfig) : {};
-    } catch (e) { return {}; }
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+        return {};
+    }
 }
 
 /**
