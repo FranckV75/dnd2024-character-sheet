@@ -55,25 +55,86 @@
             background: color-mix(in srgb, var(--surface) calc(var(--sheet-alpha) * 100%), transparent);
         }
 
-        /* Fiche transparente : l'illustration se voit AUTOUR des cadres, jamais à travers le texte.
-           Les cadres (et l'en-tête, qui n'en a pas sinon) restent presque opaques. */
+        /* Fiche transparente : deux tons, comme la v3. Le fond de la fiche suit le curseur ;
+           les cadres de texte, un peu plus couvrants, le suivent aussi (l'illustration se devine
+           à travers eux), et les pastilles (en-têtes de tableaux, modificateurs, onglets)
+           restent les plus marquées.
+             curseur        20 %   50 %   85 %
+             cadres         39 %   53 %   68 %   (couverture propre, posés sur la fiche)
+             pastilles      58 %   70 %   84 % */
+        :root[data-translucent="true"] {
+            --pane-alpha: calc(0.3 + 0.45 * var(--sheet-alpha));
+            --chip-alpha: calc(0.5 + 0.4 * var(--sheet-alpha));
+        }
+
         :root[data-translucent="true"] .sheet .box,
         :root[data-translucent="true"] .sheet .ability,
-        :root[data-translucent="true"] .sheet .skill-group {
-            background: color-mix(in srgb, var(--box-strong) 94%, transparent);
+        :root[data-translucent="true"] .sheet .skill-group,
+        :root[data-translucent="true"] .sheet .sheet-header {
+            background: color-mix(in srgb, var(--box-strong) calc(var(--pane-alpha) * 100%), transparent);
+            box-shadow: var(--pane-shadow);
+        }
+
+        :root[data-translucent="true"] .sheet .data-table th {
+            background: color-mix(in srgb, var(--head-bg) calc(var(--chip-alpha) * 100%), transparent);
+        }
+
+        :root[data-translucent="true"] .sheet .ability .mod {
+            background: color-mix(in srgb, var(--mod-bg) calc(var(--chip-alpha) * 100%), transparent);
+        }
+
+        /* Hexagone de la CA : opaque, son cadre est le fond brun débordant sous le remplissage
+           (::before). Translucide, ce fond brun teinterait tout l'hexagone : le remplissage passe
+           sur l'hexagone lui-même et ::before ne dessine plus que le cadre (anneau de 2 px). */
+        :root[data-translucent="true"] .sheet .ac-hex {
+            background: color-mix(in srgb, var(--hex-bg) calc(var(--chip-alpha) * 100%), transparent);
+            box-shadow: none;
+        }
+
+        :root[data-translucent="true"] .sheet .ac-hex::before {
+            inset: 0;
+            background: var(--border);
+            clip-path: polygon(evenodd,
+                50% 0, 100% 22%, 100% 78%, 50% 100%, 0 78%, 0 22%, 50% 0,
+                50% 2px, 2px calc(22% + 1px), 2px calc(78% - 1px), 50% calc(100% - 2px),
+                calc(100% - 2px) calc(78% - 1px), calc(100% - 2px) calc(22% + 1px), 50% 2px);
+        }
+
+        :root[data-translucent="true"] .sheet .tab {
+            background: color-mix(in srgb, var(--tab-bg) calc(var(--chip-alpha) * 100%), transparent);
+        }
+
+        :root[data-translucent="true"] .sheet .tab[aria-selected="true"] {
+            background: color-mix(in srgb, var(--tab-active-bg) calc(var(--chip-alpha) * 100%), transparent);
         }
     }
 
+    /* L'en-tête n'a pas de cadre sinon : il en reçoit un pour se détacher de l'illustration */
     :root[data-translucent="true"] .sheet .sheet-header {
         padding: 8px 10px;
         border-radius: 6px;
-        background: var(--box-strong);
     }
 
-    @supports (background: color-mix(in srgb, red 50%, transparent)) {
-        :root[data-translucent="true"] .sheet .sheet-header {
-            background: color-mix(in srgb, var(--box-strong) 94%, transparent);
-        }
+    /* Verre dépoli (comme la v3) : l'illustration reste visible mais légèrement floutée derrière
+       la fiche, ce qui garde le texte lisible. Le flou est porté par un calque ::before et non
+       par .sheet : un backdrop-filter sur .sheet ferait de la fiche le repère des éléments
+       position: fixed qu'elle contient (barre de mise en forme du texte). Pas de contexte
+       d'empilement sur .sheet non plus (isolation, z-index) : cette barre doit pouvoir passer
+       au-dessus de la barre de gestion. Le calque se place donc entre l'illustration
+       (body::before, plus tôt dans la page) et le fond translucide de la fiche. */
+    .sheet {
+        position: relative;
+    }
+
+    :root[data-translucent="true"] .sheet::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        border-radius: inherit;
+        pointer-events: none;
+        -webkit-backdrop-filter: blur(3px);
+        backdrop-filter: blur(3px);
     }
 }
 

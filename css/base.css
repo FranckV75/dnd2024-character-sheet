@@ -27,6 +27,8 @@
     --tab-bg: #e8dbc5;
     --tab-active-bg: #fffaf0;
     --shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+    /* Cadres de la fiche transparente : ombre portée et reflet sur le bord haut (verre) */
+    --pane-shadow: 0 2px 8px rgba(62, 28, 2, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.45);
     --ok: #2e7d32;
     --ko: #b3261e;
     --focus: #b5651d;
@@ -61,6 +63,7 @@
     --tab-bg: #23233a;
     --tab-active-bg: #34344f;
     --shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+    --pane-shadow: 0 2px 10px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.07);
     --ok: #7bc77f;
     --ko: #f28b82;
     --focus: #f3cf8f;
