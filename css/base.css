@@ -5,8 +5,8 @@
 
 :root {
     --font-title: 'Cinzel', Georgia, serif;
-    /* Police des textes longs : en attente du choix de Franck (voir dev/polices.html) */
-    --font-text: 'EB Garamond', Georgia, 'Times New Roman', serif;
+    /* Police des textes longs, choisie par Franck : Alegreya (vraies minuscules, style manuscrit) */
+    --font-text: 'Alegreya', Georgia, 'Times New Roman', serif;
 
     /* Thème clair : parchemin et cuir (palette de la v3) */
     --bg: #fdf5e6;

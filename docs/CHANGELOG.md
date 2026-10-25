@@ -6,7 +6,7 @@ Toutes les modifications notables du projet sont documentées dans ce fichier. L
 ### Added
 - Fiche complète sur 4 onglets (en-tête, caractéristiques, combat, traits, dons, compétences, Odyssée, magie, trésor), reliée au store avec sauvegarde automatique dans le navigateur.
 - Thèmes clair et sombre (palette v3), mise en page tablette 768–1100 px sans défilement horizontal (vérifiée à 820, 1024 et 1280 px).
-- Textes longs en police à vraies minuscules (EB Garamond, en attendant le choix final) ; page `dev/polices.html`.
+- Textes longs en police à vraies minuscules (Alegreya, choisie par Franck sur la page `dev/polices.html`).
 - Import / export JSON depuis la barre « Gestion ».
 - Palier de renommée de l'Odyssée calculé par le moteur de règles.
 ### Fixed

@@ -48,8 +48,9 @@ ne jamais publier (push, déploiement) sans son accord explicite.
   et desktop > 1100 px. Mobile < 768 px non supporté.
 - **Homogénéité typographique** : un champ calculé a exactement la même police, taille, graisse
   et couleur que les champs voisins. Rien de codé en dur pour « distinguer » un champ calculé.
-- **Police** : Cinzel pour titres et libellés. Attention, Cinzel n'a **pas de minuscules** ;
-  le choix d'une police lisible pour les textes longs est une décision en attente de Franck.
+- **Polices** : Cinzel pour titres, libellés et champs courts (attention, Cinzel n'a **pas de
+  minuscules**) ; **Alegreya** pour les textes longs (choix de Franck). Toujours via `--font-title`
+  et `--font-text`.
 - **Modes clair et sombre** : toute couleur passe par une variable CSS et est vérifiée dans les deux thèmes.
 - Impression : la feuille doit rester imprimable (A4).
 
