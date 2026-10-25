@@ -2,6 +2,21 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.0.0-alpha.1] - 2026-10-25 (Reconstruction v4 : étapes 0 à 2, branche `v4`)
+### Added
+- Nouvelle structure (`js/data`, `js/rules`, `js/state`, `js/ui`), serveur local sans dépendance, garde-fous `npm run check` et CI.
+- Moteur de règles pur `js/rules/character.js` : CA, sauvegardes, compétences, sorts, armes, épuisement.
+- État unique (`js/state/store.js`), migration de toutes les anciennes sauvegardes (`js/state/migrate.js`), sauvegarde locale et fichiers JSON compatibles v3.
+- Page de validation temporaire `dev/validation.html`.
+- 109 tests (règles, données, migration, vraies sauvegardes de Korgul en local).
+### Fixed
+- Règles corrigées d'après le Manuel du joueur 2024 (emplacements Paladin/Rôdeur au niveau 1, Conduit divin, Forme sauvage, points de discipline et de sorcellerie, Défense sans armure du Moine avec bouclier).
+- Dons de style de combat classés « Style de combat ».
+
+## [3.1.1] - 2026-10-25 (Réparation express de la v3, branche `master`)
+### Fixed
+- L'application redémarre (déclaration `switchTab` dupliquée), boutons du grimoire et « Nouvelle fiche » réparés, chargement des sorts rétabli.
+
 ## [2.9.13] - 2026-07-26 (Story E : Performances & Chargement)
 ### Added
 - Attribut `defer` sur les 15 balises `<script>` dans `index.html` pour débloquer l'analyse du DOM.

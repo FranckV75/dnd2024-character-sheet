@@ -14,7 +14,8 @@ import {
     computeSpellcasting,
     exhaustionEffects,
     sneakAttackDice,
-    deriveCharacter
+    deriveCharacter,
+    computeWeapon
 } from '../js/rules/character.js';
 
 const MODS = { str: 3, dex: 2, con: 3, int: 0, wis: 1, cha: -1 };
@@ -199,5 +200,41 @@ describe('deriveCharacter : fiche complète à partir d\'une sauvegarde', () => 
         assert.equal(empty.scores.str, 10);
         assert.equal(empty.armorClass.value, 10);
         assert.equal(empty.passivePerception, 10);
+    });
+});
+
+describe('computeWeapon : armes avec bonus de combat', () => {
+    const greataxe = { name: 'Hache à deux mains', atkKey: 'FOR', baseDmg: '1d12 tran.', prop: 'Lourde, Deux mains', category: 'Guerre' };
+    const dagger = { name: 'Dague', atkKey: 'DEX', baseDmg: '1d4 perf.', prop: 'Finesse, Légère', category: 'Courante' };
+    const shortbow = { name: 'Arc court', atkKey: 'DEX', baseDmg: '1d6 perf.', prop: 'Munitions (24/96 m), Deux mains', category: 'Courante' };
+    const stats = (classSlug, level = 5) => ({ mods: { str: 4, dex: 3, con: 2, int: 0, wis: 2, cha: 0 }, pb: 3, level, classSlug });
+
+    test('Arme sans rattachement au manuel : pas de calcul', () => {
+        assert.equal(computeWeapon({ name: 'Bâton maudit' }, stats('fighter')), null);
+        assert.equal(computeWeapon({ atkKey: 'FOR', name: '' }, stats('fighter')), null);
+    });
+
+    test('Rage du Barbare : +2 aux dégâts des attaques de FOR uniquement', () => {
+        assert.equal(computeWeapon(greataxe, stats('barbarian'), { rage: true }).damage.text, '1d12 +4 TRAN +2 (Rage)');
+        assert.equal(computeWeapon(shortbow, stats('barbarian'), { rage: true }).damage.text, '1d6 +3 PERF');
+        // Finesse : la FOR (+4) est meilleure que la DEX (+3), donc la Rage s'applique
+        assert.equal(computeWeapon(dagger, stats('barbarian'), { rage: true }).damage.text, '1d4 +4 PERF +2 (Rage)');
+    });
+
+    test('Attaque sournoise : armes de finesse ou à distance', () => {
+        assert.equal(computeWeapon(dagger, stats('rogue', 5), { sneakAttack: true }).damage.text, '1d4 +4 PERF +3d6 (Sournoise)');
+        assert.equal(computeWeapon(greataxe, stats('rogue', 5), { sneakAttack: true }).damage.text, '1d12 +4 TRAN');
+    });
+
+    test('Arts martiaux du Moine : dé remplacé pour une arme courante non lourde', () => {
+        assert.equal(computeWeapon(dagger, stats('monk', 5)).damage.text, '1d8 +4 PERF');
+        assert.equal(computeWeapon(shortbow, stats('monk', 5)).damage.text, '1d6 +3 PERF');
+        assert.equal(computeWeapon(greataxe, stats('monk', 5)).damage.text, '1d12 +4 TRAN');
+    });
+
+    test('Configuration : bonus magique et caractéristique imposée', () => {
+        const res = computeWeapon({ ...greataxe, weaponConfig: '{"magicBonus":1,"statOverride":"cha"}' }, stats('warlock'));
+        assert.equal(res.attack.text, 'CHA : +4');
+        assert.equal(res.damage.text, '1d12 +1 TRAN');
     });
 });
