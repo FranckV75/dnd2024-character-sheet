@@ -2,6 +2,15 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.0.0-alpha.4] - 2026-10-25 (Reconstruction v4 : étape 5, branche `v4`)
+### Added
+- Compte en ligne (même base Supabase que la v3) : connexion avec mot de passe mémorisable, création de compte, mot de passe oublié, « Mes personnages » (ouvrir, supprimer), renommage / copie.
+- Synchronisation sûre : version en ligne jamais écrasée si elle a changé ailleurs, nouvelle fiche ou import en création seule, questions dont la fermeture n'écrase rien, opérations périmées abandonnées, suivi enregistré avec la fiche (plusieurs onglets).
+- 46 scénarios de synchronisation testés (faux Supabase réaliste), vérifiés par trois relectures indépendantes et des tests de mutation.
+### Fixed
+- Champ en cours de saisie rafraîchi quand une autre version de la fiche est chargée.
+- Noms v3 sur plusieurs lignes lus comme la v3 (« Kor gul »).
+
 ## [4.0.0-alpha.3] - 2026-10-25 (Reconstruction v4 : étape 4, branche `v4`)
 ### Added
 - Tableaux d'armes, d'armures et de sorts modifiables avec auto-complétion depuis le manuel, filtres, configuration d'arme, bonus de combat (Rage, Attaque sournoise, Marque du chasseur).

@@ -19,6 +19,11 @@ js/
 ├── rules/              Règles D&D 2024 : fonctions pures, testées
 │   ├── logic.js        Calculs élémentaires (modificateurs, maîtrise, armes, ressources)
 │   └── character.js    Statistiques dérivées d'une fiche complète (deriveCharacter, computeWeapon)
+├── cloud/              Sauvegarde en ligne (Supabase, même table que la v3)
+│   ├── client.js       Client Supabase (clé publique ; sécurité par RLS)
+│   ├── repository.js   Lecture, création seule, mise à jour / suppression conditionnelles
+│   ├── sync.js         Décisions pures (vérification, empreinte du contenu)
+│   └── controller.js   Synchronisation complète, sans DOM (testée scénario par scénario)
 ├── state/              Données du personnage
 │   ├── schema.js       Format de la fiche (champs, valeurs par défaut)
 │   ├── migrate.js      Conversion de toute ancienne sauvegarde vers le format courant
@@ -66,6 +71,17 @@ supabase/policies.sql   Règles de sécurité de la base (inchangées depuis la 
 - Les champs courts sont de vrais `<input>` (texte simple) ; les textes longs sont des zones
   `contenteditable` (`data-kind="rich"`) nettoyées par DOMPurify.
 - Un champ en cours de saisie n'est jamais réécrit (le curseur ne saute pas).
+
+## Sauvegarde en ligne
+
+- Table Supabase `characters` partagée avec la v3 : (user_id, name) unique, `data` = la fiche,
+  `updated_at` = version.
+- La fiche retient sa « base » (personnage lié, version connue, empreinte du contenu), enregistrée
+  dans le navigateur avec la fiche, au même instant (`dd2024_cloud_sync`).
+- Écritures sûres : création seule pour une nouvelle fiche ou un import ; mise à jour seulement si la
+  version en ligne est toujours celle connue ; sinon une question est posée (fermée = rien n'est écrasé).
+- Toute opération commencée avant un changement de fiche ou de compte est abandonnée sans rien écrire.
+- Tests : `tests/cloud.test.js`, `tests/cloud-controller.test.js` (faux Supabase réaliste).
 
 ## Format de la fiche
 

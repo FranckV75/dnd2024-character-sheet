@@ -178,12 +178,16 @@ function ensureOption(select, value) {
     select.append(el('option', { value, 'data-legacy': 'true', text: `${stripHTML(value)} (valeur enregistrée)` }));
 }
 
-function writeField(field, value) {
+/**
+ * @param {boolean} force - fiche entièrement remplacée (import, chargement en ligne) : le champ
+ *        en cours de saisie est aussi réécrit, sinon il garderait l'ancien texte et le renverrait
+ */
+function writeField(field, value, force = false) {
     if (field.type === 'checkbox') {
         field.checked = value === true;
         return;
     }
-    if (field === document.activeElement && field.tagName !== 'SELECT') return;
+    if (!force && field === document.activeElement && field.tagName !== 'SELECT') return;
 
     if (field.dataset.kind === 'rich') {
         const html = sanitizeRich(value ?? '');
@@ -282,12 +286,12 @@ function renderFeats(root, character) {
     }
 }
 
-function render(root, character) {
+function render(root, character, replaced = false) {
     const d = deriveCharacter(character);
     renderDynamicSelects(root, character, d);
     renderClassResource(root, character, d);
     for (const field of root.querySelectorAll('[data-field]')) {
-        writeField(field, character[field.dataset.field]);
+        writeField(field, character[field.dataset.field], replaced);
     }
     renderOutputs(root, character, d);
     renderFeats(root, character);
@@ -311,6 +315,6 @@ export function createSheet(root, store) {
         rich.setAttribute('aria-keyshortcuts', 'Alt+F10');
     }
     bindFields(root, store);
-    store.subscribe((character) => render(root, character));
+    store.subscribe((character, changedKeys) => render(root, character, changedKeys === null));
     render(root, store.get());
 }

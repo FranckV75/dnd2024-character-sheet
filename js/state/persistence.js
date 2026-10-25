@@ -57,11 +57,14 @@ export function saveLocal(character, storage = defaultStorage(), now = new Date(
 
 /**
  * Nom lisible du personnage (sans mise en forme, espaces normalisés).
+ * Un nom v3 sur plusieurs lignes (« Kor<br>gul », « <div>Kor</div><div>gul</div> ») donne
+ * « Kor gul », comme le nom que la v3 enregistrait en ligne.
  * @param {Object} character
  * @returns {string}
  */
 export function characterName(character) {
-    return stripHTML(character?.char_name || '').replace(/\s+/g, ' ').trim();
+    const lines = String(character?.char_name || '').replace(/<br\s*\/?>|<\/(div|p|li)>/gi, ' ');
+    return stripHTML(lines).replace(/\s+/g, ' ').trim();
 }
 
 /**

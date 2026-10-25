@@ -15,6 +15,7 @@ import { initArmors } from './ui/armors.js';
 import { initSpells } from './ui/spells.js';
 import { initRest } from './ui/rest.js';
 import { initStyleEditor } from './ui/style-editor.js';
+import { initAccount } from './ui/account.js';
 import { createStore } from './state/store.js';
 import { createDefaultCharacter } from './state/schema.js';
 import { loadLocal, saveLocal } from './state/persistence.js';
@@ -42,11 +43,24 @@ initTheme();
 
 const saved = loadLocal();
 const store = createStore(saved ? saved.character : createDefaultCharacter());
-const ctx = { root, store, setStatus };
+
+/**
+ * Données enregistrées dans le navigateur EN MÊME TEMPS que la fiche (même onglet, même
+ * instant), par exemple le suivi de synchronisation en ligne : clé → fonction qui donne la valeur.
+ */
+const savedWithCharacter = new Map();
+
+const ctx = {
+    root, store, setStatus,
+    /** Ajoute une donnée à enregistrer avec la fiche */
+    saveWithCharacter: (key, getValue) => savedWithCharacter.set(key, getValue),
+    /** Enregistre tout de suite la fiche (et les données associées) */
+    saveNow: () => saveNow()
+};
 
 createSheet(root, store);
 initTabs(root);
-for (const init of [initToolbar, initGallery, initWeapons, initArmors, initSpells, initRest, initStyleEditor]) {
+for (const init of [initToolbar, initAccount, initGallery, initWeapons, initArmors, initSpells, initRest, initStyleEditor]) {
     try {
         init(ctx);
     } catch (error) {
@@ -59,13 +73,25 @@ initLock();
 // Écriture différée pendant la saisie, mais jamais perdue : elle est faite tout de suite
 // quand la page est masquée (rechargement, onglet fermé, changement d'application sur iPad,
 // où Safari gèle les minuteries). beforeunload est évité : peu fiable sur iOS.
-let saveTimer = null;
+var saveTimer = null; // var : utilisable par ctx.saveNow avant cette ligne
 
 function saveNow() {
     clearTimeout(saveTimer);
     saveTimer = null;
-    if (saveLocal(store.get())) setAutosaveStatus('Enregistré dans ce navigateur');
-    else setStatus('⚠️ Enregistrement impossible (stockage du navigateur indisponible)');
+    if (!saveLocal(store.get())) {
+        setStatus('⚠️ Enregistrement impossible (stockage du navigateur indisponible)');
+        return;
+    }
+    for (const [key, getValue] of savedWithCharacter) {
+        try {
+            localStorage.setItem(key, getValue());
+        } catch {
+            // Stockage plein : on efface l'ancienne valeur plutôt que de la laisser à côté
+            // d'une fiche qui ne lui correspond plus
+            try { localStorage.removeItem(key); } catch { /* stockage indisponible */ }
+        }
+    }
+    setAutosaveStatus('Enregistré dans ce navigateur');
 }
 
 /** Écrit la sauvegarde en attente, s'il y en a une */
