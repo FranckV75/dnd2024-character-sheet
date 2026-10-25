@@ -111,6 +111,20 @@ describe('Classe d\'Armure', () => {
         assert.equal(computeArmorClass({ armors: [armor('Harnois', 'Lourde', '18')], mods: dex4, pb: 2 }).value, 18);
     });
 
+    test('Bouclier sans formation : aucun bonus de CA (PHB 2024)', () => {
+        const res = computeArmorClass({ armors: [armor('Bouclier', 'Bouclier', '+2')], className: 'Magicien', mods: MODS, pb: 2, shieldTrained: false });
+        assert.equal(res.value, 12);
+        assert.match(res.source, /bouclier non maîtrisé/);
+    });
+
+    test('Un seul bouclier compte à la fois (le meilleur)', () => {
+        const res = computeArmorClass({
+            armors: [armor('Bouclier', 'Bouclier', '+2'), armor('Bouclier +1', 'Bouclier', '+3')],
+            className: 'Guerrier', mods: MODS, pb: 2
+        });
+        assert.equal(res.value, 15); // 10 + DEX 2 + 3
+    });
+
     test('Les armures non équipées sont ignorées', () => {
         assert.equal(computeArmorClass({ armors: [armor('Harnois', 'Lourde', '18', false)], className: 'Guerrier', mods: MODS, pb: 2 }).value, 12);
     });
@@ -163,6 +177,7 @@ describe('deriveCharacter : fiche complète à partir d\'une sauvegarde', () => 
         skill_exp_intimidation: true,
         spell_ability: 'none',
         fatigue_level: 1,
+        prof_armor_shield: true,
         dynamic_armors: [{ name: 'Bouclier', type: 'Bouclier', ca: '+2', equipped: true }]
     };
     const d = deriveCharacter(record);

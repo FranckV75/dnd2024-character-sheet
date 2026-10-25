@@ -1,1 +1,174 @@
-/* style-editor.css - à compléter à l étape 4 */
+/* =============================================================================
+   STYLE-EDITOR.CSS - Barre flottante de mise en forme du texte riche
+   (construite par js/ui/style-editor.js) et rendu des tailles dans les champs riches.
+   ============================================================================= */
+
+/* Couleurs proposées au joueur : IDENTIQUES dans les deux thèmes, car la valeur est
+   enregistrée dans le texte (elle ne suit pas le thème). Teintes moyennes choisies
+   pour un contraste WCAG ≥ 3:1 à la fois sur le parchemin (#fdf5e6, #f4ead5) et sur
+   le fond nuit (#1e1e32, #0f0f1a, #2a2a40) :
+     rouge  #e04848 : 3,73 / 4,03      orange #c8711a : 3,32 / 4,53
+     vert   #2f9a4e : 3,31 / 4,55      bleu   #3b7ddd : 3,75 / 4,01
+     violet #a65fd6 : 3,71 / 4,06      rose   #c94f9a : 3,82 / 3,94
+   (clair #fdf5e6 / sombre #1e1e32). Les mêmes valeurs figurent dans style-editor.js. */
+:root {
+    --se-red: #e04848;
+    --se-orange: #c8711a;
+    --se-green: #2f9a4e;
+    --se-blue: #3b7ddd;
+    --se-purple: #a65fd6;
+    --se-pink: #c94f9a;
+}
+
+/* ---------- Barre flottante ---------- */
+
+.style-editor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 40;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    max-width: calc(100vw - 16px);
+    padding: 4px 6px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--box-strong);
+    box-shadow: var(--shadow);
+    color: var(--text);
+    font-family: var(--font-title);
+    line-height: 1;
+}
+
+.style-editor[hidden] {
+    display: none;
+}
+
+.se-group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.se-group + .se-group {
+    padding-left: 6px;
+    border-left: 1px solid var(--border-soft);
+}
+
+.se-btn {
+    display: inline-grid;
+    place-items: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-title);
+    font-size: 0.95rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.se-btn:hover {
+    border-color: var(--border-soft);
+    background: var(--input-bg);
+}
+
+.se-btn[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--bg);
+}
+
+.se-btn b {
+    font-weight: 700;
+}
+
+/* Cinzel n'a pas d'italique : le « I » utilise la police des textes longs */
+.se-btn i {
+    font-family: var(--font-text);
+    font-size: 1.1rem;
+}
+
+.se-btn u {
+    text-underline-offset: 2px;
+}
+
+.se-size-2 span {
+    font-size: 0.72rem;
+}
+
+.se-size-3 span {
+    font-size: 0.95rem;
+}
+
+.se-size-5 span {
+    font-size: 1.2rem;
+}
+
+.se-swatch {
+    width: 24px;
+    height: 24px;
+    margin: 0 1px;
+    padding: 0;
+    border: 2px solid var(--box-strong);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--border-soft);
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+.se-swatch:hover {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 1px var(--border);
+}
+
+.se-swatch-red { background: var(--se-red); }
+.se-swatch-orange { background: var(--se-orange); }
+.se-swatch-green { background: var(--se-green); }
+.se-swatch-blue { background: var(--se-blue); }
+.se-swatch-purple { background: var(--se-purple); }
+.se-swatch-pink { background: var(--se-pink); }
+
+/* « Couleur par défaut » : pastille barrée */
+.se-swatch-default {
+    background:
+        linear-gradient(135deg, transparent 43%, var(--ko) 43%, var(--ko) 57%, transparent 57%),
+        var(--input-bg);
+    box-shadow: 0 0 0 1px var(--border);
+}
+
+/* Tablettes (écran tactile) : cibles plus grandes */
+@media (pointer: coarse) {
+    .se-btn {
+        min-width: 38px;
+        height: 38px;
+    }
+
+    .se-swatch {
+        width: 30px;
+        height: 30px;
+    }
+}
+
+@media print {
+    .style-editor {
+        display: none;
+    }
+}
+
+/* ---------- Tailles dans les champs riches ----------
+   execCommand('fontSize') produit <font size="1…7"> ; on les rend relatives à la
+   taille du champ (au lieu des tailles absolues du navigateur) pour que « Normal »
+   reste exactement la taille du texte voisin. Tailles 1, 4, 6, 7 : anciennes fiches v3. */
+[data-kind="rich"] font[size="1"] { font-size: 0.7em; }
+[data-kind="rich"] font[size="2"] { font-size: 0.85em; }
+[data-kind="rich"] font[size="3"] { font-size: 1em; }
+[data-kind="rich"] font[size="4"] { font-size: 1.15em; }
+[data-kind="rich"] font[size="5"] { font-size: 1.35em; }
+[data-kind="rich"] font[size="6"] { font-size: 1.6em; }
+[data-kind="rich"] font[size="7"] { font-size: 2em; }

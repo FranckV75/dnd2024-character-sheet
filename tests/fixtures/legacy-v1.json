@@ -11,6 +11,7 @@
   "cha_score": "8",
   "str_save_prof": true,
   "dex_save_prof": null,
+  "prof_armor_shield": true,
   "skill_prof_athletics": true,
   "skill_prof_stealth": null,
   "hd_total": "D10",

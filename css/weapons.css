@@ -1,1 +1,183 @@
-/* weapons.css - à compléter à l étape 4 */
+/* =============================================================================
+   WEAPONS.CSS - Tableau des armes (js/ui/weapons.js) : en-tête avec bonus de combat,
+   filtres, tableau éditable, annulation de suppression, fenêtre de configuration
+   ============================================================================= */
+
+/* ---------- En-tête : titre + bonus de combat ---------- */
+
+.weapons-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 12px;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.box .weapons-head h3 {
+    margin: 0;
+    padding: 0;
+    border-bottom: none;
+}
+
+.weapons-buffs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.weapons-buffs[hidden] {
+    display: none;
+}
+
+/* ---------- Filtres ---------- */
+
+.weapons-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 6px;
+}
+
+/* ---------- Tableau ---------- */
+
+.weapons-table {
+    table-layout: fixed;
+    min-width: 780px;
+}
+
+.weapons-col-name { width: 20%; }
+.weapons-col-atk { width: 10%; }
+.weapons-col-dmg { width: 16%; }
+.weapons-col-prop { width: 17%; }
+.weapons-col-prof { width: 11%; }
+.weapons-col-ammo { width: 11%; }
+.weapons-col-note { width: 15%; }
+.weapons-col-actions { width: 70px; }
+
+[data-locked="true"] .weapons-col-actions {
+    width: 0;
+}
+
+.weapons-table td {
+    vertical-align: middle;
+}
+
+.weapons-table .cell-input {
+    text-overflow: ellipsis;
+}
+
+/* Valeur calculée : même police, taille, graisse et couleur que les champs voisins */
+.weapons-calc {
+    display: block;
+    padding: 2px 3px;
+    border-bottom: 1px solid transparent;
+    font: inherit;
+    line-height: normal;
+    color: var(--text);
+}
+
+.weapons-calc[title]:not([title=""]) {
+    cursor: help;
+}
+
+/* Ancienne valeur saisie à la main (arme hors manuel) : affichée en retrait */
+.weapons-calc.is-legacy {
+    color: var(--text-muted);
+}
+
+.weapons-actions {
+    white-space: nowrap;
+}
+
+.weapons-actions .btn-icon + .btn-icon {
+    margin-left: 4px;
+}
+
+.weapons-table tr[hidden] {
+    display: none;
+}
+
+[data-locked="true"] .weapons-table .cell-input[readonly]:hover,
+[data-locked="true"] .weapons-table .cell-input[readonly]:focus {
+    border-bottom-color: transparent;
+    background: transparent;
+    cursor: default;
+}
+
+/* Texte réservé aux lecteurs d'écran (en-tête de la colonne d'actions) */
+.weapons-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ---------- Annulation de suppression ---------- */
+
+.weapons-undo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0 0;
+    font-family: var(--font-text);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.weapons-undo[hidden] {
+    display: none;
+}
+
+/* ---------- Fenêtre « Configuration de l'arme » ---------- */
+
+.weapons-config {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.weapons-config p {
+    margin: 0;
+}
+
+.weapons-config-name {
+    font-family: var(--font-title);
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.weapons-config-note,
+.weapons-config-help {
+    font-family: var(--font-text);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.weapons-config-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.weapons-config-field .input {
+    font-size: 0.85rem;
+}
+
+.weapons-config-error {
+    font-family: var(--font-text);
+    font-size: 0.9rem;
+    color: var(--ko);
+}
+
+.weapons-config-error[hidden] {
+    display: none;
+}
