@@ -7,7 +7,7 @@
 // Fermer une question sans répondre = l'option la plus prudente (rien n'est écrasé).
 // =============================================================================
 
-import { el, setIconLabel } from './dom.js';
+import { el, icon, setIconLabel } from './dom.js';
 import { openModal, confirmModal } from './modal.js';
 import { getClient } from '../cloud/client.js';
 import { createCloudSync, SYNC_KEY } from '../cloud/controller.js';
@@ -23,6 +23,11 @@ const formatDate = (iso) => {
         day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
     });
 };
+
+/** Les deux versions comparées (en ligne / ce navigateur), précédées d'une icône dorée */
+const versionsList = (cloudUpdatedAt, localSavedAt) => el('ul', { class: 'account-versions' },
+    el('li', {}, icon('cloud'), el('span', { text: `Version en ligne : ${formatDate(cloudUpdatedAt)}` })),
+    el('li', {}, icon('scroll'), el('span', { text: `Version de ce navigateur : ${formatDate(localSavedAt)}` })));
 
 /**
  * Pose une question avec des boutons ; la promesse renvoie la valeur du bouton choisi,
@@ -47,9 +52,7 @@ function choose(title, body, buttons) {
 const QUESTIONS = {
     exists: ({ name, cloudUpdatedAt, localSavedAt }) => choose('☁️ Ce personnage existe déjà en ligne', [
         el('p', { text: `Votre compte contient déjà « ${name} », différent de la fiche ouverte dans ce navigateur.` }),
-        el('ul', {},
-            el('li', { text: `☁️ Version en ligne : ${formatDate(cloudUpdatedAt)}` }),
-            el('li', { text: `💾 Version de ce navigateur : ${formatDate(localSavedAt)}` })),
+        versionsList(cloudUpdatedAt, localSavedAt),
         el('p', { text: 'Que voulez-vous faire ?' }),
         el('ul', {},
             el('li', { text: 'Ouvrir la version en ligne : la fiche de ce navigateur sera remplacée.' }),
@@ -63,9 +66,7 @@ const QUESTIONS = {
 
     conflict: ({ name, cloudUpdatedAt, localSavedAt }) => choose('⚔️ Deux versions différentes', [
         el('p', { text: `« ${name} » a été modifié sur un autre appareil (ou dans un autre onglet), et aussi dans ce navigateur.` }),
-        el('ul', {},
-            el('li', { text: `☁️ Version en ligne : ${formatDate(cloudUpdatedAt)}` }),
-            el('li', { text: `💾 Version de ce navigateur : ${formatDate(localSavedAt)}` })),
+        versionsList(cloudUpdatedAt, localSavedAt),
         el('p', { class: 'muted', text: 'La version que vous ne gardez pas sera perdue. En cas de doute, choisissez « Décider plus tard » et exportez cette fiche d\'abord.' })
     ], [
         { label: 'Décider plus tard' },
@@ -271,7 +272,7 @@ export function initAccount({ store, setStatus, saveWithCharacter, saveNow }) {
                 const redirectTo = window.location.origin + window.location.pathname;
                 const { error } = await client.auth.resetPasswordForEmail(address, { redirectTo });
                 if (error) throw error;
-                show(`📧 Si un compte existe pour ${address}, un e-mail de réinitialisation vient d'être envoyé. Pensez à vérifier les courriers indésirables.`, false);
+                show(`Si un compte existe pour ${address}, un e-mail de réinitialisation vient d'être envoyé. Pensez à vérifier les courriers indésirables.`, false);
             } catch (error) {
                 show(`Erreur : ${friendlyError(error)}`);
             }
@@ -341,18 +342,19 @@ export function initAccount({ store, setStatus, saveWithCharacter, saveNow }) {
                             el('span', { class: 'muted', text: `${isOpen ? 'Fiche ouverte · ' : ''}modifiée le ${formatDate(row.updated_at)}` })),
                         el('div', { class: 'account-item-actions' },
                             el('button', {
-                                type: 'button', class: 'btn btn-primary', text: 'Ouvrir', disabled: isOpen,
+                                type: 'button', class: 'btn', disabled: isOpen,
                                 'aria-label': `Ouvrir ${row.name}`,
                                 on: { click: () => { close(); sync.open(row.name); } }
-                            }),
+                            }, icon('book'), el('span', { class: 'btn-label', text: 'Ouvrir' })),
                             el('button', {
-                                type: 'button', class: 'btn btn-danger', text: '🗑',
+                                type: 'button', class: 'btn btn-danger btn-square',
                                 'aria-label': `Supprimer ${row.name} de mon compte`,
+                                title: 'Supprimer de mon compte',
                                 on: { click: () => removeCharacter(row.name) }
-                            })));
+                            }, icon('trash'))));
                 }) : [el('li', { class: 'muted', text: 'Aucun personnage enregistré en ligne pour le moment.' })]));
             } catch (error) {
-                list.replaceChildren(el('li', { class: 'account-message is-error', text: `⚠️ ${error.message}` }));
+                list.replaceChildren(el('li', { class: 'account-message is-error' }, icon('warning'), el('span', { text: error.message })));
             }
             list.setAttribute('aria-busy', 'false');
         }
@@ -372,7 +374,7 @@ export function initAccount({ store, setStatus, saveWithCharacter, saveNow }) {
         close = openModal({
             title: '👥 Mes personnages',
             wide: true,
-            body: [list, el('p', { class: 'muted', text: 'Pour créer un nouveau personnage : « 📄 Nouvelle fiche » dans la barre Gestion.' })],
+            body: [list, el('p', { class: 'muted', text: 'Pour créer un nouveau personnage : « Nouvelle fiche » dans la barre Gestion.' })],
             actions: [{ label: 'Fermer' }]
         });
         refresh();

@@ -6,6 +6,8 @@
 
 import { initTheme } from './ui/theme.js';
 import { initTabs } from './ui/tabs.js';
+import { decorateIcons } from './ui/ornaments.js';
+import { icon } from './ui/dom.js';
 import { createSheet } from './ui/sheet.js';
 import { initLock } from './ui/lock.js';
 import { initToolbar } from './ui/toolbar.js';
@@ -29,19 +31,37 @@ const root = document.querySelector('.sheet');
 const status = document.getElementById('save-status');
 let statusHeldUntil = 0;
 
+/** Émoji en tête d'un message (⚠️ avertissement, ✅ ou ✔ réussite) */
+const STATUS_EMOJI = /^(⚠️?|✅|✔️?)\s*/u;
+
+/**
+ * Affiche un message dans la barre : l'émoji d'avertissement devient l'icône dessinée
+ * (rouge, voir components.css), celui de réussite est simplement retiré.
+ * @param {string} message
+ */
+const showStatus = (message) => {
+    const text = String(message ?? '');
+    const match = text.match(STATUS_EMOJI);
+    const clean = match ? text.slice(match[0].length) : text;
+    if (match && match[1].startsWith('⚠')) {
+        const warning = icon('warning');
+        warning.classList.add('status-icon');
+        status.replaceChildren(warning, clean);
+    } else {
+        status.textContent = clean;
+    }
+    status.title = clean; // texte complet si la barre le coupe (« … »)
+};
+
 /** Message d'une fonctionnalité (import, suppression...) : reste affiché quelques secondes */
 const setStatus = (message) => {
-    status.textContent = message;
-    status.title = message; // texte complet si la barre le coupe (« … »)
+    showStatus(message);
     statusHeldUntil = performance.now() + STATUS_HOLD_MS;
 };
 
 /** Message de l'enregistrement automatique : ne remplace pas un message récent */
 const setAutosaveStatus = (message) => {
-    if (performance.now() >= statusHeldUntil) {
-        status.textContent = message;
-        status.title = message;
-    }
+    if (performance.now() >= statusHeldUntil) showStatus(message);
 };
 
 initTheme();
@@ -64,6 +84,7 @@ const ctx = {
 };
 
 createSheet(root, store);
+decorateIcons(root); // icônes dorées des titres et des onglets (data-icon)
 initTabs(root);
 for (const init of [initToolbar, initAccount, initGallery, initWeapons, initArmors, initSpells, initRest, initStyleEditor]) {
     try {

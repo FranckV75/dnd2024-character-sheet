@@ -1,78 +1,320 @@
 /* =============================================================================
-   COMPONENTS.CSS - Composants partagés : boutons, fenêtres (modal.js),
+   COMPONENTS.CSS - Composants partagés : boutons de la fiche, fenêtres (modal.js),
    auto-complétion (autocomplete.js), mode verrouillé (lock.js), tableaux éditables
+   Même famille que la barre « Gestion » (toolbar.css) : boutons bombés (--btn-*),
+   icône dorée, reflet doré au survol, bouton doré quand il est enfoncé.
+   Typographie : les boutons qui lancent une action (barre, fenêtres, repos) sont en
+   Alegreya 600, comme la barre ; les pastilles, filtres, onglets et lignes « Ajouter … »,
+   qui se lisent comme des étiquettes, sont en Cinzel.
+   Règles : couleurs par variables (base.css), aucun !important.
    ============================================================================= */
 
-/* ---------- Boutons ---------- */
+/* ---------- Boutons bombés de la fiche ----------
+   .btn-chip : pastille (filtres, bonus de combat) ; .btn-icon : bouton à icône seule
+   (configuration, suppression, + / −). Le bouton générique .btn est dans sheet.css. */
 
-.btn-primary {
-    background: var(--accent);
+.btn-chip,
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1px solid var(--btn-border);
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
+    color: var(--text);
+    line-height: 1;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-chip .icon,
+.btn-icon .icon {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    color: var(--accent);
+    transition: color 0.2s ease;
+}
+
+.btn-chip:hover:not(:disabled),
+.btn-icon:hover:not(:disabled) {
     border-color: var(--accent);
-    color: var(--bg);
+    box-shadow: var(--btn-glow);
+    color: var(--accent);
+}
+
+.btn-chip:active:not(:disabled),
+.btn-icon:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.btn-chip:disabled,
+.btn-icon:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.btn-chip {
+    min-height: 28px;
+    padding: 0 12px;
+    border-radius: 14px;
+    font-family: var(--font-title);
+    font-size: 0.72rem;
     font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
 }
 
-.btn-primary:hover {
-    background: var(--accent-strong);
+/* Enfoncé (filtre actif, bonus actif) : doré, comme les états de la barre */
+.btn-chip[aria-pressed="true"],
+.btn-icon[aria-pressed="true"] {
+    border-color: var(--accent-strong);
+    background: linear-gradient(var(--accent), var(--accent-strong));
+    color: var(--btn-top);
 }
 
-.btn-danger {
+.btn-chip[aria-pressed="true"] .icon,
+.btn-icon[aria-pressed="true"] .icon,
+.btn-chip[aria-pressed="true"]:hover:not(:disabled),
+.btn-icon[aria-pressed="true"]:hover:not(:disabled) {
+    color: var(--btn-top);
+}
+
+.btn-icon {
+    min-width: 28px;
+    min-height: 28px;
+    padding: 0 6px;
+    border-radius: 7px;
+    font: inherit;
+}
+
+/* Suppression : l'icône passe au rouge au survol */
+.btn-icon.is-danger:hover:not(:disabled),
+.btn-icon.is-danger:hover:not(:disabled) .icon {
     border-color: var(--ko);
     color: var(--ko);
 }
 
-.btn-icon {
-    display: inline-grid;
-    place-items: center;
-    min-width: 28px;
-    min-height: 28px;
-    padding: 2px 6px;
-    border: 1px solid var(--border-soft);
-    border-radius: 6px;
-    background: transparent;
-    color: var(--text);
-    font: inherit;
-    cursor: pointer;
+/* ---------- Groupe segmenté : pastilles soudées en un bloc, séparées par un filet ---------- */
+
+.btn-segments {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    max-width: 100%;
+    overflow: hidden;
+    border: 1px solid var(--btn-border);
+    border-radius: 9px;
+    background: var(--btn-border);
+    box-shadow: var(--btn-shadow);
 }
 
-.btn-icon:hover {
-    background: var(--input-bg);
-    border-color: var(--border);
+.btn-segments .btn-chip {
+    flex: 1 0 auto;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
 }
 
-.btn-chip {
-    padding: 2px 10px;
-    border: 1px solid var(--border-soft);
-    border-radius: 12px;
-    background: transparent;
-    color: var(--text);
-    font-family: var(--font-title);
-    font-size: 0.72rem;
-    cursor: pointer;
+.btn-segments .btn-chip:hover:not(:disabled) {
+    box-shadow: inset 0 -2px 0 var(--accent);
 }
 
-.btn-chip[aria-pressed="true"] {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--bg);
+.btn-segments .btn-chip[aria-pressed="true"]:hover:not(:disabled) {
+    box-shadow: none;
 }
+
+/* Le bloc rogne ce qui dépasse (coins arrondis) : l'anneau de focus est donc dessiné
+   à l'intérieur de la pastille */
+.btn-segments .btn-chip:focus-visible {
+    position: relative;
+    z-index: 1;
+    outline-offset: -3px;
+}
+
+/* Sur la pastille dorée (filtre actif), l'anneau prend la couleur claire du bouton */
+.btn-segments .btn-chip[aria-pressed="true"]:focus-visible {
+    outline-color: var(--btn-top);
+}
+
+/* ---------- « Ajouter une ligne » : filet doré pointillé, icône + ---------- */
 
 .add-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     width: 100%;
-    margin-top: 6px;
-    padding: 6px;
-    border: 1px dashed var(--border-soft);
-    border-radius: 6px;
+    min-height: 34px;
+    margin-top: 8px;
+    padding: 6px 12px;
+    border: 1px dashed var(--btn-border);
+    border-radius: 8px;
     background: transparent;
-    color: var(--text-muted);
+    color: var(--accent);
     font-family: var(--font-title);
-    font-size: 0.75rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
     cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+
+/* L'icône + dans une petite pastille bombée */
+.add-row .icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    padding: 3px;
+    border: 1px solid var(--btn-border);
+    border-radius: 50%;
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
+    color: var(--accent);
 }
 
 .add-row:hover {
-    border-color: var(--border);
+    border-style: solid;
+    border-color: var(--accent);
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-glow);
+    color: var(--accent-strong);
+}
+
+/* ---------- Boutons des fenêtres : même style que la barre « Gestion » ---------- */
+
+.modal .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 36px;
+    padding: 0 16px;
+    border: 1px solid var(--btn-border);
+    border-radius: 8px;
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
     color: var(--text);
+    font-family: var(--font-text);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.1;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, transform 0.1s ease;
+}
+
+.modal .btn .icon {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    color: var(--accent);
+}
+
+.modal .btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    box-shadow: var(--btn-glow);
+    color: var(--accent);
+}
+
+.modal .btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.modal .btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.modal .btn[hidden] {
+    display: none;
+}
+
+/* Bouton principal : doré */
+.btn-primary,
+.modal .btn-primary {
+    border-color: var(--accent-strong);
+    background: linear-gradient(var(--accent), var(--accent-strong));
+    color: var(--btn-top);
+    font-weight: 700;
+}
+
+.btn-primary .icon,
+.modal .btn-primary .icon,
+.modal .btn-primary:hover:not(:disabled) {
+    color: var(--btn-top);
+}
+
+.modal .btn-primary:hover:not(:disabled) {
+    border-color: var(--accent-strong);
+}
+
+/* Action risquée : texte et filet rouges, le reflet reste celui de la famille */
+.btn-danger,
+.modal .btn-danger,
+.modal .btn-danger .icon {
+    color: var(--ko);
+}
+
+.btn-danger,
+.modal .btn-danger {
+    border-color: var(--ko);
+}
+
+.modal .btn-danger:hover:not(:disabled),
+.modal .btn-danger:hover:not(:disabled) .icon {
+    border-color: var(--ko);
+    color: var(--ko);
+}
+
+/* Bouton à icône seule dans une fenêtre (suppression d'un personnage) */
+.modal .btn-square {
+    width: 36px;
+    padding: 0;
+}
+
+/* ---------- Écrans tactiles (iPad) : cibles d'au moins 44 px ----------
+   Les boutons à icône gardent une taille visuelle mesurée (36 px) dans les tableaux ;
+   leur zone de toucher est agrandie à 44 px par un calque invisible. */
+@media (pointer: coarse) {
+    .btn-chip,
+    .add-row,
+    .modal .btn {
+        min-height: 44px;
+    }
+
+    .modal .btn-square {
+        width: 44px;
+    }
+
+    .btn-icon {
+        position: relative;
+        min-width: 36px;
+        min-height: 36px;
+    }
+
+    /* Le calque part du bord intérieur (1 px de cadre) : 36 + 2 × 1 + 2 × 3 = 44 px */
+    .btn-icon::after {
+        content: "";
+        position: absolute;
+        inset: -5px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .btn-chip,
+    .btn-icon,
+    .btn-chip .icon,
+    .btn-icon .icon,
+    .add-row,
+    .modal .btn {
+        transition: none;
+    }
+
+    .btn-chip:active:not(:disabled),
+    .btn-icon:active:not(:disabled),
+    .modal .btn:active:not(:disabled) {
+        transform: none;
+    }
 }
 
 /* ---------- Champs dans les tableaux éditables ---------- */
@@ -107,10 +349,11 @@
     hyphens: auto;
 }
 
+/* background-color (et non background) : garde le chevron doré des listes (sheet.css) */
 .data-table .cell-input:hover,
 .data-table .cell-input:focus {
     border-bottom-color: var(--border-soft);
-    background: var(--input-bg);
+    background-color: var(--input-bg);
 }
 
 /* Écrans tactiles (iPad) : pas de survol, le soulignement des cases modifiables reste visible */
@@ -133,91 +376,323 @@
     }
 }
 
-/* ---------- Fenêtres (modal.js) ---------- */
+/* ---------- Fenêtres (modal.js) ----------
+   Verre dépoli et double filet doré, comme la barre « Gestion ». La fenêtre est une
+   colonne : titre et boutons restent visibles, seul le contenu défile. */
 
 .modal {
-    width: min(480px, calc(100vw - 32px));
+    width: min(500px, calc(100vw - 32px));
     max-height: calc(100vh - 48px);
     padding: 0;
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    background: var(--box-strong);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
     color: var(--text);
-    box-shadow: var(--shadow);
+    box-shadow: var(--bar-shadow), var(--shadow);
+    -webkit-backdrop-filter: blur(18px) saturate(1.3);
+    backdrop-filter: blur(18px) saturate(1.3);
+}
+
+@supports (background: color-mix(in srgb, red 50%, transparent)) {
+    .modal {
+        background: color-mix(in srgb, var(--box-strong) 88%, transparent);
+    }
+}
+
+/* À l'écran seulement : à l'impression, print.css masque les fenêtres */
+@media screen {
+    .modal[open] {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+/* Ouverture : léger fondu, la fenêtre se pose (rien si l'utilisateur limite les animations) */
+@media (prefers-reduced-motion: no-preference) {
+    .modal[open] {
+        animation: modal-in 0.22s ease-out;
+    }
+
+    .modal[open]::backdrop {
+        animation: modal-veil-in 0.22s ease-out;
+    }
+}
+
+@keyframes modal-in {
+    from { opacity: 0; transform: translateY(8px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes modal-veil-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Second filet, fin, à l'intérieur du cadre */
+.modal::before {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    pointer-events: none;
 }
 
 .modal-wide {
-    width: min(760px, calc(100vw - 32px));
+    width: min(780px, calc(100vw - 32px));
 }
 
+/* Voile derrière la fenêtre : la fiche s'assombrit et se floute légèrement */
 .modal::backdrop {
-    background: rgba(0, 0, 0, 0.45);
+    background: var(--veil);
+    -webkit-backdrop-filter: blur(3px) saturate(0.9);
+    backdrop-filter: blur(3px) saturate(0.9);
 }
 
 .modal-content {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
-    gap: 12px;
-    padding: 16px 18px;
+    gap: 14px;
+    min-height: 0;
+    padding: 20px 24px 18px;
+}
+
+/* ---------- Titre : Cinzel, icône dorée, ornement ✦ entre deux filets ---------- */
+
+.modal-head {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
 }
 
 .modal-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     margin: 0;
-    font-size: 1.05rem;
+    font-family: var(--font-title);
+    font-size: 1.08rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.3;
+    color: var(--accent);
 }
 
+.modal-title .icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+}
+
+.modal-ornament {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: min(240px, 70%);
+    color: var(--accent);
+    font-size: 0.6rem;
+    line-height: 1;
+}
+
+.modal-ornament::before,
+.modal-ornament::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border));
+}
+
+.modal-ornament::after {
+    background: linear-gradient(90deg, var(--border), transparent);
+}
+
+/* ---------- Contenu ---------- */
+
 .modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    /* Un peu d'air pour que l'anneau de focus des champs ne soit pas rogné */
+    margin: 0 -6px;
+    padding: 2px 6px;
     overflow-y: auto;
+    font-family: var(--font-text);
+    line-height: 1.45;
 }
 
 .modal-body p {
     margin: 0 0 8px;
 }
 
-.modal-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 8px;
+.modal-body ul {
+    margin: 0 0 8px;
+    padding-left: 1.3em;
 }
 
-/* ---------- Auto-complétion (autocomplete.js) ---------- */
+.modal-body li::marker {
+    color: var(--accent);
+}
+
+.modal-body small {
+    color: var(--text-muted);
+}
+
+/* Champs : cadre fin, creusé, reflet doré au focus */
+.modal-body :is(.input, .gallery-url, select, textarea) {
+    padding: 6px 10px;
+    border: 1px solid var(--btn-border);
+    border-radius: 8px;
+    /* background-color (et non background) : garde le chevron doré des listes (sheet.css) */
+    background-color: var(--input-bg);
+    box-shadow: inset 0 1px 2px var(--track);
+    color: var(--text);
+    font-family: var(--font-text);
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modal-body :is(.input, .gallery-url, select, textarea):hover {
+    border-color: var(--border);
+}
+
+/* Contour transparent à la souris (le mode « contraste élevé » le redessine) ;
+   au clavier, le contour de focus habituel de l'application, plus le reflet */
+.modal-body :is(.input, .gallery-url, select, textarea):focus {
+    border-color: var(--accent);
+    outline: 2px solid transparent;
+    outline-offset: 1px;
+    box-shadow: var(--btn-glow);
+}
+
+.modal-body :is(.input, .gallery-url, select, textarea):focus-visible {
+    outline-color: var(--focus);
+}
+
+.modal-body :is(.input, .gallery-url, textarea)::placeholder {
+    color: var(--text-muted);
+    opacity: 0.75;
+}
+
+/* Listes : place pour le chevron, décalé dans le cadre */
+.modal-body select.input {
+    padding-right: 32px;
+    background-position: right 17px center, right 12px center;
+}
+
+/* Champs d'une ligne : hauteur confortable */
+.modal-body :is(input.input, select.input, .gallery-url) {
+    min-height: 38px;
+}
+
+/* Valeur invalide signalée par le code (aria-invalid) */
+.modal-body [aria-invalid="true"] {
+    border-color: var(--ko);
+}
+
+/* ---------- Boutons d'action : séparés du contenu par un filet ---------- */
+
+/* Filet fin qui s'estompe aux deux bouts */
+.modal-actions {
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 14px;
+    background: linear-gradient(90deg, transparent, var(--border-soft) 12%, var(--border-soft) 88%, transparent) top / 100% 1px no-repeat;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modal-body :is(.input, .gallery-url, select, textarea) {
+        transition: none;
+    }
+}
+
+/* ---------- Auto-complétion (autocomplete.js) : liste en verre, choix doré ---------- */
 
 .autocomplete-list {
     position: absolute;
     z-index: 50;
-    max-height: 260px;
-    margin: 2px 0 0;
-    padding: 4px 0;
+    max-height: 280px;
+    margin: 4px 0 0;
+    padding: 5px;
     overflow-y: auto;
     list-style: none;
     border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--box-strong);
-    box-shadow: var(--shadow);
+    border-radius: 10px;
+    background: var(--surface);
+    box-shadow: var(--bar-shadow);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3);
+    backdrop-filter: blur(14px) saturate(1.3);
+}
+
+@supports (background: color-mix(in srgb, red 50%, transparent)) {
+    .autocomplete-list {
+        background: color-mix(in srgb, var(--box-strong) 90%, transparent);
+    }
 }
 
 .autocomplete-list li {
     display: flex;
+    align-items: baseline;
     justify-content: space-between;
-    gap: 12px;
-    padding: 5px 10px;
+    gap: 14px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    box-shadow: inset 2px 0 0 transparent;
     cursor: pointer;
+}
+
+.autocomplete-list li + li {
+    margin-top: 1px;
 }
 
 .autocomplete-list li[aria-selected="true"],
 .autocomplete-list li:hover {
-    background: var(--head-bg);
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: inset 3px 0 0 var(--accent), var(--btn-shadow);
 }
 
 .autocomplete-label {
     font-family: var(--font-title);
     font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.autocomplete-list li[aria-selected="true"] .autocomplete-label,
+.autocomplete-list li:hover .autocomplete-label {
+    color: var(--accent);
 }
 
 .autocomplete-detail {
+    font-family: var(--font-text);
     font-size: 0.85rem;
+    font-style: italic;
     color: var(--text-muted);
+    white-space: nowrap;
+}
+
+@media (pointer: coarse) {
+    .autocomplete-list li {
+        min-height: 44px;
+        align-items: center;
+    }
+}
+
+/* ---------- Barre d'état : avertissement dessiné (main.js remplace l'émoji ⚠️) ---------- */
+
+.status-icon {
+    width: 14px;
+    height: 14px;
+    margin-right: 5px;
+    vertical-align: -2px;
+    color: var(--ko);
 }
 
 /* ---------- Mode verrouillé (lock.js) ---------- */

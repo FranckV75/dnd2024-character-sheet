@@ -19,7 +19,7 @@
 // à la sauvegarde automatique du personnage ; au-delà de 1,5 M caractères elle n'est pas mémorisée.
 // =============================================================================
 
-import { el, setIconLabel } from './dom.js';
+import { el, icon, setIconLabel } from './dom.js';
 import { openModal, confirmModal } from './modal.js';
 import { setTheme } from './theme.js';
 import { DEFAULT_BGS } from '../data/constants.js';
@@ -408,7 +408,7 @@ function openGallery({ setStatus, commit }) {
         if (stored) {
             say('');
         } else {
-            say("⚠️ Image trop volumineuse pour être mémorisée : elle reste affichée jusqu'au rechargement de la page.");
+            say("Attention : image trop volumineuse pour être mémorisée : elle reste affichée jusqu'au rechargement de la page.");
             setStatus('⚠️ Fond affiché mais non mémorisé (image trop volumineuse)');
         }
         return stored;
@@ -437,9 +437,8 @@ function openGallery({ setStatus, commit }) {
                 class: 'btn-icon gallery-remove',
                 'aria-label': `Retirer le fond « ${name} » de la galerie`,
                 title: 'Retirer de la galerie',
-                text: '✕',
                 on: { click: onRemove }
-            }));
+            }, icon('close')));
         }
         return item;
     };
@@ -490,7 +489,7 @@ function openGallery({ setStatus, commit }) {
         if (!list.includes(value)) {
             list.push(value);
             if (!setSavedBackgrounds(list)) {
-                say('⚠️ Impossible de mémoriser cette adresse (stockage du navigateur plein ou indisponible).');
+                say('Attention : impossible de mémoriser cette adresse (stockage du navigateur plein ou indisponible).');
                 return;
             }
         }
@@ -530,6 +529,7 @@ function openGallery({ setStatus, commit }) {
         if (dataUrl.length > DEVICE_IMAGE_MAX_CHARS) {
             const ok = await confirmModal({
                 title: 'Image volumineuse',
+                icon: 'warning',
                 message: `Même réduite, cette image occupe ${megabytes(dataUrl.length)} Mo. `
                     + "Le stockage du navigateur est limité (environ 5 Mo pour toute l'application) "
                     + "et doit garder de la place pour la sauvegarde du personnage : l'image sera affichée, "
@@ -551,20 +551,20 @@ function openGallery({ setStatus, commit }) {
             el('label', { for: 'gallery-new-url', class: 'gallery-add-label', text: 'Ajouter une image par son adresse' }),
             el('div', { class: 'gallery-add-row' },
                 urlInput,
-                el('button', { type: 'button', class: 'btn', text: 'Ajouter', on: { click: addUrl } }),
+                el('button', { type: 'button', class: 'btn', on: { click: addUrl } },
+                    icon('plus'), el('span', { class: 'btn-label', text: 'Ajouter' })),
                 el('button', {
                     type: 'button',
                     class: 'btn',
-                    text: "📁 Image de l'appareil",
                     title: 'Choisir une image enregistrée sur cet appareil',
                     on: { click: () => fileInput.click() }
-                }),
+                }, icon('image'), el('span', { class: 'btn-label', text: "Image de l'appareil" })),
                 fileInput)),
         message
     ];
 
     render();
-    openModal({ title: "Fonds d'écran", body, wide: true, actions: [{ label: 'Fermer', primary: true }] });
+    openModal({ title: "Fonds d'écran", icon: 'image', body, wide: true, actions: [{ label: 'Fermer', primary: true }] });
     // Focus sur le fond actuel plutôt que sur le champ d'adresse (évite le clavier sur tablette)
     grid.querySelector('.gallery-pick[aria-pressed="true"]')?.focus();
 }

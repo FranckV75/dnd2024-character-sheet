@@ -13,7 +13,7 @@ import { parseNumber } from '../rules/character.js';
 import {
     ARMOR_TYPES, searchArmorCatalogue, armorRowFromCatalogue, armorWarnings, armorTraining
 } from '../rules/armors.js';
-import { el, icon } from './dom.js';
+import { el, icon, setIconLabel } from './dom.js';
 import { cellText } from './cell-text.js';
 import { attachAutocomplete } from './autocomplete.js';
 import { confirmModal } from './modal.js';
@@ -66,9 +66,10 @@ export function initArmors({ root, store, setStatus }) {
             el('th', { scope: 'col', class: 'col-del' }, el('span', { class: 'armors-sr', text: 'Supprimer' })))),
         tbody);
     const addButton = el('button', {
-        type: 'button', class: 'add-row edit-only', text: '+ Ajouter une armure',
+        type: 'button', class: 'add-row edit-only',
         on: { click: addRow }
     });
+    setIconLabel(addButton, 'plus', 'Ajouter une armure');
     container.replaceChildren(el('div', { class: 'table-scroll' }, table), addButton);
 
     /** Contrôles de chaque ligne affichée : [{ tr, controls }] */
@@ -100,8 +101,10 @@ export function initArmors({ root, store, setStatus }) {
         if (name) {
             const ok = await confirmModal({
                 title: 'Supprimer l\'armure',
+                icon: 'trash',
                 message: `Supprimer « ${name} » du tableau des armures ?`,
                 confirmLabel: 'Supprimer',
+                confirmIcon: 'trash',
                 danger: true
             });
             if (!ok) return;
@@ -155,10 +158,10 @@ export function initArmors({ root, store, setStatus }) {
         controls.warn = el('button', {
             type: 'button', class: 'armor-warn', hidden: true,
             on: { click: () => setStatus(controls.warn.dataset.message || '') }
-        }, el('span', { 'aria-hidden': 'true', text: '⚠️' }));
+        }, icon('warning'));
 
         const del = el('button', {
-            type: 'button', class: 'btn-icon edit-only', title: 'Supprimer',
+            type: 'button', class: 'btn-icon is-danger edit-only', title: 'Supprimer',
             'aria-label': `Supprimer l'armure (ligne ${index + 1})`,
             on: { click: () => deleteRow(index) }
         }, icon('trash'));

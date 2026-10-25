@@ -13,15 +13,10 @@
     margin-bottom: 8px;
 }
 
-.spell-level-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-
+/* Niveaux : bloc segmenté (components.css, .btn-segments) */
 .spell-level-chips .btn-chip {
-    min-width: 30px;
-    min-height: 26px;
+    min-width: 32px;
+    padding: 0 8px;
 }
 
 .spell-class-filter {
@@ -40,13 +35,20 @@
     font-size: 0.8rem;
 }
 
-.spell-tooltip-toggle[aria-pressed="true"] {
-    border-color: var(--accent);
-    background: var(--head-bg);
+/* Infobulles : bouton doré quand elles sont actives (famille .btn-icon) */
+.spell-tooltip-toggle {
+    min-width: 30px;
+    min-height: 30px;
+    border-radius: 8px;
 }
 
-.spell-tooltip-toggle[aria-pressed="false"] {
-    opacity: 0.55;
+.spell-tooltip-toggle .icon {
+    width: 15px;
+    height: 15px;
+}
+
+.spell-tooltip-toggle[aria-pressed="false"] .icon {
+    color: var(--text-muted);
 }
 
 .spell-count {
@@ -99,16 +101,22 @@
     gap: 2px;
 }
 
+/* + / − : petites pastilles rondes */
 .slot-group .btn-icon {
     min-width: 24px;
     min-height: 24px;
-    padding: 0 4px;
-    line-height: 1;
+    padding: 0;
+    border-radius: 50%;
 }
 
-.slot-group .btn-icon:disabled {
-    cursor: default;
-    opacity: 0.4;
+.slot-group .btn-icon .icon {
+    width: 11px;
+    height: 11px;
+}
+
+.slot-add-level .icon {
+    width: 11px;
+    height: 11px;
 }
 
 .slot-none,
@@ -285,18 +293,13 @@
 }
 
 .spell-del {
-    min-width: 26px;
-    min-height: 26px;
-    padding: 0 4px;
-    font-size: 0.8rem;
-}
-
-.spell-del:hover {
-    border-color: var(--ko);
+    min-width: 28px;
+    min-height: 28px;
 }
 
 /* ---------- Infobulle d'un sort ---------- */
 
+/* Verre dépoli et double filet doré, comme la barre « Gestion » et les fenêtres */
 .spell-tooltip {
     position: absolute;
     z-index: 60;
@@ -304,28 +307,58 @@
     max-width: min(420px, calc(100vw - 16px));
     max-height: 55vh;
     overflow-y: auto;
-    padding: 10px 12px;
+    padding: 14px 16px 12px;
     border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--box-strong);
+    border-radius: 12px;
+    background: var(--surface);
     color: var(--text);
-    box-shadow: var(--shadow);
+    box-shadow: var(--bar-shadow);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3);
+    backdrop-filter: blur(14px) saturate(1.3);
     font-family: var(--font-text);
     font-size: 0.92rem;
     line-height: 1.4;
 }
 
+@supports (background: color-mix(in srgb, red 50%, transparent)) {
+    .spell-tooltip {
+        background: color-mix(in srgb, var(--box-strong) 90%, transparent);
+    }
+}
+
+/* Second filet, fin, à l'intérieur du cadre : un contour rentré, qui ne défile pas
+   avec une longue description (contrairement à un calque ::before) */
+.spell-tooltip {
+    outline: 1px solid var(--border-soft);
+    outline-offset: -4px;
+}
+
+.spell-tooltip[hidden] {
+    display: none;
+}
+
 .spell-tooltip-head {
     display: flex;
     flex-direction: column;
-    gap: 1px;
-    margin-bottom: 6px;
+    gap: 2px;
+    margin-bottom: 8px;
 }
 
 .spell-tooltip-name {
     font-family: var(--font-title);
-    font-size: 0.95rem;
+    font-size: 1rem;
+    letter-spacing: 0.04em;
     color: var(--accent);
+}
+
+/* Ornement décoratif : texte de remplacement vide, il n'est pas lu par les lecteurs d'écran
+   (la seconde déclaration est ignorée par les navigateurs qui ne la comprennent pas) */
+.spell-tooltip-name::before {
+    content: "✦ ";
+    content: "✦ " / "";
+    font-size: 0.7em;
+    vertical-align: 0.15em;
+    opacity: 0.85;
 }
 
 .spell-tooltip-level {
@@ -367,9 +400,54 @@
 
 .spell-tooltip-desc {
     margin: 0;
-    padding-top: 6px;
+    padding-top: 8px;
     border-top: 1px solid var(--border-soft);
     white-space: pre-line;
+}
+
+/* Écrans tactiles : cibles d'au moins 44 px (zone de toucher agrandie, components.css) */
+@media (pointer: coarse) {
+    .spell-tooltip-toggle {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .slot-group .btn-icon {
+        min-width: 32px;
+        min-height: 32px;
+    }
+
+    /* 32 + 2 × 1 px de cadre + 2 × 5 = 44 px */
+    .slot-group .btn-icon::after {
+        inset: -7px;
+    }
+
+    .slot-group .btn-icon + .btn-icon {
+        margin-left: 12px;
+    }
+
+    .spell-level-chips .btn-chip {
+        min-width: 44px;
+    }
+
+    .spells-table .col-del {
+        width: 48px;
+    }
+
+    .spell-del {
+        min-width: 36px;
+        min-height: 36px;
+    }
+}
+
+/* Cases C / R / M : boîte de 44 px (voir sheet.css), rond visible de 14 px */
+@media screen and (pointer: coarse) {
+    .spell-flag .round-check {
+        width: 44px;
+        height: 44px;
+        margin: -15px -4px;
+        border-width: 15px;
+    }
 }
 
 /* ---------- Tablettes ---------- */

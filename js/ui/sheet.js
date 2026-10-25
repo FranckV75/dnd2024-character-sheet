@@ -16,10 +16,12 @@ import { FEAT_LEVELS } from '../state/schema.js';
 import { stripHTML } from '../state/migrate.js';
 import { deriveCharacter, hitDieForClass } from '../rules/character.js';
 import { sanitizeRich, sanitizeRulesText } from './sanitize.js';
-import { el, fillSelect, signed } from './dom.js';
+import { el, fillSelect, icon, signed } from './dom.js';
 import { applyLock } from './lock.js';
 
 const SKILL_STATS = ['str', 'dex', 'int', 'wis', 'cha'];
+// Icônes dorées des groupes de compétences (dessinées par dom.js, à la place des émojis)
+const SKILL_GROUP_ICONS = { str: 'shield', dex: 'feather', int: 'book', wis: 'eye', cha: 'sparkle' };
 const FEAT_TYPE_ORDER = ['Origine', 'Général', 'Style de combat', 'Épique'];
 const SPELL_ABILITY_LABELS = { none: '—', int: 'Intelligence', wis: 'Sagesse', cha: 'Charisme' };
 
@@ -52,7 +54,7 @@ function buildSkills(root) {
         const ability = ABILITIES.find(a => a.id === stat);
         container.insertBefore(el('section', { class: 'skill-group', 'aria-label': ability.name },
             el('div', { class: 'skill-group-head' },
-                el('span', { 'aria-hidden': 'true', text: ability.icon }),
+                icon(SKILL_GROUP_ICONS[stat]),
                 el('span', { text: ability.name }),
                 el('output', { class: 'mod', 'data-out': `mod:${stat}` })),
             SKILLS_BY_STAT[stat].map(skill => el('div', { class: 'skill-row' },
@@ -247,7 +249,7 @@ const OUTPUTS = {
     pb: (d) => signed(d.pb),
     level: (d) => d.level,
     classResourceLabel: (d) => d.classResource.count ? d.classResource.label : 'Ressource de classe',
-    exhaustion: (d) => d.exhaustion.dead ? '⚠️ Mort'
+    exhaustion: (d) => d.exhaustion.dead ? 'Mort'
         : d.exhaustion.level ? `${d.exhaustion.d20Penalty} aux tests de d20 ; vitesse -${String(d.exhaustion.speedPenaltyM).replace('.', ',')} m` : 'Aucun effet',
     renownTier: (d) => d.renownTier,
     spellDc: (d) => d.spellcasting ? d.spellcasting.dc : '—',

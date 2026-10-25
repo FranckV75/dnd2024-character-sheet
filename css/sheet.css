@@ -75,12 +75,47 @@ label,
     font-size: 1rem;
 }
 
+/* background-color (et non background) : ne pas effacer le chevron doré des listes */
 .input:hover {
-    background: var(--input-bg);
+    background-color: var(--input-bg);
+}
+
+/* Listes (en-tête, fenêtres et tableaux) : flèche native remplacée par un fin chevron doré,
+   dessiné par deux dégradés (les deux branches du « v »), donc aux couleurs du thème */
+select.input,
+.data-table select.cell-input {
+    -webkit-appearance: none;
+    appearance: none;
+    background-image:
+        linear-gradient(to top right, transparent 42%, var(--gold) 42% 58%, transparent 58%),
+        linear-gradient(to top left, transparent 42%, var(--gold) 42% 58%, transparent 58%);
+    background-position: right 11px center, right 6px center;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+    cursor: pointer;
 }
 
 select.input {
-    cursor: pointer;
+    padding-right: 22px;
+}
+
+/* Cases des tableaux (type d'armure, niveau de sort) : chevron plus près du bord */
+.data-table select.cell-input {
+    padding-right: 18px;
+    background-position: right 8px center, right 3px center;
+}
+
+/* Valeur centrée : même marge des deux côtés, avec un vrai espace avant le chevron */
+select.input.center {
+    padding-left: 24px;
+    padding-right: 24px;
+    background-position: right 10px center, right 5px center;
+}
+
+/* Fiche verrouillée : liste figée, plus de chevron */
+[data-locked="true"] select.input:disabled,
+[data-locked="true"] .data-table select.cell-input:disabled {
+    background-image: none;
 }
 
 select.input option,
@@ -99,18 +134,23 @@ select.input optgroup {
     text-align-last: center;
 }
 
+/* Grandes valeurs (CA, PV, initiative...) : chiffres gravés, saisis ou calculés à l'identique */
 .value-xl,
 .value-lg,
 .value-md {
     display: block;
     font-family: var(--font-title);
     font-weight: 700;
-    color: var(--text);
+    font-variant-numeric: lining-nums;
+    letter-spacing: 0.02em;
+    color: var(--number);
     text-align: center;
+    text-shadow: var(--engrave);
 }
 
 .value-xl {
-    font-size: 1.9rem;
+    font-size: 2.05rem;
+    line-height: 1.1;
 }
 
 .value-lg {
@@ -146,7 +186,8 @@ select.value-md {
     display: none;
 }
 
-/* Cases rondes (jamais ovales : aspect-ratio fixé) */
+/* Cases rondes (jamais ovales : aspect-ratio fixé) : cerclées d'or, légèrement bombées ;
+   cochées, une perle dorée avec son reflet et un léger halo */
 .round-check {
     appearance: none;
     -webkit-appearance: none;
@@ -157,42 +198,67 @@ select.value-md {
     aspect-ratio: 1;
     margin: 0 2px;
     vertical-align: middle;
-    border: 1.5px solid var(--border);
+    border: 1.5px solid var(--check-ring);
     border-radius: 50%;
-    background: transparent;
+    background: radial-gradient(circle at 35% 30%, var(--check-top), var(--check-bottom));
+    box-shadow: var(--btn-shadow);
     cursor: pointer;
+    transition: box-shadow 0.3s ease, border-color 0.2s ease;
 }
 
-.round-check:checked {
-    background: radial-gradient(circle, var(--accent) 45%, transparent 50%);
+.round-check:hover:not(:disabled):not(.demo) {
+    border-color: var(--accent);
+    box-shadow: var(--btn-glow);
+}
+
+.round-check:checked,
+.round-check.demo:not(.expertise) {
+    border-color: var(--gold);
+    /* reflet (point clair), perle centrée, fond bombé de la case */
+    background:
+        radial-gradient(circle at 39% 35%, var(--gem-light) 0 1px, transparent 3px),
+        radial-gradient(circle closest-side, var(--gold) 0 25%, var(--accent) 66%, transparent 74%),
+        radial-gradient(circle at 35% 30%, var(--check-top), var(--check-bottom));
+    box-shadow: 0 0 6px var(--gold-glow);
 }
 
 .round-check.expertise {
-    border-radius: 3px;
-    transform: rotate(45deg) scale(0.85);
+    border-radius: 2px;
+    transform: rotate(45deg) scale(0.82);
 }
 
-.round-check.expertise:checked {
-    background: var(--accent);
+.round-check.expertise:checked,
+.round-check.demo.expertise {
+    background: linear-gradient(135deg, var(--gem-light) 0 10%, var(--gold) 42%, var(--accent));
 }
 
 .round-check.demo {
     cursor: default;
 }
 
-/* Texte riche (contenteditable) */
+/* Texte riche (contenteditable) : la case s'agrandit avec son contenu, rien n'est caché
+   en bas (hauteur minimale conservée pour garder une zone de saisie confortable) */
 .rich {
     min-height: 90px;
-    max-height: 240px;
-    overflow-y: auto;
-    padding: 6px 8px;
-    border: 1px dashed var(--border-soft);
-    border-radius: 4px;
+    padding: 6px 9px;
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
     background: var(--input-bg);
+    box-shadow: inset 0 1px 3px var(--track);
     font-family: var(--font-text);
     font-size: 1.02rem;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Contour transparent : invisible ici, mais redessiné par le mode « contraste élevé »
+   de Windows, qui efface les ombres (l'anneau doré) */
+.rich:focus {
+    outline: 2px solid transparent;
+    outline-offset: 1px;
+    border-color: var(--gold);
+    box-shadow: inset 0 1px 3px var(--track), 0 0 0 3px var(--gold-soft);
 }
 
 .rich:empty::before {
@@ -202,18 +268,15 @@ select.value-md {
 
 .rich-sm {
     min-height: 60px;
-    max-height: 160px;
 }
 
 .rich-xs {
     min-height: 40px;
-    max-height: 110px;
     font-size: 0.92rem;
 }
 
 .rich-lg {
     min-height: 160px;
-    max-height: 320px;
 }
 
 /* ---------- Boîtes ---------- */
@@ -225,6 +288,7 @@ select.value-md {
     background: var(--box);
     border: 1px solid var(--border-soft);
     border-radius: 6px;
+    box-shadow: var(--pane-shadow);
 }
 
 fieldset.box,
@@ -235,20 +299,74 @@ fieldset.inline-checks {
 .box h3 {
     margin: 0 0 8px;
     font-size: 1rem;
+    letter-spacing: 0.05em;
     border-bottom: 1px solid var(--border-soft);
     padding-bottom: 4px;
+    text-shadow: var(--engrave);
 }
 
 .box h3 label {
     display: inline;
     font-size: inherit;
+    letter-spacing: inherit;
     text-transform: none;
     color: inherit;
 }
 
+/* Titre de section : icône dorée, titre, puis un losange et un filet d'or qui s'efface
+   vers la droite (le losange et le filet sont les pseudo-éléments, placés après le texte) */
+.box > h3 {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 10px;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.box > h3 > .icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: var(--gold);
+}
+
+.box > h3::before {
+    content: "";
+    order: 2;
+    flex: none;
+    width: 5px;
+    height: 5px;
+    margin-left: 3px;
+    background: var(--gold);
+    transform: rotate(45deg);
+}
+
+.box > h3::after {
+    content: "";
+    order: 3;
+    flex: 1 1 24px;
+    height: 1px;
+    margin-left: -6px;
+    background: linear-gradient(to right, var(--gold), var(--gold-soft) 35%, transparent);
+}
+
+/* Sous-titre (Outils, Langues) : petit losange doré */
 .box h4 {
     margin: 0 0 4px;
     font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+.box h4::before {
+    content: "";
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin: 0 7px 0 1px;
+    vertical-align: 0.15em;
+    background: var(--gold);
+    transform: rotate(45deg);
 }
 
 .box-inner {
@@ -311,34 +429,131 @@ fieldset.inline-checks {
     text-overflow: ellipsis;
 }
 
-/* ---------- Onglets ---------- */
-
-.tabs {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 8px;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid var(--border);
+/* Nom du personnage : titre de parchemin, plus grand, doré et gravé.
+   Chaque champ est une colonne : libellés alignés en haut, soulignements alignés en bas */
+.sheet-header {
+    align-items: stretch;
 }
 
+.sheet-header .field {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.sheet-header .field-name .input-title {
+    padding: 0 4px 1px;
+    font-size: 1.7rem;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    color: var(--accent);
+    text-shadow: var(--engrave-title);
+    border-bottom-color: var(--gold-soft);
+}
+
+/* ---------- Onglets : marque-pages de grimoire ----------
+   Onglet actif doré, souligné d'un trait lumineux ; les autres restent discrets.
+   Sous la rangée, un double filet (comme la barre de gestion). */
+
+.tabs {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 20px;
+    padding: 0 6px;
+    border-bottom: 1px solid var(--border);
+}
+
+.tabs::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+    height: 1px;
+    background: var(--border-soft);
+    pointer-events: none;
+}
+
+/* Icône en ligne devant le libellé (elle reste collée au texte quand il passe sur deux
+   lignes) ; le bouton centre verticalement son contenu */
 .tab {
-    padding: 10px 8px;
-    border: 1px solid var(--border);
-    border-radius: 6px 6px 0 0;
-    background: var(--tab-bg);
+    position: relative;
+    display: block;
+    min-height: 46px;
+    padding: 8px 10px;
+    border: 1px solid var(--border-soft);
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    background: linear-gradient(var(--btn-top), var(--tab-bg));
+    /* Texte plein (lisible sur un fond d'écran) : la discrétion vient de l'icône et du fond */
     color: var(--text);
     font-family: var(--font-title);
-    font-size: 0.9rem;
+    font-size: 0.86rem;
     font-weight: 700;
-    line-height: 1.25;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    text-align: center;
+    text-wrap: balance;
     cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.tab .icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 7px;
+    vertical-align: -2px;
+    color: var(--gold);
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.tab:hover {
+    border-color: var(--border);
+}
+
+.tab:hover .icon {
+    opacity: 0.9;
 }
 
 .tab[aria-selected="true"] {
     background: var(--tab-active-bg);
+    border-color: var(--border);
     color: var(--accent);
-    box-shadow: inset 0 -3px 0 var(--accent);
+    text-shadow: var(--engrave);
+}
+
+.tab[aria-selected="true"] .icon {
+    opacity: 1;
+}
+
+/* Trait lumineux sous l'onglet actif, posé sur le filet de la rangée */
+.tab[aria-selected="true"]::after {
+    content: "";
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    bottom: -1px;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(to right, transparent, var(--gold) 18%, var(--gold) 82%, transparent);
+    box-shadow: 0 0 8px 1px var(--gold-glow);
+}
+
+/* Petit losange d'or au sommet du marque-page actif */
+.tab[aria-selected="true"]::before {
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: calc(50% - 3.5px);
+    width: 7px;
+    height: 7px;
+    background: var(--gold);
+    box-shadow: 0 0 6px var(--gold-glow);
+    transform: rotate(45deg);
 }
 
 .tab-panel[hidden] {
@@ -373,21 +588,28 @@ fieldset.inline-checks {
     overflow-wrap: anywhere;
 }
 
+/* Valeur de caractéristique gravée, modificateur dans une pastille bombée cerclée d'or */
 .ability .score {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     font-weight: 700;
+    font-variant-numeric: lining-nums;
+    color: var(--number);
+    text-shadow: var(--engrave);
 }
 
 .ability .mod {
     display: inline-block;
-    min-width: 42px;
+    min-width: 44px;
     margin: 2px 0 6px;
     padding: 1px 8px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--gold);
     border-radius: 12px;
-    background: var(--mod-bg);
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
     font-family: var(--font-title);
     font-weight: 700;
+    color: var(--number);
+    text-shadow: var(--engrave);
 }
 
 .ability .save {
@@ -466,11 +688,13 @@ fieldset.inline-checks {
     position: relative;
 }
 
+/* Remplissage légèrement bombé (reflet en haut) ; en fiche transparente, gallery.css
+   redessine l'hexagone et ce calque ne trace plus que le cadre */
 .ac-hex::before {
     content: '';
     position: absolute;
     inset: 2px;
-    background: var(--hex-bg);
+    background: radial-gradient(ellipse at 50% 22%, var(--hex-light), var(--hex-bg) 72%);
     clip-path: inherit;
 }
 
@@ -513,7 +737,7 @@ fieldset.inline-checks {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 8px;
     font-family: var(--font-title);
     font-weight: 700;
 }
@@ -635,15 +859,22 @@ fieldset.inline-checks {
     gap: 10px;
 }
 
+/* Pastille gravée, cerclée d'or (l'or plein reste réservé aux états actifs : filtre choisi,
+   Rage, bouton enfoncé) ; largeur fixe pour que les listes de dons commencent au même endroit */
 .feat-badge {
     flex: 0 0 auto;
+    min-width: 4.6em;
     padding: 3px 8px;
+    border: 1px solid var(--gold-soft);
     border-radius: 4px;
-    background: var(--accent);
-    color: var(--bg);
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
+    color: var(--accent);
     font-family: var(--font-title);
     font-size: 0.75rem;
     font-weight: 700;
+    text-align: center;
+    text-shadow: var(--engrave);
 }
 
 .feat-asi {
@@ -700,6 +931,13 @@ fieldset.inline-checks {
     color: var(--accent);
 }
 
+.skill-group-head .icon {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    color: var(--gold);
+}
+
 .skill-group-head .mod {
     margin-left: auto;
 }
@@ -721,7 +959,9 @@ fieldset.inline-checks {
     min-width: 32px;
     font-family: var(--font-title);
     font-weight: 700;
+    font-variant-numeric: lining-nums;
     text-align: right;
+    color: var(--number);
 }
 
 .skills-extra {
@@ -737,13 +977,16 @@ fieldset.inline-checks {
     align-items: end;
 }
 
-/* Palier calculé : mêmes taille et graisse que les champs voisins (.input) */
+/* Palier calculé : mêmes police, taille, graisse et couleur que les champs voisins (.input) */
 .odyssey-grid output.value-md {
     font-size: 1rem;
     font-weight: 400;
+    letter-spacing: normal;
     padding: 2px 4px;
     border-bottom: 1px solid transparent;
     line-height: normal;
+    color: var(--text);
+    text-shadow: none;
 }
 
 /* ---------- Onglet 4 : magie & trésor ---------- */
@@ -764,30 +1007,58 @@ fieldset.inline-checks {
 .coin {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
 }
 
+/* Pièces frappées : métal bombé (reflet en haut à gauche), listel gravé près du bord,
+   lettres estampées. Chaque métal donne sa teinte, son reflet et son ombre (base.css). */
 .coin-icon {
+    --metal: var(--coin-gold);
+    --metal-light: var(--coin-gold-light);
+    --metal-dark: var(--coin-gold-dark);
     flex: 0 0 auto;
     display: grid;
     place-items: center;
-    width: 30px;
-    height: 30px;
+    width: 34px;
+    height: 34px;
     aspect-ratio: 1;
     border-radius: 50%;
-    border: 1px solid var(--border);
+    border: 1px solid var(--metal-dark);
     font-family: var(--font-title);
-    font-size: 0.62rem;
+    font-size: 0.66rem;
     font-weight: 700;
-    color: var(--text);
-    background: var(--mod-bg);
+    letter-spacing: 0.03em;
+    color: var(--coin-ink);
+    text-shadow: 0 1px 0 var(--coin-shine);
+    background:
+        radial-gradient(circle closest-side, transparent 74%, var(--metal-dark) 77%, var(--metal-light) 83%, transparent 87%),
+        radial-gradient(circle at 32% 26%, var(--metal-light), var(--metal) 48%, var(--metal-dark));
+    box-shadow: var(--coin-shadow), inset 0 1px 1px var(--coin-shine), inset 0 -2px 3px var(--metal-dark);
 }
 
-.coin-icon.copper { box-shadow: inset 0 0 0 3px var(--coin-copper); }
-.coin-icon.silver { box-shadow: inset 0 0 0 3px var(--coin-silver); }
-.coin-icon.electrum { box-shadow: inset 0 0 0 3px var(--coin-electrum); }
-.coin-icon.gold { box-shadow: inset 0 0 0 3px var(--coin-gold); }
-.coin-icon.platinum { box-shadow: inset 0 0 0 3px var(--coin-platinum); }
+.coin-icon.copper {
+    --metal: var(--coin-copper);
+    --metal-light: var(--coin-copper-light);
+    --metal-dark: var(--coin-copper-dark);
+}
+
+.coin-icon.silver {
+    --metal: var(--coin-silver);
+    --metal-light: var(--coin-silver-light);
+    --metal-dark: var(--coin-silver-dark);
+}
+
+.coin-icon.electrum {
+    --metal: var(--coin-electrum);
+    --metal-light: var(--coin-electrum-light);
+    --metal-dark: var(--coin-electrum-dark);
+}
+
+.coin-icon.platinum {
+    --metal: var(--coin-platinum);
+    --metal-light: var(--coin-platinum-light);
+    --metal-dark: var(--coin-platinum-dark);
+}
 
 /* =============================================================================
    TABLETTES (768 → 1100 px)
@@ -845,8 +1116,19 @@ fieldset.inline-checks {
     }
 
     .tab {
-        font-size: 0.78rem;
-        padding: 8px 4px;
+        padding: 6px 6px;
+        font-size: 0.74rem;
+        letter-spacing: 0.02em;
+    }
+
+    .tab .icon {
+        width: 14px;
+        height: 14px;
+        margin-right: 5px;
+    }
+
+    .sheet-header .field-name .input-title {
+        font-size: 1.5rem;
     }
 
     .combat-layout {
@@ -878,7 +1160,108 @@ fieldset.inline-checks {
         grid-column: 1 / -1;
     }
 
+    /* Les cinq pièces restent sur une seule rangée, plus serrées */
     .coins {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .coin {
+        gap: 6px;
+    }
+
+    .coin-icon {
+        width: 30px;
+        height: 30px;
+    }
+}
+
+/* =============================================================================
+   ÉCRANS TACTILES ET ANIMATIONS
+   ============================================================================= */
+
+/* iPad : cibles de 44 px sous le doigt.
+   Case ronde : la boîte fait 44 px, mais une bordure transparente de 11 px ne laisse voir
+   qu'un rond de 22 px (l'anneau est une ombre intérieure, le fond s'arrête à la bordure).
+   Les marges négatives gardent la place d'origine dans la mise en page. Pas de calque
+   ::after : Safari (iPad) n'en dessine pas sur une case à cocher. À l'écran seulement :
+   imprimée depuis un iPad, la feuille garde ses cases de papier (print.css). */
+@media screen and (pointer: coarse) {
+    .round-check,
+    .round-check:hover:not(:disabled):not(.demo) {
+        width: 44px;
+        height: 44px;
+        margin: -11px -5px;
+        border: 11px solid transparent;
+        background-clip: padding-box;
+        /* pas d'ombre portée : elle serait dessinée au bord de la boîte de 44 px */
+        box-shadow: inset 0 0 0 1.5px var(--check-ring);
+    }
+
+    /* Jet de sauvegarde : la case passe devant le libellé « Sauv. » qui la suit */
+    .ability .save .round-check {
+        position: relative;
+    }
+
+    .round-check:checked,
+    .round-check:checked:hover:not(:disabled):not(.demo),
+    .round-check.demo:not(.expertise) {
+        border-color: transparent;
+        background-clip: padding-box;
+        box-shadow: inset 0 0 0 1.5px var(--gold);
+        /* le halo suit le rond visible (la bordure transparente ne compte pas) */
+        filter: drop-shadow(0 0 3px var(--gold-glow));
+    }
+
+    /* Losange d'expertise : même surface, dessin à la taille d'origine (18 px) */
+    .round-check.expertise,
+    .round-check.expertise:hover:not(:disabled):not(.demo) {
+        border-width: 13px;
+        transform: rotate(45deg);
+    }
+
+    .round-check.expertise:checked,
+    .round-check.demo.expertise {
+        background-clip: padding-box;
+    }
+
+    /* Lignes assez hautes pour que deux cibles voisines ne se recouvrent pas */
+    .skill-row,
+    .check-row,
+    .ability .save {
+        min-height: 44px;
+    }
+
+    .resource-slots {
+        gap: 12px;
+        min-height: 44px;
+        align-items: center;
+    }
+
+    select.input,
+    .sheet-header .input {
+        min-height: 44px;
+    }
+}
+
+/* Desktop : chaque onglet prend la largeur de son libellé, sur une seule ligne
+   (au-dessous de 1200 px, les libellés longs passent sur deux lignes équilibrées) */
+@media (min-width: 1200px) {
+    .tabs {
+        grid-template-columns: repeat(4, auto);
+    }
+
+    .tab {
+        padding-inline: 12px;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tab,
+    .tab .icon,
+    .round-check,
+    .rich {
+        transition: none;
     }
 }

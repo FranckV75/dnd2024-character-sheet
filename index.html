@@ -88,13 +88,13 @@
         <!-- ============================== ONGLETS ============================== -->
         <nav class="tabs" role="tablist" aria-label="Sections de la fiche">
             <button type="button" class="tab" role="tab" id="tab-btn-combat" aria-controls="tab-combat"
-                data-tab="combat">✥ Caractéristiques &amp; Combat</button>
+                data-tab="combat" data-icon="swords"><span class="tab-label">Caractéristiques &amp; Combat</span></button>
             <button type="button" class="tab" role="tab" id="tab-btn-traits" aria-controls="tab-traits"
-                data-tab="traits">✥ Aptitudes &amp; Traits</button>
+                data-tab="traits" data-icon="sparkle"><span class="tab-label">Aptitudes &amp; Traits</span></button>
             <button type="button" class="tab" role="tab" id="tab-btn-role" aria-controls="tab-role"
-                data-tab="role">✥ Compétences &amp; Histoire</button>
+                data-tab="role" data-icon="scroll"><span class="tab-label">Compétences &amp; Histoire</span></button>
             <button type="button" class="tab" role="tab" id="tab-btn-magic" aria-controls="tab-magic"
-                data-tab="magic">✥ Magie, équipement &amp; trésors</button>
+                data-tab="magic" data-icon="book"><span class="tab-label">Magie, équipement &amp; trésors</span></button>
         </nav>
 
         <!-- ======================= ONGLET 1 : COMBAT ======================= -->
@@ -196,7 +196,7 @@
                     <section class="box" id="weapons-feature" aria-label="Armes"></section>
 
                     <section class="box">
-                        <h3>Armures, boucliers &amp; autres avantages défensifs</h3>
+                        <h3 data-icon="shield">Armures, boucliers &amp; autres avantages défensifs</h3>
                         <fieldset class="inline-checks">
                             <legend class="label">Maîtrises d'armures</legend>
                             <label><input type="checkbox" class="round-check" data-field="prof_armor_light">
@@ -213,7 +213,7 @@
                     </section>
 
                     <section class="box rest">
-                        <h3>⚔️ Repos ⚔️</h3>
+                        <h3 data-icon="moon">Repos</h3>
                         <div class="fatigue">
                             <label class="label" for="f-fatigue_level">Épuisement (0-6)</label>
                             <input id="f-fatigue_level" data-field="fatigue_level" data-type="number" type="number"
@@ -231,29 +231,29 @@
         <section class="tab-panel" id="tab-traits" role="tabpanel" aria-labelledby="tab-btn-traits" tabindex="0">
             <div class="stack">
                 <section class="box">
-                    <h3><label for="f-alignment">⚖️ Alignement</label></h3>
+                    <h3 data-icon="scale"><label for="f-alignment">Alignement</label></h3>
                     <input id="f-alignment" data-field="alignment" class="input input-title center" autocomplete="off">
                 </section>
                 <section class="box">
-                    <h3 id="h-traits">🌟 Traits de personnage</h3>
+                    <h3 id="h-traits" data-icon="sparkle">Traits de personnage</h3>
                     <div class="rich" data-field="traits_feats" data-kind="rich" aria-labelledby="h-traits"></div>
                 </section>
                 <section class="box">
-                    <h3>⭐ Dons</h3>
+                    <h3 data-icon="star">Dons</h3>
                     <div class="feats" id="feats"></div>
                 </section>
                 <section class="box">
-                    <h3 id="h-class-features">⚔️ Capacités de classe</h3>
+                    <h3 id="h-class-features" data-icon="swords">Capacités de classe</h3>
                     <div class="rich" data-field="class_features" data-kind="rich" aria-labelledby="h-class-features">
                     </div>
                 </section>
                 <section class="box">
-                    <h3 id="h-companions">🐾 Compagnons &amp; familiers</h3>
+                    <h3 id="h-companions" data-icon="paw">Compagnons &amp; familiers</h3>
                     <div class="rich rich-sm" data-field="companions" data-kind="rich" aria-labelledby="h-companions">
                     </div>
                 </section>
                 <section class="box">
-                    <h3 id="h-synergy">🤝 Synergie entre joueurs</h3>
+                    <h3 id="h-synergy" data-icon="link">Synergie entre joueurs</h3>
                     <div class="rich rich-sm" data-field="synergy" data-kind="rich" aria-labelledby="h-synergy"></div>
                 </section>
             </div>
@@ -263,7 +263,7 @@
         <section class="tab-panel" id="tab-role" role="tabpanel" aria-labelledby="tab-btn-role" tabindex="0">
             <div class="stack">
                 <section class="box">
-                    <h3>Compétences</h3>
+                    <h3 data-icon="target">Compétences</h3>
                     <p class="legend muted"><span class="round-check demo"></span> maîtrise
                         <span class="round-check demo expertise"></span> expertise</p>
                     <div class="skills" id="skills">
@@ -283,7 +283,7 @@
                 </section>
 
                 <section class="box odyssey">
-                    <h3>⚔️ Odyssée des Seigneurs Dragons ⚔️</h3>
+                    <h3 data-icon="crown">Odyssée des Seigneurs Dragons</h3>
                     <div class="odyssey-grid">
                         <div class="field">
                             <label for="f-heroic_destiny">Destin héroïque</label>
@@ -303,12 +303,12 @@
 
                 <div class="two-cols">
                     <section class="box">
-                        <h3 id="h-appearance">Apparence</h3>
+                        <h3 id="h-appearance" data-icon="feather">Apparence</h3>
                         <div class="rich" data-field="appearance" data-kind="rich" aria-labelledby="h-appearance">
                         </div>
                     </section>
                     <section class="box">
-                        <h3 id="h-backstory">Histoire &amp; personnalité</h3>
+                        <h3 id="h-backstory" data-icon="scroll">Histoire &amp; personnalité</h3>
                         <div class="rich" data-field="backstory" data-kind="rich" aria-labelledby="h-backstory"></div>
                     </section>
                 </div>
@@ -337,7 +337,7 @@
                 <section class="box" id="spells-feature" aria-label="Sorts mineurs et sorts préparés"></section>
 
                 <section class="box">
-                    <h3 id="h-equipment">Équipement &amp; trésor</h3>
+                    <h3 id="h-equipment" data-icon="bag">Équipement &amp; trésor</h3>
                     <div class="rich rich-lg" data-field="equipment" data-kind="rich" aria-labelledby="h-equipment">
                     </div>
                     <div class="coins">

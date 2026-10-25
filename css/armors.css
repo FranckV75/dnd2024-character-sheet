@@ -96,18 +96,25 @@
     gap: 2px;
 }
 
+/* Avertissement : triangle dessiné, rouge, dans une petite pastille bombée au survol */
 .armor-warn {
     display: inline-grid;
     place-items: center;
-    min-width: 22px;
-    min-height: 22px;
+    min-width: 24px;
+    min-height: 24px;
     padding: 0;
-    border: none;
-    border-radius: 4px;
+    border: 1px solid transparent;
+    border-radius: 6px;
     background: transparent;
-    font-size: 0.8rem;
+    color: var(--ko);
     line-height: 1;
     cursor: help;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.armor-warn .icon {
+    width: 15px;
+    height: 15px;
 }
 
 .armor-warn[hidden] {
@@ -116,7 +123,37 @@
 
 .armor-warn:hover,
 .armor-warn:focus-visible {
-    background: var(--input-bg);
+    border-color: var(--ko);
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
+}
+
+@media (pointer: coarse) {
+    .armor-warn {
+        position: relative;
+        min-width: 32px;
+        min-height: 32px;
+    }
+
+    /* Zone de toucher de 44 px de haut (32 + 2 × 1 px de cadre + 2 × 5), sans empiéter
+       sur la case « Équipée » à gauche */
+    .armor-warn::after {
+        content: "";
+        position: absolute;
+        inset: -7px -7px -7px -4px;
+    }
+
+    .armor-equip {
+        gap: 6px;
+    }
+
+    .armors-table .col-del { width: 48px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .armor-warn {
+        transition: none;
+    }
 }
 
 /* Ligne à vérifier : liseré discret à gauche */

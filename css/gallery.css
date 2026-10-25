@@ -107,6 +107,18 @@
         :root[data-translucent="true"] .sheet .tab[aria-selected="true"] {
             background: color-mix(in srgb, var(--tab-active-bg) calc(var(--chip-alpha) * 100%), transparent);
         }
+
+        /* « Ajouter … » : un voile de verre sous le libellé, qui reste lisible sur l'illustration */
+        :root[data-translucent="true"] .sheet .add-row:not(:hover) {
+            background: color-mix(in srgb, var(--box-strong) calc(var(--chip-alpha) * 100%), transparent);
+        }
+    }
+
+    /* Titres de section et nom de la ressource de classe : teinte la plus soutenue de
+       l'accent, pour rester lisibles quand l'illustration transparaît */
+    :root[data-translucent="true"] .sheet .box h3,
+    :root[data-translucent="true"] .sheet .class-resource .label.accent {
+        color: var(--accent-strong);
     }
 
     /* L'en-tête n'a pas de cadre sinon : il en reçoit un pour se détacher de l'illustration */
@@ -252,12 +264,15 @@
     }
 }
 
-/* ---------- Galerie (fenêtre) ---------- */
+/* ---------- Galerie (fenêtre) ----------
+   Tuiles bombées comme les boutons de la barre : reflet doré au survol,
+   cadre doré et pastille ✦ pour le fond choisi. */
 
 .gallery-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
+    gap: 12px;
+    padding: 2px;
 }
 
 .gallery-item {
@@ -266,32 +281,58 @@
 }
 
 .gallery-pick {
+    position: relative;
     display: flex;
     flex-direction: column;
     width: 100%;
-    padding: 0;
+    padding: 4px;
     overflow: hidden;
-    border: 2px solid var(--border-soft);
-    border-radius: 6px;
-    background: var(--box);
+    border: 1px solid var(--btn-border);
+    border-radius: 10px;
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
     color: var(--text);
     cursor: pointer;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .gallery-pick:hover {
-    border-color: var(--border);
+    border-color: var(--accent);
+    box-shadow: var(--btn-glow);
+    transform: translateY(-1px);
 }
 
 .gallery-pick[aria-pressed="true"] {
     border-color: var(--accent);
-    box-shadow: 0 0 0 2px var(--accent);
+    box-shadow: var(--btn-shadow), 0 0 0 2px var(--accent);
+}
+
+/* Pastille dorée du fond choisi */
+/* Texte de remplacement vide : l'état choisi est déjà annoncé par aria-pressed */
+.gallery-pick[aria-pressed="true"]::after {
+    content: "✦";
+    content: "✦" / "";
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--accent-strong);
+    border-radius: 50%;
+    background: linear-gradient(var(--accent), var(--accent-strong));
+    box-shadow: var(--btn-shadow);
+    color: var(--btn-top);
+    font-size: 0.65rem;
+    line-height: 1;
 }
 
 .gallery-thumb {
     display: block;
     width: 100%;
-    height: 78px;
+    height: 80px;
+    border-radius: 7px;
     object-fit: cover;
     background: var(--head-bg);
 }
@@ -306,60 +347,81 @@
 
 .gallery-name {
     display: block;
-    padding: 4px 6px;
+    padding: 6px 4px 2px;
     overflow: hidden;
     font-family: var(--font-title);
     font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
     text-align: center;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.gallery-remove {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    background: var(--box-strong);
-    color: var(--ko);
-    border-color: var(--ko);
+.gallery-pick[aria-pressed="true"] .gallery-name {
+    color: var(--accent);
 }
 
-.gallery-remove:hover {
-    background: var(--head-bg);
+/* Retirer un fond ajouté : petite pastille ronde, rouge au survol */
+.gallery-remove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    min-width: 26px;
+    min-height: 26px;
+    padding: 0;
+    border-radius: 50%;
+}
+
+.gallery-remove .icon {
+    width: 12px;
+    height: 12px;
+}
+
+.gallery-remove:hover:not(:disabled),
+.gallery-remove:hover:not(:disabled) .icon {
     border-color: var(--ko);
+    color: var(--ko);
 }
 
 .gallery-add {
-    margin-top: 14px;
-    padding-top: 10px;
+    margin-top: 16px;
+    padding-top: 12px;
     border-top: 1px solid var(--border-soft);
 }
 
 .gallery-add .gallery-add-label {
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .gallery-add-row {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
+/* Cadre, creux et reflet doré au focus : règles communes des champs des fenêtres (components.css) */
 .gallery-url {
     flex: 1 1 220px;
     min-width: 0;
-    padding: 6px 8px;
-    border: 1px solid var(--border-soft);
-    border-radius: 6px;
-    background: var(--input-bg);
-    color: var(--text);
-    font-family: var(--font-text);
-    font-size: 0.95rem;
 }
 
-.gallery-url:focus {
-    border-color: var(--border);
+@media (pointer: coarse) {
+    .gallery-remove {
+        min-width: 36px;
+        min-height: 36px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gallery-pick {
+        transition: none;
+    }
+
+    .gallery-pick:hover {
+        transform: none;
+    }
 }
 
 /* Champ fichier caché visuellement (ouvert par le bouton « Image de l'appareil ») ;
