@@ -13,14 +13,17 @@
 /* ---------- Barre ----------
    Ordinateur, deux lignes alignées à gauche :
      Gestion   [verrou] [nouvelle | importer | exporter | imprimer]        états
-     [thème | cinéma | fonds]  position  zoom  opacité        [compte] [personnages] */
+     [thème | cinéma | fonds]  position  zoom  opacité        [compte] [personnages]
+   Les deux premières colonnes prennent la taille de leurs boutons ; la dernière prend le
+   reste. Les états (texte variable : « enregistrement en ligne… », nom de la fiche…) y sont
+   coupés par « … » plutôt que d'élargir la colonne : la disposition ne bouge jamais. */
 
 .app-bar {
     position: sticky;
     top: 8px;
     z-index: 10;
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto auto minmax(0, 1fr);
     grid-template-areas:
         "brand fiche statuses"
         "view view account";
@@ -90,6 +93,7 @@
 
 #toolbar-panel {
     grid-area: fiche;
+    flex-wrap: nowrap;
 }
 
 #view-group {
@@ -100,6 +104,7 @@
 #account-group {
     grid-area: account;
     justify-self: end;
+    flex-wrap: nowrap;
 }
 
 /* États : compte (italique) au-dessus du dernier enregistrement */
@@ -110,19 +115,27 @@
     flex-direction: column;
     align-items: flex-end;
     gap: 2px;
+    width: 100%;
     min-width: 0;
     text-align: right;
     line-height: 1.25;
 }
 
+/* Une ligne chacun, coupée par « … » si elle est trop longue (texte complet au survol) ;
+   la place des deux lignes reste réservée même vides : la barre garde sa hauteur */
+.app-bar-statuses > *,
+.app-bar-statuses .account-status {
+    display: block;
+    min-height: 1.25em;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .app-bar-status {
     font-size: 0.82rem;
     color: var(--text-muted);
-}
-
-.app-bar-status:empty,
-.account-status-host:empty {
-    display: none;
 }
 
 /* ---------- Boutons de la barre : bombés, icône dorée, reflet au survol ---------- */
@@ -273,6 +286,11 @@
 
     #account-group {
         justify-self: stretch;
+    }
+
+    #toolbar-panel,
+    #account-group {
+        flex-wrap: wrap;
     }
 
     /* Repliée : une seule ligne (sans les écarts des lignes masquées) */
