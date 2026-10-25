@@ -48,13 +48,14 @@
     min-width: 780px;
 }
 
+/* La botte d'arme (utile à la table) passe avant les colonnes souvent vides */
 .weapons-col-name { width: 20%; }
-.weapons-col-atk { width: 10%; }
-.weapons-col-dmg { width: 16%; }
-.weapons-col-prop { width: 17%; }
-.weapons-col-prof { width: 11%; }
-.weapons-col-ammo { width: 11%; }
-.weapons-col-note { width: 15%; }
+.weapons-col-atk { width: 9%; }
+.weapons-col-dmg { width: 14%; }
+.weapons-col-prop { width: 18%; }
+.weapons-col-prof { width: 17%; }
+.weapons-col-ammo { width: 10%; }
+.weapons-col-note { width: 12%; }
 .weapons-col-actions { width: 70px; }
 
 [data-locked="true"] .weapons-col-actions {
@@ -98,6 +99,46 @@
 
 .weapons-table tr[hidden] {
     display: none;
+}
+
+/* En-tête abrégé (« Mun. ») : seulement sur tablette */
+.weapons-th-short {
+    display: none;
+}
+
+/* Tablettes : le tableau tient dans la carte, sans défilement horizontal
+   (les boutons de configuration et de suppression restent visibles) */
+@media screen and (max-width: 1000px) {
+    .weapons-table { min-width: 0; }
+    .weapons-table th,
+    .weapons-table td { padding: 4px 3px; }
+    .weapons-table th { overflow-wrap: anywhere; }
+    /* Nom, bonus, dégâts et botte d'arme lisibles en entier à 820 px ;
+       les propriétés et notes longues sont abrégées (…) */
+    .weapons-col-name { width: 24%; }
+    .weapons-col-atk { width: 10%; }
+    .weapons-col-dmg { width: 16%; }
+    .weapons-col-prop { width: 14%; }
+    .weapons-col-prof { width: 20%; }
+    .weapons-col-ammo { width: 7%; }
+    .weapons-col-note { width: 9%; }
+    /* Deux boutons de 28 px + 2 px d'écart + 2 × 2 px de marge */
+    .weapons-col-actions { width: 62px; }
+    .weapons-table td.weapons-actions { padding-inline: 2px; }
+    .weapons-actions .btn-icon + .btn-icon { margin-left: 2px; }
+    .weapons-th-short { display: inline; }
+    /* Libellé complet gardé pour les lecteurs d'écran */
+    .weapons-th-long {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+    }
 }
 
 [data-locked="true"] .weapons-table .cell-input[readonly]:hover,

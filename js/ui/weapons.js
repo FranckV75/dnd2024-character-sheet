@@ -17,7 +17,7 @@ import {
     readWeaponConfig, buildWeaponConfig, normalizeDamageDie, buffsForClass, effectiveBuffs, toggleBuff,
     removeWeapon, restoreWeapon, WEAPON_DAMAGE_TYPES
 } from '../rules/weapons.js';
-import { el } from './dom.js';
+import { el, icon } from './dom.js';
 import { openModal } from './modal.js';
 import { attachAutocomplete } from './autocomplete.js';
 import { isLocked } from './lock.js';
@@ -34,7 +34,8 @@ const FILTERS = [
 const TEXT_COLUMNS = [
     { key: 'prop', label: 'Propriétés' },
     { key: 'prof', label: "Botte d'arme" },
-    { key: 'ammo', label: 'Munitions' },
+    // Libellé court affiché sur tablette (colonne étroite), le libellé complet reste lu
+    { key: 'ammo', label: 'Munitions', short: 'Mun.' },
     { key: 'note', label: 'Notes' }
 ];
 
@@ -137,7 +138,11 @@ export function initWeapons(ctx) {
                     el('th', { scope: 'col', text: 'Nom' }),
                     el('th', { scope: 'col', text: 'Bonus att.' }),
                     el('th', { scope: 'col', text: 'Dégâts' }),
-                    TEXT_COLUMNS.map(c => el('th', { scope: 'col', text: c.label })),
+                    TEXT_COLUMNS.map(c => (c.short
+                        ? el('th', { scope: 'col', title: c.label },
+                            el('span', { class: 'weapons-th-long', text: c.label }),
+                            el('span', { class: 'weapons-th-short', 'aria-hidden': 'true', text: c.short }))
+                        : el('th', { scope: 'col', text: c.label }))),
                     el('th', { scope: 'col', class: 'edit-only' }, el('span', { class: 'weapons-sr', text: 'Actions' })))),
                 tbody)),
         undoBox,
@@ -241,6 +246,7 @@ export function initWeapons(ctx) {
         });
 
         const inputs = { name: textInput('name') };
+        inputs.name.placeholder = 'Nom…';
         for (const column of TEXT_COLUMNS) inputs[column.key] = textInput(column.key);
 
         // Nom saisi à la main et reconnu dans le manuel : calcul automatique activé
@@ -264,11 +270,11 @@ export function initWeapons(ctx) {
         const configBtn = el('button', {
             type: 'button', class: 'btn-icon', title: "Configuration de l'arme",
             on: { click: () => openConfig(index) }
-        }, el('span', { 'aria-hidden': 'true', text: '⚙️' }));
+        }, icon('gear'));
         const deleteBtn = el('button', {
             type: 'button', class: 'btn-icon', title: "Supprimer l'arme",
             on: { click: () => deleteWeapon(index) }
-        }, el('span', { 'aria-hidden': 'true', text: '🗑' }));
+        }, icon('trash'));
 
         const tr = el('tr', {},
             el('td', {}, inputs.name),

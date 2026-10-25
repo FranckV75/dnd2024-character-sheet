@@ -155,6 +155,21 @@ select.value-md {
     border-bottom-color: transparent;
 }
 
+/* Grande valeur vide (PV actuels / maximum) : garder un repère de saisie à l'écran
+   (rien sur le papier : print.css rend les indications transparentes) */
+@media screen {
+    input.value-lg:placeholder-shown:not([readonly]),
+    input.value-md:placeholder-shown:not([readonly]) {
+        border-bottom-color: var(--border-soft);
+    }
+
+    input.value-lg::placeholder,
+    input.value-md::placeholder {
+        color: var(--text-muted);
+        opacity: 0.6;
+    }
+}
+
 [hidden] {
     display: none;
 }
@@ -278,6 +293,16 @@ fieldset.inline-checks {
     display: grid;
     grid-template-columns: 1fr 2fr;
     gap: 14px;
+}
+
+/* Les deux cartes ont la même hauteur (grille) : la zone de texte remplit la sienne */
+.two-cols > .box {
+    display: flex;
+    flex-direction: column;
+}
+
+.two-cols > .box > .rich {
+    flex: 1 1 auto;
 }
 
 /* ---------- En-tête ---------- */
@@ -735,6 +760,15 @@ fieldset.inline-checks {
     grid-template-columns: 1.8fr 0.8fr 1.4fr;
     gap: 12px;
     align-items: end;
+}
+
+/* Palier calculé : mêmes taille et graisse que les champs voisins (.input) */
+.odyssey-grid output.value-md {
+    font-size: 1rem;
+    font-weight: 400;
+    padding: 2px 4px;
+    border-bottom: 1px solid transparent;
+    line-height: normal;
 }
 
 /* ---------- Onglet 4 : magie & trésor ---------- */

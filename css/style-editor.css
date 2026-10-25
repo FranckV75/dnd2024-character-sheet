@@ -172,3 +172,32 @@
 [data-kind="rich"] font[size="5"] { font-size: 1.35em; }
 [data-kind="rich"] font[size="6"] { font-size: 1.6em; }
 [data-kind="rich"] font[size="7"] { font-size: 2em; }
+
+/* ---------- Anciennes couleurs v3 en mode nuit ----------
+   Palette v3 (#1a1a1a, #8b0000, #00008b, #006400, #6a0dad, #d2691e) : trop sombre sur le
+   fond nuit. Elle est remplacée par la palette actuelle, à l'affichage seulement ; le texte
+   enregistré ne change pas (format partagé avec la v3). Un style="color:…" en ligne ne peut
+   pas être surchargé sans !important, d'où -webkit-text-fill-color (prioritaire sur color
+   pour le dessin du texte). */
+:root[data-theme="dark"] [data-kind="rich"] font[color="#1a1a1a" i] { color: inherit; }
+:root[data-theme="dark"] [data-kind="rich"] font[color="#8b0000" i] { color: var(--se-red); }
+:root[data-theme="dark"] [data-kind="rich"] font[color="#00008b" i] { color: var(--se-blue); }
+:root[data-theme="dark"] [data-kind="rich"] font[color="#006400" i] { color: var(--se-green); }
+:root[data-theme="dark"] [data-kind="rich"] font[color="#6a0dad" i] { color: var(--se-purple); }
+:root[data-theme="dark"] [data-kind="rich"] font[color="#d2691e" i] { color: var(--se-orange); }
+
+:root[data-theme="dark"] [data-kind="rich"] :is([style*="rgb(26, 26, 26)"], [style*="#1a1a1a" i]) { -webkit-text-fill-color: var(--text); }
+:root[data-theme="dark"] [data-kind="rich"] :is([style*="rgb(139, 0, 0)"], [style*="#8b0000" i]) { -webkit-text-fill-color: var(--se-red); }
+:root[data-theme="dark"] [data-kind="rich"] :is([style*="rgb(0, 0, 139)"], [style*="#00008b" i]) { -webkit-text-fill-color: var(--se-blue); }
+:root[data-theme="dark"] [data-kind="rich"] :is([style*="rgb(0, 100, 0)"], [style*="#006400" i]) { -webkit-text-fill-color: var(--se-green); }
+:root[data-theme="dark"] [data-kind="rich"] :is([style*="rgb(106, 13, 173)"], [style*="#6a0dad" i]) { -webkit-text-fill-color: var(--se-purple); }
+:root[data-theme="dark"] [data-kind="rich"] :is([style*="rgb(210, 105, 30)"], [style*="#d2691e" i]) { -webkit-text-fill-color: var(--se-orange); }
+
+/* text-fill-color s'hérite : une autre couleur posée à l'intérieur doit rester visible
+   (une ancienne couleur v3 imbriquée garde sa propre règle ci-dessus) */
+:root[data-theme="dark"] [data-kind="rich"] [style*="color"] :is(font[color], [style*="color"]):not(
+    [style*="rgb(26, 26, 26)"], [style*="#1a1a1a" i], [style*="rgb(139, 0, 0)"], [style*="#8b0000" i],
+    [style*="rgb(0, 0, 139)"], [style*="#00008b" i], [style*="rgb(0, 100, 0)"], [style*="#006400" i],
+    [style*="rgb(106, 13, 173)"], [style*="#6a0dad" i], [style*="rgb(210, 105, 30)"], [style*="#d2691e" i]) {
+    -webkit-text-fill-color: initial;
+}

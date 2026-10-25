@@ -20,7 +20,7 @@ let counter = 0;
  */
 export function attachAutocomplete(input, { getItems, onSelect, minChars = 2, maxItems = 12 }) {
     const listId = `autocomplete-${++counter}`;
-    const list = el('ul', { class: 'autocomplete-list', id: listId, role: 'listbox', hidden: true });
+    const list = el('ul', { class: 'autocomplete-list', id: listId, role: 'listbox', 'aria-label': 'Suggestions', hidden: true });
     let items = [];
     let active = -1;
 
@@ -72,6 +72,9 @@ export function attachAutocomplete(input, { getItems, onSelect, minChars = 2, ma
         }, el('span', { class: 'autocomplete-label', text: item.label }),
         item.detail ? el('span', { class: 'autocomplete-detail', text: item.detail }) : null)));
         position();
+        // Nom de la liste relu à chaque ouverture : le libellé du champ peut changer (renumérotation)
+        const inputName = input.getAttribute('aria-label') || input.labels?.[0]?.textContent?.trim() || '';
+        list.setAttribute('aria-label', inputName ? `Suggestions : ${inputName}` : 'Suggestions');
         list.hidden = false;
         input.setAttribute('aria-expanded', 'true');
         active = -1;

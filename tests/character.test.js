@@ -142,6 +142,16 @@ describe('Classe d\'Armure', () => {
         assert.equal(armorCategory({ name: 'Cotte de mailles' }), 'heavy');
         assert.equal(armorCategory({ name: 'Objet inconnu' }), '');
     });
+
+    test('Type explicite « none » : le nom ne compte pas, CA sans armure', () => {
+        assert.equal(armorCategory({ name: 'Cotte de mailles', type: 'none' }), '');
+        const res = computeArmorClass({
+            armors: [{ name: 'Cotte de mailles', type: 'none', ca: '', equipped: true }],
+            mods: MODS, pb: 2
+        });
+        assert.equal(res.value, 10 + MODS.dex);
+        assert.equal(res.source, 'Sans armure');
+    });
 });
 
 describe('Sorts, épuisement et attaque sournoise', () => {

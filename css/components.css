@@ -95,6 +95,26 @@
     background: var(--input-bg);
 }
 
+/* Écrans tactiles (iPad) : pas de survol, le soulignement des cases modifiables reste visible */
+@media screen and (hover: none) {
+    .data-table .cell-input:not([readonly]):not(:disabled) {
+        border-bottom-color: var(--border-soft);
+    }
+}
+
+/* Indication « Nom… » des lignes vides : à l'écran seulement (jamais sur le papier) */
+@media screen {
+    .data-table .cell-input::placeholder {
+        color: var(--text-muted);
+        opacity: 0.6;
+    }
+
+    /* Fiche verrouillée : pas d'invitation à saisir dans une case figée */
+    .data-table .cell-input[readonly]::placeholder {
+        color: transparent;
+    }
+}
+
 /* ---------- Fenêtres (modal.js) ---------- */
 
 .modal {

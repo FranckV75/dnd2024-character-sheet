@@ -13,7 +13,7 @@ import { parseNumber } from '../rules/character.js';
 import {
     ARMOR_TYPES, searchArmorCatalogue, armorRowFromCatalogue, armorWarnings, armorTraining
 } from '../rules/armors.js';
-import { el } from './dom.js';
+import { el, icon } from './dom.js';
 import { attachAutocomplete } from './autocomplete.js';
 import { confirmModal } from './modal.js';
 import { isLocked } from './lock.js';
@@ -110,6 +110,10 @@ export function initArmors({ root, store, setStatus }) {
         const at = list.indexOf(row);
         if (at === -1) return;
         store.update({ dynamic_armors: list.filter((_, i) => i !== at) });
+        // Le bouton supprimé a disparu avec la ligne : le focus va au bouton voisin (ou à « Ajouter »)
+        if (!document.activeElement || document.activeElement === document.body) {
+            (rows[Math.min(at, rows.length - 1)]?.tr.querySelector('.col-del button') || addButton).focus();
+        }
         setStatus(name ? `Armure supprimée : ${name}` : 'Ligne d\'armure supprimée');
     }
 
@@ -129,6 +133,7 @@ export function initArmors({ root, store, setStatus }) {
     function buildRow(index) {
         const controls = {};
         for (const key of Object.keys(TEXT_COLUMNS)) controls[key] = textInput(index, key);
+        controls.name.placeholder = 'Nom…';
 
         controls.type = el('select', {
             class: 'cell-input', 'aria-label': `Type d'équipement défensif (ligne ${index + 1})`,
@@ -155,7 +160,17 @@ export function initArmors({ root, store, setStatus }) {
             type: 'button', class: 'btn-icon edit-only', title: 'Supprimer',
             'aria-label': `Supprimer l'armure (ligne ${index + 1})`,
             on: { click: () => deleteRow(index) }
-        }, el('span', { 'aria-hidden': 'true', text: '🗑' }));
+        }, icon('trash'));
+
+        // Nom saisi au clavier (sans passer par les suggestions) : si c'est exactement une armure
+        // du manuel et que le type n'est pas encore choisi, la ligne est complétée comme une suggestion
+        controls.name.addEventListener('change', () => {
+            const row = asObject(armorsOf(store.get())[index]);
+            if (typeOf(row) !== 'none') return;
+            const name = textOf(row.name).trim().toLowerCase();
+            const entry = name && searchArmorCatalogue(name).find(a => a.name.toLowerCase() === name);
+            if (entry) replaceRow(index, current => armorRowFromCatalogue(entry, current));
+        });
 
         detachers.push(attachAutocomplete(controls.name, {
             minChars: 1,
@@ -209,6 +224,8 @@ export function initArmors({ root, store, setStatus }) {
             select.append(el('option', { value, 'data-legacy': 'true', text: `${value} (valeur enregistrée)` }));
         }
         if (select.value !== value) select.value = value;
+        // Libellé complet au survol si la colonne est trop étroite pour l'afficher
+        select.title = select.selectedOptions[0]?.textContent || '';
     }
 
     function fill(character) {

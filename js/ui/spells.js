@@ -22,7 +22,7 @@ import {
     nextFreeSlotLevel
 } from '../rules/spells.js';
 import { loadSpells } from '../data/spells.js';
-import { el } from './dom.js';
+import { el, icon } from './dom.js';
 import { attachAutocomplete } from './autocomplete.js';
 import { confirmModal } from './modal.js';
 import { isLocked } from './lock.js';
@@ -303,6 +303,7 @@ export function initSpells(ctx) {
         });
 
         r.name = textInput('name');
+        r.name.placeholder = 'Nom…';
         r.texts = {};
         for (const [key] of TEXT_COLUMNS) r.texts[key] = textInput(key);
         r.note = textInput('note');
@@ -317,9 +318,9 @@ export function initSpells(ctx) {
         });
 
         r.del = el('button', {
-            type: 'button', class: 'btn-icon spell-del', text: '🗑',
+            type: 'button', class: 'btn-icon spell-del', title: 'Supprimer le sort', 'aria-label': 'Supprimer le sort',
             on: { click: () => deleteRow(r) }
-        });
+        }, icon('trash'));
 
         r.name.addEventListener('mouseenter', () => scheduleShow(r, 'hover'));
         r.name.addEventListener('mouseleave', scheduleHide);
@@ -357,6 +358,16 @@ export function initSpells(ctx) {
             el('td', { class: 'col-crm' }, el('span', { class: 'spell-flags' }, flagLabels)),
             el('td', { class: 'col-note' }, r.note),
             el('td', { class: 'col-del edit-only' }, r.del));
+
+        // La ligne reste affichée tant que le focus y est ; le filtre de niveau est réappliqué
+        // quand le focus la quitte (niveau modifié pendant que le filtre est actif)
+        r.tr.addEventListener('focusout', (event) => {
+            if (r.tr.contains(event.relatedTarget)) return;
+            setTimeout(() => {
+                if (!r.tr.isConnected || r.tr.contains(document.activeElement)) return;
+                render(store.get(), ['dynamic_spells']);
+            }, 0);
+        });
         return r;
     }
 

@@ -8,7 +8,8 @@
 //  - Tablette : elle suit la sélection (selectionchange) et se place DESSOUS, pour ne
 //    pas recouvrir le menu natif du système (Copier / Coller...).
 //  - Clavier : Alt+F10 depuis le champ place le focus dans la barre ; flèches,
-//    Début / Fin pour naviguer ; Échap revient au texte. Ctrl+B / I / U restent
+//    Début / Fin pour naviguer ; Échap ou Tab revient au texte (la sélection est
+//    gardée, la barre ne revient qu'à la sélection suivante). Ctrl+B / I / U restent
 //    gérés nativement par le navigateur.
 //  - Masquée : Échap, clic ou focus hors du champ, sélection sortie de l'écran,
 //    fiche verrouillée, fiche remplacée (chargement, import).
@@ -126,6 +127,10 @@ export function initStyleEditor({ root, store, setStatus }) {
     let mouseSelecting = false;
     let lastPointerType = 'mouse';
     let frame = 0;
+    /** Sélection rendue au champ par Échap / Tab : la barre ne revient pas tant qu'elle ne change pas */
+    let dismissedRange = null;
+    const sameRange = (a, b) => a.compareBoundaryPoints(Range.START_TO_START, b) === 0
+        && a.compareBoundaryPoints(Range.END_TO_END, b) === 0;
 
     // ------------------------------------------------------------------ Barre
 
@@ -322,6 +327,12 @@ export function initStyleEditor({ root, store, setStatus }) {
         field = info.target;
         savedRange = info.range.cloneRange();
         if (!info.range.collapsed) pointAnchor = null;
+        if (dismissedRange) {
+            // Même sélection que celle qu'Échap / Tab a fermée : la barre reste masquée
+            if (sameRange(info.range, dismissedRange)) return;
+            // Sélection modifiée : comportement normal
+            dismissedRange = null;
+        }
         if (mouseSelecting) {
             if (!pinned && isVisible()) hide();
             return;
@@ -440,7 +451,20 @@ export function initStyleEditor({ root, store, setStatus }) {
         onCommand(button);
     });
 
+    /** Fermer la barre et rendre le texte (avec sa sélection) au champ */
+    function dismiss(fromToolbar) {
+        dismissedRange = savedRange ? savedRange.cloneRange() : null;
+        hide();
+        if (fromToolbar && canEdit()) restoreRange();
+    }
+
     toolbar.addEventListener('keydown', (event) => {
+        // Tab / Maj+Tab : retour au champ (un second Tab poursuit dans l'ordre normal)
+        if (event.key === 'Tab') {
+            event.preventDefault();
+            dismiss(true);
+            return;
+        }
         const list = buttons();
         const index = list.indexOf(document.activeElement);
         let next = null;
@@ -490,6 +514,7 @@ export function initStyleEditor({ root, store, setStatus }) {
         if (!target || !target.isContentEditable || isLocked() || lastPointerType === 'touch') return;
         event.preventDefault();
         mouseSelecting = false;
+        dismissedRange = null;
         field = target;
         const info = selectionInRich();
         savedRange = info && info.target === target ? info.range.cloneRange() : caretAtEnd(target);
@@ -506,6 +531,7 @@ export function initStyleEditor({ root, store, setStatus }) {
         const target = richOf(event.target);
         if (!target || !target.isContentEditable || isLocked()) return;
         event.preventDefault();
+        dismissedRange = null;
         field = target;
         const info = selectionInRich();
         savedRange = info && info.target === target ? info.range.cloneRange() : caretAtEnd(target);
@@ -519,9 +545,7 @@ export function initStyleEditor({ root, store, setStatus }) {
     // Échap : fermer la barre (et revenir au texte si le focus était dans la barre)
     document.addEventListener('keydown', (event) => {
         if (event.key !== 'Escape' || !isVisible()) return;
-        const fromToolbar = inToolbar(document.activeElement);
-        hide();
-        if (fromToolbar && canEdit()) restoreRange();
+        dismiss(inToolbar(document.activeElement));
     });
 
     // Raccourcis natifs Ctrl+B / I / U : mettre à jour l'état des boutons
@@ -556,6 +580,7 @@ export function initStyleEditor({ root, store, setStatus }) {
         hide();
         field = null;
         savedRange = null;
+        dismissedRange = null;
     };
     document.addEventListener('dd:lockchange', () => {
         if (isLocked()) reset();

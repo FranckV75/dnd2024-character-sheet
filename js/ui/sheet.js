@@ -165,8 +165,15 @@ function subclassesOf(className) {
     return slug ? Object.values(DD_RULES.subclasses).filter(s => s.class === slug) : [];
 }
 
-/** Garantit qu'une valeur enregistrée reste visible même si elle n'est pas dans la liste */
+/**
+ * Garantit qu'une valeur enregistrée reste visible même si elle n'est pas dans la liste.
+ * Les options « (valeur enregistrée) » d'une autre valeur (fiche précédente, choix
+ * abandonné) sont retirées : elles ne doivent plus pouvoir être choisies.
+ */
 function ensureOption(select, value) {
+    for (const option of select.querySelectorAll('option[data-legacy]')) {
+        if (option.value !== value) option.remove();
+    }
     if (!value || [...select.options].some(o => o.value === value)) return;
     select.append(el('option', { value, 'data-legacy': 'true', text: `${stripHTML(value)} (valeur enregistrée)` }));
 }
