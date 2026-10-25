@@ -27,13 +27,24 @@
 </head>
 
 <body>
-    <!-- Barre de gestion : construite par js/ui/toolbar.js ; #appearance-controls est rempli par js/ui/gallery.js -->
+    <!-- Barre de gestion (disposition : css/toolbar.css)
+         - #toolbar-feature : bouton de repli, titre et commandes de la fiche (js/ui/toolbar.js)
+         - #view-group : thème et cinéma (toolbar.js), fonds et curseurs (js/ui/gallery.js)
+         - #account-group : connexion et « Mes personnages » (js/ui/account.js)
+         - .app-bar-statuses : état du compte (account.js) et de l'enregistrement (main.js) -->
     <div class="app-bar" id="app-bar" role="region" aria-label="Gestion de la fiche">
         <div id="toolbar-feature" class="toolbar-feature"></div>
-        <!-- Compte en ligne (connexion, « Mes personnages ») : construit par js/ui/account.js -->
-        <div id="account-controls" class="account-controls"></div>
-        <div id="appearance-controls" class="appearance-controls"></div>
-        <span id="save-status" class="app-bar-status" role="status" aria-live="polite"></span>
+        <div id="view-group" class="app-bar-group app-bar-view" role="group" aria-label="Affichage">
+            <div id="view-controls" class="btn-group"></div>
+            <div id="appearance-controls" class="appearance-controls"></div>
+        </div>
+        <div id="account-group" class="app-bar-group app-bar-account" role="group" aria-label="Compte en ligne">
+            <div id="account-controls" class="account-controls"></div>
+        </div>
+        <div class="app-bar-statuses">
+            <span id="account-status-host" class="account-status-host"></span>
+            <span id="save-status" class="app-bar-status" role="status" aria-live="polite"></span>
+        </div>
     </div>
 
     <main class="sheet">

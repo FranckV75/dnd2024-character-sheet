@@ -11,6 +11,8 @@ Toutes les modifications notables du projet sont documentées dans ce fichier. L
 - Tableaux d'armes, d'armures et de sorts : les cases passent à la ligne et s'agrandissent au lieu de tronquer le texte (nom complet de l'arme, dégâts, propriétés) ; plus de défilement interne.
 - Valeurs des tableaux en Alegreya (en-têtes en Cinzel) : plus lisibles, mots jamais coupés à 820 px ; colonne des propriétés élargie sur tablette.
 - Fiche transparente façon v3 : les cadres de texte suivent le curseur d'opacité (deux tons, l'illustration se voit à travers), verre dépoli derrière la fiche, ombre et reflet légers sur les cadres ; l'hexagone de la CA garde son contour.
+- Barre « Gestion » redessinée : barre flottante en verre dépoli à double filet doré, commandes ordonnées (Fiche ; Affichage et Compte ; états à droite), boutons groupés à icônes dessinées, glissières dorées ; une seule ligne repliée sur tablette.
+- Thème sombre : illustration de fond moins assombrie.
 ### Fixed
 - Champ en cours de saisie rafraîchi quand une autre version de la fiche est chargée.
 - Noms v3 sur plusieurs lignes lus comme la v3 (« Kor gul »).

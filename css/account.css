@@ -9,20 +9,15 @@
     gap: 8px;
 }
 
-/* Information (pas un bouton) : texte courant en italique, sans cadre ni majuscules */
+/* Information (pas un bouton) : texte courant en italique, sans cadre ni majuscules,
+   rangé à droite de la barre (toolbar.css, .app-bar-statuses) */
 .account-status {
     font-family: var(--font-text);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-style: italic;
     font-weight: 400;
     color: var(--text-muted);
     cursor: help;
-}
-
-@media (pointer: coarse) {
-    .account-controls .btn {
-        min-height: 44px;
-    }
 }
 
 /* ---------- Formulaires ---------- */
