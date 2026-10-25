@@ -5,8 +5,9 @@ HTML/CSS/JavaScript natifs, modules ES chargés directement par le navigateur (a
 ## Arborescence
 
 ```
-index.html              Page de la fiche (point d'entrée : js/main.js)
-css/base.css            Jetons de thème clair / sombre (variables CSS)
+index.html              Page de la fiche : en-tête, 4 onglets (point d'entrée : js/main.js)
+css/base.css            Jetons de thème clair / sombre (variables CSS), typographie
+css/sheet.css           Mise en page de la fiche, tablettes 768–1100 px
 js/
 ├── main.js             Démarrage de l'application
 ├── data/               Données du jeu (objets exportés, aucun accès au navigateur)
@@ -23,11 +24,16 @@ js/
 │   ├── migrate.js      Conversion de toute ancienne sauvegarde vers le format courant
 │   ├── store.js        Source unique de vérité + abonnements
 │   └── persistence.js  localStorage (mêmes clés que la v3) et fichiers JSON
-└── ui/                 Interface (étape 3 et suivantes)
+└── ui/                 Interface
+    ├── sheet.js        Construit la fiche, relie chaque champ data-field au store,
+    │                   affiche les valeurs calculées (data-out)
+    ├── tabs.js         Onglets accessibles (clavier, onglet mémorisé)
+    ├── sanitize.js     Nettoyage du texte riche via DOMPurify
     └── theme.js        Thème clair / sombre
 data/spells.json        Base de sorts (chargée à la demande)
 assets/backgrounds/     Fonds d'écran WebP
 dev/validation.html     Page temporaire de validation des étapes 0 à 2
+dev/polices.html        Échantillons de polices pour les textes longs
 scripts/serve.js        Serveur local (npm run dev)
 scripts/check.js        Garde-fous (npm run check)
 tests/                  Tests Node (npm test) ; tests/fixtures/local/ = vraies sauvegardes, non publiées
@@ -50,6 +56,16 @@ supabase/policies.sql   Règles de sécurité de la base (inchangées depuis la 
  Affichage   rules/character.js   Sauvegarde automatique
              (valeurs calculées)  (state/persistence.js, Supabase)
 ```
+
+## Liaison interface ↔ personnage
+
+- Chaque champ de saisie porte `data-field="<clé de la sauvegarde>"` (ex. `data-field="str_score"`).
+  Toute saisie appelle `store.update()` ; tout changement du store ré-affiche la fiche.
+- Les valeurs calculées portent `data-out="<nom>"` (ex. `data-out="mod:str"`), remplies à partir de
+  `deriveCharacter()`. Elles ne sont jamais enregistrées : la fiche recalcule tout au chargement.
+- Les champs courts sont de vrais `<input>` (texte simple) ; les textes longs sont des zones
+  `contenteditable` (`data-kind="rich"`) nettoyées par DOMPurify.
+- Un champ en cours de saisie n'est jamais réécrit (le curseur ne saute pas).
 
 ## Format de la fiche
 

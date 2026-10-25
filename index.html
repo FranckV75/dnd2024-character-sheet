@@ -4,19 +4,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="notranslate">
     <title>Feuille de Personnage D&amp;D 2024</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/sheet.css">
 </head>
 
 <body>
-    <main class="placeholder">
-        <h1>Feuille de Personnage D&amp;D 2024</h1>
-        <p>Version 4 en cours de reconstruction.</p>
-        <p><a href="dev/validation.html">Page de validation (étapes 0 à 2)</a></p>
+    <div class="app-bar" role="toolbar" aria-label="Actions de la fiche">
+        <span class="app-bar-title">Gestion</span>
+        <label class="btn" for="file-import">📂 Importer</label>
+        <input type="file" id="file-import" accept=".json,application/json" hidden>
+        <button type="button" class="btn" id="btn-export">⬇️ Exporter</button>
+        <button type="button" class="btn" id="btn-theme" aria-label="Basculer le thème clair / sombre">🌗</button>
+        <span id="save-status" class="app-bar-status" role="status" aria-live="polite"></span>
+    </div>
+
+    <main class="sheet">
+        <!-- ============================== EN-TÊTE ============================== -->
+        <header class="sheet-header">
+            <div class="field field-name">
+                <label for="f-char_name">Nom du personnage</label>
+                <input id="f-char_name" data-field="char_name" class="input input-title" autocomplete="off">
+            </div>
+            <div class="field">
+                <label for="f-char_class">Classe</label>
+                <select id="f-char_class" data-field="char_class" class="input input-title"></select>
+            </div>
+            <div class="field field-narrow">
+                <label for="f-char_level">Niveau</label>
+                <input id="f-char_level" data-field="char_level" class="input input-title center" inputmode="numeric"
+                    autocomplete="off">
+            </div>
+            <div class="field">
+                <label for="f-char_background">Historique</label>
+                <select id="f-char_background" data-field="char_background" class="input input-title"></select>
+            </div>
+            <div class="field">
+                <label for="f-char_species">Espèce</label>
+                <select id="f-char_species" data-field="char_species" class="input input-title"></select>
+            </div>
+            <div class="field field-wide">
+                <label for="f-char_subclass">Sous-classe</label>
+                <select id="f-char_subclass" data-field="char_subclass" class="input input-title"></select>
+            </div>
+            <div class="field field-narrow">
+                <label for="f-char_size">Taille</label>
+                <input id="f-char_size" data-field="char_size" class="input input-title center" autocomplete="off">
+            </div>
+            <div class="field field-narrow">
+                <label for="f-char_xp">PX</label>
+                <input id="f-char_xp" data-field="char_xp" class="input input-title center" autocomplete="off">
+            </div>
+        </header>
+
+        <!-- ============================== ONGLETS ============================== -->
+        <nav class="tabs" role="tablist" aria-label="Sections de la fiche">
+            <button type="button" class="tab" role="tab" id="tab-btn-combat" aria-controls="tab-combat"
+                data-tab="combat">✥ Caractéristiques &amp; Combat</button>
+            <button type="button" class="tab" role="tab" id="tab-btn-traits" aria-controls="tab-traits"
+                data-tab="traits">✥ Aptitudes &amp; Traits</button>
+            <button type="button" class="tab" role="tab" id="tab-btn-role" aria-controls="tab-role"
+                data-tab="role">✥ Compétences &amp; Histoire</button>
+            <button type="button" class="tab" role="tab" id="tab-btn-magic" aria-controls="tab-magic"
+                data-tab="magic">✥ Magie, équipement &amp; trésors</button>
+        </nav>
+
+        <!-- ======================= ONGLET 1 : COMBAT ======================= -->
+        <section class="tab-panel" id="tab-combat" role="tabpanel" aria-labelledby="tab-btn-combat" tabindex="0">
+            <div class="combat-layout">
+                <aside class="abilities" id="abilities" aria-label="Caractéristiques"></aside>
+
+                <div class="combat-main">
+                    <div class="vitals vitals-1">
+                        <div class="box ac-hex" title="Calculée selon les armures équipées">
+                            <span class="label">Classe d'armure</span>
+                            <output class="value-xl" data-out="armorClass"></output>
+                        </div>
+                        <div class="box stat-tile">
+                            <span class="label">Initiative</span>
+                            <output class="value-lg" data-out="initiative"></output>
+                        </div>
+                        <div class="box stat-tile">
+                            <label class="label" for="f-passive_perception">Perception passive</label>
+                            <output class="value-lg" data-out="passivePerception"></output>
+                            <input id="f-passive_perception" data-field="passive_perception"
+                                class="input value-lg center" data-manual-only="passive_perc_manual" autocomplete="off">
+                        </div>
+                        <div class="box stat-group">
+                            <div class="stat-cell">
+                                <span class="label">Bonus de maîtrise</span>
+                                <output class="value-md" data-out="pb"></output>
+                            </div>
+                            <div class="stat-cell">
+                                <label class="label" for="f-heroic_inspiration">Inspiration héroïque ou points de
+                                    Foi</label>
+                                <input id="f-heroic_inspiration" data-field="heroic_inspiration"
+                                    class="input value-md center" autocomplete="off">
+                            </div>
+                            <div class="stat-cell">
+                                <label class="label" for="f-speed">Vitesse</label>
+                                <input id="f-speed" data-field="speed" class="input value-md center" autocomplete="off">
+                            </div>
+                        </div>
+                        <fieldset class="box death-saves">
+                            <legend class="label">Jets contre la mort</legend>
+                            <div class="check-row"><span>Succès</span>
+                                <input type="checkbox" class="round-check" data-field="ds_s1" aria-label="Succès 1">
+                                <input type="checkbox" class="round-check" data-field="ds_s2" aria-label="Succès 2">
+                                <input type="checkbox" class="round-check" data-field="ds_s3" aria-label="Succès 3">
+                            </div>
+                            <div class="check-row"><span>Échecs</span>
+                                <input type="checkbox" class="round-check" data-field="ds_f1" aria-label="Échec 1">
+                                <input type="checkbox" class="round-check" data-field="ds_f2" aria-label="Échec 2">
+                                <input type="checkbox" class="round-check" data-field="ds_f3" aria-label="Échec 3">
+                            </div>
+                        </fieldset>
+                    </div>
+
+                    <div class="vitals vitals-2">
+                        <div class="box stat-tile">
+                            <label class="label" for="f-hp_current">PV actuels</label>
+                            <input id="f-hp_current" data-field="hp_current" class="input value-lg center"
+                                inputmode="numeric" autocomplete="off">
+                        </div>
+                        <div class="box stat-tile">
+                            <label class="label" for="f-hp_max">PV maximum</label>
+                            <input id="f-hp_max" data-field="hp_max" class="input value-lg center" inputmode="numeric"
+                                autocomplete="off">
+                        </div>
+                        <div class="box stat-tile">
+                            <label class="label" for="f-hp_temp">PV temp.</label>
+                            <input id="f-hp_temp" data-field="hp_temp" class="input value-lg center"
+                                inputmode="numeric" autocomplete="off">
+                        </div>
+                        <div class="box stat-group">
+                            <div class="stat-cell">
+                                <label class="label" for="f-hd_type">Dés de vie</label>
+                                <select id="f-hd_type" data-field="hd_type" class="input value-md center">
+                                    <option value="">—</option>
+                                    <option value="d6">d6</option>
+                                    <option value="d8">d8</option>
+                                    <option value="d10">d10</option>
+                                    <option value="d12">d12</option>
+                                </select>
+                            </div>
+                            <div class="stat-cell">
+                                <label class="label" for="f-hd_current">Dés utilisés</label>
+                                <div class="hd-used">
+                                    <select id="f-hd_current" data-field="hd_current"
+                                        class="input value-md center"></select>
+                                    <span>/</span>
+                                    <output class="value-md" data-out="level"></output>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box class-resource" id="class-resource">
+                            <span class="label accent" data-out="classResourceLabel"></span>
+                            <div class="resource-slots" id="class-resource-slots"></div>
+                        </div>
+                    </div>
+
+                    <section class="box">
+                        <h3>Armes</h3>
+                        <div class="table-scroll">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Bonus att.</th>
+                                        <th>Dégâts</th>
+                                        <th>Propriétés</th>
+                                        <th>Botte d'arme</th>
+                                        <th>Munitions</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="weapons-body"></tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <section class="box">
+                        <h3>Armures, boucliers &amp; autres avantages défensifs</h3>
+                        <fieldset class="inline-checks">
+                            <legend class="label">Maîtrises d'armures</legend>
+                            <label><input type="checkbox" class="round-check" data-field="prof_armor_light">
+                                Légères</label>
+                            <label><input type="checkbox" class="round-check" data-field="prof_armor_med">
+                                Intermédiaires</label>
+                            <label><input type="checkbox" class="round-check" data-field="prof_armor_heavy">
+                                Lourdes</label>
+                            <label><input type="checkbox" class="round-check" data-field="prof_armor_shield">
+                                Boucliers</label>
+                        </fieldset>
+                        <div class="table-scroll">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Type</th>
+                                        <th>CA</th>
+                                        <th>For min.</th>
+                                        <th>Discr. désav.</th>
+                                        <th>Poids</th>
+                                        <th>Prix</th>
+                                        <th>Commentaire</th>
+                                        <th>Équipée</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="armors-body"></tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <section class="box rest">
+                        <h3>⚔️ Repos ⚔️</h3>
+                        <div class="fatigue">
+                            <label class="label" for="f-fatigue_level">Épuisement (0-6)</label>
+                            <input id="f-fatigue_level" data-field="fatigue_level" data-type="number" type="number"
+                                min="0" max="6" class="input value-md center">
+                            <output class="muted" data-out="exhaustion"></output>
+                        </div>
+                        <p class="muted">Les boutons de repos court et long arrivent à l'étape 4.</p>
+                    </section>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================== ONGLET 2 : APTITUDES & TRAITS =================== -->
+        <section class="tab-panel" id="tab-traits" role="tabpanel" aria-labelledby="tab-btn-traits" tabindex="0">
+            <div class="stack">
+                <section class="box">
+                    <h3><label for="f-alignment">⚖️ Alignement</label></h3>
+                    <input id="f-alignment" data-field="alignment" class="input input-title center" autocomplete="off">
+                </section>
+                <section class="box">
+                    <h3 id="h-traits">🌟 Traits de personnage</h3>
+                    <div class="rich" data-field="traits_feats" data-kind="rich" aria-labelledby="h-traits"></div>
+                </section>
+                <section class="box">
+                    <h3>⭐ Dons</h3>
+                    <div class="feats" id="feats"></div>
+                </section>
+                <section class="box">
+                    <h3 id="h-class-features">⚔️ Capacités de classe</h3>
+                    <div class="rich" data-field="class_features" data-kind="rich" aria-labelledby="h-class-features">
+                    </div>
+                </section>
+                <section class="box">
+                    <h3 id="h-companions">🐾 Compagnons &amp; familiers</h3>
+                    <div class="rich rich-sm" data-field="companions" data-kind="rich" aria-labelledby="h-companions">
+                    </div>
+                </section>
+                <section class="box">
+                    <h3 id="h-synergy">🤝 Synergie entre joueurs</h3>
+                    <div class="rich rich-sm" data-field="synergy" data-kind="rich" aria-labelledby="h-synergy"></div>
+                </section>
+            </div>
+        </section>
+
+        <!-- ================= ONGLET 3 : COMPÉTENCES & HISTOIRE ================= -->
+        <section class="tab-panel" id="tab-role" role="tabpanel" aria-labelledby="tab-btn-role" tabindex="0">
+            <div class="stack">
+                <section class="box">
+                    <h3>Compétences</h3>
+                    <p class="legend muted"><span class="round-check demo"></span> maîtrise
+                        <span class="round-check demo expertise"></span> expertise</p>
+                    <div class="skills" id="skills">
+                        <div class="skills-extra">
+                            <section class="box box-inner">
+                                <h4 id="h-tools">Outils</h4>
+                                <div class="rich rich-xs" data-field="profs_tools" data-kind="rich"
+                                    aria-labelledby="h-tools"></div>
+                            </section>
+                            <section class="box box-inner">
+                                <h4 id="h-langs">Langues</h4>
+                                <div class="rich rich-xs" data-field="langs" data-kind="rich"
+                                    aria-labelledby="h-langs"></div>
+                            </section>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="box odyssey">
+                    <h3>⚔️ Odyssée des Seigneurs Dragons ⚔️</h3>
+                    <div class="odyssey-grid">
+                        <div class="field">
+                            <label for="f-heroic_destiny">Destin héroïque</label>
+                            <select id="f-heroic_destiny" data-field="heroic_destiny" class="input"></select>
+                        </div>
+                        <div class="field">
+                            <label for="f-glory_score">Points de renommée</label>
+                            <input id="f-glory_score" data-field="glory_score" type="number" min="0" max="20"
+                                class="input center">
+                        </div>
+                        <div class="field">
+                            <span class="field-label">Palier</span>
+                            <output class="value-md accent" data-out="renownTier"></output>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="two-cols">
+                    <section class="box">
+                        <h3 id="h-appearance">Apparence</h3>
+                        <div class="rich" data-field="appearance" data-kind="rich" aria-labelledby="h-appearance">
+                        </div>
+                    </section>
+                    <section class="box">
+                        <h3 id="h-backstory">Histoire &amp; personnalité</h3>
+                        <div class="rich" data-field="backstory" data-kind="rich" aria-labelledby="h-backstory"></div>
+                    </section>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================ ONGLET 4 : MAGIE, ÉQUIPEMENT & TRÉSORS ================ -->
+        <section class="tab-panel" id="tab-magic" role="tabpanel" aria-labelledby="tab-btn-magic" tabindex="0">
+            <div class="stack">
+                <div class="spell-stats">
+                    <div class="box field">
+                        <label for="f-spell_ability">Caractéristique d'incantation</label>
+                        <select id="f-spell_ability" data-field="spell_ability" class="input input-title"></select>
+                    </div>
+                    <div class="box stat-tile">
+                        <span class="label">DD de sauvegarde</span>
+                        <output class="value-xl" data-out="spellDc"></output>
+                    </div>
+                    <div class="box stat-tile">
+                        <span class="label">Bonus d'attaque</span>
+                        <output class="value-xl" data-out="spellAttack"></output>
+                    </div>
+                </div>
+
+                <section class="box">
+                    <h3>Sorts mineurs &amp; sorts préparés</h3>
+                    <p class="muted" data-out="spellSlots"></p>
+                    <div class="table-scroll">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th title="Préparé">P</th>
+                                    <th>Niv.</th>
+                                    <th>Nom</th>
+                                    <th>École</th>
+                                    <th>Temps d'incant.</th>
+                                    <th>Portée</th>
+                                    <th title="Concentration / Rituel / Matériel">C/R/M</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="spells-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="box">
+                    <h3 id="h-equipment">Équipement &amp; trésor</h3>
+                    <div class="rich rich-lg" data-field="equipment" data-kind="rich" aria-labelledby="h-equipment">
+                    </div>
+                    <div class="coins">
+                        <label class="coin"><span class="coin-icon copper" title="Cuivre">PC</span>
+                            <input data-field="cp" class="input center" inputmode="numeric" aria-label="Pièces de cuivre"
+                                autocomplete="off"></label>
+                        <label class="coin"><span class="coin-icon silver" title="Argent">PA</span>
+                            <input data-field="sp" class="input center" inputmode="numeric" aria-label="Pièces d'argent"
+                                autocomplete="off"></label>
+                        <label class="coin"><span class="coin-icon electrum" title="Électrum">PE</span>
+                            <input data-field="ep" class="input center" inputmode="numeric"
+                                aria-label="Pièces d'électrum" autocomplete="off"></label>
+                        <label class="coin"><span class="coin-icon gold" title="Or">PO</span>
+                            <input data-field="gp" class="input center" inputmode="numeric" aria-label="Pièces d'or"
+                                autocomplete="off"></label>
+                        <label class="coin"><span class="coin-icon platinum" title="Platine">PP</span>
+                            <input data-field="pp" class="input center" inputmode="numeric" aria-label="Pièces de platine"
+                                autocomplete="off"></label>
+                    </div>
+                </section>
+            </div>
+        </section>
     </main>
+
+    <!-- DOMPurify : nettoie le texte riche (protection contre l'injection de code) -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.5/dist/purify.min.js"
+        integrity="sha256-ILCzhApz2lHTpmxR8HPj7W2hBCs3QcWGHBt6Nmk9ySg=" crossorigin="anonymous" defer></script>
     <script type="module" src="js/main.js"></script>
 </body>
 
