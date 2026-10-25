@@ -51,10 +51,8 @@ describe('Dons', () => {
     });
 
     test('Aucun nom de don ne contient de séparateur « | » (anciens noms dans `aliases`)', () => {
-        // Cas connus en attente du nom 2024 confirmé par Franck (voir docs/ROADMAP.md)
-        const pending = new Set(['empaleur_perforateur', 'faveur_de_vision_veritable_vision_lucide']);
         for (const [key, f] of feats) {
-            if (!pending.has(key)) assert.ok(!f.name.includes('|'), key);
+            assert.ok(!f.name.includes('|'), key);
             if (f.aliases) assert.ok(Array.isArray(f.aliases) && f.aliases.every(a => typeof a === 'string'), key);
         }
     });
@@ -63,6 +61,13 @@ describe('Dons', () => {
         const feat = FEATS_DATA.maitre_des_armes_lourdes_cogneur_lourd;
         assert.equal(feat.name, 'Cogneur lourd');
         assert.deepEqual(feat.aliases, ['Maître des armes lourdes']);
+    });
+
+    test('Perforateur et Faveur de vision lucide : noms officiels 2024, anciens noms en alias', () => {
+        assert.equal(FEATS_DATA.empaleur_perforateur.name, 'Perforateur');
+        assert.deepEqual(FEATS_DATA.empaleur_perforateur.aliases, ['Empaleur']);
+        assert.equal(FEATS_DATA.faveur_de_vision_veritable_vision_lucide.name, 'Faveur de vision lucide');
+        assert.deepEqual(FEATS_DATA.faveur_de_vision_veritable_vision_lucide.aliases, ['Faveur de vision véritable']);
     });
 
     test('Les dons hors Faveurs épiques ont une description', () => {
