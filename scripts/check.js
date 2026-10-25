@@ -2,7 +2,8 @@
 // CHECK.JS - Garde-fous automatiques (lancé par `npm run check` et la CI)
 //  1. Syntaxe de chaque fichier JS (node --check)
 //  2. Chaque import relatif pointe vers un fichier qui existe
-//  3. Aucun gestionnaire inline (onclick=, onchange=...) dans les pages HTML
+//  3. Aucun gestionnaire inline (onclick=, onchange=...) dans les pages HTML,
+//     aucun !important dans les feuilles de style
 //  4. Aucun caractère mal encodé (mojibake : un « é » devenu deux caractères)
 // =============================================================================
 
@@ -54,6 +55,11 @@ for (const file of htmlFiles) {
     const source = readFileSync(file, 'utf8');
     const inline = source.match(/\son[a-z]+\s*=\s*["']/gi);
     if (inline) errors.push(`Gestionnaire inline interdit dans ${rel(file)} : ${inline.join(', ')}`);
+}
+
+for (const file of listFiles(ROOT, '.css')) {
+    const withoutComments = readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    if (withoutComments.includes('!important')) errors.push(`!important interdit dans ${rel(file)}`);
 }
 
 for (const file of [...jsFiles, ...htmlFiles, ...listFiles(ROOT, '.css')]) {
