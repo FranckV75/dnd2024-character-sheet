@@ -8,7 +8,11 @@
 import { DD_RULES } from '../data/dd-rules.js';
 import { EQUIPMENT_DATA } from '../data/equipment.js';
 import { ABILITY_IDS, SKILLS } from '../data/constants.js';
-import { calcMod, calculateProficiencyBonus, calculateSkillBonus, getClassResourceInfo } from './logic.js';
+import {
+    calcMod, calculateProficiencyBonus, calculateSkillBonus, getClassResourceInfo,
+    parseWeaponConfig, resolveWeaponAttackStat, calcWeaponAttack, calcWeaponDamage,
+    getRageBonus, isMartialArtsWeapon, getMartialArtsDie
+} from './logic.js';
 
 /**
  * Extrait le premier entier d'une valeur saisie librement ("19", "+3", "<b>19</b>", "3?").
@@ -162,6 +166,43 @@ export function exhaustionEffects(level) {
  */
 export function sneakAttackDice(level) {
     return Math.ceil(level / 2);
+}
+
+/**
+ * Attaque et dégâts d'une arme du tableau, avec les bonus de combat actifs.
+ * @param {Object} weapon - Ligne de `dynamic_weapons`
+ * @param {{ mods: Object, pb: number, level: number, classSlug: string }} stats - issu de deriveCharacter()
+ * @param {{ rage?: boolean, sneakAttack?: boolean, hunterMark?: boolean }} [buffs]
+ * @returns {{ attack: {text: string, tooltip: string}, damage: {text: string, tooltip: string} } | null}
+ *          null si l'arme n'est pas rattachée au manuel (pas de calcul possible)
+ */
+export function computeWeapon(weapon, stats, buffs = {}) {
+    const name = (weapon?.name || '').toString().replace(/<[^>]*>/g, '').trim();
+    if (!weapon?.atkKey || !name) return null;
+
+    const { mods, pb, level, classSlug: slug } = stats;
+    const config = parseWeaponConfig(weapon.weaponConfig);
+    const prop = (weapon.prop || '').toString().replace(/<[^>]*>/g, '');
+    const isRanged = prop.toLowerCase().includes('munitions');
+    const { stat } = resolveWeaponAttackStat(weapon.atkKey, prop, mods, config.statOverride || '');
+
+    const extraDmg = [];
+    if (buffs.rage && stat === 'FOR') extraDmg.push({ die: String(getRageBonus(level)), type: 'Rage' });
+    if (buffs.hunterMark) extraDmg.push({ die: '1d6', type: 'Force' });
+    if (buffs.sneakAttack && (prop.toLowerCase().includes('finesse') || isRanged)) {
+        extraDmg.push({ die: `${sneakAttackDice(level)}d6`, type: 'Sournoise' });
+    }
+
+    let dieOverride = config.dmgDieOverride || '';
+    if (slug === 'monk' && isMartialArtsWeapon(weapon.category || '', isRanged, prop)) {
+        dieOverride = dieOverride || getMartialArtsDie(level);
+    }
+
+    return {
+        attack: calcWeaponAttack(weapon.atkKey, prop, mods, pb, config.magicBonus || 0, config.statOverride || ''),
+        damage: calcWeaponDamage(weapon.baseDmg || '', prop, mods, config.magicBonus || 0, config.statOverride || '',
+            dieOverride, config.dmgTypeOverride || '', weapon.atkKey, extraDmg)
+    };
 }
 
 /**

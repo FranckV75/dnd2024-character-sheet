@@ -35,7 +35,8 @@ ne jamais publier (push, déploiement) sans son accord explicite.
    (`char_name`, `str_score`, `skill_prof_athletics`, `dynamic_weapons`…), identique à celui de la v3,
    car l'ancien site et le nouveau partagent la même base Supabase pendant la transition.
    Ne jamais renommer ni supprimer une clé existante ; toute conversion passe par `js/state/migrate.js`
-   et est testée sur les vraies sauvegardes de Korgul (`tests/fixtures/`).
+   et est testée sur des fiches fictives (`tests/fixtures/*.json`, publiées) et sur les vraies
+   sauvegardes de Korgul (`tests/fixtures/local/`, **jamais publiées** : le dépôt GitHub est public).
 5. **Aucun gestionnaire inline** (`onclick=`…) dans le HTML : `addEventListener` uniquement.
    Aucune fonction exposée sur `window`.
 6. **Sécurité** : jamais de `innerHTML` avec du contenu utilisateur sans passer par DOMPurify.

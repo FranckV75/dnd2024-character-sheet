@@ -7,3 +7,4 @@ Manuels/
 saves/
 *.crdownload
 .claude/settings.local.json
+tests/fixtures/local/
