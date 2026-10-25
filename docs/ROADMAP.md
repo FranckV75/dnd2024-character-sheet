@@ -29,8 +29,8 @@ Chaque étape se termine par un jalon validé par Franck.
   conservé tel quel : les sauvegardes de Korgul l'utilisent.
 - ✅ Même cas pour « Perforateur » (alias « Empaleur ») et « Faveur de vision lucide »
   (alias « Faveur de vision véritable »). Sur AideDD, « A|B » = ancien nom | nom officiel WotC France ;
-  « vision lucide » confirmé par le glossaire des règles 2024 d'AideDD. « Perforateur » déduit de la
-  même convention : à vérifier dans le Manuel des joueurs 2024 en français si possible.
+  « vision lucide » confirmé par le glossaire des règles 2024 d'AideDD, « Perforateur » confirmé par
+  Franck dans le Manuel des joueurs 2024 en français.
 
 ## Changements faits sur `master` (v3) depuis le début de la v4, à reporter
 
