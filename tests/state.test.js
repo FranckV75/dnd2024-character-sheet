@@ -143,6 +143,12 @@ describe('Migration : cas limites', () => {
         assert.deepEqual(migrateCharacter(blank), { character: blank, report: [] });
     });
 
+    test('Champs v4 objets : valeur invalide remplacée par {}, valeur valide conservée', () => {
+        const { character } = migrateCharacter({ combat_buffs: [1], spell_slots_state: { 1: { max: 4, used: 2 } } });
+        assert.deepEqual(character.combat_buffs, {});
+        assert.deepEqual(character.spell_slots_state, { 1: { max: 4, used: 2 } });
+    });
+
     test('Épuisement borné entre 0 et 6', () => {
         assert.equal(migrateCharacter({ fatigue_level: '9' }).character.fatigue_level, 6);
         assert.equal(migrateCharacter({ fatigue_level: 'x' }).character.fatigue_level, 0);

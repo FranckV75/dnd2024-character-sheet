@@ -13,15 +13,22 @@
         rel="stylesheet">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/sheet.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/toolbar.css">
+    <link rel="stylesheet" href="css/gallery.css">
+    <link rel="stylesheet" href="css/weapons.css">
+    <link rel="stylesheet" href="css/armors.css">
+    <link rel="stylesheet" href="css/spells.css">
+    <link rel="stylesheet" href="css/rest.css">
+    <link rel="stylesheet" href="css/style-editor.css">
+    <link rel="stylesheet" href="css/print.css" media="print">
 </head>
 
 <body>
-    <div class="app-bar" role="toolbar" aria-label="Actions de la fiche">
-        <span class="app-bar-title">Gestion</span>
-        <label class="btn" for="file-import">📂 Importer</label>
-        <input type="file" id="file-import" accept=".json,application/json" hidden>
-        <button type="button" class="btn" id="btn-export">⬇️ Exporter</button>
-        <button type="button" class="btn" id="btn-theme" aria-label="Basculer le thème clair / sombre">🌗</button>
+    <!-- Barre de gestion : construite par js/ui/toolbar.js ; #appearance-controls est rempli par js/ui/gallery.js -->
+    <div class="app-bar" id="app-bar" role="toolbar" aria-label="Gestion de la fiche">
+        <div id="toolbar-feature" class="toolbar-feature"></div>
+        <div id="appearance-controls" class="appearance-controls"></div>
         <span id="save-status" class="app-bar-status" role="status" aria-live="polite"></span>
     </div>
 
@@ -170,25 +177,8 @@
                         </div>
                     </div>
 
-                    <section class="box">
-                        <h3>Armes</h3>
-                        <div class="table-scroll">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Nom</th>
-                                        <th>Bonus att.</th>
-                                        <th>Dégâts</th>
-                                        <th>Propriétés</th>
-                                        <th>Botte d'arme</th>
-                                        <th>Munitions</th>
-                                        <th>Notes</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="weapons-body"></tbody>
-                            </table>
-                        </div>
-                    </section>
+                    <!-- Armes : construit par js/ui/weapons.js -->
+                    <section class="box" id="weapons-feature" aria-label="Armes"></section>
 
                     <section class="box">
                         <h3>Armures, boucliers &amp; autres avantages défensifs</h3>
@@ -203,24 +193,8 @@
                             <label><input type="checkbox" class="round-check" data-field="prof_armor_shield">
                                 Boucliers</label>
                         </fieldset>
-                        <div class="table-scroll">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Nom</th>
-                                        <th>Type</th>
-                                        <th>CA</th>
-                                        <th>For min.</th>
-                                        <th>Discr. désav.</th>
-                                        <th>Poids</th>
-                                        <th>Prix</th>
-                                        <th>Commentaire</th>
-                                        <th>Équipée</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="armors-body"></tbody>
-                            </table>
-                        </div>
+                        <!-- Tableau des armures : construit par js/ui/armors.js -->
+                        <div id="armors-feature"></div>
                     </section>
 
                     <section class="box rest">
@@ -231,7 +205,8 @@
                                 min="0" max="6" class="input value-md center">
                             <output class="muted" data-out="exhaustion"></output>
                         </div>
-                        <p class="muted">Les boutons de repos court et long arrivent à l'étape 4.</p>
+                        <!-- Boutons de repos court / long : construits par js/ui/rest.js -->
+                        <div id="rest-feature"></div>
                     </section>
                 </div>
             </div>
@@ -343,27 +318,8 @@
                     </div>
                 </div>
 
-                <section class="box">
-                    <h3>Sorts mineurs &amp; sorts préparés</h3>
-                    <p class="muted" data-out="spellSlots"></p>
-                    <div class="table-scroll">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th title="Préparé">P</th>
-                                    <th>Niv.</th>
-                                    <th>Nom</th>
-                                    <th>École</th>
-                                    <th>Temps d'incant.</th>
-                                    <th>Portée</th>
-                                    <th title="Concentration / Rituel / Matériel">C/R/M</th>
-                                    <th>Notes</th>
-                                </tr>
-                            </thead>
-                            <tbody id="spells-body"></tbody>
-                        </table>
-                    </div>
-                </section>
+                <!-- Grimoire (sorts, filtres, emplacements) : construit par js/ui/spells.js -->
+                <section class="box" id="spells-feature" aria-label="Sorts mineurs et sorts préparés"></section>
 
                 <section class="box">
                     <h3 id="h-equipment">Équipement &amp; trésor</h3>

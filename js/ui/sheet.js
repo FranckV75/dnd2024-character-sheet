@@ -5,8 +5,8 @@
 //  - Saisie de l'utilisateur  → store.update({ clé: valeur })
 //  - Changement dans le store → render() met à jour tous les champs et les
 //    valeurs calculées (data-out="..."), à partir de deriveCharacter().
-// Les tableaux (armes, armures, sorts) sont affichés en lecture seule ;
-// leur édition arrive à l'étape 4.
+// Les tableaux (armes, armures, sorts), le repos, la barre de gestion... sont
+// gérés par leurs propres modules (js/ui/weapons.js, armors.js, spells.js...).
 // =============================================================================
 
 import { ABILITIES, SKILLS_BY_STAT } from '../data/constants.js';
@@ -14,31 +14,14 @@ import { DD_RULES } from '../data/dd-rules.js';
 import { FEATS_DATA } from '../data/feats.js';
 import { FEAT_LEVELS } from '../state/schema.js';
 import { stripHTML } from '../state/migrate.js';
-import { deriveCharacter, computeWeapon, hitDieForClass } from '../rules/character.js';
+import { deriveCharacter, hitDieForClass } from '../rules/character.js';
 import { sanitizeRich, sanitizeRulesText } from './sanitize.js';
+import { el, fillSelect, signed } from './dom.js';
+import { applyLock } from './lock.js';
 
-const signed = (n) => (n >= 0 ? `+${n}` : String(n));
 const SKILL_STATS = ['str', 'dex', 'int', 'wis', 'cha'];
 const FEAT_TYPE_ORDER = ['Origine', 'Général', 'Style de combat', 'Épique'];
 const SPELL_ABILITY_LABELS = { none: '—', int: 'Intelligence', wis: 'Sagesse', cha: 'Charisme' };
-
-/** Petit constructeur d'éléments (texte uniquement, jamais de HTML injecté) */
-function el(tag, attrs = {}, ...children) {
-    const node = document.createElement(tag);
-    for (const [key, value] of Object.entries(attrs)) {
-        if (value === false || value === null || value === undefined) continue;
-        if (key === 'class') node.className = value;
-        else if (key === 'text') node.textContent = value;
-        else node.setAttribute(key, value === true ? '' : value);
-    }
-    node.append(...children.flat().filter(c => c !== null && c !== undefined));
-    return node;
-}
-
-function fillSelect(select, options, placeholder = '— Choisir —') {
-    select.replaceChildren(el('option', { value: '', text: placeholder }),
-        ...options.map(([value, label]) => el('option', { value, text: label })));
-}
 
 // ---------------------------------------------------------------------------
 // Construction des blocs générés à partir des données du jeu
@@ -258,10 +241,6 @@ const OUTPUTS = {
     renownTier: (d) => d.renownTier,
     spellDc: (d) => d.spellcasting ? d.spellcasting.dc : '—',
     spellAttack: (d) => d.spellcasting ? signed(d.spellcasting.attack) : '—',
-    spellSlots: (d) => {
-        const slots = Object.entries(d.spellSlots);
-        return slots.length ? `Emplacements de sorts : ${slots.map(([lvl, n]) => `niv. ${lvl} × ${n}`).join(' · ')}` : 'Aucun emplacement de sort pour cette classe.';
-    },
     mod: (d, id) => signed(d.mods[id]),
     save: (d, id) => signed(d.saves[id].bonus),
     skill: (d, id) => signed(d.skills[id].bonus),
@@ -296,38 +275,6 @@ function renderFeats(root, character) {
     }
 }
 
-function tableRows(tbody, rows, columns, emptyText) {
-    if (rows.length === 0) {
-        tbody.replaceChildren(el('tr', {}, el('td', { class: 'empty', colspan: String(columns), text: emptyText })));
-        return;
-    }
-    tbody.replaceChildren(...rows.map(cells => el('tr', {}, cells.map(c => el('td', { text: c })))));
-}
-
-function renderTables(root, character, d) {
-    const text = (v) => stripHTML(String(v ?? ''));
-
-    tableRows(root.querySelector('#weapons-body'),
-        character.dynamic_weapons.filter(w => text(w.name)).map(w => {
-            const res = computeWeapon(w, d);
-            return [text(w.name), res ? res.attack.text : text(w.atk), res ? res.damage.text : text(w.dmg),
-                text(w.prop), text(w.prof), text(w.ammo), text(w.note)];
-        }), 7, 'Aucune arme.');
-
-    tableRows(root.querySelector('#armors-body'),
-        character.dynamic_armors.filter(a => text(a.name)).map(a => [
-            text(a.name), a.type === 'none' ? '' : text(a.type), text(a.ca), text(a.str),
-            a.stealth ? '✓' : '', text(a.weight), text(a.price), text(a.comment), a.equipped ? '✓' : ''
-        ]), 9, 'Aucune armure.');
-
-    const spells = character.dynamic_spells.filter(s => text(s.name))
-        .sort((a, b) => Number(a.lvl) - Number(b.lvl) || text(a.name).localeCompare(text(b.name), 'fr'));
-    tableRows(root.querySelector('#spells-body'), spells.map(s => [
-        s.lvl === '0' ? '∞' : s.prep ? '◆' : '', s.lvl, text(s.name), text(s.school), text(s.time), text(s.range),
-        [s.c && 'C', s.r && 'R', s.m && 'M'].filter(Boolean).join(' '), text(s.note)
-    ]), 8, 'Aucun sort.');
-}
-
 function render(root, character) {
     const d = deriveCharacter(character);
     renderDynamicSelects(root, character, d);
@@ -337,7 +284,7 @@ function render(root, character) {
     }
     renderOutputs(root, character, d);
     renderFeats(root, character);
-    renderTables(root, character, d);
+    applyLock(root);
 }
 
 /**

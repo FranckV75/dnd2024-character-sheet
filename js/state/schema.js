@@ -90,7 +90,14 @@ export function createDefaultCharacter() {
 
         dynamic_weapons: [],
         dynamic_spells: [],
-        dynamic_armors: []
+        dynamic_armors: [],
+
+        // --- Champs propres à la v4 (ignorés sans dommage par la v3) ---
+        // Bonus de combat actifs : { rage: true, sneakAttack: false, hunterMark: false }
+        combat_buffs: {},
+        // Emplacements de sorts par niveau de sort : { "1": { max: 4, used: 1 }, ... }
+        // max absent = valeur du manuel pour la classe et le niveau
+        spell_slots_state: {}
     };
 
     for (const id of ABILITY_IDS) record[`${id}_score`] = '10';
