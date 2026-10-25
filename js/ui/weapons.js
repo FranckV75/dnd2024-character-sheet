@@ -17,7 +17,7 @@ import {
     readWeaponConfig, buildWeaponConfig, normalizeDamageDie, buffsForClass, effectiveBuffs, toggleBuff,
     removeWeapon, restoreWeapon, WEAPON_DAMAGE_TYPES
 } from '../rules/weapons.js';
-import { el, icon } from './dom.js';
+import { el, icon, setIconLabel } from './dom.js';
 import { cellText } from './cell-text.js';
 import { openModal } from './modal.js';
 import { attachAutocomplete } from './autocomplete.js';
@@ -60,17 +60,17 @@ const DAMAGE_TYPE_LABELS = {
 
 const BUFF_DEFS = {
     rage: (level) => ({
-        icon: '🔥',
+        icon: 'flame',
         text: `Rage (+${getRageBonus(level)})`,
         title: `Rage : +${getRageBonus(level)} aux dégâts des attaques utilisant la Force`
     }),
     sneakAttack: (level) => ({
-        icon: '🗡️',
+        icon: 'swords',
         text: `Attaque sournoise (${sneakAttackDice(level)}d6)`,
         title: `Attaque sournoise : +${sneakAttackDice(level)}d6 avec une arme de finesse ou à distance (une fois par tour)`
     }),
     hunterMark: () => ({
-        icon: '🏹',
+        icon: 'target',
         text: 'Marque du chasseur (+1d6)',
         title: 'Marque du chasseur : +1d6 dégâts de force contre la cible marquée'
     })
@@ -120,15 +120,17 @@ export function initWeapons(ctx) {
         undoText,
         el('button', { type: 'button', class: 'btn-chip', text: 'Annuler la suppression', on: { click: undoDelete } }));
     const addButton = el('button', {
-        type: 'button', class: 'add-row edit-only', text: '+ Ajouter une arme ou un sort mineur',
+        type: 'button', class: 'add-row edit-only',
         on: { click: addWeapon }
     });
+    setIconLabel(addButton, 'plus', 'Ajouter une arme ou un sort mineur');
 
     container.replaceChildren(
         el('div', { class: 'weapons-head' },
-            el('h3', { id: 'weapons-title', text: 'Armes' }),
+            // Icône dorée devant le titre, comme les titres de index.html (data-icon, ornaments.js)
+            el('h3', { id: 'weapons-title', 'data-icon': 'swords' }, icon('swords'), 'Armes'),
             buffsBox),
-        el('div', { class: 'weapons-filters', role: 'group', 'aria-label': 'Filtrer les armes affichées' },
+        el('div', { class: 'weapons-filters btn-segments', role: 'group', 'aria-label': 'Filtrer les armes affichées' },
             filterButtons),
         el('div', { class: 'table-scroll weapons-scroll' },
             el('table', { class: 'data-table weapons-table', 'aria-labelledby': 'weapons-title' },
@@ -273,7 +275,7 @@ export function initWeapons(ctx) {
             on: { click: () => openConfig(index) }
         }, icon('gear'));
         const deleteBtn = el('button', {
-            type: 'button', class: 'btn-icon', title: "Supprimer l'arme",
+            type: 'button', class: 'btn-icon is-danger', title: "Supprimer l'arme",
             on: { click: () => deleteWeapon(index) }
         }, icon('trash'));
 
@@ -377,7 +379,7 @@ export function initWeapons(ctx) {
                 type: 'button', class: 'btn-chip weapons-buff', 'data-buff': d.key,
                 title: d.title, 'aria-pressed': 'false',
                 on: { click: () => store.update({ combat_buffs: toggleBuff(store.get().combat_buffs, d.key) }) }
-            }, el('span', { 'aria-hidden': 'true', text: d.icon }), ` ${d.text}`)));
+            }, icon(d.icon), el('span', { class: 'btn-label', text: d.text }))));
             buffsBox.hidden = defs.length === 0;
         }
         const active = character.combat_buffs || {};
@@ -437,6 +439,7 @@ export function initWeapons(ctx) {
 
         openModal({
             title: "Configuration de l'arme",
+            icon: 'gear',
             body,
             actions: [
                 { label: 'Annuler' },

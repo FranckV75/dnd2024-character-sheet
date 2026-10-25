@@ -13,6 +13,10 @@ Toutes les modifications notables du projet sont documentées dans ce fichier. L
 - Fiche transparente façon v3 : les cadres de texte suivent le curseur d'opacité (deux tons, l'illustration se voit à travers), verre dépoli derrière la fiche, ombre et reflet légers sur les cadres ; l'hexagone de la CA garde son contour.
 - Barre « Gestion » redessinée : barre flottante en verre dépoli à double filet doré, commandes ordonnées (Fiche ; Affichage et Compte ; états à droite), boutons groupés à icônes dessinées, glissières dorées ; une seule ligne repliée sur tablette.
 - Thème sombre : illustration de fond moins assombrie.
+- Finitions « chic » de toute la fiche (lot 1) : icônes dorées dessinées à la place des emojis (titres, onglets, groupes de compétences, boutons, fenêtres), titres de section ornés d'un filet doré, onglets « marque-pages » avec onglet actif doré, nom du personnage en titre de parchemin, chevrons dorés sur les listes, cases rondes perlées d'or, pièces de monnaie en relief, grands chiffres gravés.
+- Boutons de la fiche (filtres, Rage, ajouter, repos, réglages) et fenêtres (verre dépoli, double filet doré) dans le style de la barre « Gestion ».
+- Textes longs (traits, capacités de classe, compagnons…) : la case s'agrandit pour tout montrer, plus de défilement interne.
+- Accessibilité : contrastes revus dans les deux thèmes, focus clavier visible partout, zones tactiles de 44 px sur iPad, animations coupées si l'appareil le demande.
 - Barre « Gestion » : disposition figée, les messages d'état (compte, enregistrement) ne déplacent plus les boutons ; trop longs, ils se terminent par « … » (texte complet au survol).
 ### Fixed
 - Champ en cours de saisie rafraîchi quand une autre version de la fiche est chargée.

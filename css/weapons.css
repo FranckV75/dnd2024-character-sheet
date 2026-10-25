@@ -10,16 +10,47 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 6px 12px;
-    margin-bottom: 8px;
-    padding-bottom: 4px;
-    border-bottom: 1px solid var(--border-soft);
+    gap: 6px 14px;
+    margin-bottom: 10px;
 }
 
+/* Même titre que les autres sections (sheet.css, .box > h3) : icône dorée, titre, losange
+   et filet d'or qui s'efface jusqu'aux bonus de combat */
 .box .weapons-head h3 {
+    display: flex;
+    flex: 1 1 240px;
+    align-items: center;
+    gap: 9px;
     margin: 0;
     padding: 0;
     border-bottom: none;
+}
+
+.weapons-head h3 > .icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: var(--gold, var(--accent));
+}
+
+.weapons-head h3::before {
+    content: "";
+    order: 2;
+    flex: none;
+    width: 5px;
+    height: 5px;
+    margin-left: 3px;
+    background: var(--gold, var(--accent));
+    transform: rotate(45deg);
+}
+
+.weapons-head h3::after {
+    content: "";
+    order: 3;
+    flex: 1 1 24px;
+    height: 1px;
+    margin-left: -6px;
+    background: linear-gradient(to right, var(--gold, var(--accent)), var(--gold-soft, var(--border-soft)) 35%, transparent);
 }
 
 .weapons-buffs {
@@ -32,13 +63,45 @@
     display: none;
 }
 
-/* ---------- Filtres ---------- */
+/* Bonus de combat : pastilles arrondies ; actif = doré et auréolé */
+.weapons-buff {
+    min-height: 30px;
+    padding: 0 14px 0 11px;
+    border-radius: 16px;
+}
+
+.weapons-buff[aria-pressed="true"] {
+    box-shadow: var(--btn-shadow), 0 0 0 3px var(--track), 0 0 14px var(--accent);
+}
+
+.weapons-buff[aria-pressed="true"]:hover:not(:disabled) {
+    box-shadow: var(--btn-glow), 0 0 14px var(--accent);
+}
+
+/* Rage active : la flamme respire doucement */
+.weapons-buff[data-buff="rage"][aria-pressed="true"] .icon {
+    animation: weapons-flame 2.4s ease-in-out infinite;
+}
+
+@keyframes weapons-flame {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.14); opacity: 0.82; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .weapons-buff[data-buff="rage"][aria-pressed="true"] .icon {
+        animation: none;
+    }
+}
+
+/* ---------- Filtres : bloc segmenté (components.css, .btn-segments) ---------- */
 
 .weapons-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+}
+
+.weapons-filters .btn-chip {
+    padding: 0 14px;
 }
 
 /* ---------- Tableau ---------- */
@@ -95,7 +158,7 @@
 }
 
 .weapons-actions .btn-icon + .btn-icon {
-    margin-left: 4px;
+    margin-left: 5px;
 }
 
 .weapons-table tr[hidden] {
@@ -127,6 +190,8 @@
     .weapons-col-actions { width: 62px; }
     .weapons-table td.weapons-actions { padding-inline: 2px; }
     .weapons-actions .btn-icon + .btn-icon { margin-left: 2px; }
+    /* Les pastilles de filtre gardent leur bloc d'une seule pièce, sur une ou deux lignes */
+    .weapons-filters .btn-chip { padding: 0 10px; }
     .weapons-th-short { display: inline; }
     /* Libellé complet gardé pour les lecteurs d'écran */
     .weapons-th-long {
@@ -140,6 +205,12 @@
         white-space: nowrap;
         border: 0;
     }
+}
+
+/* Écrans tactiles : deux boutons de 36 px (zone de toucher de 44 px) côte à côte */
+@media (pointer: coarse) {
+    .weapons-col-actions { width: 90px; }
+    .weapons-actions .btn-icon + .btn-icon { margin-left: 8px; }
 }
 
 [data-locked="true"] .weapons-table .cell-input[readonly]:hover,

@@ -22,7 +22,7 @@ import {
     nextFreeSlotLevel
 } from '../rules/spells.js';
 import { loadSpells } from '../data/spells.js';
-import { el, icon } from './dom.js';
+import { el, icon, setIconLabel } from './dom.js';
 import { cellText as createCellText } from './cell-text.js';
 import { attachAutocomplete } from './autocomplete.js';
 import { confirmModal } from './modal.js';
@@ -115,7 +115,6 @@ export function initSpells(ctx) {
         type: 'button', class: 'btn-icon spell-tooltip-toggle', 'aria-pressed': String(tooltipsOn),
         'aria-label': 'Infobulles des sorts',
         title: 'Afficher la description d\'un sort au survol ou au focus de son nom',
-        text: '💬',
         on: {
             click: () => {
                 tooltipsOn = !tooltipsOn;
@@ -124,12 +123,12 @@ export function initSpells(ctx) {
                 if (!tooltipsOn) hideTooltip();
             }
         }
-    });
+    }, icon('chat'));
 
     const countOut = el('output', { class: 'spell-count', 'aria-live': 'polite' });
 
     const toolbar = el('div', { class: 'spells-toolbar' },
-        el('div', { class: 'spell-level-chips', role: 'group', 'aria-label': 'Filtrer les sorts par niveau' }, levelChips),
+        el('div', { class: 'spell-level-chips btn-segments', role: 'group', 'aria-label': 'Filtrer les sorts par niveau' }, levelChips),
         el('div', { class: 'spell-class-filter' },
             el('label', { for: 'spell-class-filter', text: 'Liste de sorts' }),
             classSelect),
@@ -170,15 +169,15 @@ export function initSpells(ctx) {
             el('span', { class: 'slot-boxes' }, boxes,
                 max === 0 ? el('span', { class: 'slot-none', text: 'aucun' }) : null),
             el('button', {
-                type: 'button', class: 'btn-icon edit-only', text: '−',
+                type: 'button', class: 'btn-icon edit-only',
                 'aria-label': `Retirer un emplacement de niveau ${info.level}`, disabled: max === 0,
                 on: { click: () => adjust(-1) }
-            }),
+            }, icon('minus')),
             el('button', {
-                type: 'button', class: 'btn-icon edit-only', text: '+',
+                type: 'button', class: 'btn-icon edit-only',
                 'aria-label': `Ajouter un emplacement de niveau ${info.level}`,
                 on: { click: () => adjust(1) }
-            }));
+            }, icon('plus')));
     }
 
     function renderSlots(character, d) {
@@ -200,14 +199,13 @@ export function initSpells(ctx) {
                     : null,
                 free ? el('button', {
                     type: 'button', class: 'btn-chip edit-only slot-add-level',
-                    text: `+ Emplacements niv. ${free}`,
                     'aria-label': `Ajouter le suivi des emplacements de niveau ${free}`,
                     on: {
                         click: () => store.update({
                             spell_slots_state: adjustSlotMax(slotState(), free, 1, rulebookSlots(free))
                         })
                     }
-                }) : null
+                }, icon('plus'), el('span', { class: 'btn-label', text: `Emplacements niv. ${free}` })) : null
             ].filter(Boolean));
             if (focusedLabel) {
                 [...slotsBox.querySelectorAll('button')].find(b => b.getAttribute('aria-label') === focusedLabel && !b.disabled)?.focus();
@@ -265,7 +263,7 @@ export function initSpells(ctx) {
     const emptyText = el('p', { class: 'spells-empty', hidden: true });
 
     const addBtn = el('button', {
-        type: 'button', class: 'add-row edit-only', text: '+ Ajouter un sort',
+        type: 'button', class: 'add-row edit-only',
         on: {
             click: () => {
                 store.update({ dynamic_spells: [...spellsOf(), newSpellRow(EMPTY_SPELL, view.level)] });
@@ -273,6 +271,7 @@ export function initSpells(ctx) {
             }
         }
     });
+    setIconLabel(addBtn, 'plus', 'Ajouter un sort');
 
     function createRow() {
         const r = { index: 0 };
@@ -319,7 +318,7 @@ export function initSpells(ctx) {
         });
 
         r.del = el('button', {
-            type: 'button', class: 'btn-icon spell-del', title: 'Supprimer le sort', 'aria-label': 'Supprimer le sort',
+            type: 'button', class: 'btn-icon is-danger spell-del', title: 'Supprimer le sort', 'aria-label': 'Supprimer le sort',
             on: { click: () => deleteRow(r) }
         }, icon('trash'));
 
@@ -379,8 +378,10 @@ export function initSpells(ctx) {
         if (!isSpellRowEmpty(row)) {
             const ok = await confirmModal({
                 title: 'Supprimer le sort',
+                icon: 'trash',
                 message: `Supprimer « ${plainText(row.name) || 'ce sort'} » du grimoire ?`,
                 confirmLabel: 'Supprimer',
+                confirmIcon: 'trash',
                 danger: true
             });
             if (!ok) return;
@@ -480,7 +481,7 @@ export function initSpells(ctx) {
         if (rows.length === 0) {
             emptyText.textContent = locked
                 ? 'Aucun sort dans le grimoire.'
-                : 'Aucun sort dans le grimoire. Ajoutez-en avec « + Ajouter un sort » : la saisie du nom propose les sorts du manuel.';
+                : 'Aucun sort dans le grimoire. Ajoutez-en avec « Ajouter un sort » : la saisie du nom propose les sorts du manuel.';
         } else if (!visible) {
             emptyText.textContent = view.level === '0' ? 'Aucun sort mineur.' : `Aucun sort de niveau ${view.level}.`;
         } else {
@@ -627,7 +628,8 @@ export function initSpells(ctx) {
     // -----------------------------------------------------------------------
 
     container.replaceChildren(
-        el('h3', { text: 'Sorts mineurs & sorts préparés' }),
+        // Icône dorée devant le titre, comme les titres de index.html (data-icon, ornaments.js)
+        el('h3', { 'data-icon': 'book' }, icon('book'), 'Sorts mineurs & sorts préparés'),
         toolbar,
         slotsBox,
         tableScroll,

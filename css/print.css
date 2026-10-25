@@ -32,6 +32,7 @@
     --head-bg: #ececec;
     --mod-bg: #f2f2f2;
     --hex-bg: #ffffff;
+    --hex-light: #ffffff;
     --tab-bg: #ffffff;
     --tab-active-bg: #ffffff;
     --shadow: none;
@@ -39,6 +40,24 @@
     --ko: #8e1a14;
     --focus: #000000;
     --app-bg-tint: #ffffff;
+    /* Finitions d'écran (or, gravure, cases bombées) ramenées au noir et blanc */
+    --gold: #000000;
+    --gold-soft: #9a9a9a;
+    --gold-glow: transparent;
+    --gem-light: #000000;
+    --engrave: none;
+    --engrave-title: none;
+    --number: #000000;
+    --check-top: #ffffff;
+    --check-bottom: #ffffff;
+    --btn-top: #ffffff;
+    --btn-bottom: #ffffff;
+    --btn-shadow: none;
+    --pane-shadow: none;
+    --track: transparent;
+    --check-ring: #000000;
+    --veil: transparent;
+    --coin-ink: #000000;
     color-scheme: light;
     /* Les cases cochées, en-têtes de tableau et pièces sont des fonds : on les imprime
        même si l'option « Graphiques d'arrière-plan » est décochée */
@@ -235,10 +254,33 @@ h1, h2, h3, h4 {
     border-color: var(--border-soft);
 }
 
-.box h3 {
+.box h3,
+.box > h3,
+.weapons-head h3 {
     margin-bottom: 4px;
     padding-bottom: 2px;
     font-size: 0.95rem;
+}
+
+/* Titres : filet simple sous le titre plutôt que le losange et le filet d'or de l'écran
+   (le titre « Armes » est dans .weapons-head, à côté des bonus de combat) */
+.box > h3,
+.box .weapons-head h3 {
+    gap: 6px;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.box > h3::before,
+.box > h3::after,
+.box .weapons-head h3::before,
+.box .weapons-head h3::after {
+    display: none;
+}
+
+.box > h3 > .icon,
+.weapons-head h3 > .icon {
+    width: 13px;
+    height: 13px;
 }
 
 .stack {
@@ -295,6 +337,7 @@ h1, h2, h3, h4 {
     padding: 4px 6px;
     border: 1px solid var(--border-soft);
     background: transparent;
+    box-shadow: none;
     font-size: 0.98rem;
     line-height: 1.28;
 }
@@ -323,7 +366,10 @@ h1, h2, h3, h4 {
 /* ---------- Cases rondes ---------- */
 
 .round-check {
+    width: 16px;
+    height: 16px;
     border-color: var(--border);
+    background: #ffffff;
 }
 
 .round-check:checked {
@@ -347,9 +393,11 @@ h1, h2, h3, h4 {
     font-size: 1.05rem;
 }
 
-.sheet-header #f-char_name {
+.sheet-header #f-char_name,
+.sheet-header .field-name .input-title {
     font-size: 1.3rem;
     font-weight: 700;
+    color: var(--text);
 }
 
 /* ---------- Onglet 1 : caractéristiques & combat ---------- */
@@ -523,7 +571,12 @@ h1, h2, h3, h4 {
     gap: 8px;
 }
 
-.coin-icon {
+.coin-icon,
+.coin-icon.copper,
+.coin-icon.silver,
+.coin-icon.electrum,
+.coin-icon.gold,
+.coin-icon.platinum {
     width: 28px;
     height: 28px;
     border: 2px solid var(--border);

@@ -11,15 +11,48 @@
 //           { label: 'Valider', primary: true, onClick: () => { ...; return false; } }
 //       ]                                           // onClick qui renvoie false = ne pas fermer
 //   });
+// Options icon (titre) et actions[].icon : nom d'une icône dessinée de dom.js (moon, cloud...).
+// Un titre ou un libellé qui commence par un émoji connu (« 📂 Importer ») reçoit l'icône
+// dessinée équivalente : l'émoji est retiré du texte (et donc du nom lu par les lecteurs d'écran).
 // =============================================================================
 
-import { el } from './dom.js';
+import { el, icon as drawIcon } from './dom.js';
+
+/** Émojis de début de titre ou de libellé → icône dessinée (dom.js).
+ *  Clés sans le sélecteur de présentation U+FE0F, retiré avant la recherche. */
+const EMOJI_ICONS = new Map([
+    ['📂', 'import'], ['📁', 'image'], ['⬇', 'export'], ['⬆', 'import'], ['📄', 'file-plus'],
+    ['👤', 'user'], ['👥', 'users'], ['🔑', 'lock'], ['☁', 'cloud'], ['💾', 'scroll'],
+    ['⚔', 'swords'], ['✏', 'feather'], ['📋', 'scroll'], ['⚠', 'warning'], ['🌙', 'moon'],
+    ['🛏', 'bed'], ['🗑', 'trash']
+]);
+const VARIATION_SELECTOR = /\uFE0F/g;
 
 /**
- * @param {{ title: string, body?: Node|Node[], actions?: Array<{label: string, primary?: boolean, danger?: boolean, onClick?: () => (void|boolean)}>, wide?: boolean, onClose?: () => void }} options
+ * Sépare un émoji de tête connu du reste du texte.
+ * @param {string} text
+ * @param {string} [iconName] icône imposée par l'appelant
+ * @returns {{ text: string, icon: string|null }}
+ */
+function splitIcon(text, iconName) {
+    const label = String(text ?? '');
+    const space = label.indexOf(' ');
+    const name = space > 0 ? EMOJI_ICONS.get(label.slice(0, space).replace(VARIATION_SELECTOR, '')) : null;
+    return name
+        ? { text: label.slice(space + 1), icon: iconName || name }
+        : { text: label, icon: iconName || null };
+}
+
+/** Contenu d'un titre ou d'un bouton : icône dorée (décorative) puis texte */
+function iconAndText({ text, icon: name }) {
+    return name ? [drawIcon(name), el('span', { class: 'btn-label', text })] : [text];
+}
+
+/**
+ * @param {{ title: string, icon?: string, body?: Node|Node[], actions?: Array<{label: string, icon?: string, primary?: boolean, danger?: boolean, onClick?: () => (void|boolean)}>, wide?: boolean, onClose?: () => void }} options
  * @returns {() => void} Fonction qui ferme la fenêtre
  */
-export function openModal({ title, body = [], actions = [{ label: 'Fermer' }], wide = false, onClose }) {
+export function openModal({ title, icon, body = [], actions = [{ label: 'Fermer' }], wide = false, onClose }) {
     const previousFocus = document.activeElement;
     const titleId = `modal-title-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -52,19 +85,27 @@ export function openModal({ title, body = [], actions = [{ label: 'Fermer' }], w
     const buttons = actions.map(action => el('button', {
         type: 'button',
         class: ['btn', action.primary && 'btn-primary', action.danger && 'btn-danger'].filter(Boolean).join(' '),
-        text: action.label,
         on: {
             click: () => {
                 const result = action.onClick?.();
                 if (result !== false) close();
             }
         }
-    }));
+    }, iconAndText(splitIcon(action.label, action.icon))));
 
     dialog.append(el('div', { class: 'modal-content' },
-        el('h2', { class: 'modal-title', id: titleId, text: title }),
+        el('div', { class: 'modal-head' },
+            el('h2', { class: 'modal-title', id: titleId }, iconAndText(splitIcon(title, icon))),
+            el('span', { class: 'modal-ornament', 'aria-hidden': 'true', text: '✦' })),
         el('div', { class: 'modal-body' }, body),
         el('div', { class: 'modal-actions' }, buttons)));
+
+    // Boutons du contenu écrits en texte seul (« 📂 Choisir un fichier… ») : même traitement
+    for (const button of dialog.querySelectorAll('.modal-body .btn')) {
+        if (button.children.length > 0) continue;
+        const parts = splitIcon(button.textContent);
+        if (parts.icon) button.replaceChildren(...iconAndText(parts));
+    }
 
     document.body.append(dialog);
     dialog.showModal();
@@ -77,18 +118,20 @@ export function openModal({ title, body = [], actions = [{ label: 'Fermer' }], w
 
 /**
  * Demande une confirmation.
- * @param {{ title: string, message: string, confirmLabel?: string, danger?: boolean }} options
+ * @param {{ title: string, icon?: string, message: string, confirmLabel?: string, confirmIcon?: string, danger?: boolean }} options
  * @returns {Promise<boolean>}
  */
-export function confirmModal({ title, message, confirmLabel = 'Confirmer', danger = false }) {
+export function confirmModal({ title, icon, message, confirmLabel = 'Confirmer', confirmIcon, danger = false }) {
     return new Promise((resolve) => {
         let answered = false;
         openModal({
             title,
+            // Une confirmation risquée n'apparaît jamais sans icône
+            icon: icon || (danger ? 'warning' : undefined),
             body: el('p', { text: message }),
             actions: [
                 { label: 'Annuler' },
-                { label: confirmLabel, primary: !danger, danger, onClick: () => { answered = true; } }
+                { label: confirmLabel, icon: confirmIcon, primary: !danger, danger, onClick: () => { answered = true; } }
             ],
             onClose: () => resolve(answered)
         });

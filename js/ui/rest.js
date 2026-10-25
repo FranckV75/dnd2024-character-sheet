@@ -7,7 +7,7 @@
 // envoie le patch au store en une seule fois.
 // =============================================================================
 
-import { el, signed } from './dom.js';
+import { el, signed, icon, setIconLabel } from './dom.js';
 import { openModal, confirmModal } from './modal.js';
 import { deriveCharacter } from '../rules/character.js';
 import {
@@ -17,6 +17,13 @@ import {
 const rollDie = (faces) => Math.floor(Math.random() * faces) + 1;
 const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
 const agree = (n, word) => `${word}${n > 1 ? 's' : ''}`;
+
+/** Ligne de liste précédée d'une icône dorée (sans icône : un losange, posé par rest.css) */
+const iconLine = (text, name, className) => el('li', { class: [name ? 'has-icon' : '', className].filter(Boolean).join(' ') || null },
+    name ? icon(name) : null, el('span', { text }));
+
+/** Avertissement : triangle dessiné puis texte */
+const warning = (text) => el('p', { class: 'rest-warning' }, icon('warning'), el('span', { text }));
 
 // ---------------------------------------------------------------------------
 // Repos court
@@ -87,14 +94,14 @@ function openShortRest(store) {
     const also = recoveryLines(preview, false);
     const hint = slotRecoveryHint(preview);
     const body = [
-        !canStartRest(character) && el('p', { class: 'rest-warning', text: '⚠️ Règle 2024 : il faut au moins 1 PV pour commencer un repos court.' }),
+        !canStartRest(character) && warning('Règle 2024 : il faut au moins 1 PV pour commencer un repos court.'),
         el('p', { text: `Dés de vie disponibles : ${hd.available} / ${hd.level} (${dieLabel}). Chaque dé rend son résultat ${signed(hd.conMod)} (Constitution), au moins 1 PV par dé.` }),
         hd.available > 0 && el('div', { class: 'rest-field' },
             el('label', { class: 'label', for: 'rest-dice', text: 'Dés à dépenser' }),
             el('div', { class: 'rest-stepper' },
-                el('button', { type: 'button', class: 'btn-icon', 'aria-label': 'Un dé de moins', text: '−', on: { click: () => step(-1) } }),
+                el('button', { type: 'button', class: 'btn-icon', 'aria-label': 'Un dé de moins', on: { click: () => step(-1) } }, icon('minus')),
                 diceInput,
-                el('button', { type: 'button', class: 'btn-icon', 'aria-label': 'Un dé de plus', text: '+', on: { click: () => step(1) } }),
+                el('button', { type: 'button', class: 'btn-icon', 'aria-label': 'Un dé de plus', on: { click: () => step(1) } }, icon('plus')),
                 el('span', { class: 'muted', text: `/ ${hd.available}` }))),
         hd.available > 0 && el('div', { class: 'rest-field' },
             el('label', { class: 'label', for: 'rest-manual', text: 'Total des dés (si vous les lancez vous-même)' }),
@@ -103,15 +110,15 @@ function openShortRest(store) {
                 id: 'rest-manual-help', class: 'muted',
                 text: 'Le total des dés, ou chaque résultat séparé par un espace. Le modificateur de Constitution est ajouté automatiquement.'
             })),
-        hd.available === 0 && el('p', { class: 'rest-warning', text: 'Plus aucun dé de vie disponible : ils reviennent tous au repos long.' }),
+        hd.available === 0 && warning('Plus aucun dé de vie disponible : ils reviennent tous au repos long.'),
         error,
         (also.length > 0 || sorcererBox || hint) && el('div', { class: 'rest-also' },
             el('span', { class: 'label', text: 'Ce repos rend aussi' }),
             el('ul', {},
-                also.map(text => el('li', { text })),
-                sorcererBox && el('li', {}, el('label', { class: 'rest-check' }, sorcererBox,
+                also.map(text => iconLine(text)),
+                sorcererBox && el('li', { class: 'has-icon' }, el('label', { class: 'rest-check' }, sorcererBox,
                     el('span', { text: `Utiliser Restauration ensorcelée : jusqu'à ${sorcerousMax} points de sorcellerie (une fois par repos long)` }))),
-                hint && el('li', { class: 'muted', text: `💡 ${hint}` })))
+                hint && iconLine(hint, 'sparkle', 'muted')))
     ];
 
     let result = null;
@@ -124,12 +131,14 @@ function openShortRest(store) {
     };
 
     openModal({
-        title: '🌙 Repos court (1 h)',
+        title: 'Repos court (1 h)',
+        icon: 'sun',
         body,
         actions: [
             { label: 'Annuler' },
             {
-                label: '✏️ Saisir le total',
+                label: 'Saisir le total',
+                icon: 'feather',
                 onClick: () => {
                     const n = readDice();
                     if (n === 0) return finish(0, '');
@@ -142,7 +151,8 @@ function openShortRest(store) {
                 }
             },
             {
-                label: '🎲 Lancer les dés',
+                label: 'Lancer les dés',
+                icon: 'sparkle',
                 primary: true,
                 onClick: () => {
                     const n = readDice();
@@ -161,23 +171,25 @@ function openShortRest(store) {
 }
 
 function showShortRestSummary({ summary, rollText }, conMod) {
+    // [texte, icône] : jet de dés, points de vie, dés restants, puis ressources récupérées (losange)
     const lines = [];
     if (summary.diceSpent > 0) {
-        lines.push(`🎲 ${rollText} (${signed(conMod)} par dé) : +${summary.healing} PV`);
+        lines.push([`${rollText} (${signed(conMod)} par dé) : +${summary.healing} PV`, 'sparkle']);
         if (summary.hpAfter !== null) {
             const max = summary.hpMax !== null ? ` / ${summary.hpMax}` : '';
-            lines.push(`❤️ PV : ${summary.hpBefore ?? 0} → ${summary.hpAfter}${max}`);
+            lines.push([`PV : ${summary.hpBefore ?? 0} → ${summary.hpAfter}${max}`]);
         }
     }
-    lines.push(`Dés de vie restants : ${summary.diceLeft}`);
-    for (const text of recoveryLines(summary, true)) lines.push(`✅ ${text}`);
+    lines.push([`Dés de vie restants : ${summary.diceLeft}`]);
+    for (const text of recoveryLines(summary, true)) lines.push([text]);
     const hint = slotRecoveryHint(summary);
 
     openModal({
-        title: '🌙 Repos court terminé',
+        title: 'Repos court terminé',
+        icon: 'sun',
         body: el('ul', { class: 'rest-summary' },
-            lines.map(text => el('li', { text })),
-            hint && el('li', { class: 'muted', text: `💡 ${hint}` })),
+            lines.map(([text, name]) => iconLine(text, name)),
+            hint && iconLine(hint, 'sparkle', 'muted')),
         actions: [{ label: 'OK', primary: true }]
     });
 }
@@ -200,19 +212,21 @@ function longRestMessage(summary) {
     let message = `8 heures de repos, dont au moins 6 de sommeil. Effets : ${effects.join(', ')}.`;
     if (summary.heroicInspiration) message += ' Humain (Ingénieux) : vous gagnez l’Inspiration héroïque.';
     message += ' Pensez à changer vos sorts préparés si besoin.';
-    if (!summary.canStart) message = `⚠️ Règle 2024 : il faut au moins 1 PV pour commencer un repos long. ${message}`;
+    if (!summary.canStart) message = `Attention, règle 2024 : il faut au moins 1 PV pour commencer un repos long. ${message}`;
     return message;
 }
 
 async function longRest(store, setStatus) {
     const ok = await confirmModal({
-        title: '🛏️ Repos long (8 h)',
+        title: 'Repos long (8 h)',
+        icon: 'bed',
         message: longRestMessage(planLongRest(store.get()).summary),
-        confirmLabel: 'Se reposer'
+        confirmLabel: 'Se reposer',
+        confirmIcon: 'bed'
     });
     if (!ok) return;
     store.update(planLongRest(store.get()).patch);
-    setStatus('🛏️ Repos long terminé');
+    setStatus('Repos long terminé');
 }
 
 // ---------------------------------------------------------------------------
@@ -236,17 +250,19 @@ export function initRest(ctx) {
     };
 
     container.classList.add('rest-feature');
-    container.replaceChildren(
-        el('div', { class: 'rest-actions' },
-            el('button', {
-                type: 'button', class: 'btn rest-btn', text: '🌙 Repos court (1 h)',
-                on: { click: () => openShortRest(store) }
-            }),
-            el('button', {
-                type: 'button', class: 'btn rest-btn', text: '🛏️ Repos long (8 h)',
-                on: { click: () => { longRest(store, setStatus); } }
-            })),
-        hint);
+    const shortButton = el('button', {
+        type: 'button', class: 'btn rest-btn',
+        on: { click: () => openShortRest(store) }
+    });
+    const longButton = el('button', {
+        type: 'button', class: 'btn rest-btn',
+        on: { click: () => { longRest(store, setStatus); } }
+    });
+    // Une icône par repos : soleil (courte pause dans la journée), lit (la nuit) ;
+    // la lune est celle du titre de la section
+    setIconLabel(shortButton, 'sun', 'Repos court (1 h)');
+    setIconLabel(longButton, 'bed', 'Repos long (8 h)');
+    container.replaceChildren(el('div', { class: 'rest-actions' }, shortButton, longButton), hint);
 
     store.subscribe((character) => render(character));
     render(store.get());

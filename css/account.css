@@ -31,23 +31,21 @@
 .account-field {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 5px;
     text-transform: none;
 }
 
+/* Cadre, creux et reflet doré : règles communes des champs des fenêtres (components.css) */
 .account-input {
     font-family: var(--font-text);
     font-size: 1rem;
-    padding: 6px 4px;
-    border: 1px solid var(--border-soft);
-    border-radius: 4px;
-    background: var(--input-bg);
 }
 
 .account-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
+    margin-top: 4px;
 }
 
 .account-link {
@@ -58,8 +56,21 @@
     color: var(--accent);
     font: inherit;
     font-size: 0.9rem;
+    font-style: italic;
     text-decoration: underline;
+    text-decoration-color: var(--border-soft);
+    text-underline-offset: 3px;
     cursor: pointer;
+}
+
+.account-link:hover {
+    text-decoration-color: var(--accent);
+}
+
+@media (pointer: coarse) {
+    .account-link {
+        min-height: 44px;
+    }
 }
 
 .account-message {
@@ -73,30 +84,78 @@
     color: var(--ko);
 }
 
+.account-message .icon {
+    flex: none;
+    margin-right: 6px;
+    vertical-align: -2px;
+}
+
+/* ---------- Questions de synchronisation : les deux versions comparées ---------- */
+
+.modal-body .account-versions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0 0 10px;
+    padding: 8px 12px;
+    list-style: none;
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    background: var(--input-bg);
+}
+
+.account-versions li {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.account-versions .icon {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    color: var(--accent);
+}
+
 /* ---------- Liste des personnages ---------- */
 
-.account-list {
+.modal-body .account-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin: 0 0 10px;
+    margin: 0 0 12px;
     padding: 0;
     list-style: none;
 }
 
+/* Une carte par personnage : légèrement bombée, liseré doré pour la fiche ouverte */
 .account-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 8px 12px;
-    border: 1px solid var(--border-soft);
-    border-radius: 6px;
-    background: var(--box);
+    padding: 10px 12px 10px 16px;
+    border: 1px solid var(--btn-border);
+    border-radius: 10px;
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.account-item:hover {
+    border-color: var(--accent);
+    box-shadow: var(--btn-glow);
 }
 
 .account-item.is-current {
     border-color: var(--accent);
+    box-shadow: var(--btn-shadow), inset 4px 0 0 var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .account-item {
+        transition: none;
+    }
 }
 
 .account-item-text {
@@ -107,15 +166,19 @@
 
 .account-item-text strong {
     font-family: var(--font-title);
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    color: var(--accent);
     overflow-wrap: anywhere;
 }
 
 .account-item-text .muted {
     font-size: 0.85rem;
+    font-style: italic;
 }
 
 .account-item-actions {
     display: flex;
     flex: 0 0 auto;
-    gap: 6px;
+    gap: 8px;
 }

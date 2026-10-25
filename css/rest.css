@@ -1,26 +1,81 @@
 /* =============================================================================
    REST.CSS - Repos court / long (js/ui/rest.js) : boutons de la boîte « Repos »
    et contenu des fenêtres de repos
+   Boutons de la même famille que la barre « Gestion » (bombés, icône dorée).
    ============================================================================= */
 
 .rest-feature {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px 14px;
+    gap: 8px 16px;
     margin-top: 10px;
 }
 
 .rest-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
 }
 
-.rest-btn {
-    font-family: var(--font-title);
-    font-size: 0.85rem;
-    font-weight: 700;
+/* .btn.rest-btn : l'emporte sur le bouton générique de sheet.css */
+.btn.rest-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 0 18px 0 14px;
+    border: 1px solid var(--btn-border);
+    border-radius: 9px;
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
+    color: var(--text);
+    /* Bouton d'action : même typographie que la barre et les fenêtres (components.css) */
+    font-family: var(--font-text);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, transform 0.1s ease;
+}
+
+.btn.rest-btn .icon {
+    flex: none;
+    width: 17px;
+    height: 17px;
+    color: var(--accent);
+}
+
+.btn.rest-btn:hover {
+    border-color: var(--accent);
+    box-shadow: var(--btn-glow);
+    color: var(--accent);
+}
+
+.btn.rest-btn:active {
+    transform: translateY(1px);
+}
+
+.rest-hint {
+    font-family: var(--font-text);
+    font-style: italic;
+}
+
+@media (pointer: coarse) {
+    .btn.rest-btn {
+        min-height: 44px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .btn.rest-btn {
+        transition: none;
+    }
+
+    .btn.rest-btn:active {
+        transform: none;
+    }
 }
 
 /* ---------- Fenêtre du repos court ---------- */
@@ -28,8 +83,8 @@
 .rest-field {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin: 0 0 12px;
+    gap: 5px;
+    margin: 0 0 14px;
 }
 
 .rest-field small {
@@ -43,15 +98,22 @@
     gap: 8px;
 }
 
-.rest-dice-input {
+.rest-stepper .btn-icon {
+    min-width: 36px;
+    min-height: 36px;
+    border-radius: 50%;
+}
+
+.modal-body .rest-dice-input {
     width: 4.5em;
+    font-family: var(--font-title);
     font-size: 1.15rem;
     font-weight: 700;
 }
 
 .rest-manual {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 10px;
 }
 
@@ -66,9 +128,21 @@
     color: var(--ok);
 }
 
+/* Avertissement : triangle dessiné puis texte */
 .rest-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
     color: var(--accent);
     font-weight: 700;
+}
+
+.rest-warning .icon {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin-top: 0.2em;
+    color: var(--ko);
 }
 
 .rest-error {
@@ -82,24 +156,60 @@
 }
 
 .rest-also {
-    padding-top: 8px;
-    border-top: 1px dashed var(--border-soft);
+    padding-top: 10px;
+    border-top: 1px solid var(--border-soft);
 }
 
-.rest-also ul,
-.rest-summary {
-    margin: 4px 0 0;
-    padding-left: 1.2em;
+/* Listes : icône dorée, ou petit losange doré pour les lignes sans icône */
+.modal-body .rest-also ul,
+.modal-body .rest-summary {
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.rest-also li,
+.rest-summary li {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+}
+
+.rest-also li:not(.has-icon)::before,
+.rest-summary li:not(.has-icon)::before {
+    content: "◆";
+    content: "◆" / "";
+    flex: none;
+    width: 15px;
+    color: var(--accent);
+    font-size: 0.6rem;
+    line-height: 2.2;
+    text-align: center;
+}
+
+.rest-also li .icon,
+.rest-summary li .icon {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    margin-top: 0.2em;
+    color: var(--accent);
 }
 
 .rest-also li + li,
 .rest-summary li + li {
-    margin-top: 4px;
+    margin-top: 6px;
 }
 
 .rest-check {
     display: inline-flex;
     align-items: flex-start;
-    gap: 6px;
+    gap: 8px;
+    font-family: var(--font-text);
+    font-size: inherit;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--text);
     cursor: pointer;
 }
