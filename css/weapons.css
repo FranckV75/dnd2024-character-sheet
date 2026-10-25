@@ -43,6 +43,11 @@
 
 /* ---------- Tableau ---------- */
 
+/* Les cases passent à la ligne : toutes les armes restent visibles, sans défilement interne */
+#weapons-feature .table-scroll {
+    max-height: none;
+}
+
 .weapons-table {
     table-layout: fixed;
     min-width: 780px;
@@ -64,10 +69,6 @@
 
 .weapons-table td {
     vertical-align: middle;
-}
-
-.weapons-table .cell-input {
-    text-overflow: ellipsis;
 }
 
 /* Valeur calculée : même police, taille, graisse et couleur que les champs voisins */
@@ -113,15 +114,15 @@
     .weapons-table th,
     .weapons-table td { padding: 4px 3px; }
     .weapons-table th { overflow-wrap: anywhere; }
-    /* Nom, bonus, dégâts et botte d'arme lisibles en entier à 820 px ;
-       les propriétés et notes longues sont abrégées (…) */
-    .weapons-col-name { width: 24%; }
+    /* À 820 px, les cases passent à la ligne sans couper les mots : la colonne des
+       propriétés loge « Rechargement », celle des bottes « Ralentissement » */
+    .weapons-col-name { width: 22%; }
     .weapons-col-atk { width: 10%; }
-    .weapons-col-dmg { width: 16%; }
-    .weapons-col-prop { width: 14%; }
+    .weapons-col-dmg { width: 14%; }
+    .weapons-col-prop { width: 19%; }
     .weapons-col-prof { width: 20%; }
     .weapons-col-ammo { width: 7%; }
-    .weapons-col-note { width: 9%; }
+    .weapons-col-note { width: 8%; }
     /* Deux boutons de 28 px + 2 px d'écart + 2 × 2 px de marge */
     .weapons-col-actions { width: 62px; }
     .weapons-table td.weapons-actions { padding-inline: 2px; }

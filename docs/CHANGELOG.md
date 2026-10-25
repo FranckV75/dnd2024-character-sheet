@@ -7,6 +7,9 @@ Toutes les modifications notables du projet sont documentées dans ce fichier. L
 - Compte en ligne (même base Supabase que la v3) : connexion avec mot de passe mémorisable, création de compte, mot de passe oublié, « Mes personnages » (ouvrir, supprimer), renommage / copie.
 - Synchronisation sûre : version en ligne jamais écrasée si elle a changé ailleurs, nouvelle fiche ou import en création seule, questions dont la fermeture n'écrase rien, opérations périmées abandonnées, suivi enregistré avec la fiche (plusieurs onglets).
 - 46 scénarios de synchronisation testés (faux Supabase réaliste), vérifiés par trois relectures indépendantes et des tests de mutation.
+### Changed
+- Tableaux d'armes, d'armures et de sorts : les cases passent à la ligne et s'agrandissent au lieu de tronquer le texte (nom complet de l'arme, dégâts, propriétés) ; plus de défilement interne.
+- Valeurs des tableaux en Alegreya (en-têtes en Cinzel) : plus lisibles, mots jamais coupés à 820 px ; colonne des propriétés élargie sur tablette.
 ### Fixed
 - Champ en cours de saisie rafraîchi quand une autre version de la fiche est chargée.
 - Noms v3 sur plusieurs lignes lus comme la v3 (« Kor gul »).

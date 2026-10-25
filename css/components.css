@@ -85,10 +85,26 @@
     border-bottom: 1px solid transparent;
     background: transparent;
     color: var(--text);
-    font-family: var(--font-title);
-    /* Même taille et même graisse que les cellules calculées (attaque, dégâts) */
-    font-size: 0.78rem;
-    font-weight: 700;
+    /* Même police, taille et graisse que les cellules calculées (attaque, dégâts) :
+       Alegreya, plus étroite que Cinzel et avec de vraies minuscules, pour que les mots
+       entiers tiennent dans les colonnes */
+    font-family: var(--font-text);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+/* Case de texte extensible (cell-text.js) : le texte passe à la ligne, la case s'agrandit */
+.data-table textarea.cell-input {
+    display: block;
+    min-height: 1.6em;
+    overflow: hidden;
+    resize: none;
+    line-height: 1.25;
+    white-space: pre-wrap;
+    /* Les mots ne sont coupés que s'ils sont plus longs que toute la colonne */
+    overflow-wrap: break-word;
+    word-break: normal;
+    hyphens: auto;
 }
 
 .data-table .cell-input:hover,

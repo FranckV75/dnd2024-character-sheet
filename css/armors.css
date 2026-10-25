@@ -10,6 +10,11 @@
     min-width: 600px;
 }
 
+/* Les cases passent à la ligne : toutes les armures restent visibles, sans défilement interne */
+#armors-feature .table-scroll {
+    max-height: none;
+}
+
 .armors-table .col-name { width: 17%; }
 .armors-table .col-type { width: 14%; }
 .armors-table .col-ca { width: 6%; }

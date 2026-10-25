@@ -23,6 +23,7 @@ import {
 } from '../rules/spells.js';
 import { loadSpells } from '../data/spells.js';
 import { el, icon } from './dom.js';
+import { cellText as createCellText } from './cell-text.js';
 import { attachAutocomplete } from './autocomplete.js';
 import { confirmModal } from './modal.js';
 import { isLocked } from './lock.js';
@@ -292,8 +293,8 @@ export function initSpells(ctx) {
             on: { change: () => editRow(r.index, { lvl: r.lvl.value }) }
         }, SPELL_LEVELS.map(level => el('option', { value: level, text: level })));
 
-        const textInput = (key) => el('input', {
-            type: 'text', class: `cell-input spell-${key}`, autocomplete: 'off', spellcheck: 'false',
+        const textInput = (key) => createCellText({
+            class: `cell-input spell-${key}`, autocomplete: 'off', spellcheck: 'false',
             on: {
                 input: (event) => {
                     if (key === 'name') hideTooltip();

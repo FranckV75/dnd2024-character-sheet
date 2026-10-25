@@ -14,6 +14,7 @@ import {
     ARMOR_TYPES, searchArmorCatalogue, armorRowFromCatalogue, armorWarnings, armorTraining
 } from '../rules/armors.js';
 import { el, icon } from './dom.js';
+import { cellText } from './cell-text.js';
 import { attachAutocomplete } from './autocomplete.js';
 import { confirmModal } from './modal.js';
 import { isLocked } from './lock.js';
@@ -123,8 +124,8 @@ export function initArmors({ root, store, setStatus }) {
 
     function textInput(index, key) {
         const column = TEXT_COLUMNS[key];
-        return el('input', {
-            type: 'text', class: 'cell-input', 'aria-label': `${column.aria} (ligne ${index + 1})`,
+        return cellText({
+            class: 'cell-input', 'aria-label': `${column.aria} (ligne ${index + 1})`,
             inputmode: column.inputmode, autocomplete: 'off', spellcheck: key === 'comment' ? 'true' : 'false',
             on: { input: (e) => editRow(index, { [key]: e.target.value }) }
         });

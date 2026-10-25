@@ -16,6 +16,7 @@ import { initSpells } from './ui/spells.js';
 import { initRest } from './ui/rest.js';
 import { initStyleEditor } from './ui/style-editor.js';
 import { initAccount } from './ui/account.js';
+import { fitCellTexts } from './ui/cell-text.js';
 import { createStore } from './state/store.js';
 import { createDefaultCharacter } from './state/schema.js';
 import { loadLocal, saveLocal } from './state/persistence.js';
@@ -68,6 +69,15 @@ for (const init of [initToolbar, initAccount, initGallery, initWeapons, initArmo
     }
 }
 initLock();
+
+// Cases de texte des tableaux : hauteur ajustée au contenu après chaque mise à jour
+let fitFrame = 0;
+const scheduleFit = () => {
+    cancelAnimationFrame(fitFrame);
+    fitFrame = requestAnimationFrame(() => fitCellTexts(root));
+};
+store.subscribe(scheduleFit);
+scheduleFit();
 
 // --- Sauvegarde automatique dans le navigateur ---
 // Écriture différée pendant la saisie, mais jamais perdue : elle est faite tout de suite

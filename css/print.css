@@ -438,9 +438,9 @@ h1, h2, h3, h4 {
 
 /* Largeur des colonnes selon leur contenu : field-sizing donne à chaque champ la largeur
    de sa valeur (largeur « max-content » de la colonne), la largeur en % le laisse se
-   réduire si la place manque. Le tableau occupe donc toute la page sans jamais la dépasser ;
-   une valeur plus longue que toute la place disponible reste coupée (un <input> ne passe
-   jamais à la ligne). */
+   réduire si la place manque. Le tableau occupe donc toute la page sans jamais la dépasser.
+   Les cases de texte (cell-text.js) passent à la ligne : leur hauteur suit le contenu
+   (la hauteur fixée à l'écran est retirée juste avant l'impression). */
 .data-table .cell-input {
     field-sizing: content;
     width: 100%;
@@ -448,6 +448,11 @@ h1, h2, h3, h4 {
     max-width: none;
     padding: 1px 2px;
     border-bottom-color: transparent;
+}
+
+.data-table textarea.cell-input {
+    height: auto;
+    overflow: visible;
 }
 
 /* Valeurs calculées des armes (« FOR : +7 », « 1d12 +5 TRAN ») : jamais coupées en morceaux */
