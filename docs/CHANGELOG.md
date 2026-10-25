@@ -2,6 +2,16 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.0.0-alpha.2] - 2026-10-25 (Reconstruction v4 : étape 3, branche `v4`)
+### Added
+- Fiche complète sur 4 onglets (en-tête, caractéristiques, combat, traits, dons, compétences, Odyssée, magie, trésor), reliée au store avec sauvegarde automatique dans le navigateur.
+- Thèmes clair et sombre (palette v3), mise en page tablette 768–1100 px sans défilement horizontal (vérifiée à 820, 1024 et 1280 px).
+- Textes longs en police à vraies minuscules (EB Garamond, en attendant le choix final) ; page `dev/polices.html`.
+- Import / export JSON depuis la barre « Gestion ».
+- Palier de renommée de l'Odyssée calculé par le moteur de règles.
+### Fixed
+- Cases à cocher toujours rondes, texte « 18(16) » qui ne déborde plus, aucun `!important` ni gestionnaire inline.
+
 ## [4.0.0-alpha.1] - 2026-10-25 (Reconstruction v4 : étapes 0 à 2, branche `v4`)
 ### Added
 - Nouvelle structure (`js/data`, `js/rules`, `js/state`, `js/ui`), serveur local sans dépendance, garde-fous `npm run check` et CI.

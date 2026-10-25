@@ -1,35 +1,75 @@
 /* =============================================================================
-   BASE.CSS - Jetons de thème (clair / sombre) et styles de base
-   Les vraies feuilles de style de la fiche arriveront à l'étape 3.
+   BASE.CSS - Jetons de thème (clair / sombre), typographie et éléments communs
+   Toute couleur de l'application passe par une variable définie ici.
    ============================================================================= */
 
 :root {
     --font-title: 'Cinzel', Georgia, serif;
-    --font-text: Georgia, 'Times New Roman', serif;
+    /* Police des textes longs : en attente du choix de Franck (voir dev/polices.html) */
+    --font-text: 'EB Garamond', Georgia, 'Times New Roman', serif;
 
-    --bg: #f4ead5;
-    --surface: #fffaf0;
+    /* Thème clair : parchemin et cuir (palette de la v3) */
+    --bg: #fdf5e6;
+    --surface: rgba(255, 250, 240, 0.94);
+    --box: rgba(255, 255, 255, 0.55);
+    --box-strong: #f4ead5;
     --text: #2a1b0a;
     --text-muted: #6b5a45;
-    --accent: #8b5a2b;
-    --border: #c9b28f;
+    --label: #2a1b0a;
+    --accent: #8b4513;
+    --accent-strong: #3e1c02;
+    --border: #8b4513;
+    --border-soft: rgba(139, 69, 19, 0.35);
+    --input-bg: rgba(255, 255, 255, 0.35);
+    --head-bg: #e8dbc5;
+    --mod-bg: #e8dbc5;
+    --hex-bg: #c9c0b6;
+    --tab-bg: #e8dbc5;
+    --tab-active-bg: #fffaf0;
+    --shadow: 0 0 20px rgba(0, 0, 0, 0.25);
     --ok: #2e7d32;
     --ko: #b3261e;
+    --focus: #b5651d;
+
+    /* Couleurs des métaux (identiques dans les deux thèmes) */
+    --coin-copper: #b87333;
+    --coin-silver: #a8a9ad;
+    --coin-electrum: #c9b458;
+    --coin-gold: #d4af37;
+    --coin-platinum: #8fa3b0;
 }
 
 :root[data-theme="dark"] {
-    --bg: #17120c;
-    --surface: #231b12;
-    --text: #efe3cc;
+    /* Thème sombre : nuit et or (palette de la v3) */
+    --bg: #0f0f1a;
+    --surface: rgba(30, 30, 50, 0.94);
+    --box: rgba(40, 40, 60, 0.6);
+    --box-strong: #23233a;
+    --text: #e8dbc5;
     --text-muted: #b8a68a;
-    --accent: #d9a35f;
-    --border: #5a4632;
+    --label: #d4a574;
+    --accent: #e8b86d;
+    --accent-strong: #f3cf8f;
+    --border: #d4a574;
+    --border-soft: rgba(212, 165, 116, 0.35);
+    --input-bg: rgba(255, 255, 255, 0.06);
+    --head-bg: #2a2a40;
+    --mod-bg: #3a3a50;
+    --hex-bg: #3a3a50;
+    --tab-bg: #23233a;
+    --tab-active-bg: #34344f;
+    --shadow: 0 0 20px rgba(0, 0, 0, 0.6);
     --ok: #7bc77f;
     --ko: #f28b82;
+    --focus: #f3cf8f;
 }
 
 * {
     box-sizing: border-box;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -37,16 +77,27 @@ body {
     background: var(--bg);
     color: var(--text);
     font-family: var(--font-text);
-    line-height: 1.5;
+    font-size: 16px;
+    line-height: 1.45;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-h1, h2, h3 {
+h1, h2, h3, h4 {
     font-family: var(--font-title);
     color: var(--accent);
 }
 
 a {
     color: var(--accent);
+}
+
+:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+}
+
+.muted {
+    color: var(--text-muted);
 }
 
 .placeholder {

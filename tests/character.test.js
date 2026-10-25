@@ -15,7 +15,8 @@ import {
     exhaustionEffects,
     sneakAttackDice,
     deriveCharacter,
-    computeWeapon
+    computeWeapon,
+    renownTier
 } from '../js/rules/character.js';
 
 const MODS = { str: 3, dex: 2, con: 3, int: 0, wis: 1, cha: -1 };
@@ -236,5 +237,18 @@ describe('computeWeapon : armes avec bonus de combat', () => {
         const res = computeWeapon({ ...greataxe, weaponConfig: '{"magicBonus":1,"statOverride":"cha"}' }, stats('warlock'));
         assert.equal(res.attack.text, 'CHA : +4');
         assert.equal(res.damage.text, '1d12 +1 TRAN');
+    });
+});
+
+describe('Odyssée des Seigneurs Dragons : palier de renommée', () => {
+    test('Paliers selon les points (identique à la v3)', () => {
+        assert.equal(renownTier('0'), 'Inconnu');
+        assert.equal(renownTier(1), 'Célébrité locale');
+        assert.equal(renownTier('5'), 'Célébrité locale');
+        assert.equal(renownTier('6'), 'Reconnaissance urbaine');
+        assert.equal(renownTier(11), 'Idolâtré');
+        assert.equal(renownTier(15), 'Culte');
+        assert.equal(renownTier(19), 'Divin');
+        assert.equal(renownTier(''), 'Inconnu');
     });
 });

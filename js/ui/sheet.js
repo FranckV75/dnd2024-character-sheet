@@ -1,0 +1,361 @@
+// =============================================================================
+// SHEET.JS - Construction de la fiche et liaison des champs avec le store
+//
+// Principe : chaque champ porte data-field="<clé de la sauvegarde>".
+//  - Saisie de l'utilisateur  → store.update({ clé: valeur })
+//  - Changement dans le store → render() met à jour tous les champs et les
+//    valeurs calculées (data-out="..."), à partir de deriveCharacter().
+// Les tableaux (armes, armures, sorts) sont affichés en lecture seule ;
+// leur édition arrive à l'étape 4.
+// =============================================================================
+
+import { ABILITIES, SKILLS_BY_STAT } from '../data/constants.js';
+import { DD_RULES } from '../data/dd-rules.js';
+import { FEATS_DATA } from '../data/feats.js';
+import { FEAT_LEVELS } from '../state/schema.js';
+import { stripHTML } from '../state/migrate.js';
+import { deriveCharacter, computeWeapon, hitDieForClass } from '../rules/character.js';
+import { sanitizeRich, sanitizeRulesText } from './sanitize.js';
+
+const signed = (n) => (n >= 0 ? `+${n}` : String(n));
+const SKILL_STATS = ['str', 'dex', 'int', 'wis', 'cha'];
+const FEAT_TYPE_ORDER = ['Origine', 'Général', 'Style de combat', 'Épique'];
+const SPELL_ABILITY_LABELS = { none: '—', int: 'Intelligence', wis: 'Sagesse', cha: 'Charisme' };
+
+/** Petit constructeur d'éléments (texte uniquement, jamais de HTML injecté) */
+function el(tag, attrs = {}, ...children) {
+    const node = document.createElement(tag);
+    for (const [key, value] of Object.entries(attrs)) {
+        if (value === false || value === null || value === undefined) continue;
+        if (key === 'class') node.className = value;
+        else if (key === 'text') node.textContent = value;
+        else node.setAttribute(key, value === true ? '' : value);
+    }
+    node.append(...children.flat().filter(c => c !== null && c !== undefined));
+    return node;
+}
+
+function fillSelect(select, options, placeholder = '— Choisir —') {
+    select.replaceChildren(el('option', { value: '', text: placeholder }),
+        ...options.map(([value, label]) => el('option', { value, text: label })));
+}
+
+// ---------------------------------------------------------------------------
+// Construction des blocs générés à partir des données du jeu
+// ---------------------------------------------------------------------------
+
+function buildAbilities(root) {
+    root.querySelector('#abilities').replaceChildren(...ABILITIES.map(a => el('div', { class: 'ability' },
+        el('label', { for: `f-${a.id}_score`, class: 'label', text: a.name }),
+        el('input', {
+            id: `f-${a.id}_score`, class: 'input score center', 'data-field': `${a.id}_score`,
+            inputmode: 'numeric', autocomplete: 'off'
+        }),
+        el('output', { class: 'mod', 'data-out': `mod:${a.id}` }),
+        el('div', { class: 'save' },
+            el('input', {
+                type: 'checkbox', class: 'round-check', 'data-field': `${a.id}_save_prof`,
+                'aria-label': `Maîtrise du jet de sauvegarde de ${a.name}`
+            }),
+            el('span', { text: 'Sauv.' }),
+            el('output', { 'data-out': `save:${a.id}` }))
+    )));
+}
+
+function buildSkills(root) {
+    const container = root.querySelector('#skills');
+    const extra = container.querySelector('.skills-extra');
+    for (const stat of SKILL_STATS) {
+        const ability = ABILITIES.find(a => a.id === stat);
+        container.insertBefore(el('section', { class: 'skill-group', 'aria-label': ability.name },
+            el('div', { class: 'skill-group-head' },
+                el('span', { 'aria-hidden': 'true', text: ability.icon }),
+                el('span', { text: ability.name }),
+                el('output', { class: 'mod', 'data-out': `mod:${stat}` })),
+            SKILLS_BY_STAT[stat].map(skill => el('div', { class: 'skill-row' },
+                el('input', {
+                    type: 'checkbox', class: 'round-check', 'data-field': `skill_prof_${skill.id}`,
+                    'aria-label': `Maîtrise : ${skill.name}`
+                }),
+                el('input', {
+                    type: 'checkbox', class: 'round-check expertise', 'data-field': `skill_exp_${skill.id}`,
+                    'aria-label': `Expertise : ${skill.name}`
+                }),
+                el('span', { class: 'skill-name', text: skill.name }),
+                el('output', { class: 'skill-bonus', 'data-out': `skill:${skill.id}` })))
+        ), extra);
+    }
+}
+
+function featOptions() {
+    const feats = Object.entries(FEATS_DATA).map(([id, f]) => ({ id, ...f }));
+    return FEAT_TYPE_ORDER.map(type => {
+        const group = el('optgroup', { label: type === 'Épique' ? 'Faveurs épiques' : `Dons : ${type}` });
+        feats.filter(f => f.type === type)
+            .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+            .forEach(f => group.append(el('option', {
+                value: f.id,
+                text: f.aliases?.length ? `${f.name} (${f.aliases.join(', ')})` : f.name
+            })));
+        return group;
+    });
+}
+
+function buildFeats(root) {
+    root.querySelector('#feats').replaceChildren(...FEAT_LEVELS.map(level => {
+        const select = el('select', {
+            id: `f-feat_${level}`, class: 'input', 'data-field': `feat_${level}`,
+            'aria-label': `Don du niveau ${level}`
+        }, el('option', { value: '', text: '— Choisir un don —' }), featOptions());
+        return el('div', { class: 'feat' },
+            el('div', { class: 'feat-head' },
+                el('span', { class: 'feat-badge', text: `Niv. ${level}` }),
+                select,
+                el('output', { class: 'feat-asi', 'data-out': `featAsi:${level}` })),
+            el('div', { class: 'feat-desc', 'data-feat-desc': String(level), hidden: true }));
+    }));
+}
+
+function buildStaticOptions(root) {
+    fillSelect(root.querySelector('#f-char_class'),
+        Object.values(DD_RULES.classes).map(c => [c.nameFr, c.nameFr]));
+    fillSelect(root.querySelector('#f-char_species'),
+        Object.values(DD_RULES.species).map(s => [s.nameFr, s.nameFr]));
+    fillSelect(root.querySelector('#f-char_background'),
+        Object.values(DD_RULES.backgrounds).map(b => [b.nameFr, b.nameFr]));
+    root.querySelector('#f-heroic_destiny').replaceChildren(
+        ...DD_RULES.heroicDestinies.map(h => el('option', { value: h.value, text: h.value ? h.name : '— Aucun —' })));
+    root.querySelector('#f-spell_ability').replaceChildren(
+        ...Object.entries(SPELL_ABILITY_LABELS).map(([value, label]) => el('option', { value, text: label })));
+}
+
+// ---------------------------------------------------------------------------
+// Lecture des saisies
+// ---------------------------------------------------------------------------
+
+function readField(field) {
+    if (field.type === 'checkbox') return field.checked;
+    if (field.dataset.kind === 'rich') return sanitizeRich(field.innerHTML);
+    if (field.dataset.type === 'number') {
+        const n = parseInt(field.value, 10);
+        return Number.isFinite(n) ? n : 0;
+    }
+    return field.value;
+}
+
+function bindFields(root, store) {
+    const onEdit = (event) => {
+        const field = event.target.closest('[data-field]');
+        if (!field || !root.contains(field)) return;
+        const key = field.dataset.field;
+        const patch = { [key]: readField(field) };
+
+        // Règle D&D : l'Expertise implique la maîtrise
+        if (key.startsWith('skill_exp_') && patch[key] === true) {
+            patch[key.replace('skill_exp_', 'skill_prof_')] = true;
+        }
+        if (key.startsWith('skill_prof_') && patch[key] === false) {
+            patch[key.replace('skill_prof_', 'skill_exp_')] = false;
+        }
+
+        // Nouvelle classe : sous-classe remise à zéro si elle n'appartient pas à la classe,
+        // dé de vie mis à jour (comme en v3)
+        if (key === 'char_class') {
+            if (!subclassesOf(patch.char_class).some(s => s.nameFr === store.get().char_subclass)) {
+                patch.char_subclass = '';
+            }
+            const die = hitDieForClass(patch.char_class);
+            if (die) patch.hd_type = die;
+        }
+        store.update(patch);
+    };
+    root.addEventListener('input', onEdit);
+    root.addEventListener('change', onEdit);
+}
+
+// ---------------------------------------------------------------------------
+// Affichage
+// ---------------------------------------------------------------------------
+
+function subclassesOf(className) {
+    const slug = Object.entries(DD_RULES.classes).find(([, c]) => c.nameFr === className)?.[0];
+    return slug ? Object.values(DD_RULES.subclasses).filter(s => s.class === slug) : [];
+}
+
+/** Garantit qu'une valeur enregistrée reste visible même si elle n'est pas dans la liste */
+function ensureOption(select, value) {
+    if (!value || [...select.options].some(o => o.value === value)) return;
+    select.append(el('option', { value, 'data-legacy': 'true', text: `${stripHTML(value)} (valeur enregistrée)` }));
+}
+
+function writeField(field, value) {
+    if (field.type === 'checkbox') {
+        field.checked = value === true;
+        return;
+    }
+    if (field === document.activeElement && field.tagName !== 'SELECT') return;
+
+    if (field.dataset.kind === 'rich') {
+        const html = sanitizeRich(value ?? '');
+        if (field.innerHTML !== html) field.innerHTML = html;
+        return;
+    }
+    if (field.tagName === 'SELECT') {
+        const text = String(value ?? '');
+        ensureOption(field, text);
+        field.value = text;
+        return;
+    }
+    const text = stripHTML(String(value ?? ''));
+    if (field.value !== text) field.value = text;
+}
+
+function renderDynamicSelects(root, character, d) {
+    // Sous-classes de la classe choisie
+    const subSelect = root.querySelector('#f-char_subclass');
+    const subs = subclassesOf(character.char_class);
+    const wanted = subs.map(s => s.nameFr).join('|');
+    if (subSelect.dataset.forClass !== wanted) {
+        fillSelect(subSelect, subs.map(s => [s.nameFr, s.source === 'Odyssée' ? `${s.nameFr} (Odyssée)` : s.nameFr]));
+        subSelect.dataset.forClass = wanted;
+    }
+
+    // Dés de vie utilisés : de 0 au niveau
+    const hdSelect = root.querySelector('#f-hd_current');
+    if (hdSelect.options.length !== d.level + 1 || hdSelect.querySelector('[data-legacy]')) {
+        hdSelect.replaceChildren(...Array.from({ length: d.level + 1 }, (_, i) => el('option', { value: String(i), text: String(i) })));
+    }
+
+    // Caractéristique d'incantation avec son modificateur
+    for (const option of root.querySelector('#f-spell_ability').options) {
+        const label = SPELL_ABILITY_LABELS[option.value];
+        if (label) option.textContent = option.value === 'none' ? label : `${label} (${signed(d.mods[option.value])})`;
+    }
+}
+
+function renderClassResource(root, character, d) {
+    const box = root.querySelector('#class-resource');
+    const slots = box.querySelector('#class-resource-slots');
+    const { count, label } = d.classResource;
+    if (slots.childElementCount !== count) {
+        slots.replaceChildren(...Array.from({ length: count }, (_, i) => el('input', {
+            type: 'checkbox', class: 'round-check', 'data-field': `class_res_${i}`,
+            'aria-label': `${label} ${i + 1}`
+        })));
+    }
+    box.classList.toggle('muted', count === 0);
+}
+
+const OUTPUTS = {
+    armorClass: (d) => d.armorClass.value,
+    initiative: (d) => signed(d.initiative),
+    passivePerception: (d) => d.passivePerception,
+    pb: (d) => signed(d.pb),
+    level: (d) => d.level,
+    classResourceLabel: (d) => d.classResource.count ? d.classResource.label : 'Ressource de classe',
+    exhaustion: (d) => d.exhaustion.dead ? '⚠️ Mort'
+        : d.exhaustion.level ? `${d.exhaustion.d20Penalty} aux tests de d20 ; vitesse -${String(d.exhaustion.speedPenaltyM).replace('.', ',')} m` : 'Aucun effet',
+    renownTier: (d) => d.renownTier,
+    spellDc: (d) => d.spellcasting ? d.spellcasting.dc : '—',
+    spellAttack: (d) => d.spellcasting ? signed(d.spellcasting.attack) : '—',
+    spellSlots: (d) => {
+        const slots = Object.entries(d.spellSlots);
+        return slots.length ? `Emplacements de sorts : ${slots.map(([lvl, n]) => `niv. ${lvl} × ${n}`).join(' · ')}` : 'Aucun emplacement de sort pour cette classe.';
+    },
+    mod: (d, id) => signed(d.mods[id]),
+    save: (d, id) => signed(d.saves[id].bonus),
+    skill: (d, id) => signed(d.skills[id].bonus),
+    featAsi: (d, level, character) => {
+        const asi = FEATS_DATA[character[`feat_${level}`]]?.asi;
+        return asi && asi !== 'Aucune' ? asi : '';
+    }
+};
+
+function renderOutputs(root, character, d) {
+    for (const out of root.querySelectorAll('[data-out]')) {
+        const [name, arg] = out.dataset.out.split(':');
+        const value = OUTPUTS[name]?.(d, arg, character);
+        out.textContent = value ?? '';
+    }
+    root.querySelector('[data-out="armorClass"]').title = d.armorClass.source;
+
+    // Perception passive : valeur calculée, ou saisie libre si la fiche v3 l'avait rendue manuelle
+    const manual = String(character.passive_perc_manual) === 'true';
+    root.querySelector('[data-out="passivePerception"]').hidden = manual;
+    root.querySelector('[data-manual-only="passive_perc_manual"]').hidden = !manual;
+}
+
+function renderFeats(root, character) {
+    for (const level of FEAT_LEVELS) {
+        const box = root.querySelector(`[data-feat-desc="${level}"]`);
+        const feat = FEATS_DATA[character[`feat_${level}`]];
+        box.hidden = !feat;
+        if (feat) {
+            box.innerHTML = sanitizeRulesText(`<strong>Prérequis :</strong> ${feat.prereq}<br>${feat.desc || '<em>Description à compléter.</em>'}`);
+        }
+    }
+}
+
+function tableRows(tbody, rows, columns, emptyText) {
+    if (rows.length === 0) {
+        tbody.replaceChildren(el('tr', {}, el('td', { class: 'empty', colspan: String(columns), text: emptyText })));
+        return;
+    }
+    tbody.replaceChildren(...rows.map(cells => el('tr', {}, cells.map(c => el('td', { text: c })))));
+}
+
+function renderTables(root, character, d) {
+    const text = (v) => stripHTML(String(v ?? ''));
+
+    tableRows(root.querySelector('#weapons-body'),
+        character.dynamic_weapons.filter(w => text(w.name)).map(w => {
+            const res = computeWeapon(w, d);
+            return [text(w.name), res ? res.attack.text : text(w.atk), res ? res.damage.text : text(w.dmg),
+                text(w.prop), text(w.prof), text(w.ammo), text(w.note)];
+        }), 7, 'Aucune arme.');
+
+    tableRows(root.querySelector('#armors-body'),
+        character.dynamic_armors.filter(a => text(a.name)).map(a => [
+            text(a.name), a.type === 'none' ? '' : text(a.type), text(a.ca), text(a.str),
+            a.stealth ? '✓' : '', text(a.weight), text(a.price), text(a.comment), a.equipped ? '✓' : ''
+        ]), 9, 'Aucune armure.');
+
+    const spells = character.dynamic_spells.filter(s => text(s.name))
+        .sort((a, b) => Number(a.lvl) - Number(b.lvl) || text(a.name).localeCompare(text(b.name), 'fr'));
+    tableRows(root.querySelector('#spells-body'), spells.map(s => [
+        s.lvl === '0' ? '∞' : s.prep ? '◆' : '', s.lvl, text(s.name), text(s.school), text(s.time), text(s.range),
+        [s.c && 'C', s.r && 'R', s.m && 'M'].filter(Boolean).join(' '), text(s.note)
+    ]), 8, 'Aucun sort.');
+}
+
+function render(root, character) {
+    const d = deriveCharacter(character);
+    renderDynamicSelects(root, character, d);
+    renderClassResource(root, character, d);
+    for (const field of root.querySelectorAll('[data-field]')) {
+        writeField(field, character[field.dataset.field]);
+    }
+    renderOutputs(root, character, d);
+    renderFeats(root, character);
+    renderTables(root, character, d);
+}
+
+/**
+ * Construit la fiche dans `root` et la relie au store.
+ * @param {HTMLElement} root
+ * @param {ReturnType<import('../state/store.js').createStore>} store
+ */
+export function createSheet(root, store) {
+    buildStaticOptions(root);
+    buildAbilities(root);
+    buildSkills(root);
+    buildFeats(root);
+    for (const rich of root.querySelectorAll('[data-kind="rich"]')) {
+        rich.contentEditable = 'true';
+        rich.setAttribute('role', 'textbox');
+        rich.setAttribute('aria-multiline', 'true');
+    }
+    bindFields(root, store);
+    store.subscribe((character) => render(root, character));
+    render(root, store.get());
+}

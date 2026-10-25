@@ -160,6 +160,21 @@ export function exhaustionEffects(level) {
 }
 
 /**
+ * Palier de renommée de L'Odyssée des Seigneurs Dragons selon les points (identique à la v3).
+ * @param {*} points
+ * @returns {string}
+ */
+export function renownTier(points) {
+    const pts = parseNumber(points, 0);
+    if (pts >= 19) return 'Divin';
+    if (pts >= 15) return 'Culte';
+    if (pts >= 11) return 'Idolâtré';
+    if (pts >= 6) return 'Reconnaissance urbaine';
+    if (pts >= 1) return 'Célébrité locale';
+    return 'Inconnu';
+}
+
+/**
  * Nombre de d6 de l'Attaque sournoise du Roublard.
  * @param {number} level
  * @returns {number}
@@ -254,6 +269,7 @@ export function deriveCharacter(record = {}) {
         spellSlots: spellSlotsFor(className, level),
         classResource: getClassResourceInfo(level, className, mods),
         hitDie: hitDieForClass(className),
-        exhaustion: exhaustionEffects(record.fatigue_level)
+        exhaustion: exhaustionEffects(record.fatigue_level),
+        renownTier: renownTier(record.glory_score)
     };
 }
