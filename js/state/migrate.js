@@ -166,7 +166,13 @@ export function migrateCharacter(input) {
     const fatigue = parseInt(character.fatigue_level, 10);
     character.fatigue_level = Number.isFinite(fatigue) ? Math.max(0, Math.min(6, fatigue)) : 0;
 
-    // 8. Tableaux dynamiques
+    // 8. Champs v4 de type objet (bonus de combat, emplacements de sorts)
+    for (const field of ['combat_buffs', 'spell_slots_state']) {
+        const value = character[field];
+        character[field] = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    }
+
+    // 9. Tableaux dynamiques
     character.dynamic_weapons = Array.isArray(raw.dynamic_weapons) ? raw.dynamic_weapons.map(w => migrateWeapon(w, report)) : [];
     character.dynamic_armors = Array.isArray(raw.dynamic_armors) ? raw.dynamic_armors.map(a => migrateArmor(a, report)) : [];
     character.dynamic_spells = Array.isArray(raw.dynamic_spells) ? raw.dynamic_spells.map(migrateSpell) : [];
