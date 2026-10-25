@@ -1,0 +1,57 @@
+/* =============================================================================
+   BASE.CSS - Jetons de thème (clair / sombre) et styles de base
+   Les vraies feuilles de style de la fiche arriveront à l'étape 3.
+   ============================================================================= */
+
+:root {
+    --font-title: 'Cinzel', Georgia, serif;
+    --font-text: Georgia, 'Times New Roman', serif;
+
+    --bg: #f4ead5;
+    --surface: #fffaf0;
+    --text: #2a1b0a;
+    --text-muted: #6b5a45;
+    --accent: #8b5a2b;
+    --border: #c9b28f;
+    --ok: #2e7d32;
+    --ko: #b3261e;
+}
+
+:root[data-theme="dark"] {
+    --bg: #17120c;
+    --surface: #231b12;
+    --text: #efe3cc;
+    --text-muted: #b8a68a;
+    --accent: #d9a35f;
+    --border: #5a4632;
+    --ok: #7bc77f;
+    --ko: #f28b82;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-text);
+    line-height: 1.5;
+}
+
+h1, h2, h3 {
+    font-family: var(--font-title);
+    color: var(--accent);
+}
+
+a {
+    color: var(--accent);
+}
+
+.placeholder {
+    max-width: 720px;
+    margin: 4rem auto;
+    padding: 0 16px;
+    text-align: center;
+}
