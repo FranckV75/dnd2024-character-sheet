@@ -24,10 +24,11 @@ Chaque étape se termine par un jalon validé par Franck.
 ## Données à compléter
 
 - Les 12 Faveurs épiques n'ont pas de description (à rechercher, pas urgent).
-- Le don « Maître des armes lourdes|Cogneur lourd » porte le nom 2014 et le nom 2024 (la description
-  est celle de 2024). Sans conséquence pour les calculs ni les sauvegardes, qui utilisent l'identifiant
-  `maitre_des_armes_lourdes_cogneur_lourd` (à ne jamais renommer : Korgul l'utilise). Seul l'affichage
-  est à soigner à l'étape 4 (nom 2024 affiché, ancien nom en recherche).
+- ✅ Don « Cogneur lourd » (nom 2024) : l'ancien nom 2014 « Maître des armes lourdes » est rangé dans
+  `aliases` pour la recherche (étape 4). L'identifiant `maitre_des_armes_lourdes_cogneur_lourd` est
+  conservé tel quel : les sauvegardes de Korgul l'utilisent.
+- Même cas, nom 2024 à confirmer par Franck : « Empaleur|Perforateur » et
+  « Faveur de vision véritable|vision lucide ».
 
 ## Changements faits sur `master` (v3) depuis le début de la v4, à reporter
 
