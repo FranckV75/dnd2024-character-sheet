@@ -1,1 +1,232 @@
-/* gallery.css - à compléter à l étape 4 */
+/* =============================================================================
+   GALLERY.CSS - Fond d'écran, opacité de la fiche, galerie (js/ui/gallery.js)
+   Variables posées par gallery.js sur <html> :
+     --app-bg-image (url("…") ou absente), --app-bg-size, --app-bg-pos-y, --sheet-alpha (0.2 → 1)
+   ============================================================================= */
+
+:root {
+    --sheet-alpha: 1;
+    /* Teinte multipliée avec l'image de fond : blanc = image intacte (thème clair) */
+    --app-bg-tint: #ffffff;
+}
+
+:root[data-theme="dark"] {
+    /* Thème sombre : l'image est assombrie et bleutée (comme la v3, background-blend-mode: multiply),
+       mais moins que la v3 (qui multipliait par le fond presque noir et rendait l'image invisible) */
+    --app-bg-tint: #5a5a7c;
+}
+
+/* ---------- Fond d'écran : calque fixe derrière toute la page ----------
+   Un calque position: fixed plutôt que background-attachment: fixed, que Safari iPad ignore
+   (l'image y serait étirée sur toute la hauteur de la page). */
+
+@media screen {
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background-color: var(--app-bg-tint);
+        background-image: var(--app-bg-image, none);
+        background-size: var(--app-bg-size, cover);
+        background-position: center var(--app-bg-pos-y, 50%);
+        background-repeat: no-repeat;
+        background-blend-mode: multiply;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    :root[data-app-bg="on"] body::before {
+        opacity: 1;
+    }
+
+    /* ---------- Fiche translucide ---------- */
+
+    /* Fiche opaque par défaut : c'est ce que gardent les navigateurs sans color-mix()
+       (Safari < 16.2). Une déclaration contenant var() n'est jamais rejetée à la lecture :
+       sans @supports, elle écraserait celle-ci et rendrait la fiche totalement transparente. */
+    .sheet {
+        background: var(--surface);
+    }
+
+    @supports (background: color-mix(in srgb, red 50%, transparent)) {
+        .sheet {
+            background: color-mix(in srgb, var(--surface) calc(var(--sheet-alpha) * 100%), transparent);
+        }
+
+        /* Les boîtes se renforcent quand la fiche devient transparente : le texte reste lisible */
+        :root[data-translucent="true"] .sheet .box {
+            background: color-mix(in srgb, var(--box-strong) calc((1 - var(--sheet-alpha)) * 70%), var(--box));
+        }
+    }
+}
+
+@media print {
+    body::before {
+        display: none;
+    }
+}
+
+/* ---------- Commandes compactes (barre de gestion) ---------- */
+
+.appearance-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+}
+
+.appearance-gallery-btn {
+    white-space: nowrap;
+}
+
+.appearance-slider {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.appearance-slider .appearance-slider-label {
+    display: inline;
+    white-space: nowrap;
+}
+
+.appearance-range {
+    width: 76px;
+    margin: 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+/* ---------- Galerie (fenêtre) ---------- */
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+    gap: 10px;
+}
+
+.gallery-item {
+    position: relative;
+    min-width: 0;
+}
+
+.gallery-pick {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 0;
+    overflow: hidden;
+    border: 2px solid var(--border-soft);
+    border-radius: 6px;
+    background: var(--box);
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.gallery-pick:hover {
+    border-color: var(--border);
+}
+
+.gallery-pick[aria-pressed="true"] {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent);
+}
+
+.gallery-thumb {
+    display: block;
+    width: 100%;
+    height: 78px;
+    object-fit: cover;
+    background: var(--head-bg);
+}
+
+.gallery-thumb-empty {
+    display: grid;
+    place-items: center;
+    font-family: var(--font-title);
+    font-size: 1.6rem;
+    color: var(--text-muted);
+}
+
+.gallery-name {
+    display: block;
+    padding: 4px 6px;
+    overflow: hidden;
+    font-family: var(--font-title);
+    font-size: 0.72rem;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gallery-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: var(--box-strong);
+    color: var(--ko);
+    border-color: var(--ko);
+}
+
+.gallery-remove:hover {
+    background: var(--head-bg);
+    border-color: var(--ko);
+}
+
+.gallery-add {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-soft);
+}
+
+.gallery-add .gallery-add-label {
+    margin-bottom: 4px;
+}
+
+.gallery-add-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.gallery-url {
+    flex: 1 1 220px;
+    min-width: 0;
+    padding: 6px 8px;
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--text);
+    font-family: var(--font-text);
+    font-size: 0.95rem;
+}
+
+.gallery-url:focus {
+    border-color: var(--border);
+}
+
+/* Champ fichier caché visuellement (ouvert par le bouton « Image de l'appareil ») ;
+   pas de display: none, que certains Safari refusent d'ouvrir par programme */
+.gallery-file {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    opacity: 0;
+}
+
+.gallery-message {
+    min-height: 1.2em;
+    margin: 8px 0 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.gallery-message:empty {
+    display: none;
+}

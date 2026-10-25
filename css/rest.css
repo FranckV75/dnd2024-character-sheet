@@ -1,1 +1,105 @@
-/* rest.css - à compléter à l étape 4 */
+/* =============================================================================
+   REST.CSS - Repos court / long (js/ui/rest.js) : boutons de la boîte « Repos »
+   et contenu des fenêtres de repos
+   ============================================================================= */
+
+.rest-feature {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    margin-top: 10px;
+}
+
+.rest-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.rest-btn {
+    font-family: var(--font-title);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+/* ---------- Fenêtre du repos court ---------- */
+
+.rest-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0 0 12px;
+}
+
+.rest-field small {
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+.rest-stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rest-dice-input {
+    width: 4.5em;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.rest-manual {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.rest-manual .input {
+    flex: 1 1 auto;
+}
+
+.rest-preview {
+    flex: 0 0 auto;
+    font-family: var(--font-title);
+    font-weight: 700;
+    color: var(--ok);
+}
+
+.rest-warning {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.rest-error {
+    color: var(--ko);
+    font-weight: 700;
+}
+
+.rest-also,
+.rest-summary {
+    font-size: 0.95rem;
+}
+
+.rest-also {
+    padding-top: 8px;
+    border-top: 1px dashed var(--border-soft);
+}
+
+.rest-also ul,
+.rest-summary {
+    margin: 4px 0 0;
+    padding-left: 1.2em;
+}
+
+.rest-also li + li,
+.rest-summary li + li {
+    margin-top: 4px;
+}
+
+.rest-check {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 6px;
+    cursor: pointer;
+}

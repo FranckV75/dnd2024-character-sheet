@@ -5,7 +5,8 @@
 //  - les champs de construction du personnage (caractéristiques, classe, textes...)
 //    deviennent non modifiables ;
 //  - les champs de JEU restent modifiables (PV, jets contre la mort, ressources,
-//    dés de vie, épuisement, inspiration, pièces, emplacements de sorts cochés) ;
+//    dés de vie, épuisement, inspiration, pièces, emplacements de sorts cochés,
+//    losange « préparé » des sorts, armure équipée, bonus de combat, repos) ;
 //  - tout élément portant la classe .edit-only (boutons d'ajout/suppression...) est masqué ;
 //  - le défilement et les infobulles continuent de fonctionner.
 // L'état est mémorisé dans le navigateur (même clé que la v3) et signalé par

@@ -89,17 +89,19 @@ export function armorCategory(armor) {
 /**
  * Classe d'Armure (D&D 2024) selon les armures équipées et la Défense sans armure.
  * - Légère : base + DEX ; Intermédiaire : base + DEX (max 2) ; Lourde : base seule
- * - Bouclier et « Bonus » : s'ajoutent ; « Maîtrise » : ajoute le bonus de maîtrise
+ * - Bouclier : un seul compte (le meilleur), et seulement si le personnage est formé
+ *   aux boucliers (PHB 2024) ; « Bonus » : s'ajoute ; « Maîtrise » : ajoute le bonus de maîtrise
  * - Sans armure : 10 + DEX, ou Barbare 10 + DEX + CON (bouclier autorisé),
  *   ou Moine 10 + DEX + SAG (uniquement sans bouclier)
- * @param {{ armors: Array, className: string, mods: Object, pb: number }} params
+ * @param {{ armors: Array, className: string, mods: Object, pb: number, shieldTrained?: boolean }} params
  * @returns {{ value: number, source: string }}
  */
-export function computeArmorClass({ armors = [], className = '', mods, pb }) {
+export function computeArmorClass({ armors = [], className = '', mods, pb, shieldTrained = true }) {
     let bodyAC = null;
     let bodySource = '';
     let bonus = 0;
     let hasShield = false;
+    let shieldBonus = 0;
 
     for (const armor of armors) {
         if (!armor || !armor.equipped) continue;
@@ -107,7 +109,7 @@ export function computeArmorClass({ armors = [], className = '', mods, pb }) {
         const value = parseNumber(armor.ca, 0);
         let total = null;
 
-        if (category === 'shield') { hasShield = true; bonus += value; }
+        if (category === 'shield') { hasShield = true; shieldBonus = Math.max(shieldBonus, value); }
         else if (category === 'bonus') bonus += value;
         else if (category === 'proficiency') bonus += pb;
         else if (category === 'light') total = value + mods.dex;
@@ -133,7 +135,9 @@ export function computeArmorClass({ armors = [], className = '', mods, pb }) {
         }
     }
 
-    return { value: bodyAC + bonus, source: bodySource };
+    if (hasShield && shieldTrained) bonus += shieldBonus;
+    const source = hasShield && !shieldTrained ? `${bodySource} — bouclier non maîtrisé : sans effet` : bodySource;
+    return { value: bodyAC + bonus, source };
 }
 
 /**
@@ -264,7 +268,10 @@ export function deriveCharacter(record = {}) {
         skills,
         initiative: mods.dex,
         passivePerception: 10 + skills.perception.bonus,
-        armorClass: computeArmorClass({ armors: record.dynamic_armors || [], className, mods, pb }),
+        armorClass: computeArmorClass({
+            armors: record.dynamic_armors || [], className, mods, pb,
+            shieldTrained: record.prof_armor_shield === true
+        }),
         spellcasting: computeSpellcasting(record.spell_ability, mods, pb),
         spellSlots: spellSlotsFor(className, level),
         classResource: getClassResourceInfo(level, className, mods),

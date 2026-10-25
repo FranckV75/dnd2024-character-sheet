@@ -21,9 +21,22 @@ import { loadLocal, saveLocal } from './state/persistence.js';
 
 const AUTOSAVE_DELAY_MS = 600;
 
+const STATUS_HOLD_MS = 4000;
+
 const root = document.querySelector('.sheet');
 const status = document.getElementById('save-status');
-const setStatus = (message) => { status.textContent = message; };
+let statusHeldUntil = 0;
+
+/** Message d'une fonctionnalité (import, suppression...) : reste affiché quelques secondes */
+const setStatus = (message) => {
+    status.textContent = message;
+    statusHeldUntil = performance.now() + STATUS_HOLD_MS;
+};
+
+/** Message de l'enregistrement automatique : ne remplace pas un message récent */
+const setAutosaveStatus = (message) => {
+    if (performance.now() >= statusHeldUntil) status.textContent = message;
+};
 
 initTheme();
 
@@ -45,11 +58,10 @@ initLock();
 // --- Sauvegarde automatique dans le navigateur ---
 let saveTimer = null;
 store.subscribe(() => {
-    setStatus('Modifications en cours…');
+    setAutosaveStatus('Modifications en cours…');
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
-        setStatus(saveLocal(store.get())
-            ? 'Enregistré dans ce navigateur'
-            : '⚠️ Enregistrement impossible (stockage du navigateur indisponible)');
+        if (saveLocal(store.get())) setAutosaveStatus('Enregistré dans ce navigateur');
+        else setStatus('⚠️ Enregistrement impossible (stockage du navigateur indisponible)');
     }, AUTOSAVE_DELAY_MS);
 });

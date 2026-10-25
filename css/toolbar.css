@@ -1,1 +1,240 @@
-/* toolbar.css - à compléter à l étape 4 */
+/* =============================================================================
+   TOOLBAR.CSS - Barre « Gestion » (js/ui/toolbar.js)
+   - Disposition de #app-bar (le contenu de #appearance-controls appartient à gallery.js :
+     seule sa place dans la barre est réglée ici).
+   - Repli sur tablette (≤ 1100 px) : classe .app-bar--collapsed posée par toolbar.js.
+   - Mode cinéma : classe .cinema sur <body>, la fiche s'efface pour montrer le fond.
+   - Fenêtres d'import / export.
+   Règles : couleurs par variables (base.css), aucun !important.
+   ============================================================================= */
+
+/* ---------- Barre ---------- */
+
+/* Les enfants de #toolbar-feature (bouton de repli, titre, panneau) deviennent des
+   éléments directs de la barre flexible : le panneau peut ainsi passer à la ligne */
+.toolbar-feature {
+    display: contents;
+}
+
+.toolbar-panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Bouton « ☰ Gestion » : uniquement sur tablette */
+.toolbar-toggle {
+    display: none;
+    font-family: var(--font-title);
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.toolbar-toggle[aria-expanded="true"] {
+    background: var(--head-bg);
+}
+
+/* États « enfoncés » (verrou actif, cinéma actif) */
+#btn-lock[aria-pressed="true"],
+#btn-cinema[aria-pressed="true"] {
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 700;
+    background: var(--head-bg);
+}
+
+/* ---------- Tablettes : barre repliée par défaut ---------- */
+
+@media (max-width: 1100px) {
+    .toolbar-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #toolbar-feature .app-bar-title {
+        display: none;
+    }
+
+    /* Ordre : ☰ Gestion … état de la sauvegarde / commandes / apparence */
+    #app-bar #save-status {
+        order: 1;
+    }
+
+    #app-bar #toolbar-panel {
+        order: 2;
+        flex-basis: 100%;
+    }
+
+    #app-bar #appearance-controls {
+        order: 3;
+        flex-basis: 100%;
+    }
+
+    #app-bar.app-bar--collapsed #toolbar-panel,
+    #app-bar.app-bar--collapsed #appearance-controls {
+        display: none;
+    }
+}
+
+/* Cibles tactiles confortables (iPad) */
+@media (pointer: coarse) {
+    .toolbar-panel .btn,
+    .toolbar-toggle {
+        min-height: 44px;
+    }
+}
+
+/* ---------- Mode cinéma ---------- */
+
+.sheet {
+    transition: opacity 0.6s ease, transform 0.6s ease, visibility 0.6s;
+}
+
+body.cinema .sheet {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    pointer-events: none;
+}
+
+/* Seul le bouton « Quitter le mode cinéma » reste visible, sur une barre transparente */
+body.cinema #app-bar {
+    justify-content: flex-end;
+    background: transparent;
+    border-bottom-color: transparent;
+    backdrop-filter: none;
+}
+
+body.cinema #app-bar > :not(#toolbar-feature),
+body.cinema #toolbar-feature > :not(#toolbar-panel),
+body.cinema #toolbar-panel > :not(#btn-cinema) {
+    display: none;
+}
+
+body.cinema #app-bar #toolbar-panel {
+    display: flex;
+    flex-basis: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sheet {
+        transition: none;
+    }
+}
+
+/* ---------- Impression : pas de barre, fiche toujours visible ---------- */
+
+@media print {
+    #app-bar {
+        display: none;
+    }
+
+    body.cinema .sheet {
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+    }
+}
+
+/* ---------- Fenêtres d'import / export ---------- */
+
+.toolbar-option {
+    padding: 10px 0;
+    border-top: 1px solid var(--border-soft);
+}
+
+.toolbar-option:first-child,
+.modal-body > .toolbar-modal-note + .toolbar-option {
+    border-top: none;
+}
+
+.toolbar-option-title {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+    color: var(--accent);
+}
+
+/* Le libellé de la zone de texte reprend le style du titre de section */
+.toolbar-option-title label {
+    display: inline;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    text-transform: none;
+    color: inherit;
+}
+
+.toolbar-option-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.toolbar-file-name {
+    font-family: var(--font-title);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+}
+
+.toolbar-json {
+    display: block;
+    width: 100%;
+    min-height: 8em;
+    padding: 6px 8px;
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--text);
+    font-family: var(--font-text);
+    font-size: 0.85rem;
+    line-height: 1.35;
+    resize: vertical;
+}
+
+.toolbar-json:focus {
+    border-color: var(--border);
+}
+
+.toolbar-json::placeholder {
+    color: var(--text-muted);
+}
+
+.toolbar-fallback {
+    margin-top: 8px;
+}
+
+.modal-body .toolbar-modal-note {
+    margin: 0 0 6px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.modal-body .toolbar-modal-msg {
+    margin: 8px 0 0;
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+.modal-body .toolbar-modal-msg:empty {
+    display: none;
+}
+
+.modal-body .toolbar-modal-msg.is-error {
+    color: var(--ko);
+}
+
+/* Champ fichier masqué visuellement mais toujours actionnable (Safari iOS) */
+.toolbar-file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}

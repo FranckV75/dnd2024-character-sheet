@@ -301,6 +301,7 @@ export function createSheet(root, store) {
         rich.contentEditable = 'true';
         rich.setAttribute('role', 'textbox');
         rich.setAttribute('aria-multiline', 'true');
+        rich.setAttribute('aria-keyshortcuts', 'Alt+F10');
     }
     bindFields(root, store);
     store.subscribe((character) => render(root, character));

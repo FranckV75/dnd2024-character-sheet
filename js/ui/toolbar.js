@@ -1,63 +1,362 @@
 // =============================================================================
-// TOOLBAR.JS - Barre « Gestion » (import / export, thème...)
-// Version de base : sera complétée à l'étape 4 (verrou, cinéma, nouvelle fiche,
-// impression, import par texte collé...).
+// TOOLBAR.JS - Barre « Gestion » de la fiche
+//
+//  - Repli : sur tablette (≤ 1100 px), la barre démarre repliée sur un seul bouton
+//    « ☰ Gestion » qui déplie les commandes (et les réglages d'apparence de gallery.js).
+//  - Verrou 🔒 / 🔓 (lock.js), mode cinéma 👁️ (masque la fiche pour voir le fond),
+//    import (fichier ou texte collé), export (fichier ou presse-papiers),
+//    nouvelle fiche, impression / PDF, thème clair / sombre.
+//  - « Nouvelle fiche » et « Importer » portent la classe edit-only : masqués
+//    quand la fiche est verrouillée.
 // =============================================================================
 
 import { el } from './dom.js';
 import { toggleTheme } from './theme.js';
-import { parseCharacterFile, serializeCharacter, exportFileName } from '../state/persistence.js';
+import { isLocked, toggleLocked } from './lock.js';
+import { openModal, confirmModal } from './modal.js';
+import { createDefaultCharacter } from '../state/schema.js';
+import { parseCharacterFile, serializeCharacter, exportFileName, STORAGE_KEYS } from '../state/persistence.js';
+
+/** Largeur en dessous de laquelle la barre démarre repliée (même seuil que sheet.css) */
+const COMPACT_QUERY = '(max-width: 1100px)';
+const COLLAPSED_CLASS = 'app-bar--collapsed';
+const CINEMA_CLASS = 'cinema';
 
 /**
  * @param {{ root: HTMLElement, store: Object, setStatus: (message: string) => void }} ctx
  */
 export function initToolbar({ store, setStatus }) {
     const host = document.getElementById('toolbar-feature');
+    const bar = document.getElementById('app-bar');
+    if (!host || !bar) return;
 
+    // ---------------------------------------------------------------- Boutons
+    const toggleButton = el('button', {
+        type: 'button', class: 'btn toolbar-toggle', id: 'btn-toolbar-toggle',
+        'aria-expanded': 'true', 'aria-controls': 'toolbar-panel appearance-controls',
+        text: '☰ Gestion',
+        on: { click: () => setCollapsed(!bar.classList.contains(COLLAPSED_CLASS)) }
+    });
+
+    const lockButton = el('button', {
+        type: 'button', class: 'btn', id: 'btn-lock', 'aria-pressed': 'false',
+        on: { click: toggleLocked }
+    });
+
+    const cinemaButton = el('button', {
+        type: 'button', class: 'btn', id: 'btn-cinema', 'aria-pressed': 'false',
+        on: { click: () => setCinema(!document.body.classList.contains(CINEMA_CLASS)) }
+    });
+
+    const importButton = el('button', {
+        type: 'button', class: 'btn edit-only', id: 'btn-import', text: '📂 Importer',
+        'aria-haspopup': 'dialog',
+        on: { click: () => openImportModal(store, setStatus) }
+    });
+
+    const exportButton = el('button', {
+        type: 'button', class: 'btn', id: 'btn-export', text: '⬇️ Exporter',
+        'aria-haspopup': 'dialog',
+        on: { click: () => openExportModal(store, setStatus) }
+    });
+
+    const newButton = el('button', {
+        type: 'button', class: 'btn edit-only', id: 'btn-new', text: '📄 Nouvelle fiche',
+        'aria-haspopup': 'dialog',
+        on: { click: () => newCharacter(store, setStatus) }
+    });
+
+    const printButton = el('button', {
+        type: 'button', class: 'btn', id: 'btn-print', text: '🖨️ Imprimer / PDF',
+        title: 'Imprimer la fiche ou l\'enregistrer en PDF',
+        on: { click: () => window.print() }
+    });
+
+    const themeButton = el('button', {
+        type: 'button', class: 'btn', id: 'btn-theme',
+        on: { click: toggleTheme }
+    });
+
+    const panel = el('div', { class: 'toolbar-panel', id: 'toolbar-panel' },
+        lockButton, cinemaButton, importButton, exportButton, newButton, printButton, themeButton);
+
+    host.replaceChildren(
+        toggleButton,
+        el('span', { class: 'app-bar-title', text: 'Gestion' }),
+        panel
+    );
+
+    // ---------------------------------------------------------------- Verrou
+    const renderLock = () => {
+        const locked = isLocked();
+        lockButton.setAttribute('aria-pressed', String(locked));
+        lockButton.textContent = locked ? '🔒 Verrouillée' : '🔓 Modifiable';
+        lockButton.title = locked
+            ? 'Fiche verrouillée : seuls les champs de jeu sont modifiables. Cliquer pour déverrouiller.'
+            : 'Cliquer pour verrouiller la fiche (évite les modifications accidentelles en jeu)';
+    };
+    document.addEventListener('dd:lockchange', renderLock);
+    renderLock();
+
+    // ---------------------------------------------------------------- Thème
+    const renderTheme = () => {
+        const dark = document.documentElement.dataset.theme === 'dark';
+        // L'icône annonce le thème vers lequel on bascule (comme la v3)
+        themeButton.textContent = dark ? '☀️' : '🌙';
+        const label = dark ? 'Passer au thème clair' : 'Passer au thème sombre';
+        themeButton.setAttribute('aria-label', label);
+        themeButton.title = label;
+    };
+    // Observe l'attribut plutôt que le clic : le thème peut changer ailleurs (initTheme...)
+    new MutationObserver(renderTheme).observe(document.documentElement, {
+        attributes: true, attributeFilter: ['data-theme']
+    });
+    renderTheme();
+
+    // ---------------------------------------------------------------- Mode cinéma
+    // Non mémorisé (comme la v3) : la fiche réapparaît toujours au chargement.
+    function setCinema(on) {
+        document.body.classList.toggle(CINEMA_CLASS, on);
+        cinemaButton.setAttribute('aria-pressed', String(on));
+        cinemaButton.textContent = on ? '✖ Quitter le mode cinéma' : '👁️ Cinéma';
+        cinemaButton.title = on
+            ? 'Réafficher la fiche (touche Échap)'
+            : 'Mode cinéma : masquer la fiche pour admirer le fond d\'écran';
+    }
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape' || !document.body.classList.contains(CINEMA_CLASS)) return;
+        if (document.querySelector('dialog[open]')) return; // Échap ferme d'abord la fenêtre ouverte
+        setCinema(false);
+    });
+    setCinema(false);
+
+    // ---------------------------------------------------------------- Repli (tablette)
+    function setCollapsed(collapsed) {
+        bar.classList.toggle(COLLAPSED_CLASS, collapsed);
+        toggleButton.setAttribute('aria-expanded', String(!collapsed));
+    }
+    const compact = window.matchMedia(COMPACT_QUERY);
+    setCollapsed(compact.matches);
+    compact.addEventListener('change', (event) => setCollapsed(event.matches));
+}
+
+// =============================================================================
+// Import : fichier JSON ou texte collé
+// =============================================================================
+
+/**
+ * @param {Object} store
+ * @param {(message: string) => void} setStatus
+ */
+function openImportModal(store, setStatus) {
+    const message = el('p', { class: 'toolbar-modal-msg', role: 'alert' });
+    const showError = (text) => {
+        message.textContent = `⚠️ ${text}`;
+        message.classList.add('is-error');
+    };
+
+    let close = () => {};
+    const load = (text, sourceLabel) => {
+        const { character, report } = parseCharacterFile(text);
+        store.replace(character);
+        setStatus(report.length
+            ? `${sourceLabel} chargée (${report.length} conversion(s) d'ancien format).`
+            : `${sourceLabel} chargée.`);
+    };
+
+    // (a) Fichier : champ caché visuellement (et non `hidden`, pour les anciens Safari iOS)
     const fileInput = el('input', {
-        type: 'file', id: 'file-import', accept: '.json,application/json', hidden: true,
+        type: 'file', id: 'file-import', class: 'toolbar-file-input', accept: '.json,application/json',
+        tabindex: '-1', 'aria-hidden': 'true',
         on: {
             change: async (event) => {
                 const file = event.target.files[0];
                 event.target.value = '';
                 if (!file) return;
                 try {
-                    const { character, report } = parseCharacterFile(await file.text());
-                    store.replace(character);
-                    setStatus(report.length
-                        ? `Fiche « ${file.name} » chargée (${report.length} conversion(s) d'ancien format).`
-                        : `Fiche « ${file.name} » chargée.`);
+                    load(await file.text(), `Fiche « ${file.name} »`);
+                    close();
                 } catch (e) {
-                    setStatus(`⚠️ ${e.message}`);
+                    showError(e.message);
                 }
             }
         }
     });
-
-    const exportButton = el('button', {
-        type: 'button', class: 'btn', id: 'btn-export', text: '⬇️ Exporter',
-        on: {
-            click: () => {
-                const character = store.get();
-                const url = URL.createObjectURL(new Blob([serializeCharacter(character)], { type: 'application/json' }));
-                const link = el('a', { href: url, download: exportFileName(character) });
-                document.body.append(link);
-                link.click();
-                link.remove();
-                URL.revokeObjectURL(url);
-                setStatus(`Exportée : ${link.download}`);
-            }
-        }
+    const chooseButton = el('button', {
+        type: 'button', class: 'btn btn-primary', text: '📂 Choisir un fichier .json…',
+        on: { click: () => fileInput.click() }
     });
 
-    host.replaceChildren(
-        el('span', { class: 'app-bar-title', text: 'Gestion' }),
-        el('label', { class: 'btn', for: 'file-import', text: '📂 Importer' }),
-        fileInput,
-        exportButton,
-        el('button', {
-            type: 'button', class: 'btn', id: 'btn-theme', 'aria-label': 'Basculer le thème clair / sombre',
-            text: '🌗', on: { click: toggleTheme }
-        })
-    );
+    // (b) Texte collé
+    const pasteArea = el('textarea', {
+        id: 'import-paste', class: 'toolbar-json', rows: '7', spellcheck: 'false', autocomplete: 'off',
+        placeholder: '{ "char_name": "…", … }'
+    });
+
+    close = openModal({
+        title: '📂 Importer une fiche',
+        wide: true,
+        body: [
+            el('p', { class: 'toolbar-modal-note', text: 'La fiche actuelle sera remplacée. Exportez-la d\'abord si vous voulez la conserver.' }),
+            el('section', { class: 'toolbar-option' },
+                el('h3', { class: 'toolbar-option-title', text: 'Depuis un fichier' }),
+                el('div', { class: 'toolbar-option-row' }, chooseButton, fileInput)),
+            el('section', { class: 'toolbar-option' },
+                el('h3', { class: 'toolbar-option-title' },
+                    el('label', { for: 'import-paste', text: 'Ou en collant le texte d\'une fiche (JSON)' })),
+                pasteArea),
+            message
+        ],
+        actions: [
+            { label: 'Annuler' },
+            {
+                label: 'Importer le texte collé',
+                onClick: () => {
+                    const text = pasteArea.value.trim();
+                    if (!text) {
+                        showError('Collez d\'abord le texte d\'une fiche dans la zone ci-dessus.');
+                        pasteArea.focus();
+                        return false;
+                    }
+                    try {
+                        load(text, 'Fiche collée');
+                    } catch (e) {
+                        showError(e.message);
+                        return false;
+                    }
+                    return true;
+                }
+            }
+        ]
+    });
+    // openModal place le focus sur le premier champ (le champ fichier caché) : on le
+    // remet sur le bouton visible, sans ouvrir le clavier virtuel des tablettes
+    chooseButton.focus();
+}
+
+// =============================================================================
+// Export : téléchargement ou presse-papiers
+// =============================================================================
+
+/**
+ * @param {Object} store
+ * @param {(message: string) => void} setStatus
+ */
+function openExportModal(store, setStatus) {
+    const character = store.get();
+    const json = serializeCharacter(character);
+    const fileName = exportFileName(character);
+
+    const message = el('p', { class: 'toolbar-modal-msg', role: 'status' });
+    const say = (text, isError = false) => {
+        message.textContent = text;
+        message.classList.toggle('is-error', isError);
+    };
+
+    // Zone de secours : affichée seulement si la copie automatique échoue
+    const fallbackArea = el('textarea', {
+        id: 'export-json', class: 'toolbar-json', rows: '7', readonly: true, spellcheck: 'false',
+        'aria-label': 'Texte de la fiche à copier'
+    });
+    const fallback = el('div', { class: 'toolbar-fallback', hidden: true }, fallbackArea);
+
+    let close = () => {};
+
+    const download = () => {
+        const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+        const link = el('a', { href: url, download: fileName });
+        document.body.append(link);
+        link.click();
+        link.remove();
+        // Révocation différée : certains navigateurs (Safari) lisent l'URL après le clic
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        setStatus(`Exportée : ${fileName}`);
+        close();
+    };
+
+    const showFallback = () => {
+        fallbackArea.value = json;
+        fallback.hidden = false;
+        fallbackArea.focus();
+        fallbackArea.select();
+        fallbackArea.setSelectionRange(0, json.length);
+        fallbackArea.scrollTop = 0;
+    };
+
+    const copy = async () => {
+        if (navigator.clipboard?.writeText) {
+            try {
+                await navigator.clipboard.writeText(json);
+                say('✔ Fiche copiée dans le presse-papiers. Collez-la où vous voulez (mail, notes…).');
+                setStatus('Fiche copiée dans le presse-papiers');
+                return;
+            } catch {
+                // Refusé (page non sécurisée, permission) : solution de secours ci-dessous
+            }
+        }
+        showFallback();
+        let copied = false;
+        try {
+            copied = document.execCommand('copy');
+        } catch {
+            copied = false;
+        }
+        if (copied) {
+            say('✔ Fiche copiée dans le presse-papiers.');
+            setStatus('Fiche copiée dans le presse-papiers');
+        } else {
+            say('La copie automatique est bloquée par le navigateur : le texte est sélectionné ci-dessous, '
+                + 'copiez-le (Ctrl+C, ou appui long puis « Copier » sur tablette).', true);
+        }
+    };
+
+    const downloadButton = el('button', {
+        type: 'button', class: 'btn btn-primary', text: '⬇️ Télécharger', on: { click: download }
+    });
+
+    close = openModal({
+        title: '⬇️ Exporter la fiche',
+        wide: true,
+        body: [
+            el('section', { class: 'toolbar-option' },
+                el('h3', { class: 'toolbar-option-title', text: 'Télécharger un fichier' }),
+                el('div', { class: 'toolbar-option-row' },
+                    downloadButton,
+                    el('span', { class: 'toolbar-file-name', text: fileName }))),
+            el('section', { class: 'toolbar-option' },
+                el('h3', { class: 'toolbar-option-title', text: 'Ou copier le texte de la fiche' }),
+                el('p', { class: 'toolbar-modal-note', text: 'Utile sur tablette quand le téléchargement est bloqué : le texte pourra être recollé dans « Importer ».' }),
+                el('div', { class: 'toolbar-option-row' },
+                    el('button', { type: 'button', class: 'btn', text: '📋 Copier dans le presse-papiers', on: { click: copy } })),
+                fallback),
+            message
+        ],
+        actions: [{ label: 'Fermer' }]
+    });
+    downloadButton.focus();
+}
+
+// =============================================================================
+// Nouvelle fiche
+// =============================================================================
+
+/**
+ * @param {Object} store
+ * @param {(message: string) => void} setStatus
+ */
+async function newCharacter(store, setStatus) {
+    const ok = await confirmModal({
+        title: '📄 Nouvelle fiche',
+        message: 'La fiche actuelle sera remplacée par une fiche vierge. Exportez-la d\'abord si vous voulez la conserver.',
+        confirmLabel: 'Créer une fiche vierge',
+        danger: true
+    });
+    if (!ok) return;
+    store.replace(createDefaultCharacter());
+    try {
+        localStorage.removeItem(STORAGE_KEYS.activeName);
+    } catch {
+        // Stockage indisponible : rien à effacer
+    }
+    setStatus('Nouvelle fiche vierge créée.');
 }
