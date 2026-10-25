@@ -2,15 +2,15 @@
 
 Chaque étape se termine par un jalon validé par Franck.
 
-| Étape | Contenu | Jalon de validation | État |
-|---|---|---|---|
-| 0. Mise en place | Branche `v4`, structure, serveur local, garde-fous (`npm run check`), CI, `CLAUDE.md` | Page vide sans erreur console | ✅ |
-| 1. Règles métier | `js/rules/` pur + données `js/data/` sans `window`, tests étendus, corrections de règles | Tests verts, règles vérifiées dans les manuels | ✅ |
-| 2. État & sauvegarde | Store unique, schéma, migration v3, localStorage, import/export JSON | Les sauvegardes de Korgul se chargent sans perte | ✅ (à valider par Franck sur `dev/validation.html`) |
-| 3. HTML & CSS | 4 onglets, thèmes, tablette 768–1100 px, sans `!important` ni handlers inline | Rendu validé à 820, 1024, 1280 px dans les 2 thèmes | ⏳ |
-| 4. Fonctionnalités | Combat, dons, compétences, repos, grimoire, verrouillage, galerie, impression | Validation par lots | ⏳ |
-| 5. Cloud | Supabase (auth, roster, conflits) sur la même base que la v3 | Synchronisation testée | ⏳ |
-| 6. Bascule | Comparaison v3/v4, fusion de `v4` dans `master` | 0 régression, 0 erreur console | ⏳ |
+| Étape                | Contenu                                                                                  | Jalon de validation                                 | État                                               |
+| -------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------- | -------------------------------------------------- |
+| 0. Mise en place     | Branche `v4`, structure, serveur local, garde-fous (`npm run check`), CI, `CLAUDE.md`    | Page vide sans erreur console                       | ✅                                                  |
+| 1. Règles métier     | `js/rules/` pur + données `js/data/` sans `window`, tests étendus, corrections de règles | Tests verts, règles vérifiées dans les manuels      | ✅                                                  |
+| 2. État & sauvegarde | Store unique, schéma, migration v3, localStorage, import/export JSON                     | Les sauvegardes de Korgul se chargent sans perte    | ✅ (à valider par Franck sur `dev/validation.html`) |
+| 3. HTML & CSS        | 4 onglets, thèmes, tablette 768–1100 px, sans `!important` ni handlers inline            | Rendu validé à 820, 1024, 1280 px dans les 2 thèmes | ⏳                                                  |
+| 4. Fonctionnalités   | Combat, dons, compétences, repos, grimoire, verrouillage, galerie, impression            | Validation par lots                                 | ⏳                                                  |
+| 5. Cloud             | Supabase (auth, roster, conflits) sur la même base que la v3                             | Synchronisation testée                              | ⏳                                                  |
+| 6. Bascule           | Comparaison v3/v4, fusion de `v4` dans `master`                                          | 0 régression, 0 erreur console                      | ⏳                                                  |
 
 ## Corrections de règles apportées (vérifiées dans le Manuel du joueur 2024)
 
@@ -23,8 +23,11 @@ Chaque étape se termine par un jalon validé par Franck.
 
 ## Données à compléter
 
-- Les 12 Faveurs épiques n'ont pas de description.
-- Le don « Maître des armes lourdes|Cogneur lourd » a deux noms dans un seul champ.
+- Les 12 Faveurs épiques n'ont pas de description (à rechercher, pas urgent).
+- Le don « Maître des armes lourdes|Cogneur lourd » porte le nom 2014 et le nom 2024 (la description
+  est celle de 2024). Sans conséquence pour les calculs ni les sauvegardes, qui utilisent l'identifiant
+  `maitre_des_armes_lourdes_cogneur_lourd` (à ne jamais renommer : Korgul l'utilise). Seul l'affichage
+  est à soigner à l'étape 4 (nom 2024 affiché, ancien nom en recherche).
 
 ## Changements faits sur `master` (v3) depuis le début de la v4, à reporter
 
@@ -43,7 +46,12 @@ Chaque étape se termine par un jalon validé par Franck.
 - En v3, les emplacements de sorts cochés et les bonus de combat (Rage…) étaient stockés à part,
   hors de la fiche : ils n'étaient ni exportés ni synchronisés. En v4, ils feront partie de la fiche.
 
+## Décisions prises
+
+- Police : Cinzel pour les titres et libellés, une police avec de vraies minuscules pour les textes
+  longs (historique, traits, notes). Choix de la police précise à l'étape 3, sur échantillons.
+- v3 : workflow keep-alive lancé et « Mot de passe oublié » testé par Franck (OK).
+
 ## Décisions en attente
 
-- Police des textes longs (Cinzel n'a pas de minuscules).
 - Demandes non réalisées en v3 : lanceur de dés, synergies entre joueurs (à compléter ?).
