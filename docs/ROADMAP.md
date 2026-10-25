@@ -26,6 +26,18 @@ Chaque étape se termine par un jalon validé par Franck.
 - Les 12 Faveurs épiques n'ont pas de description.
 - Le don « Maître des armes lourdes|Cogneur lourd » a deux noms dans un seul champ.
 
+## Changements faits sur `master` (v3) depuis le début de la v4, à reporter
+
+- `0aa093a` : connexion Supabase reconnue après une session initiale vide.
+- `46043d9` : formulaire de connexion mémorisable par le navigateur (`<form>`, autocomplete,
+  PasswordCredential), « Mot de passe oublié ? » (`resetPasswordForEmail`) et fenêtre
+  « nouveau mot de passe » (événement `PASSWORD_RECOVERY`), workflow
+  `.github/workflows/supabase-keepalive.yml` (empêche la mise en pause du projet Supabase gratuit).
+- Supabase (réglé par Franck) : Site URL et Redirect URLs = `https://franckv75.github.io/dnd2024-character-sheet/`.
+
+→ Étape 5 : reprendre ces comportements (et envisager la connexion par lien magique).
+→ Étape 6 : fusionner `master` dans `v4` avant la bascule, pour garder au minimum le workflow keep-alive.
+
 ## À reprendre dans l'interface (étapes 4-5)
 
 - En v3, les emplacements de sorts cochés et les bonus de combat (Rage…) étaient stockés à part,
