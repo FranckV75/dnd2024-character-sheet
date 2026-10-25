@@ -8,7 +8,7 @@ Chaque étape se termine par un jalon validé par Franck.
 | 1. Règles métier     | `js/rules/` pur + données `js/data/` sans `window`, tests étendus, corrections de règles | Tests verts, règles vérifiées dans les manuels      | ✅                                                  |
 | 2. État & sauvegarde | Store unique, schéma, migration v3, localStorage, import/export JSON                     | Les sauvegardes de Korgul se chargent sans perte    | ✅ (validé par Franck)                             |
 | 3. HTML & CSS        | 4 onglets, thèmes, tablette 768–1100 px, sans `!important` ni handlers inline            | Rendu validé à 820, 1024, 1280 px dans les 2 thèmes | ✅ (validé par Franck)                             |
-| 4. Fonctionnalités   | Combat, dons, compétences, repos, grimoire, verrouillage, galerie, impression            | Validation par lots                                 | 🔄 à valider par Franck                             |
+| 4. Fonctionnalités   | Combat, dons, compétences, repos, grimoire, verrouillage, galerie, impression            | Validation par lots                                 | ✅ (validé par Franck)                             |
 | 5. Cloud             | Supabase (auth, roster, conflits) sur la même base que la v3                             | Synchronisation testée                              | ⏳                                                  |
 | 6. Bascule           | Comparaison v3/v4, fusion de `v4` dans `master`                                          | 0 régression, 0 erreur console                      | ⏳                                                  |
 
@@ -44,11 +44,11 @@ Chaque étape se termine par un jalon validé par Franck.
 → Étape 5 : reprendre ces comportements (et envisager la connexion par lien magique).
 → Étape 6 : fusionner `master` dans `v4` avant la bascule, pour garder au minimum le workflow keep-alive.
 
-## Questions ouvertes (étape 4)
+## Choix validés à l'étape 4
 
-- Tablette : propriétés et notes longues des armes abrégées avec « … » (texte complet au toucher). Acceptable ?
-- Impression : valeurs très longues des cellules de tableau coupées ; lignes de sorts vides imprimées ;
-  dons non choisis masqués (l'impression est un relevé du personnage, pas une fiche vierge à remplir).
+- Tablette : propriétés et notes longues des armes abrégées avec « … » (texte complet au toucher) : OK.
+- Impression : relevé du personnage (dons non choisis masqués) ; lignes de sorts vides imprimées et
+  valeurs très longues coupées dans les cellules : acceptés tels quels.
 - Non traités : Restauration ensorcelée, Récupération arcanique (« 1 fois par repos long ») restent des rappels.
 
 ## À reprendre dans l'interface (étapes 4-5)
