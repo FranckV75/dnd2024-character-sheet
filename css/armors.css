@@ -21,6 +21,16 @@
 .armors-table .col-comment { width: auto; }
 .armors-table .col-del { width: 40px; }
 
+/* Tablettes : le nom et le type (qui pilote la CA) passent avant les colonnes numériques */
+@media screen and (max-width: 1100px) {
+    .armors-table .col-name,
+    .armors-table .col-type { width: 19%; }
+    .armors-table .col-ca,
+    .armors-table .col-str { width: 5%; }
+    .armors-table .col-weight,
+    .armors-table .col-price { width: 8%; }
+}
+
 .armors-table th {
     vertical-align: bottom;
     line-height: 1.2;

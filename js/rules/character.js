@@ -75,12 +75,16 @@ const ARMOR_TYPE_ALIASES = {
 /**
  * Catégorie normalisée d'une armure de la sauvegarde.
  * Les anciennes sauvegardes n'ont pas de champ `type` : il est alors déduit du nom.
+ * Un type explicite « none » (Standard / Aucun) n'est jamais remplacé par le nom.
  * @param {{ type?: string, name?: string }} armor
  * @returns {'light'|'medium'|'heavy'|'shield'|'bonus'|'proficiency'|''}
  */
 export function armorCategory(armor) {
-    const declared = ARMOR_TYPE_ALIASES[(armor?.type || '').toString().trim().toLowerCase()];
+    const rawType = (armor?.type ?? '').toString().trim().toLowerCase();
+    const declared = ARMOR_TYPE_ALIASES[rawType];
     if (declared) return declared;
+    // « none » (Standard / Aucun) ou valeur inconnue : aucun effet sur la CA, comme en v3
+    if (rawType) return '';
     const name = (armor?.name || '').toString().replace(/<[^>]*>/g, '').trim().toLowerCase();
     const known = EQUIPMENT_DATA.armors.find(a => a.name.toLowerCase() === name);
     return known ? ARMOR_TYPE_ALIASES[known.type.toLowerCase()] || '' : '';

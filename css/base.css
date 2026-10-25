@@ -30,6 +30,8 @@
     --ok: #2e7d32;
     --ko: #b3261e;
     --focus: #b5651d;
+    /* Barres de défilement et contrôles natifs assortis au thème */
+    color-scheme: light;
 
     /* Couleurs des métaux (identiques dans les deux thèmes) */
     --coin-copper: #b87333;
@@ -62,6 +64,7 @@
     --ok: #7bc77f;
     --ko: #f28b82;
     --focus: #f3cf8f;
+    color-scheme: dark;
 }
 
 * {

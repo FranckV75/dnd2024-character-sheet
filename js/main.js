@@ -56,12 +56,34 @@ for (const init of [initToolbar, initGallery, initWeapons, initArmors, initSpell
 initLock();
 
 // --- Sauvegarde automatique dans le navigateur ---
+// Écriture différée pendant la saisie, mais jamais perdue : elle est faite tout de suite
+// quand la page est masquée (rechargement, onglet fermé, changement d'application sur iPad,
+// où Safari gèle les minuteries). beforeunload est évité : peu fiable sur iOS.
 let saveTimer = null;
-store.subscribe(() => {
+
+function saveNow() {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+    if (saveLocal(store.get())) setAutosaveStatus('Enregistré dans ce navigateur');
+    else setStatus('⚠️ Enregistrement impossible (stockage du navigateur indisponible)');
+}
+
+/** Écrit la sauvegarde en attente, s'il y en a une */
+function flushSave() {
+    if (saveTimer !== null) saveNow();
+}
+
+store.subscribe((_state, changedKeys) => {
+    // Import ou nouvelle fiche : enregistré immédiatement
+    if (changedKeys === null) {
+        saveNow();
+        return;
+    }
     setAutosaveStatus('Modifications en cours…');
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
-        if (saveLocal(store.get())) setAutosaveStatus('Enregistré dans ce navigateur');
-        else setStatus('⚠️ Enregistrement impossible (stockage du navigateur indisponible)');
-    }, AUTOSAVE_DELAY_MS);
+    saveTimer = setTimeout(saveNow, AUTOSAVE_DELAY_MS);
+});
+window.addEventListener('pagehide', flushSave);
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushSave();
 });

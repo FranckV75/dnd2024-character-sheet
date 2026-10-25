@@ -43,8 +43,18 @@ export function applyLock(root = document) {
     const locked = isLocked();
     for (const field of root.querySelectorAll('[data-field]')) {
         const frozen = locked && !isPlayField(field.dataset.field) && field.dataset.play !== 'true';
-        if (field.dataset.kind === 'rich') field.contentEditable = frozen ? 'false' : 'true';
-        else if (field.tagName === 'SELECT' || field.type === 'checkbox' || field.type === 'radio') field.disabled = frozen;
+        if (field.dataset.kind === 'rich') {
+            field.contentEditable = frozen ? 'false' : 'true';
+            // Verrouillé : annoncé en lecture seule et toujours atteignable au clavier
+            // (pour lire et faire défiler un long texte à la table)
+            if (frozen) {
+                field.setAttribute('aria-readonly', 'true');
+                field.tabIndex = 0;
+            } else {
+                field.removeAttribute('aria-readonly');
+                field.removeAttribute('tabindex');
+            }
+        } else if (field.tagName === 'SELECT' || field.type === 'checkbox' || field.type === 'radio') field.disabled = frozen;
         else field.readOnly = frozen;
     }
 }

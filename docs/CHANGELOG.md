@@ -2,6 +2,19 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.0.0-alpha.3] - 2026-10-25 (Reconstruction v4 : étape 4, branche `v4`)
+### Added
+- Tableaux d'armes, d'armures et de sorts modifiables avec auto-complétion depuis le manuel, filtres, configuration d'arme, bonus de combat (Rage, Attaque sournoise, Marque du chasseur).
+- Grimoire : emplacements de sorts cochables (magie de pacte comprise), tri, infobulles de description.
+- Repos court (dés de vie, minimum 1 PV par dé) et repos long conformes au PHB 2024.
+- Barre « Gestion » repliable : verrou, mode cinéma, import/export (fichier ou presse-papiers), nouvelle fiche, impression, galerie de fonds, cadrage et opacité.
+- Éditeur de style (gras, italique, souligné, tailles, couleurs lisibles dans les deux thèmes).
+- Impression A4 : 4 pages, une par section, noir sur blanc quel que soit le thème.
+### Fixed
+- Bouclier sans formation sans effet sur la CA ; un seul bouclier compte.
+- Sauvegarde automatique faite immédiatement à l'import et à la fermeture de la page ; messages d'état préservés.
+- Tableau des armes sans défilement latéral à 820 px ; couleurs de texte v3 lisibles en thème sombre ; barres de défilement sombres ; texte riche nettoyé plus strictement ; aucune erreur console.
+
 ## [4.0.0-alpha.2] - 2026-10-25 (Reconstruction v4 : étape 3, branche `v4`)
 ### Added
 - Fiche complète sur 4 onglets (en-tête, caractéristiques, combat, traits, dons, compétences, Odyssée, magie, trésor), reliée au store avec sauvegarde automatique dans le navigateur.

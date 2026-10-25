@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
     <title>Feuille de Personnage D&amp;D 2024</title>
+    <link rel="icon" href="data:,">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -26,7 +27,7 @@
 
 <body>
     <!-- Barre de gestion : construite par js/ui/toolbar.js ; #appearance-controls est rempli par js/ui/gallery.js -->
-    <div class="app-bar" id="app-bar" role="toolbar" aria-label="Gestion de la fiche">
+    <div class="app-bar" id="app-bar" role="region" aria-label="Gestion de la fiche">
         <div id="toolbar-feature" class="toolbar-feature"></div>
         <div id="appearance-controls" class="appearance-controls"></div>
         <span id="save-status" class="app-bar-status" role="status" aria-live="polite"></span>
@@ -138,17 +139,17 @@
                         <div class="box stat-tile">
                             <label class="label" for="f-hp_current">PV actuels</label>
                             <input id="f-hp_current" data-field="hp_current" class="input value-lg center"
-                                inputmode="numeric" autocomplete="off">
+                                inputmode="numeric" autocomplete="off" placeholder="—">
                         </div>
                         <div class="box stat-tile">
                             <label class="label" for="f-hp_max">PV maximum</label>
                             <input id="f-hp_max" data-field="hp_max" class="input value-lg center" inputmode="numeric"
-                                autocomplete="off">
+                                autocomplete="off" placeholder="—">
                         </div>
                         <div class="box stat-tile">
                             <label class="label" for="f-hp_temp">PV temp.</label>
                             <input id="f-hp_temp" data-field="hp_temp" class="input value-lg center"
-                                inputmode="numeric" autocomplete="off">
+                                inputmode="numeric" autocomplete="off" placeholder="—">
                         </div>
                         <div class="box stat-group">
                             <div class="stat-cell">
@@ -281,7 +282,7 @@
                         </div>
                         <div class="field">
                             <span class="field-label">Palier</span>
-                            <output class="value-md accent" data-out="renownTier"></output>
+                            <output class="value-md" data-out="renownTier"></output>
                         </div>
                     </div>
                 </section>
