@@ -21,7 +21,8 @@ if (sb) {
     sb.auth.onAuthStateChange((event, session) => {
         const user = session?.user ?? null;
 
-        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+        // Une session initiale vide ne doit pas bloquer la connexion qui suit
+        if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && user) {
             if (_initialLoadDone) return;
             _initialLoadDone = true;
         }
