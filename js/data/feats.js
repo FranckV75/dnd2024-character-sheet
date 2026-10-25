@@ -166,7 +166,8 @@ const FEATS_DATA = {
         "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Dextérité de 1, jusqu'à un maximum de 20. <br><strong>Parade</strong>. Si vous tenez une arme de Finesse et qu'une autre créature vous touche au corps à corps, vous pouvez prendre une Réaction pour ajouter votre bonus de maîtrise à votre Classe d'Armure, ce qui peut faire en sorte que l'attaque vous rate. Vous bénéficiez de ce bonus à votre CA contre les attaques au corps à corps jusqu'au début de votre prochain tour."
     },
     "empaleur_perforateur": {
-        "name": "Empaleur|Perforateur",
+        "name": "Perforateur",
+        "aliases": ["Empaleur"],
         "type": "Général",
         "prereq": "niveau 4 ou supérieur",
         "asi": "+1 For",
@@ -278,7 +279,8 @@ const FEATS_DATA = {
         "desc": ""
     },
     "faveur_de_vision_veritable_vision_lucide": {
-        "name": "Faveur de vision véritable|vision lucide",
+        "name": "Faveur de vision lucide",
+        "aliases": ["Faveur de vision véritable"],
         "type": "Épique",
         "prereq": "niveau 19 ou supérieur",
         "asi": "Aucune",

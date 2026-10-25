@@ -27,8 +27,10 @@ Chaque étape se termine par un jalon validé par Franck.
 - ✅ Don « Cogneur lourd » (nom 2024) : l'ancien nom 2014 « Maître des armes lourdes » est rangé dans
   `aliases` pour la recherche (étape 4). L'identifiant `maitre_des_armes_lourdes_cogneur_lourd` est
   conservé tel quel : les sauvegardes de Korgul l'utilisent.
-- Même cas, nom 2024 à confirmer par Franck : « Empaleur|Perforateur » et
-  « Faveur de vision véritable|vision lucide ».
+- ✅ Même cas pour « Perforateur » (alias « Empaleur ») et « Faveur de vision lucide »
+  (alias « Faveur de vision véritable »). Sur AideDD, « A|B » = ancien nom | nom officiel WotC France ;
+  « vision lucide » confirmé par le glossaire des règles 2024 d'AideDD. « Perforateur » déduit de la
+  même convention : à vérifier dans le Manuel des joueurs 2024 en français si possible.
 
 ## Changements faits sur `master` (v3) depuis le début de la v4, à reporter
 
