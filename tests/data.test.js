@@ -50,6 +50,21 @@ describe('Dons', () => {
         assert.equal(feats.filter(([, f]) => f.type === 'Style de combat').length, 10);
     });
 
+    test('Aucun nom de don ne contient de séparateur « | » (anciens noms dans `aliases`)', () => {
+        // Cas connus en attente du nom 2024 confirmé par Franck (voir docs/ROADMAP.md)
+        const pending = new Set(['empaleur_perforateur', 'faveur_de_vision_veritable_vision_lucide']);
+        for (const [key, f] of feats) {
+            if (!pending.has(key)) assert.ok(!f.name.includes('|'), key);
+            if (f.aliases) assert.ok(Array.isArray(f.aliases) && f.aliases.every(a => typeof a === 'string'), key);
+        }
+    });
+
+    test('Cogneur lourd : nom 2024, ancien nom 2014 en alias, identifiant inchangé (sauvegardes)', () => {
+        const feat = FEATS_DATA.maitre_des_armes_lourdes_cogneur_lourd;
+        assert.equal(feat.name, 'Cogneur lourd');
+        assert.deepEqual(feat.aliases, ['Maître des armes lourdes']);
+    });
+
     test('Les dons hors Faveurs épiques ont une description', () => {
         for (const [key, f] of feats) {
             if (f.type !== 'Épique') assert.ok(f.desc, key);

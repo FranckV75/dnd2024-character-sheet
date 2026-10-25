@@ -376,7 +376,8 @@ const FEATS_DATA = {
         "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Dextérité ou Force de 1, jusqu'à un maximum de 20. <br><strong>Frappe double</strong>. Immédiatement après avoir pris l'action Attaque et attaqué avec un Bâton, une Lance ou une arme possédant les propriétés Lourde et Allonge, vous pouvez utiliser une action Bonus pour effectuer une attaque au corps à corps avec l'extrémité opposée de l'arme. L'arme inflige des dégâts contondants, et le dé de dégâts de l'arme pour cette attaque est un d4. <br><strong>Frappe réactive</strong>. Lorsque vous tenez un Bâton, une Lance ou une arme possédant les propriétés Lourde et Allonge, vous pouvez prendre une Réaction pour effectuer une attaque au corps à corps contre une créature qui entre dans l'allonge de cette arme."
     },
     "maitre_des_armes_lourdes_cogneur_lourd": {
-        "name": "Maître des armes lourdes|Cogneur lourd",
+        "name": "Cogneur lourd",
+        "aliases": ["Maître des armes lourdes"],
         "type": "Général",
         "prereq": "niveau 4 ou supérieur, Force 13 ou plus",
         "asi": "+1 For",
