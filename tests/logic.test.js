@@ -17,7 +17,7 @@ import {
     getRageBonus,
     isMartialArtsWeapon,
     getMartialArtsDie
-} from '../js/logic.js';
+} from '../js/rules/logic.js';
 
 describe('1. Modificateurs de caractéristiques (calcMod)', () => {
     test('Calcule correctement les modificateurs pour tous les scores (1-30)', () => {
