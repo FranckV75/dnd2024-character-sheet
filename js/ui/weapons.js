@@ -18,6 +18,7 @@ import {
     removeWeapon, restoreWeapon, WEAPON_DAMAGE_TYPES
 } from '../rules/weapons.js';
 import { el, icon } from './dom.js';
+import { cellText } from './cell-text.js';
 import { openModal } from './modal.js';
 import { attachAutocomplete } from './autocomplete.js';
 import { isLocked } from './lock.js';
@@ -240,8 +241,8 @@ export function initWeapons(ctx) {
     }
 
     function buildRow(index) {
-        const textInput = (key) => el('input', {
-            type: 'text', class: 'cell-input', autocomplete: 'off', spellcheck: 'false',
+        const textInput = (key) => cellText({
+            class: 'cell-input', autocomplete: 'off', spellcheck: 'false',
             on: { input: (event) => updateRow(index, (w) => ({ ...w, [key]: event.target.value })) }
         });
 
