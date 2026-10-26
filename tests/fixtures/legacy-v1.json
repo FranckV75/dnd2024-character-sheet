@@ -1,0 +1,36 @@
+{
+  "char_name": "Testeur <b>l'Ancien</b>",
+  "char_class": "<span>Guerrier</span>",
+  "char_level": "3",
+  "char_species": "Humain",
+  "str_score": "<div>16</div>",
+  "dex_score": "",
+  "con_score": "14",
+  "int_score": "10",
+  "wis_score": "12",
+  "cha_score": "8",
+  "str_save_prof": true,
+  "dex_save_prof": null,
+  "prof_armor_shield": true,
+  "skill_prof_athletics": true,
+  "skill_prof_stealth": null,
+  "hd_total": "D10",
+  "hd_spent": "1?",
+  "profs_other": "Armes courantes et de guerre",
+  "traits_feats": "<div>Second souffle&nbsp;: 1d10 + niveau</div>",
+  "gp": "<b>42</b>",
+  "heroic_inspiration": "0/3",
+  "champ_inconnu_v1": "à conserver",
+  "dynamic_weapons": [
+    { "name": "Épée longue (1)", "atk": "+5", "dmg": "1D8+3", "note": "" },
+    { "name": "Hachettes", "atk": "+5", "dmg": "1D6+3", "note": "x4" },
+    { "name": "Bâton de pluie maudit", "atk": "+1", "dmg": "1D4", "note": "" }
+  ],
+  "dynamic_spells": [
+    { "lvl": "1", "name": "Bouclier", "time": "1 R", "range": "perso", "note": "", "c": false, "r": false, "m": false }
+  ],
+  "dynamic_armors": [
+    { "name": "Cotte de mailles", "ca": "16", "str": "13", "stealth": true, "weight": "27,5 kg", "price": "75 po", "comment": "", "equipped": true },
+    { "name": "Bouclier", "ca": "+2", "str": "-", "stealth": false, "weight": "3 kg", "price": "10 po", "comment": "", "equipped": true }
+  ]
+}

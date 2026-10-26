@@ -1,0 +1,1554 @@
+/* =============================================================================
+   SHEET.CSS - Mise en page de la feuille de personnage
+   Cibles : desktop (> 1100 px) et tablettes (768 → 1100 px, iPad ≈ 820 px).
+   Règles : aucune couleur en dur (variables de base.css), aucun !important.
+   ============================================================================= */
+
+/* ---------- Boutons (la barre de gestion est dans toolbar.css) ---------- */
+
+.btn {
+    font: inherit;
+    font-size: 0.9rem;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--box-strong);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: var(--head-bg);
+}
+
+label.btn {
+    display: inline-block;
+    font-family: var(--font-text);
+    font-size: 0.9rem;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--text);
+}
+
+/* ---------- Conteneur de la fiche ---------- */
+
+.sheet {
+    max-width: 1100px;
+    margin: 12px auto 32px;
+    padding: 20px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    box-shadow: var(--shadow);
+}
+
+/* ---------- Champs ---------- */
+
+label,
+.label,
+.field-label {
+    display: block;
+    font-family: var(--font-title);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--label);
+    text-transform: uppercase;
+}
+
+.label.accent,
+.accent {
+    color: var(--accent);
+}
+
+.input {
+    width: 100%;
+    min-width: 0;
+    padding: 2px 4px;
+    border: none;
+    border-bottom: 1px solid var(--border-soft);
+    border-radius: 0;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-title);
+    font-size: 1rem;
+}
+
+/* background-color (et non background) : ne pas effacer le chevron doré des listes */
+.input:hover {
+    background-color: var(--input-bg);
+}
+
+/* Listes (en-tête, fenêtres et tableaux) : flèche native remplacée par un fin chevron doré,
+   dessiné par deux dégradés (les deux branches du « v »), donc aux couleurs du thème */
+select.input,
+.data-table select.cell-input {
+    -webkit-appearance: none;
+    appearance: none;
+    background-image:
+        linear-gradient(to top right, transparent 42%, var(--gold) 42% 58%, transparent 58%),
+        linear-gradient(to top left, transparent 42%, var(--gold) 42% 58%, transparent 58%);
+    background-position: right 11px center, right 6px center;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+select.input {
+    padding-right: 22px;
+}
+
+/* Cases des tableaux (type d'armure, niveau de sort) : chevron plus près du bord */
+.data-table select.cell-input {
+    padding-right: 18px;
+    background-position: right 8px center, right 3px center;
+}
+
+/* Valeur centrée : même marge des deux côtés, avec un vrai espace avant le chevron */
+select.input.center {
+    padding-left: 24px;
+    padding-right: 24px;
+    background-position: right 10px center, right 5px center;
+}
+
+/* Fiche verrouillée : liste figée, plus de chevron */
+[data-locked="true"] select.input:disabled,
+[data-locked="true"] .data-table select.cell-input:disabled {
+    background-image: none;
+}
+
+select.input option,
+select.input optgroup {
+    background: var(--box-strong);
+    color: var(--text);
+}
+
+.input-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.center {
+    text-align: center;
+    text-align-last: center;
+}
+
+/* Grandes valeurs (CA, PV, initiative...) : chiffres gravés, saisis ou calculés à l'identique */
+.value-xl,
+.value-lg,
+.value-md {
+    display: block;
+    font-family: var(--font-title);
+    font-weight: 700;
+    font-variant-numeric: lining-nums;
+    letter-spacing: 0.02em;
+    color: var(--number);
+    text-align: center;
+    text-shadow: var(--engrave);
+}
+
+.value-xl {
+    font-size: 2.05rem;
+    line-height: 1.1;
+}
+
+.value-lg {
+    font-size: 1.45rem;
+}
+
+.value-md {
+    font-size: 1.15rem;
+}
+
+input.value-lg,
+input.value-md,
+select.value-md {
+    border-bottom-color: transparent;
+}
+
+/* Grande valeur vide (PV actuels / maximum) : garder un repère de saisie à l'écran
+   (rien sur le papier : print.css rend les indications transparentes) */
+@media screen {
+    input.value-lg:placeholder-shown:not([readonly]),
+    input.value-md:placeholder-shown:not([readonly]) {
+        border-bottom-color: var(--border-soft);
+    }
+
+    input.value-lg::placeholder,
+    input.value-md::placeholder {
+        color: var(--text-muted);
+        opacity: 0.6;
+    }
+}
+
+[hidden] {
+    display: none;
+}
+
+/* Valeur calculée qu'on peut remplacer par une saisie (perception passive) : le bouton est
+   invisible, seule la valeur s'affiche, à l'identique des valeurs voisines */
+.value-switch {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: text;
+}
+
+.value-switch:disabled {
+    cursor: default;
+}
+
+.value-switch[hidden] {
+    display: none;
+}
+
+/* Fiche déverrouillée : repère de saisie au survol, comme un champ */
+@media (hover: hover) {
+    .value-switch:not(:disabled):hover {
+        box-shadow: inset 0 -1px 0 var(--border-soft);
+    }
+}
+
+/* Cases rondes (jamais ovales : aspect-ratio fixé) : cerclées d'or, légèrement bombées ;
+   cochées, une perle dorée avec son reflet et un léger halo */
+.round-check {
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    aspect-ratio: 1;
+    margin: 0 2px;
+    vertical-align: middle;
+    border: 1.5px solid var(--check-ring);
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--check-top), var(--check-bottom));
+    box-shadow: var(--btn-shadow);
+    cursor: pointer;
+    transition: box-shadow 0.3s ease, border-color 0.2s ease;
+}
+
+.round-check:hover:not(:disabled):not(.demo) {
+    border-color: var(--accent);
+    box-shadow: var(--btn-glow);
+}
+
+.round-check:checked,
+.round-check.demo:not(.expertise) {
+    border-color: var(--gold);
+    /* reflet (point clair), perle centrée, fond bombé de la case */
+    background:
+        radial-gradient(circle at 39% 35%, var(--gem-light) 0 1px, transparent 3px),
+        radial-gradient(circle closest-side, var(--gold) 0 25%, var(--accent) 66%, transparent 74%),
+        radial-gradient(circle at 35% 30%, var(--check-top), var(--check-bottom));
+    box-shadow: 0 0 6px var(--gold-glow);
+}
+
+.round-check.expertise {
+    border-radius: 2px;
+    transform: rotate(45deg) scale(0.82);
+}
+
+.round-check.expertise:checked,
+.round-check.demo.expertise {
+    background: linear-gradient(135deg, var(--gem-light) 0 10%, var(--gold) 42%, var(--accent));
+}
+
+.round-check.demo {
+    cursor: default;
+}
+
+/* Texte riche (contenteditable) : la case s'agrandit avec son contenu, rien n'est caché
+   en bas (hauteur minimale conservée pour garder une zone de saisie confortable) */
+.rich {
+    min-height: 90px;
+    padding: 6px 9px;
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    background: var(--input-bg);
+    box-shadow: inset 0 1px 3px var(--track);
+    font-family: var(--font-text);
+    font-size: 1.02rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Contour transparent : invisible ici, mais redessiné par le mode « contraste élevé »
+   de Windows, qui efface les ombres (l'anneau doré) */
+.rich:focus {
+    outline: 2px solid transparent;
+    outline-offset: 1px;
+    border-color: var(--gold);
+    box-shadow: inset 0 1px 3px var(--track), 0 0 0 3px var(--gold-soft);
+}
+
+.rich:empty::before {
+    content: '…';
+    color: var(--text-muted);
+}
+
+.rich-sm {
+    min-height: 60px;
+}
+
+.rich-xs {
+    min-height: 40px;
+    font-size: 0.92rem;
+}
+
+.rich-lg {
+    min-height: 160px;
+}
+
+/* ---------- Boîtes ---------- */
+
+.box {
+    min-width: 0;
+    margin: 0;
+    padding: 8px 10px;
+    background: var(--box);
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    box-shadow: var(--pane-shadow);
+}
+
+fieldset.box,
+fieldset.inline-checks {
+    min-inline-size: 0;
+}
+
+.box h3 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 4px;
+    text-shadow: var(--engrave);
+}
+
+.box h3 label {
+    display: inline;
+    font-size: inherit;
+    letter-spacing: inherit;
+    text-transform: none;
+    color: inherit;
+}
+
+/* Titre de section : icône dorée, titre, puis un losange et un filet d'or qui s'efface
+   vers la droite (le losange et le filet sont les pseudo-éléments, placés après le texte) */
+.box > h3 {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 10px;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.box > h3 > .icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: var(--gold);
+}
+
+.box > h3::before {
+    content: "";
+    order: 2;
+    flex: none;
+    width: 5px;
+    height: 5px;
+    margin-left: 3px;
+    background: var(--gold);
+    transform: rotate(45deg);
+}
+
+.box > h3::after {
+    content: "";
+    order: 3;
+    flex: 1 1 24px;
+    height: 1px;
+    margin-left: -6px;
+    background: linear-gradient(to right, var(--gold), var(--gold-soft) 35%, transparent);
+}
+
+/* Sous-titre (Outils, Langues) : petit losange doré */
+.box h4 {
+    margin: 0 0 4px;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+.box h4::before {
+    content: "";
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin: 0 7px 0 1px;
+    vertical-align: 0.15em;
+    background: var(--gold);
+    transform: rotate(45deg);
+}
+
+.box-inner {
+    background: transparent;
+}
+
+.stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.two-cols {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 14px;
+}
+
+/* Les deux cartes ont la même hauteur (grille) : la zone de texte remplit la sienne */
+.two-cols > .box {
+    display: flex;
+    flex-direction: column;
+}
+
+.two-cols > .box > .rich {
+    flex: 1 1 auto;
+}
+
+/* ---------- En-tête ---------- */
+
+.sheet-header {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 10px 14px;
+    margin-bottom: 16px;
+}
+
+.sheet-header .field {
+    grid-column: span 3;
+}
+
+.sheet-header .field-name {
+    grid-column: span 5;
+}
+
+.sheet-header .field-narrow {
+    grid-column: span 1;
+}
+
+.sheet-header .field-wide {
+    grid-column: span 5;
+}
+
+.sheet-header .field-narrow:nth-of-type(7),
+.sheet-header .field-narrow:nth-of-type(8) {
+    grid-column: span 2;
+}
+
+.input-title {
+    text-overflow: ellipsis;
+}
+
+/* Nom du personnage : titre de parchemin, plus grand, doré et gravé.
+   Chaque champ est une colonne : libellés alignés en haut, soulignements alignés en bas */
+.sheet-header {
+    align-items: stretch;
+}
+
+.sheet-header .field {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.sheet-header .field-name .input-title {
+    padding: 0 4px 1px;
+    font-size: 1.7rem;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    color: var(--accent);
+    text-shadow: var(--engrave-title);
+    border-bottom-color: var(--gold-soft);
+}
+
+/* ---------- Onglets : marque-pages de grimoire ----------
+   Onglet actif doré, souligné d'un trait lumineux ; les autres restent discrets.
+   Sous la rangée, un double filet (comme la barre de gestion). */
+
+.tabs {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 20px;
+    padding: 0 6px;
+    border-bottom: 1px solid var(--border);
+}
+
+.tabs::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+    height: 1px;
+    background: var(--border-soft);
+    pointer-events: none;
+}
+
+/* Icône en ligne devant le libellé (elle reste collée au texte quand il passe sur deux
+   lignes) ; le bouton centre verticalement son contenu */
+.tab {
+    position: relative;
+    display: block;
+    min-height: 46px;
+    padding: 8px 10px;
+    border: 1px solid var(--border-soft);
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    background: linear-gradient(var(--btn-top), var(--tab-bg));
+    /* Texte plein (lisible sur un fond d'écran) : la discrétion vient de l'icône et du fond */
+    color: var(--text);
+    font-family: var(--font-title);
+    font-size: 0.86rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    text-align: center;
+    text-wrap: balance;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.tab .icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 7px;
+    vertical-align: -2px;
+    color: var(--gold);
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.tab:hover {
+    border-color: var(--border);
+}
+
+.tab:hover .icon {
+    opacity: 0.9;
+}
+
+.tab[aria-selected="true"] {
+    background: var(--tab-active-bg);
+    border-color: var(--border);
+    color: var(--accent);
+    text-shadow: var(--engrave);
+}
+
+.tab[aria-selected="true"] .icon {
+    opacity: 1;
+}
+
+/* Trait lumineux sous l'onglet actif, posé sur le filet de la rangée */
+.tab[aria-selected="true"]::after {
+    content: "";
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    bottom: -1px;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(to right, transparent, var(--gold) 18%, var(--gold) 82%, transparent);
+    box-shadow: 0 0 8px 1px var(--gold-glow);
+}
+
+/* Petit losange d'or au sommet du marque-page actif */
+.tab[aria-selected="true"]::before {
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: calc(50% - 3.5px);
+    width: 7px;
+    height: 7px;
+    background: var(--gold);
+    box-shadow: 0 0 6px var(--gold-glow);
+    transform: rotate(45deg);
+}
+
+.tab-panel[hidden] {
+    display: none;
+}
+
+/* ---------- Onglet 1 : caractéristiques & combat ---------- */
+
+.combat-layout {
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+}
+
+.abilities {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ability {
+    padding: 6px 4px 8px;
+    text-align: center;
+    background: var(--box);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+}
+
+/* Nom de la caractéristique : petit libellé, mais jamais sous la taille minimale ; « Constitution »
+   tient sur une ligne (lettres moins espacées que les autres libellés) */
+.ability .label {
+    font-size: 0.68rem;
+    letter-spacing: 0;
+    overflow-wrap: anywhere;
+}
+
+/* Valeur de caractéristique gravée, modificateur dans une pastille bombée cerclée d'or */
+.ability .score {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-variant-numeric: lining-nums;
+    color: var(--number);
+    text-shadow: var(--engrave);
+}
+
+.ability .mod {
+    display: inline-block;
+    min-width: 44px;
+    margin: 2px 0 6px;
+    padding: 1px 8px;
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
+    font-family: var(--font-title);
+    font-weight: 700;
+    color: var(--number);
+    text-shadow: var(--engrave);
+}
+
+.ability .save {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-family: var(--font-title);
+    font-size: 0.72rem;
+}
+
+/* Jet de sauvegarde (demandé sans cesse en jeu) : la valeur un cran plus grande que « Sauv. » ;
+   maîtrisé, il se lit comme une compétence maîtrisée (gras, encre d'accent), sinon plus calme.
+   Sur le papier, seule la graisse change. */
+.ability .save output {
+    font-size: 0.85rem;
+    font-variant-numeric: lining-nums;
+}
+
+.ability .save:has(.round-check:checked) output {
+    font-weight: 700;
+}
+
+@media screen {
+    .ability .save:has(.round-check:checked) output {
+        color: var(--accent-ink);
+    }
+
+    .ability .save:not(:has(.round-check:checked)) :is(span, output) {
+        color: var(--quiet-ink);
+    }
+}
+
+.combat-main {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.vitals {
+    display: grid;
+    gap: 10px;
+}
+
+.vitals-1 {
+    grid-template-columns: 130px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2.6fr) minmax(0, 1.5fr);
+}
+
+.vitals-2 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 2fr) minmax(0, 1.5fr);
+}
+
+.stat-tile {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
+}
+
+.stat-tile .label {
+    text-align: center;
+}
+
+.stat-group {
+    display: flex;
+    align-items: stretch;
+}
+
+.stat-cell {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 6px;
+    text-align: center;
+}
+
+/* Libellé et valeur groupés au centre de la case ; dans un même groupe, les libellés de
+   longueurs différentes (« Inspiration héroïque ou points de Foi » sur 3 lignes, « Vitesse »
+   sur 1) se calent en bas d'une même hauteur, pour que les valeurs restent alignées */
+.stat-group .stat-cell .label {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-height: calc(3 * 1.2em);
+    line-height: 1.2;
+}
+
+.vitals-2 .stat-group .stat-cell .label {
+    min-height: 0;
+}
+
+.stat-cell .label {
+    font-size: var(--label-min);
+}
+
+.stat-cell + .stat-cell {
+    border-left: 1px dashed var(--border-soft);
+}
+
+.ac-hex {
+    /* Bouclier : la forme vient de deux masques SVG (seule leur opacité compte, pas leur
+       couleur). L'élément porte le remplissage, découpé en bouclier ; ::before trace le
+       contour (trait de 2,5 px et filet intérieur plus fin). Le contenu reste dans la
+       partie large du bouclier, au-dessus de la pointe. */
+    --shield-fill: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M50 3C62 9 79 11 95 8V44C95 70 76 87 50 97C24 87 5 70 5 44V8C21 11 38 9 50 3Z' fill='black'/%3E%3C/svg%3E");
+    --shield-ring: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='black' vector-effect='non-scaling-stroke'%3E%3Cpath d='M50 3C62 9 79 11 95 8V44C95 70 76 87 50 97C24 87 5 70 5 44V8C21 11 38 9 50 3Z' stroke-width='2.5' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 10C61 15 76 17 88 15V45C88 66 72 80 50 89C28 80 12 66 12 45V15C24 17 39 15 50 10Z' stroke-width='1' stroke-opacity='0.55' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/svg%3E");
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    padding: 18px 16px 30px;
+    border: none;
+    background: radial-gradient(ellipse at 50% 22%, var(--hex-light), var(--hex-bg) 72%);
+    -webkit-mask: var(--shield-fill) center / 100% 100% no-repeat;
+    mask: var(--shield-fill) center / 100% 100% no-repeat;
+    position: relative;
+}
+
+.ac-hex::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--border);
+    -webkit-mask: var(--shield-ring) center / 100% 100% no-repeat;
+    mask: var(--shield-ring) center / 100% 100% no-repeat;
+    pointer-events: none;
+}
+
+.ac-hex > * {
+    position: relative;
+}
+
+.ac-hex .label {
+    font-size: var(--label-min);
+    text-align: center;
+}
+
+.death-saves {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+}
+
+.death-saves legend {
+    float: left;
+    width: 100%;
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+.check-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-size: 0.85rem;
+}
+
+.check-row span {
+    min-width: 52px;
+}
+
+.hd-used {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-title);
+    font-weight: 700;
+}
+
+.hd-used select {
+    width: auto;
+}
+
+.class-resource {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 2px solid var(--accent);
+}
+
+.resource-slots {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+}
+
+.inline-checks {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 16px;
+    margin: 0 0 8px;
+    padding: 0;
+    border: none;
+}
+
+.inline-checks legend {
+    float: left;
+    margin-right: 8px;
+}
+
+.inline-checks label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-text);
+    font-size: 0.95rem;
+    font-weight: 400;
+    text-transform: none;
+    color: var(--text);
+}
+
+.fatigue {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.fatigue input {
+    width: 64px;
+}
+
+/* Épuisement élevé (sheet.js, data-severity) : orange dès le niveau 3, rouge dès le niveau 5 */
+.fatigue output[data-severity] {
+    font-weight: 700;
+}
+
+.fatigue output[data-severity="warning"] {
+    color: var(--warn);
+}
+
+.fatigue output[data-severity="danger"] {
+    color: var(--ko);
+}
+
+/* ---------- Tableaux ---------- */
+
+.table-scroll {
+    overflow-x: auto;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.data-table {
+    width: 100%;
+    min-width: 620px;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.data-table th {
+    position: sticky;
+    top: 0;
+    padding: 4px 6px;
+    background: var(--head-bg);
+    font-family: var(--font-title);
+    font-size: 0.65rem;
+    text-align: left;
+    color: var(--label);
+}
+
+.data-table td {
+    padding: 4px 6px;
+    border-bottom: 1px solid var(--border-soft);
+    /* Même police que les cases de saisie des tableaux (voir components.css) */
+    font-family: var(--font-text);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.25;
+    vertical-align: top;
+    overflow-wrap: break-word;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+}
+
+.data-table td.empty {
+    font-family: var(--font-text);
+    font-size: 0.9rem;
+    font-style: italic;
+    color: var(--text-muted);
+}
+
+/* ---------- Onglet 2 : dons ---------- */
+
+.feats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Trois colonnes fixes, les mêmes pour chaque emplacement : pastille, liste du don, puis
+   gain de caractéristique ou légende du niveau. Les listes commencent et finissent toutes
+   au même endroit, les sabliers et les gains s'alignent (calés à gauche de leur colonne). */
+.feat-head {
+    display: grid;
+    grid-template-columns: 4.9rem minmax(0, 1fr) 9rem;
+    align-items: center;
+    column-gap: 10px;
+}
+
+.feat-head > .feat-asi,
+.feat-head > .feat-when {
+    grid-column: 3;
+    grid-row: 1;
+    min-width: 0;
+}
+
+/* Pastille gravée, cerclée d'or (l'or plein reste réservé aux états actifs : filtre choisi,
+   Rage, bouton enfoncé) ; elle remplit sa colonne, de largeur fixe */
+.feat-badge {
+    padding: 3px 8px;
+    border: 1px solid var(--gold-soft);
+    border-radius: 4px;
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
+    color: var(--accent);
+    font-family: var(--font-title);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+    text-shadow: var(--engrave);
+}
+
+.feat-asi {
+    font-family: var(--font-title);
+    font-size: 0.75rem;
+    text-align: left;
+    /* encre calme plutôt qu'estompée : reste lisible sur la fiche transparente */
+    color: var(--quiet-ink);
+}
+
+.feat-desc {
+    margin-top: 6px;
+    padding: 8px 10px;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+    background: var(--input-bg);
+    font-size: 0.95rem;
+}
+
+/* Légende des niveaux pas encore atteints (« À venir », « Actif au niveau 12 ») : petite
+   capitale calme précédée d'un sablier ; imprimée aussi pour un don prévu en avance */
+.feat-when {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    font-family: var(--font-title);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    color: var(--quiet-ink);
+}
+
+.feat-when[hidden] {
+    display: none;
+}
+
+.feat-when .icon {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    color: var(--gold);
+}
+
+/* Emplacement à venir : pas de gain de caractéristique, la légende prend sa place */
+.feat[data-feat-state="upcoming"] .feat-asi {
+    display: none;
+}
+
+/* Don prévu en avance : la légende, puis le gain de caractéristique juste dessous */
+.feat[data-feat-state="planned"] .feat-head > .feat-asi {
+    grid-row: 2;
+}
+
+@media screen {
+    /* Niveau atteint, don à choisir : invitation dorée discrète (cadre en pointillés,
+       « — Choisir un don — » à l'encre d'accent, pastille cerclée d'or plein) */
+    .feat[data-feat-state="pending"] .feat-badge {
+        border-color: var(--gold);
+    }
+
+    .feat[data-feat-state="pending"] select.input {
+        padding-left: 8px;
+        border: 1px dashed var(--gold);
+        border-radius: 5px;
+        background-color: var(--feat-invite-bg);
+        color: var(--accent-ink);
+        transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .feat[data-feat-state="pending"] select.input:hover:not(:disabled) {
+        border-style: solid;
+        background-color: var(--input-bg);
+    }
+
+    /* Niveau pas encore atteint : rangée calme et resserrée (pastille en pointillés,
+       texte plus petit à l'encre calme, chevron estompé). Toujours modifiable. */
+    .feat:is([data-feat-state="upcoming"], [data-feat-state="planned"]) .feat-badge {
+        border-style: dashed;
+        border-color: var(--border-soft);
+        background: transparent;
+        box-shadow: none;
+        color: var(--quiet-ink);
+        text-shadow: none;
+    }
+
+    .feat:is([data-feat-state="upcoming"], [data-feat-state="planned"]) select.input {
+        font-size: 0.9rem;
+        color: var(--quiet-ink);
+    }
+
+    /* (fiche verrouillée : pas de chevron du tout, voir plus haut) */
+    .feat:is([data-feat-state="upcoming"], [data-feat-state="planned"]) select.input:not(:disabled) {
+        background-image:
+            linear-gradient(to top right, transparent 42%, var(--gold-soft) 42% 58%, transparent 58%),
+            linear-gradient(to top left, transparent 42%, var(--gold-soft) 42% 58%, transparent 58%);
+    }
+
+    .feat[data-feat-state="upcoming"] + .feat[data-feat-state="upcoming"] {
+        margin-top: -4px;
+    }
+
+    /* Don prévu en avance : il reste lisible, mais signalé comme pas encore actif
+       (légende à l'encre d'accent, gain de caractéristique et description à l'encre calme,
+       liseré en pointillés au lieu du trait d'accent) */
+    .feat[data-feat-state="planned"] .feat-when {
+        color: var(--accent-ink);
+    }
+
+    .feat[data-feat-state="planned"] .feat-desc {
+        border-left-style: dashed;
+        border-left-color: var(--gold-soft);
+        color: var(--quiet-ink);
+        font-size: 0.88rem;
+    }
+
+    /* Fiche verrouillée : plus d'invitation à cliquer, le cadre devient un simple filet */
+    [data-locked="true"] .feat[data-feat-state="pending"] select.input:disabled {
+        border-style: dashed;
+        border-color: var(--gold-soft);
+    }
+}
+
+/* ---------- Onglet 3 : compétences & Odyssée ---------- */
+
+/* Légende « maîtrise / expertise », juste au-dessus des compétences : encre calme, comme
+   les compétences sans maîtrise (lisible même sur une fiche très transparente) */
+.legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 8px;
+    font-size: 0.9rem;
+    color: var(--quiet-ink);
+}
+
+.skills {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.skill-group {
+    padding: 6px 8px;
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    background: var(--box);
+}
+
+.skill-group-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid var(--border-soft);
+    font-family: var(--font-title);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.skill-group-head .icon {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    color: var(--gold);
+}
+
+.skill-group-head .mod {
+    margin-left: auto;
+}
+
+.skill-row {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    min-height: 26px;
+}
+
+.skill-name {
+    flex: 1;
+    margin-left: 4px;
+    font-size: 0.95rem;
+}
+
+.skill-bonus {
+    min-width: 32px;
+    font-family: var(--font-title);
+    font-weight: 700;
+    font-variant-numeric: lining-nums;
+    text-align: right;
+    color: var(--number);
+}
+
+/* Lecture en un coup d'œil (data-rank posé par sheet.js) :
+   - maîtrisée : nom en demi-gras, bonus à l'encre d'accent, ligne à peine dorée ;
+   - experte : un cran au-dessus (lueur un peu plus franche, bonus souligné d'un filet d'or) ;
+   - sans maîtrise : nom et bonus plus calmes (graisse normale, encre calme), toujours lisibles.
+   La ligne déborde de 4 px de chaque côté pour que la lueur ne colle pas aux cases. */
+.skill-row {
+    margin: 0 -4px;
+    padding: 0 4px;
+    border-radius: 4px;
+}
+
+.skill-row:is([data-rank="proficient"], [data-rank="expertise"]) .skill-name {
+    font-weight: 600;
+}
+
+.skill-row[data-rank="none"] .skill-bonus {
+    font-weight: 400;
+}
+
+.skill-row[data-rank="expertise"] .skill-bonus {
+    text-decoration: underline 1px var(--gold);
+    text-underline-offset: 3px;
+}
+
+@media screen {
+    .skill-row {
+        transition: background-color 0.25s ease;
+    }
+
+    .skill-row[data-rank="proficient"] {
+        background-color: var(--skill-prof-tint);
+    }
+
+    .skill-row[data-rank="expertise"] {
+        background-color: var(--skill-exp-tint);
+    }
+
+    .skill-row:is([data-rank="proficient"], [data-rank="expertise"]) .skill-name {
+        color: var(--text);
+    }
+
+    .skill-row:is([data-rank="proficient"], [data-rank="expertise"]) .skill-bonus {
+        color: var(--accent-ink);
+    }
+
+    .skill-row[data-rank="none"] :is(.skill-name, .skill-bonus) {
+        color: var(--quiet-ink);
+    }
+}
+
+.skills-extra {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.odyssey-grid {
+    display: grid;
+    grid-template-columns: 1.8fr 0.8fr 1.4fr;
+    /* Deux rangées communes à toutes les cases : les titres sur la première (calés en bas,
+       même si l'un passe sur deux lignes), les valeurs sur la seconde */
+    grid-template-rows: auto auto;
+    grid-auto-flow: column;
+    gap: 4px 18px;
+}
+
+/* Le libellé et la valeur de chaque case deviennent des cellules directes de la grille */
+.odyssey-grid .field {
+    display: contents;
+}
+
+.odyssey-grid .field > :is(label, .field-label) {
+    align-self: end;
+    margin: 0;
+    text-align: center;
+}
+
+/* Valeurs : même hauteur pour les trois (la liste déroulante est plus haute sur tablette,
+   44 px pour le doigt), texte centré verticalement : les contenus restent alignés */
+.odyssey-grid .field > :is(.input, output) {
+    align-self: stretch;
+    width: 100%;
+    text-align: center;
+    text-align-last: center;
+}
+
+.odyssey-grid .field > output {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Palier calculé : mêmes police, taille, graisse et couleur que les champs voisins (.input) */
+.odyssey-grid output.value-md {
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: normal;
+    padding: 2px 4px;
+    border-bottom: 1px solid transparent;
+    line-height: normal;
+    color: var(--text);
+    text-shadow: none;
+}
+
+/* ---------- Onglet 4 : magie & trésor ---------- */
+
+.spell-stats {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 12px;
+}
+
+.coins {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.coin {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Pièces frappées : métal bombé (reflet en haut à gauche), listel gravé près du bord,
+   lettres estampées. Chaque métal donne sa teinte, son reflet et son ombre (base.css). */
+.coin-icon {
+    --metal: var(--coin-gold);
+    --metal-light: var(--coin-gold-light);
+    --metal-dark: var(--coin-gold-dark);
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 1px solid var(--metal-dark);
+    font-family: var(--font-title);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--coin-ink);
+    text-shadow: 0 1px 0 var(--coin-shine);
+    background:
+        radial-gradient(circle closest-side, transparent 74%, var(--metal-dark) 77%, var(--metal-light) 83%, transparent 87%),
+        radial-gradient(circle at 32% 26%, var(--metal-light), var(--metal) 48%, var(--metal-dark));
+    box-shadow: var(--coin-shadow), inset 0 1px 1px var(--coin-shine), inset 0 -2px 3px var(--metal-dark);
+}
+
+.coin-icon.copper {
+    --metal: var(--coin-copper);
+    --metal-light: var(--coin-copper-light);
+    --metal-dark: var(--coin-copper-dark);
+}
+
+.coin-icon.silver {
+    --metal: var(--coin-silver);
+    --metal-light: var(--coin-silver-light);
+    --metal-dark: var(--coin-silver-dark);
+}
+
+.coin-icon.electrum {
+    --metal: var(--coin-electrum);
+    --metal-light: var(--coin-electrum-light);
+    --metal-dark: var(--coin-electrum-dark);
+}
+
+.coin-icon.platinum {
+    --metal: var(--coin-platinum);
+    --metal-light: var(--coin-platinum-light);
+    --metal-dark: var(--coin-platinum-dark);
+}
+
+/* =============================================================================
+   TABLETTES (768 → 1100 px)
+   ============================================================================= */
+
+@media (max-width: 1100px) {
+    .sheet {
+        margin: 8px;
+        padding: 14px;
+    }
+
+    .vitals-1 {
+        grid-template-columns: 120px minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-areas:
+            "ac init perc"
+            "group group death";
+    }
+
+    .vitals-1 > :nth-child(1) { grid-area: ac; }
+    .vitals-1 > :nth-child(2) { grid-area: init; }
+    .vitals-1 > :nth-child(3) { grid-area: perc; }
+    .vitals-1 > :nth-child(4) { grid-area: group; }
+    .vitals-1 > :nth-child(5) { grid-area: death; }
+
+    .vitals-2 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-areas:
+            "hpc hpm hpt"
+            "hd hd res";
+    }
+
+    .vitals-2 > :nth-child(1) { grid-area: hpc; }
+    .vitals-2 > :nth-child(2) { grid-area: hpm; }
+    .vitals-2 > :nth-child(3) { grid-area: hpt; }
+    .vitals-2 > :nth-child(4) { grid-area: hd; }
+    .vitals-2 > :nth-child(5) { grid-area: res; }
+
+    .skills {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    /* En-tête sur 3 lignes : Nom + Classe / Niveau + Historique + Espèce / Sous-classe + Taille + PX */
+    .sheet-header .field-name { grid-column: span 8; }
+    .sheet-header .field:nth-of-type(2) { grid-column: span 4; }
+    .sheet-header .field-narrow:nth-of-type(3) { grid-column: span 2; }
+    .sheet-header .field:nth-of-type(4),
+    .sheet-header .field:nth-of-type(5) { grid-column: span 5; }
+    .sheet-header .field-wide { grid-column: span 6; }
+
+    .sheet-header .field-narrow:nth-of-type(7),
+    .sheet-header .field-narrow:nth-of-type(8) {
+        grid-column: span 3;
+    }
+
+    .tab {
+        padding: 6px 6px;
+        font-size: 0.74rem;
+        letter-spacing: 0.02em;
+    }
+
+    .tab .icon {
+        width: 14px;
+        height: 14px;
+        margin-right: 5px;
+    }
+
+    .sheet-header .field-name .input-title {
+        font-size: 1.5rem;
+    }
+
+    .combat-layout {
+        grid-template-columns: 96px minmax(0, 1fr);
+        gap: 10px;
+    }
+
+    /* Colonne plus étroite : marges latérales réduites, le nom garde une taille lisible */
+    .ability {
+        padding-inline: 2px;
+    }
+
+    .ability .label {
+        font-size: 0.66rem;
+    }
+
+    .two-cols {
+        grid-template-columns: 1fr;
+    }
+
+    .spell-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .spell-stats > :first-child {
+        grid-column: 1 / -1;
+    }
+
+    /* Les cinq pièces restent sur une seule rangée, plus serrées */
+    .coins {
+        gap: 8px;
+    }
+
+    .coin {
+        gap: 6px;
+    }
+
+    .coin-icon {
+        width: 30px;
+        height: 30px;
+    }
+}
+
+/* =============================================================================
+   ÉCRANS TACTILES ET ANIMATIONS
+   ============================================================================= */
+
+/* iPad : cibles de 44 px sous le doigt.
+   Case ronde : la boîte fait 44 px, mais une bordure transparente de 11 px ne laisse voir
+   qu'un rond de 22 px (l'anneau est une ombre intérieure, le fond s'arrête à la bordure).
+   Les marges négatives gardent la place d'origine dans la mise en page. Pas de calque
+   ::after : Safari (iPad) n'en dessine pas sur une case à cocher. À l'écran seulement :
+   imprimée depuis un iPad, la feuille garde ses cases de papier (print.css). */
+@media screen and (pointer: coarse) {
+    .round-check,
+    .round-check:hover:not(:disabled):not(.demo) {
+        width: 44px;
+        height: 44px;
+        margin: -11px -5px;
+        border: 11px solid transparent;
+        background-clip: padding-box;
+        /* pas d'ombre portée : elle serait dessinée au bord de la boîte de 44 px */
+        box-shadow: inset 0 0 0 1.5px var(--check-ring);
+    }
+
+    /* Jet de sauvegarde : la case passe devant le libellé « Sauv. » qui la suit */
+    .ability .save .round-check {
+        position: relative;
+    }
+
+    .round-check:checked,
+    .round-check:checked:hover:not(:disabled):not(.demo),
+    .round-check.demo:not(.expertise) {
+        border-color: transparent;
+        background-clip: padding-box;
+        box-shadow: inset 0 0 0 1.5px var(--gold);
+        /* le halo suit le rond visible (la bordure transparente ne compte pas) */
+        filter: drop-shadow(0 0 3px var(--gold-glow));
+    }
+
+    /* Losange d'expertise : même surface, dessin à la taille d'origine (18 px) */
+    .round-check.expertise,
+    .round-check.expertise:hover:not(:disabled):not(.demo) {
+        border-width: 13px;
+        transform: rotate(45deg);
+    }
+
+    .round-check.expertise:checked,
+    .round-check.demo.expertise {
+        background-clip: padding-box;
+    }
+
+    /* Lignes assez hautes pour que deux cibles voisines ne se recouvrent pas */
+    .skill-row,
+    .check-row,
+    .ability .save {
+        min-height: 44px;
+    }
+
+    .resource-slots {
+        gap: 12px;
+        min-height: 44px;
+        align-items: center;
+    }
+
+    select.input,
+    .sheet-header .input {
+        min-height: 44px;
+    }
+}
+
+/* Desktop : chaque onglet prend la largeur de son libellé, sur une seule ligne
+   (au-dessous de 1200 px, les libellés longs passent sur deux lignes équilibrées) */
+@media (min-width: 1200px) {
+    .tabs {
+        grid-template-columns: repeat(4, auto);
+    }
+
+    .tab {
+        padding-inline: 12px;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tab,
+    .tab .icon,
+    .round-check,
+    .rich,
+    .skill-row,
+    .feat select.input {
+        transition: none;
+    }
+}

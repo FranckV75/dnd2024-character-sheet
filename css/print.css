@@ -1,0 +1,620 @@
+/* =============================================================================
+   PRINT.CSS - Impression / PDF (A4 portrait), chargé avec media="print"
+   - Noir sur blanc quel que soit le thème actif (les variables de base.css sont redéfinies)
+   - Aucun élément d'interface (barre de gestion, boutons, filtres, infobulles, fenêtres)
+   - Les quatre onglets sont imprimés l'un après l'autre, chacun sur une nouvelle page
+   - Tableaux et textes riches imprimés en entier (ni défilement, ni hauteur maximale)
+   Règle du projet : aucun !important ; ce fichier est chargé en dernier, il gagne donc
+   à spécificité égale (les sélecteurs reprennent ceux des autres feuilles quand il le faut).
+   ============================================================================= */
+
+@page {
+    size: A4 portrait;
+    margin: 9mm 9mm 10mm;
+}
+
+/* ---------- Couleurs : thème « papier » forcé, même si le thème sombre est actif ---------- */
+
+:root,
+:root[data-theme] {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --box: #ffffff;
+    --box-strong: #ffffff;
+    --text: #000000;
+    --text-muted: #444444;
+    --label: #000000;
+    --accent: #000000;
+    --accent-strong: #000000;
+    --border: #000000;
+    --border-soft: #9a9a9a;
+    --input-bg: transparent;
+    --head-bg: #ececec;
+    --mod-bg: #f2f2f2;
+    --hex-bg: #ffffff;
+    --hex-light: #ffffff;
+    --tab-bg: #ffffff;
+    --tab-active-bg: #ffffff;
+    --shadow: none;
+    --ok: #1b5e20;
+    --ko: #8e1a14;
+    --focus: #000000;
+    --app-bg-tint: #ffffff;
+    /* Finitions d'écran (or, gravure, cases bombées) ramenées au noir et blanc */
+    --gold: #000000;
+    --gold-soft: #9a9a9a;
+    --gold-glow: transparent;
+    --gem-light: #000000;
+    --engrave: none;
+    --engrave-title: none;
+    --number: #000000;
+    --check-top: #ffffff;
+    --check-bottom: #ffffff;
+    --btn-top: #ffffff;
+    --btn-bottom: #ffffff;
+    --btn-shadow: none;
+    --pane-shadow: none;
+    --track: transparent;
+    --check-ring: #000000;
+    --veil: transparent;
+    --coin-ink: #000000;
+    /* Effets animés (reflet, Rage, pulsation : écran seulement) : neutres sur le papier */
+    --motion-sheen: transparent;
+    --motion-sheen-soft: transparent;
+    --motion-lift-shadow: transparent;
+    --rage-glow: transparent;
+    --rage-glow-soft: transparent;
+    --rage-flare: transparent;
+    --pulse-ink: #000000;
+    --pulse-glow: transparent;
+    /* Lisibilité (lot 3) : encres calme et d'accent en noir, lueurs dorées effacées
+       (sur le papier, seuls la graisse et les soulignés distinguent les maîtrises) */
+    --quiet-ink: #000000;
+    --accent-ink: #000000;
+    --skill-prof-tint: transparent;
+    --skill-exp-tint: transparent;
+    --feat-invite-bg: transparent;
+    color-scheme: light;
+    /* Les cases cochées, en-têtes de tableau et pièces sont des fonds : on les imprime
+       même si l'option « Graphiques d'arrière-plan » est décochée */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+    background-image: none;
+    color: var(--text);
+}
+
+html {
+    font-size: 12px;
+}
+
+body {
+    font-size: 12px;
+    line-height: 1.35;
+    transition: none;
+}
+
+body::before,
+body::after {
+    display: none;
+}
+
+* {
+    box-shadow: none;
+    text-shadow: none;
+    transition: none;
+    animation: none;
+}
+
+/* ---------- Éléments d'interface masqués ---------- */
+
+#app-bar,
+.app-bar,
+.tabs,
+.add-row,
+.edit-only,
+.btn,
+.btn-icon,
+.btn-chip,
+.weapons-filters,
+.weapons-buffs,
+.weapons-undo,
+.spells-toolbar,
+.spell-tooltip,
+.spell-del,
+.sort-icon,
+.autocomplete-list,
+.style-editor,
+.rest-actions,
+.armor-warn,
+dialog,
+.modal,
+.slots-empty,
+.slot-group .btn-icon {
+    display: none;
+}
+
+/* Colonnes « actions / supprimer » des tableaux */
+.weapons-col-actions,
+.armors-table .col-del,
+.spells-table .col-del,
+.spells-table th.col-del {
+    display: none;
+    width: 0;
+}
+
+/* Dons non choisis (« — Choisir un don — ») : rien à imprimer */
+.feat:has(> .feat-desc[hidden]) {
+    display: none;
+}
+
+/* Don prévu pour un niveau pas encore atteint : son nom et « Actif au niveau N » sur une
+   ligne, sans la description (il ne s'applique pas encore ; la feuille reste sur 4 pages) */
+.feat[data-feat-state="planned"] .feat-desc {
+    display: none;
+}
+
+/* Aucun emplacement de sorts : le cadre disparaît */
+.spell-slots:not(:has(.slot-group)) {
+    display: none;
+}
+
+/* ---------- Conteneur de la fiche ---------- */
+
+.sheet,
+body.cinema .sheet {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: #ffffff;
+    box-shadow: none;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+}
+
+/* ---------- Onglets : tous imprimés, chacun sur une nouvelle page ---------- */
+
+.tab-panel,
+.tab-panel[hidden] {
+    display: block;
+    break-before: page;
+    outline: none;
+}
+
+#tab-combat {
+    break-before: auto;
+}
+
+/* Titre de section à la place des boutons d'onglets */
+.tab-panel::before {
+    display: block;
+    margin: 0 0 8px;
+    padding-bottom: 3px;
+    border-bottom: 2px solid var(--border);
+    font-family: var(--font-title);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+    break-after: avoid;
+}
+
+#tab-combat::before { content: "✥ Caractéristiques & Combat"; }
+#tab-traits::before { content: "✥ Aptitudes & Traits"; }
+#tab-role::before { content: "✥ Compétences & Histoire"; }
+#tab-magic::before { content: "✥ Magie, équipement & trésors"; }
+
+/* ---------- Champs : la valeur seule, sans flèche ni ellipse ---------- */
+
+.input,
+.input-title,
+.cell-input,
+.data-table .cell-input,
+select.input {
+    color: var(--text);
+    background: transparent;
+    text-overflow: clip;
+}
+
+select,
+select.input,
+.spells-table select:disabled,
+.armors-table select.cell-input {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: none;
+}
+
+input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+input::-webkit-inner-spin-button,
+input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input::placeholder {
+    color: transparent;
+}
+
+/* Liste sans choix (« — Choisir — », « — Aucun — ») : case laissée vide sur le papier */
+select:has(option:checked[value=""]) {
+    color: transparent;
+}
+
+.input {
+    border-bottom-color: var(--border-soft);
+}
+
+input.value-lg,
+input.value-md,
+select.value-md {
+    border-bottom-color: transparent;
+}
+
+h1, h2, h3, h4 {
+    color: var(--text);
+    break-after: avoid;
+}
+
+/* ---------- Boîtes ---------- */
+
+.box {
+    padding: 5px 8px;
+    background: #ffffff;
+    border-color: var(--border-soft);
+}
+
+.box h3,
+.box > h3,
+.weapons-head h3 {
+    margin-bottom: 4px;
+    padding-bottom: 2px;
+    font-size: 0.95rem;
+}
+
+/* Titres : filet simple sous le titre plutôt que le losange et le filet d'or de l'écran
+   (le titre « Armes » est dans .weapons-head, à côté des bonus de combat) */
+.box > h3,
+.box .weapons-head h3 {
+    gap: 6px;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.box > h3::before,
+.box > h3::after,
+.box .weapons-head h3::before,
+.box .weapons-head h3::after {
+    display: none;
+}
+
+.box > h3 > .icon,
+.weapons-head h3 > .icon {
+    width: 13px;
+    height: 13px;
+}
+
+.stack {
+    gap: 6px;
+}
+
+/* Alignement : titre et valeur sur une seule ligne */
+.box:has(> h3 > label[for="f-alignment"]) {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.box:has(> h3 > label[for="f-alignment"]) h3 {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+#f-alignment {
+    flex: 1 1 auto;
+    text-align: left;
+    text-align-last: left;
+}
+
+/* Petits blocs : jamais coupés entre deux pages */
+.ability,
+.stat-tile,
+.stat-group,
+.death-saves,
+.class-resource,
+.vitals,
+.skill-group,
+.box-inner,
+.feat,
+.spell-stats,
+.coins,
+.odyssey,
+.rest,
+.tab-panel .stack > .box:not(:has(.data-table, .rich)) {
+    break-inside: avoid;
+}
+
+/* ---------- Texte riche : déplié sur toute sa hauteur ---------- */
+
+.rich,
+.rich-sm,
+.rich-xs,
+.rich-lg {
+    min-height: 2.2em;
+    max-height: none;
+    overflow: visible;
+    padding: 4px 6px;
+    border: 1px solid var(--border-soft);
+    background: transparent;
+    box-shadow: none;
+    font-size: 0.98rem;
+    line-height: 1.28;
+}
+
+.rich:empty {
+    min-height: 1.8em;
+}
+
+.rich:empty::before {
+    content: "";
+}
+
+/* ---------- Onglet 2 : dons ---------- */
+
+.feats {
+    gap: 6px;
+}
+
+.feat-desc {
+    margin-top: 3px;
+    padding: 3px 8px;
+    background: transparent;
+    font-size: 0.95rem;
+}
+
+/* ---------- Cases rondes ---------- */
+
+.round-check {
+    width: 16px;
+    height: 16px;
+    border-color: var(--border);
+    background: #ffffff;
+}
+
+.round-check:checked {
+    background: radial-gradient(circle, #000000 45%, transparent 50%);
+}
+
+.round-check.expertise:checked {
+    background: #000000;
+}
+
+/* ---------- En-tête ---------- */
+
+.sheet-header {
+    gap: 4px 10px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--border);
+}
+
+.sheet-header .input-title {
+    font-size: 1.05rem;
+}
+
+.sheet-header #f-char_name,
+.sheet-header .field-name .input-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+/* ---------- Onglet 1 : caractéristiques & combat ---------- */
+
+.combat-layout {
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 8px;
+}
+
+.abilities {
+    gap: 6px;
+}
+
+.ability {
+    padding: 4px 3px 5px;
+    border-color: var(--border);
+}
+
+.ability .mod {
+    margin: 1px 0 3px;
+}
+
+.combat-main {
+    gap: 8px;
+}
+
+.vitals {
+    gap: 6px;
+}
+
+.box.ac-hex {
+    background: var(--hex-bg);
+}
+
+.ac-hex {
+    min-height: 100px;
+    padding: 10px 12px 24px;
+}
+
+.class-resource {
+    border: 1.5px solid var(--border);
+}
+
+/* ---------- Tableaux : en entier, sans défilement ---------- */
+
+.table-scroll,
+.table-scroll.spells-scroll {
+    max-height: none;
+    overflow: visible;
+    /* Filet de sécurité : un tableau trop large est coupé à droite au lieu de faire
+       réduire toute la page par le navigateur (clip, contrairement à hidden, laisse
+       le tableau se poursuivre sur la page suivante) */
+    overflow-x: clip;
+}
+
+.data-table,
+.weapons-table,
+.armors-table,
+.spells-table {
+    min-width: 0;
+    width: 100%;
+    table-layout: auto;
+    font-size: 0.8rem;
+}
+
+.data-table th {
+    position: static;
+    background: var(--head-bg);
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+    padding: 2px 4px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.data-table tr {
+    break-inside: avoid;
+}
+
+.data-table thead {
+    display: table-header-group;
+}
+
+/* Largeur des colonnes selon leur contenu : field-sizing donne à chaque champ la largeur
+   de sa valeur (largeur « max-content » de la colonne), la largeur en % le laisse se
+   réduire si la place manque. Le tableau occupe donc toute la page sans jamais la dépasser.
+   Les cases de texte (cell-text.js) passent à la ligne : leur hauteur suit le contenu
+   (la hauteur fixée à l'écran est retirée juste avant l'impression). */
+.data-table .cell-input {
+    field-sizing: content;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    padding: 1px 2px;
+    border-bottom-color: transparent;
+}
+
+.data-table textarea.cell-input {
+    height: auto;
+    overflow: visible;
+}
+
+/* Valeurs calculées des armes (« FOR : +7 », « 1d12 +5 TRAN ») : jamais coupées en morceaux */
+.weapons-calc {
+    white-space: nowrap;
+}
+
+/* Liseré « armure à vérifier » : avertissement d'écran, pas de sens sur papier */
+.armors-table tr.armor-warning td:first-child {
+    box-shadow: none;
+}
+
+.sort-btn {
+    font: inherit;
+    color: inherit;
+}
+
+.spell-prep {
+    color: var(--text);
+}
+
+.spell-flags {
+    gap: 5px;
+}
+
+/* ---------- Onglet 3 : compétences ---------- */
+
+.skills {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.skill-row {
+    min-height: 18px;
+}
+
+.odyssey-grid {
+    grid-template-columns: 1.8fr 0.8fr 1.4fr;
+    gap: 10px;
+}
+
+.odyssey-grid .field:first-child {
+    grid-column: auto;
+}
+
+.skill-name {
+    font-size: 0.92rem;
+}
+
+.two-cols {
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+/* ---------- Onglet 4 : magie et pièces lisibles ---------- */
+
+.spell-stats {
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 8px;
+}
+
+.spell-stats > :first-child {
+    grid-column: auto;
+}
+
+.coins {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.coin-icon,
+.coin-icon.copper,
+.coin-icon.silver,
+.coin-icon.electrum,
+.coin-icon.gold,
+.coin-icon.platinum {
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--border);
+    background: #ffffff;
+    color: #000000;
+    font-size: 0.6rem;
+}
+
+.coin-icon.copper { border-color: #8a4f1d; box-shadow: inset 0 0 0 3px var(--coin-copper); }
+.coin-icon.silver { border-color: #6d6e72; box-shadow: inset 0 0 0 3px var(--coin-silver); }
+.coin-icon.electrum { border-color: #857424; box-shadow: inset 0 0 0 3px var(--coin-electrum); }
+.coin-icon.gold { border-color: #8d7012; box-shadow: inset 0 0 0 3px var(--coin-gold); }
+.coin-icon.platinum { border-color: #57707f; box-shadow: inset 0 0 0 3px var(--coin-platinum); }
+
+/* Lignes de saisie vides des armes et armures : rien à imprimer */
+.weapons-table tr.is-entry,
+.armors-table tr.is-entry {
+    display: none;
+}

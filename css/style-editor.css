@@ -1,0 +1,249 @@
+/* =============================================================================
+   STYLE-EDITOR.CSS - Barre flottante de mise en forme du texte riche
+   (construite par js/ui/style-editor.js) et rendu des tailles dans les champs riches.
+   ============================================================================= */
+
+/* Couleurs proposées au joueur : IDENTIQUES dans les deux thèmes, car la valeur est
+   enregistrée dans le texte (elle ne suit pas le thème). Teintes moyennes choisies
+   pour un contraste WCAG ≥ 3:1 à la fois sur le parchemin (#fdf5e6, #f4ead5) et sur
+   le fond nuit (#1e1e32, #0f0f1a, #2a2a40) :
+     rouge  #e04848 : 3,73 / 4,03      orange #c8711a : 3,32 / 4,53
+     vert   #2f9a4e : 3,31 / 4,55      bleu   #3b7ddd : 3,75 / 4,01
+     violet #a65fd6 : 3,71 / 4,06      rose   #c94f9a : 3,82 / 3,94
+   (clair #fdf5e6 / sombre #1e1e32). Les mêmes valeurs figurent dans style-editor.js. */
+:root {
+    --se-red: #e04848;
+    --se-orange: #c8711a;
+    --se-green: #2f9a4e;
+    --se-blue: #3b7ddd;
+    --se-purple: #a65fd6;
+    --se-pink: #c94f9a;
+}
+
+/* ---------- Barre flottante : verre dépoli et double filet doré (comme la barre « Gestion ») ---------- */
+
+.style-editor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 40;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    max-width: calc(100vw - 16px);
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: var(--surface);
+    box-shadow: var(--bar-shadow);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3);
+    backdrop-filter: blur(14px) saturate(1.3);
+    color: var(--text);
+    font-family: var(--font-title);
+    line-height: 1;
+}
+
+@supports (background: color-mix(in srgb, red 50%, transparent)) {
+    .style-editor {
+        background: color-mix(in srgb, var(--box-strong) 86%, transparent);
+    }
+}
+
+/* Second filet, fin, à l'intérieur du cadre */
+.style-editor::before {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+.style-editor[hidden] {
+    display: none;
+}
+
+.se-group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.se-group + .se-group {
+    padding-left: 6px;
+    border-left: 1px solid var(--border-soft);
+}
+
+.se-btn {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-title);
+    font-size: 0.95rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+
+/* Survol : le bouton se bombe (même famille que la barre « Gestion ») */
+.se-btn:hover {
+    border-color: var(--accent);
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-glow);
+    color: var(--accent);
+}
+
+/* Enfoncé (gras, italique… actif) : doré */
+.se-btn[aria-pressed="true"] {
+    border-color: var(--accent-strong);
+    background: linear-gradient(var(--accent), var(--accent-strong));
+    box-shadow: var(--btn-shadow);
+    color: var(--btn-top);
+}
+
+.se-btn b {
+    font-weight: 700;
+}
+
+/* Cinzel n'a pas d'italique : le « I » utilise la police des textes longs */
+.se-btn i {
+    font-family: var(--font-text);
+    font-size: 1.1rem;
+}
+
+.se-btn u {
+    text-underline-offset: 2px;
+}
+
+.se-size-2 span {
+    font-size: 0.72rem;
+}
+
+.se-size-3 span {
+    font-size: 0.95rem;
+}
+
+.se-size-5 span {
+    font-size: 1.2rem;
+}
+
+.se-swatch {
+    width: 24px;
+    height: 24px;
+    margin: 0 1px;
+    padding: 0;
+    border: 2px solid var(--box-strong);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--border-soft);
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.se-swatch:hover {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 1px var(--accent), var(--btn-glow);
+}
+
+.se-swatch-red { background: var(--se-red); }
+.se-swatch-orange { background: var(--se-orange); }
+.se-swatch-green { background: var(--se-green); }
+.se-swatch-blue { background: var(--se-blue); }
+.se-swatch-purple { background: var(--se-purple); }
+.se-swatch-pink { background: var(--se-pink); }
+
+/* « Couleur par défaut » : pastille barrée */
+.se-swatch-default {
+    background:
+        linear-gradient(135deg, transparent 43%, var(--ko) 43%, var(--ko) 57%, transparent 57%),
+        var(--input-bg);
+    box-shadow: 0 0 0 1px var(--border);
+}
+
+/* Tablettes (écran tactile) : cibles plus grandes */
+@media (pointer: coarse) {
+    .se-btn {
+        min-width: 44px;
+        height: 44px;
+    }
+
+    /* Pastilles de 36 px espacées de 8 px : zone de toucher de 44 px chacune */
+    .se-swatch {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        margin: 0 4px;
+    }
+
+    .se-swatch::after {
+        content: "";
+        position: absolute;
+        inset: -6px;
+        border-radius: 50%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .se-btn,
+    .se-swatch {
+        transition: none;
+    }
+
+    .se-swatch:hover {
+        transform: none;
+    }
+}
+
+@media print {
+    .style-editor {
+        display: none;
+    }
+}
+
+/* ---------- Tailles dans les champs riches ----------
+   execCommand('fontSize') produit <font size="1…7"> ; on les rend relatives à la
+   taille du champ (au lieu des tailles absolues du navigateur) pour que « Normal »
+   reste exactement la taille du texte voisin. Tailles 1, 4, 6, 7 : anciennes fiches v3. */
+[data-kind="rich"] font[size="1"] { font-size: 0.7em; }
+[data-kind="rich"] font[size="2"] { font-size: 0.85em; }
+[data-kind="rich"] font[size="3"] { font-size: 1em; }
+[data-kind="rich"] font[size="4"] { font-size: 1.15em; }
+[data-kind="rich"] font[size="5"] { font-size: 1.35em; }
+[data-kind="rich"] font[size="6"] { font-size: 1.6em; }
+[data-kind="rich"] font[size="7"] { font-size: 2em; }
+
+/* ---------- Anciennes couleurs v3 en mode nuit ----------
+   Palette v3 (#1a1a1a, #8b0000, #00008b, #006400, #6a0dad, #d2691e) : trop sombre sur le
+   fond nuit. Elle est remplacée par la palette actuelle, à l'affichage seulement ; le texte
+   enregistré ne change pas (format partagé avec la v3). Un style="color:…" en ligne ne peut
+   pas être surchargé sans !important, d'où -webkit-text-fill-color (prioritaire sur color
+   pour le dessin du texte). */
+:root[data-theme="dark"] [data-kind="rich"] font[color="#1a1a1a" i] { color: inherit; }
+:root[data-theme="dark"] [data-kind="rich"] font[color="#8b0000" i] { color: var(--se-red); }
+:root[data-theme="dark"] [data-kind="rich"] font[color="#00008b" i] { color: var(--se-blue); }
+:root[data-theme="dark"] [data-kind="rich"] font[color="#006400" i] { color: var(--se-green); }
+:root[data-theme="dark"] [data-kind="rich"] font[color="#6a0dad" i] { color: var(--se-purple); }
+:root[data-theme="dark"] [data-kind="rich"] font[color="#d2691e" i] { color: var(--se-orange); }
+
+:root[data-theme="dark"] [data-kind="rich"] :is([style*="rgb(26, 26, 26)"], [style*="#1a1a1a" i]) { -webkit-text-fill-color: var(--text); }
+:root[data-theme="dark"] [data-kind="rich"] :is([style*="rgb(139, 0, 0)"], [style*="#8b0000" i]) { -webkit-text-fill-color: var(--se-red); }
+:root[data-theme="dark"] [data-kind="rich"] :is([style*="rgb(0, 0, 139)"], [style*="#00008b" i]) { -webkit-text-fill-color: var(--se-blue); }
+:root[data-theme="dark"] [data-kind="rich"] :is([style*="rgb(0, 100, 0)"], [style*="#006400" i]) { -webkit-text-fill-color: var(--se-green); }
+:root[data-theme="dark"] [data-kind="rich"] :is([style*="rgb(106, 13, 173)"], [style*="#6a0dad" i]) { -webkit-text-fill-color: var(--se-purple); }
+:root[data-theme="dark"] [data-kind="rich"] :is([style*="rgb(210, 105, 30)"], [style*="#d2691e" i]) { -webkit-text-fill-color: var(--se-orange); }
+
+/* text-fill-color s'hérite : une autre couleur posée à l'intérieur doit rester visible
+   (une ancienne couleur v3 imbriquée garde sa propre règle ci-dessus) */
+:root[data-theme="dark"] [data-kind="rich"] [style*="color"] :is(font[color], [style*="color"]):not(
+    [style*="rgb(26, 26, 26)"], [style*="#1a1a1a" i], [style*="rgb(139, 0, 0)"], [style*="#8b0000" i],
+    [style*="rgb(0, 0, 139)"], [style*="#00008b" i], [style*="rgb(0, 100, 0)"], [style*="#006400" i],
+    [style*="rgb(106, 13, 173)"], [style*="#6a0dad" i], [style*="rgb(210, 105, 30)"], [style*="#d2691e" i]) {
+    -webkit-text-fill-color: initial;
+}

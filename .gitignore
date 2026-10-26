@@ -4,7 +4,7 @@ dist/
 .DS_Store
 *.log
 Manuels/
-
 saves/
 *.crdownload
-*.mjs
+.claude/settings.local.json
+tests/fixtures/local/

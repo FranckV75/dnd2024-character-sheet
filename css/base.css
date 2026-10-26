@@ -1,0 +1,278 @@
+/* =============================================================================
+   BASE.CSS - Jetons de thème (clair / sombre), typographie et éléments communs
+   Toute couleur de l'application passe par une variable définie ici.
+   ============================================================================= */
+
+:root {
+    --font-title: 'Cinzel', Georgia, serif;
+    /* Police des textes longs, choisie par Franck : Alegreya (vraies minuscules, style manuscrit) */
+    --font-text: 'Alegreya', Georgia, 'Times New Roman', serif;
+
+    /* Thème clair : parchemin et cuir (palette de la v3) */
+    --bg: #fdf5e6;
+    --surface: rgba(255, 250, 240, 0.94);
+    --box: rgba(255, 255, 255, 0.55);
+    --box-strong: #f4ead5;
+    --text: #2a1b0a;
+    /* Texte secondaire : assez soutenu pour le contraste AA sur la fiche transparente */
+    --text-muted: #5a4632;
+    --label: #2a1b0a;
+    --accent: #8b4513;
+    --accent-strong: #3e1c02;
+    --border: #8b4513;
+    --border-soft: rgba(139, 69, 19, 0.35);
+    --input-bg: rgba(255, 255, 255, 0.35);
+    --head-bg: #e8dbc5;
+    --mod-bg: #e8dbc5;
+    --hex-bg: #c9c0b6;
+    --hex-light: #ebe5dc;
+    --tab-bg: #e8dbc5;
+    --tab-active-bg: #fffaf0;
+    --shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+    /* Cadres de la fiche transparente : ombre portée et reflet sur le bord haut (verre) */
+    --pane-shadow: 0 2px 8px rgba(62, 28, 2, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    /* Barre « Gestion » : boutons bombés (dégradé, reflet), barre flottante en verre */
+    --btn-top: #fffaf0;
+    --btn-bottom: #efe2c8;
+    --btn-border: rgba(139, 69, 19, 0.42);
+    --btn-shadow: 0 1px 2px rgba(62, 28, 2, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    --btn-glow: 0 0 0 3px rgba(139, 69, 19, 0.12), 0 2px 6px rgba(62, 28, 2, 0.18);
+    --bar-shadow: 0 8px 24px rgba(62, 28, 2, 0.18), 0 1px 3px rgba(62, 28, 2, 0.12);
+    --track: rgba(139, 69, 19, 0.22);
+    --ok: #2e7d32;
+    --ko: #b3261e;
+    /* Avertissement (épuisement élevé) : orange brûlé, lisible sur le parchemin */
+    --warn: #9a5200;
+    --focus: #b5651d;
+    /* Finitions de la fiche : or des ornements (filets, losanges, cases cochées), halo doré,
+       chiffres gravés (couleur + ombre portée claire sous le trait, comme une gravure) */
+    --gold: #a8741a;
+    --gold-soft: rgba(168, 116, 26, 0.45);
+    --gold-glow: rgba(196, 140, 40, 0.45);
+    --gem-light: #fff6dc;
+    --engrave: 0 1px 0 rgba(255, 255, 255, 0.75);
+    --engrave-title: 0 1px 0 rgba(255, 255, 255, 0.8), 0 -1px 0 rgba(62, 28, 2, 0.12);
+    --number: #3e1c02;
+    --check-top: #fffaf0;
+    --check-bottom: #eadcc0;
+    /* Anneau des cases vides : plus sombre que l'or, lisible même sur un fond d'écran */
+    --check-ring: #7a5410;
+    /* Voile derrière les fenêtres : la fiche s'assombrit d'un lavis brun */
+    --veil: rgba(62, 28, 2, 0.3);
+    /* Barres de défilement et contrôles natifs assortis au thème */
+    color-scheme: light;
+
+    /* Couleurs des métaux (identiques dans les deux thèmes) : teinte, reflet, ombre et gravure */
+    --coin-copper: #b87333;
+    --coin-copper-light: #f0b98a;
+    --coin-copper-dark: #6e3a14;
+    --coin-silver: #a8a9ad;
+    --coin-silver-light: #f4f5f7;
+    --coin-silver-dark: #5f6166;
+    --coin-electrum: #c9b458;
+    --coin-electrum-light: #f3e9b0;
+    --coin-electrum-dark: #7a6a22;
+    --coin-gold: #d4af37;
+    --coin-gold-light: #fbe9a6;
+    --coin-gold-dark: #8a6a0f;
+    --coin-platinum: #8fa3b0;
+    --coin-platinum-light: #e6eff4;
+    --coin-platinum-dark: #4f6472;
+    --coin-ink: #241404;
+    --coin-shine: rgba(255, 255, 255, 0.55);
+    --coin-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.12);
+
+    /* ---------- Effets animés (css/motion.css et css/feedback.css) ---------- */
+    /* Survol d'une carte : reflet doré qui la traverse (cœur, bords adoucis, mode de fusion :
+       en thème clair, « multiply » dore le parchemin sans jamais éclaircir l'encre),
+       ombre ajoutée quand elle se soulève */
+    --motion-sheen: rgba(236, 196, 120, 0.42);
+    --motion-sheen-soft: rgba(236, 196, 120, 0.14);
+    --motion-sheen-blend: multiply;
+    --motion-lift-shadow: rgba(62, 28, 2, 0.3);
+    /* Rage : braise des cadres (liseré, halo, lueur intérieure, embrasement), pastille
+       incandescente (cœur chaud sous le texte, braise, charbon, bord, texte et sa gravure
+       sombre, reflet), flamme et anneau de focus (braise sombre, lisible sur le parchemin) */
+    --rage-rim: rgba(196, 66, 18, 0.7);
+    --rage-glow: rgba(214, 80, 22, 0.42);
+    --rage-glow-soft: rgba(214, 80, 22, 0.16);
+    --rage-inner: rgba(232, 104, 36, 0.13);
+    --rage-flare: rgba(255, 128, 44, 0.6);
+    --rage-chip-hot: #ef7a2c;
+    --rage-chip-core: #b5340d;
+    --rage-chip-coal: #5c1404;
+    --rage-chip-rim: #d9541c;
+    --rage-chip-text: #fff0dc;
+    --rage-chip-engrave: 0 1px 1px rgba(60, 10, 0, 0.55);
+    --rage-chip-shine: rgba(255, 214, 168, 0.45);
+    --rage-flame: #ffd27a;
+    --rage-focus: #5c1404;
+    /* Jauge des PV : laiton (pleine santé) → cuivre → braise ; PV temporaires en argent ;
+       rainure, fond et reflet de la réglette */
+    --hp-gauge-sat: 72%;
+    --hp-gauge-light: 40%;
+    --hp-gauge-temp: #7d8b99;
+    --hp-gauge-track: rgba(139, 69, 19, 0.16);
+    --hp-gauge-groove: rgba(62, 28, 2, 0.18);
+    --hp-gauge-gloss: rgba(255, 255, 255, 0.42);
+    /* Valeur qui change : encre et halo de la brève pulsation dorée */
+    --pulse-ink: var(--gold);
+    --pulse-glow: var(--gold-glow);
+
+    /* ---------- Lisibilité en jeu (lot 3) ---------- */
+    /* Encre « calme » (compétence ou sauvegarde sans maîtrise, sort non préparé, aides du
+       grimoire) : entre --text et --text-muted, assez soutenue pour rester lisible (contraste
+       AA) même sur la fiche transparente posée sur un fond d'écran.
+       Encre d'accent « lisible » (bonus maîtrisés, invitation à choisir un don) : l'accent,
+       un ton plus profond en thème clair pour rester lisible sur la lueur dorée et la fiche
+       transparente. Lueurs dorées très légères : ligne d'une compétence maîtrisée (puis
+       experte), emplacement de don à choisir. */
+    --quiet-ink: #4a3825;
+    --accent-ink: #5c2a09;
+    --skill-prof-tint: rgba(168, 116, 26, 0.09);
+    --skill-exp-tint: rgba(168, 116, 26, 0.16);
+    --feat-invite-bg: rgba(168, 116, 26, 0.07);
+    /* Taille minimale des petits libellés (Cinzel, capitales) : rien de plus petit sur la fiche */
+    --label-min: 0.64rem;
+}
+
+:root[data-theme="dark"] {
+    /* Thème sombre : nuit et or (palette de la v3) */
+    --bg: #0f0f1a;
+    --surface: rgba(30, 30, 50, 0.94);
+    --box: rgba(40, 40, 60, 0.6);
+    --box-strong: #23233a;
+    --text: #e8dbc5;
+    --text-muted: #b8a68a;
+    --label: #d4a574;
+    --accent: #e8b86d;
+    --accent-strong: #f3cf8f;
+    --border: #d4a574;
+    --border-soft: rgba(212, 165, 116, 0.35);
+    --input-bg: rgba(255, 255, 255, 0.06);
+    --head-bg: #2a2a40;
+    --mod-bg: #3a3a50;
+    --hex-bg: #3a3a50;
+    --hex-light: #41415c;
+    --tab-bg: #23233a;
+    --tab-active-bg: #34344f;
+    --shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+    --pane-shadow: 0 2px 10px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    --btn-top: #34344f;
+    --btn-bottom: #25253c;
+    --btn-border: rgba(212, 165, 116, 0.38);
+    --btn-shadow: 0 1px 2px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    --btn-glow: 0 0 0 3px rgba(232, 184, 109, 0.16), 0 2px 8px rgba(0, 0, 0, 0.5);
+    --bar-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.4);
+    --track: rgba(232, 184, 109, 0.22);
+    --ok: #7bc77f;
+    --ko: #f28b82;
+    --warn: #f0a35a;
+    --focus: #f3cf8f;
+    --gold: #e8b86d;
+    --gold-soft: rgba(232, 184, 109, 0.45);
+    --gold-glow: rgba(243, 207, 143, 0.5);
+    --gem-light: #fff3d6;
+    --engrave: 0 1px 0 rgba(0, 0, 0, 0.7), 0 0 10px rgba(232, 184, 109, 0.12);
+    --engrave-title: 0 1px 0 rgba(0, 0, 0, 0.8), 0 0 14px rgba(232, 184, 109, 0.28);
+    --number: #f6e7c8;
+    --check-top: #3a3a55;
+    --check-bottom: #22223a;
+    --check-ring: #e8b86d;
+    --veil: rgba(15, 15, 26, 0.62);
+    --coin-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 0, 0, 0.3);
+    color-scheme: dark;
+
+    /* ---------- Effets animés (voir le thème clair) ---------- */
+    /* Reflet : de la lumière dorée posée sur la nuit (fusion « screen ») */
+    --motion-sheen: rgba(243, 207, 143, 0.3);
+    --motion-sheen-soft: rgba(243, 207, 143, 0.1);
+    --motion-sheen-blend: screen;
+    --motion-lift-shadow: rgba(0, 0, 0, 0.55);
+    --rage-rim: rgba(255, 128, 64, 0.8);
+    --rage-glow: rgba(255, 96, 32, 0.5);
+    --rage-glow-soft: rgba(255, 96, 32, 0.2);
+    --rage-inner: rgba(255, 112, 40, 0.11);
+    --rage-flare: rgba(255, 150, 70, 0.65);
+    --rage-chip-hot: #e0662a;
+    --rage-chip-core: #a8300c;
+    --rage-chip-coal: #4a0f03;
+    --rage-chip-rim: #ff8a45;
+    --rage-chip-text: #fff0dc;
+    --rage-chip-engrave: 0 1px 1px rgba(40, 6, 0, 0.6);
+    --rage-chip-shine: rgba(255, 210, 160, 0.4);
+    --rage-flame: #ffd88a;
+    --rage-focus: #ffd88a;
+    --hp-gauge-sat: 70%;
+    --hp-gauge-light: 55%;
+    --hp-gauge-temp: #c5cfd8;
+    --hp-gauge-track: rgba(232, 184, 109, 0.14);
+    --hp-gauge-groove: rgba(0, 0, 0, 0.45);
+    --hp-gauge-gloss: rgba(255, 255, 255, 0.28);
+    /* Or plus chaud que --gold : il se détache des chiffres crème */
+    --pulse-ink: #ffc14d;
+    --pulse-glow: rgba(255, 184, 64, 0.75);
+
+    /* ---------- Lisibilité en jeu (voir le thème clair) ---------- */
+    --quiet-ink: #cbbca2;
+    --accent-ink: #e8b86d;
+    --skill-prof-tint: rgba(232, 184, 109, 0.08);
+    --skill-exp-tint: rgba(232, 184, 109, 0.14);
+    --feat-invite-bg: rgba(232, 184, 109, 0.06);
+}
+
+/* Voile des fenêtres : avant Chrome 122 et Safari 17.4, ::backdrop n'hérite pas des variables
+   de :root (le voile serait transparent) ; il reçoit donc les siennes, mêmes valeurs que ci-dessus */
+.modal::backdrop {
+    --veil: rgba(62, 28, 2, 0.3);
+}
+
+:root[data-theme="dark"] .modal::backdrop {
+    --veil: rgba(15, 15, 26, 0.62);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    /* Pas de rectangle gris au toucher (Chrome Android, Safari iOS) : les états :active et
+       :focus-visible dorés des boutons suffisent */
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-text);
+    font-size: 16px;
+    line-height: 1.45;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--font-title);
+    color: var(--accent);
+}
+
+a {
+    color: var(--accent);
+}
+
+:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+}
+
+.muted {
+    color: var(--text-muted);
+}
+
+.placeholder {
+    max-width: 720px;
+    margin: 4rem auto;
+    padding: 0 16px;
+    text-align: center;
+}

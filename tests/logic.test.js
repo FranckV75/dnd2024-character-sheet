@@ -10,14 +10,14 @@ import {
     calculateProficiencyBonus,
     calculateSkillBonus,
     getClassResourceInfo,
-    getWeaponConfig,
+    parseWeaponConfig,
     resolveWeaponAttackStat,
     calcWeaponAttack,
     calcWeaponDamage,
     getRageBonus,
     isMartialArtsWeapon,
     getMartialArtsDie
-} from '../js/logic.js';
+} from '../js/rules/logic.js';
 
 describe('1. Modificateurs de caractéristiques (calcMod)', () => {
     test('Calcule correctement les modificateurs pour tous les scores (1-30)', () => {
@@ -83,14 +83,29 @@ describe('4. Ressources de classe D&D 2024 (getClassResourceInfo)', () => {
         assert.deepEqual(getClassResourceInfo(5, 'Barde', mods), { count: 4, label: 'Inspiration Bardique', reset: 'all' });
     });
 
-    test('Clerc : Conduit Divin', () => {
-        assert.deepEqual(getClassResourceInfo(1, 'Clerc', mods), { count: 2, label: 'Conduit Divin', reset: 'one' });
+    test('Clerc : Conduit Divin à partir du niveau 2 (Manuel du joueur 2024)', () => {
+        assert.equal(getClassResourceInfo(1, 'Clerc', mods).count, 0);
+        assert.deepEqual(getClassResourceInfo(2, 'Clerc', mods), { count: 2, label: 'Conduit Divin', reset: 'one' });
         assert.deepEqual(getClassResourceInfo(6, 'Cleric', mods), { count: 3, label: 'Conduit Divin', reset: 'one' });
     });
 
-    test('Moine : Points de Discipline (Ki) = niveau & reset "all"', () => {
-        assert.deepEqual(getClassResourceInfo(1, 'Moine', mods), { count: 1, label: 'Points de Discipline (Ki)', reset: 'all' });
+    test('Moine : Points de Discipline (Ki) = niveau à partir du niveau 2 & reset "all"', () => {
+        assert.equal(getClassResourceInfo(1, 'Moine', mods).count, 0);
+        assert.deepEqual(getClassResourceInfo(2, 'Moine', mods), { count: 2, label: 'Points de Discipline (Ki)', reset: 'all' });
         assert.deepEqual(getClassResourceInfo(10, 'Monk', mods), { count: 10, label: 'Points de Discipline (Ki)', reset: 'all' });
+    });
+
+    test('Druide : Formes Sauvages 2 (niv 2), 3 (niv 6), 4 (niv 17)', () => {
+        assert.equal(getClassResourceInfo(1, 'Druide', mods).count, 0);
+        assert.equal(getClassResourceInfo(2, 'Druide', mods).count, 2);
+        assert.equal(getClassResourceInfo(6, 'Druide', mods).count, 3);
+        assert.equal(getClassResourceInfo(16, 'Druide', mods).count, 3);
+        assert.equal(getClassResourceInfo(17, 'Druide', mods).count, 4);
+    });
+
+    test('Ensorceleur : Points de Sorcellerie = niveau à partir du niveau 2', () => {
+        assert.equal(getClassResourceInfo(1, 'Ensorceleur', mods).count, 0);
+        assert.equal(getClassResourceInfo(7, 'Ensorceleur', mods).count, 7);
     });
 
     test('Guerrier : Second Souffle paliers D&D 2024', () => {
@@ -176,15 +191,20 @@ describe('8. Bonus de Rage Barbare (getRageBonus)', () => {
     });
 });
 
-describe('9. Configuration personnalisée d\'arme (getWeaponConfig)', () => {
-    test('Parse correctement un JSON valide dans dataset.weaponConfig', () => {
-        const mockTr = { dataset: { weaponConfig: '{"magicBonus":"2","statOverride":"dex"}' } };
-        const config = getWeaponConfig(mockTr);
+describe('9. Configuration personnalisée d\'arme (parseWeaponConfig)', () => {
+    test('Parse correctement la chaîne JSON stockée dans la sauvegarde', () => {
+        const config = parseWeaponConfig('{"magicBonus":"2","statOverride":"dex"}');
         assert.deepEqual(config, { magicBonus: "2", statOverride: "dex" });
     });
 
+    test('Accepte un objet déjà décodé', () => {
+        assert.deepEqual(parseWeaponConfig({ magicBonus: 1 }), { magicBonus: 1 });
+    });
+
     test('Retourne un objet vide si JSON invalide ou absent', () => {
-        assert.deepEqual(getWeaponConfig({ dataset: {} }), {});
-        assert.deepEqual(getWeaponConfig({ dataset: { weaponConfig: 'INVALID' } }), {});
+        assert.deepEqual(parseWeaponConfig(''), {});
+        assert.deepEqual(parseWeaponConfig(undefined), {});
+        assert.deepEqual(parseWeaponConfig('INVALID'), {});
+        assert.deepEqual(parseWeaponConfig('42'), {});
     });
 });
