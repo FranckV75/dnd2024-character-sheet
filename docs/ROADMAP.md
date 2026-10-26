@@ -50,7 +50,7 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
 - Toutes les animations sont coupées si l'appareil demande moins d'animations ; rien n'est animé à l'impression.
 - À ressentir en vrai par Franck (rythme des animations, surtout la Rage) et à ajuster si besoin.
 
-### Lot 3 : lisibilité et confort — ⏳ en cours (workflow interrompu, à relancer)
+### Lot 3 : lisibilité et confort — ⏳ en cours
 
 - Grimoire : seuls les sorts remplis s'affichent, plus une seule ligne vide pour en ajouter (les lignes
   vides de la sauvegarde restent intactes) ; pour un personnage sans magie, le grimoire se replie en
