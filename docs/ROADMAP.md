@@ -87,6 +87,15 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
   Ouverture, Sape, Coup double, Ralentissement, Poussée, Écorchure…) accessible depuis le tableau des armes,
   en infobulle ou petite fenêtre comme les sorts, avec le texte du Manuel du joueur 2024 en français.
   Peut rejoindre le projet « dons actifs ».
+- Plus tard aussi (idées de Franck) :
+  - Configuration des armures : un bouton de réglage par ligne du tableau « Armures, boucliers & autres
+    avantages défensifs », comme pour les armes, pour au moins un bonus magique (Bouclier +1, Cotte de
+    mailles +1 : +1 à la CA chacun). Le calcul de la CA en tient compte (règle pure et tests ; format de
+    sauvegarde v3 conservé, champ facultatif nouveau ou existant).
+  - Aspect particulier des objets magiques (à préciser par Franck) : toute arme ou armure avec un bonus
+    magique (+1, +2…) se distingue, par exemple un léger miroitement doré sur la ligne ou le nom, dans
+    l'esprit des boutons Rage et Cogneur lourd ; sobre, chic, coupé si l'appareil demande moins
+    d'animations.
 
 ## Corrections de règles apportées (vérifiées dans le Manuel du joueur 2024)
 
