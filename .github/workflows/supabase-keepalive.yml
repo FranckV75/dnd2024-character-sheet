@@ -1,0 +1,39 @@
+# Empêche la mise en pause du projet Supabase gratuit (après ~7 jours sans activité).
+# Tous les 3 jours, une lecture anonyme (sans rien modifier) est envoyée à la base.
+# La clé utilisée est la clé publique, déjà présente dans js/cloud/client.js (v4).
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: '17 6 */3 * *'   # tous les 3 jours, vers 7h-8h (heure de Paris)
+  workflow_dispatch:          # lancement manuel possible depuis l'onglet Actions
+
+permissions:
+  actions: write              # pour réactiver ce workflow (voir dernière étape)
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lecture anonyme de la base Supabase
+        env:
+          SUPABASE_URL: https://yhblszojptpcyrmyogvo.supabase.co
+          SUPABASE_KEY: sb_publishable_TUhtpo9_mc6BRiIqHMmgQA_PanYvpe7
+        run: |
+          status=$(curl -s -o response.txt -w '%{http_code}' \
+            "$SUPABASE_URL/rest/v1/characters?select=name&limit=1" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY")
+          echo "Réponse HTTP : $status"
+          if [ "$status" != "200" ]; then
+            cat response.txt
+            echo "::error::Supabase ne répond pas (projet en pause ?). Le relancer depuis le tableau de bord Supabase."
+            exit 1
+          fi
+
+      # GitHub désactive les tâches programmées d'un dépôt public resté 60 jours sans commit.
+      # Réactiver le workflow à chaque passage remet ce compteur à zéro.
+      - name: Garder cette tâche active
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/supabase-keepalive.yml/enable"
