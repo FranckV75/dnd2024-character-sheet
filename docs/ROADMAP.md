@@ -10,7 +10,7 @@ Chaque étape se termine par un jalon validé par Franck.
 | 3. HTML & CSS        | 4 onglets, thèmes, tablette 768–1100 px, sans `!important` ni handlers inline            | Rendu validé à 820, 1024, 1280 px dans les 2 thèmes | ✅ (validé par Franck)                             |
 | 4. Fonctionnalités   | Combat, dons, compétences, repos, grimoire, verrouillage, galerie, impression            | Validation par lots                                 | ✅ (validé par Franck)                             |
 | 5. Cloud             | Supabase (auth, roster, conflits) sur la même base que la v3                             | Synchronisation testée                              | ✅ (testé par Franck)                              |
-| 5 bis. Esthétique    | Passe « chic » de toute la fiche en 3 lots (détail ci-dessous)                           | Captures avant/après validées par Franck            | ⏳ lots 1 et 2 faits, lot 3 en cours               |
+| 5 bis. Esthétique    | Passe « chic » de toute la fiche en 3 lots (détail ci-dessous)                           | Captures avant/après validées par Franck            | ✅ lots 1 à 3 faits (à valider par Franck)         |
 | 6. Bascule           | Comparaison v3/v4, fusion de `v4` dans `master`                                          | 0 régression, 0 erreur console                      | ⏳                                                  |
 
 ## Étape 5 bis : passe esthétique (avant la bascule)
@@ -50,16 +50,22 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
 - Toutes les animations sont coupées si l'appareil demande moins d'animations ; rien n'est animé à l'impression.
 - À ressentir en vrai par Franck (rythme des animations, surtout la Rage) et à ajuster si besoin.
 
-### Lot 3 : lisibilité et confort — ⏳ en cours
+### Lot 3 : lisibilité et confort — ✅ fait (commit `4ea9505`)
 
-- Grimoire : seuls les sorts remplis s'affichent, plus une seule ligne vide pour en ajouter (les lignes
-  vides de la sauvegarde restent intactes) ; pour un personnage sans magie, le grimoire se replie en
-  une courte mention avec un bouton « Ouvrir le grimoire ».
-- Dons pas encore atteints (niveaux 8 à 19) : atténués avec « Disponible au niveau 8 » ; un emplacement
-  atteint mais vide est signalé discrètement en doré.
-- Compétences : celles qui sont maîtrisées ressortent (nom plus marqué, bonus doré), les expertises un
-  cran de plus, les autres plus discrètes mais lisibles.
-- Revue de toute la fiche comme un joueur sur iPad : textes trop petits ou trop pâles à corriger.
+- Grimoire : seuls les sorts remplis s'affichent, plus une seule ligne de saisie « Nouveau sort… » (elle
+  n'entre dans la sauvegarde qu'au premier caractère tapé ; les lignes vides de la sauvegarde restent
+  intactes) ; les sorts non préparés sont plus discrets dès qu'un sort est marqué préparé.
+- Personnage sans magie de classe : le grimoire et les cases d'incantation se replient en une courte
+  mention avec un bouton « Ouvrir le grimoire » (choix mémorisé dans le navigateur) ; à l'impression,
+  seule la mention apparaît.
+- Dons : un emplacement atteint mais vide est signalé en doré ; les niveaux à venir sont atténués avec
+  « À venir », et un don déjà prévu pour plus tard porte « Actif au niveau N ».
+- Compétences : celles qui sont maîtrisées ressortent (nom plus marqué, bonus doré, léger fond chaud),
+  les expertises un cran de plus, les autres plus discrètes mais lisibles.
+- Revue de toute la fiche comme un joueur sur iPad : bonus d'attaque sur une seule ligne, jets de
+  sauvegarde plus grands (maîtrisés en gras), taille minimale des petits libellés, contrastes renforcés,
+  colonnes du grimoire sans mots coupés à 820 px.
+- Reste pour plus tard : les tableaux d'armes et d'armures affichent encore leurs lignes vides enregistrées.
 
 ### Après la passe esthétique
 
