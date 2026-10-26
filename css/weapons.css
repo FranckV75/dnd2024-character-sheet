@@ -78,21 +78,7 @@
     box-shadow: var(--btn-glow), 0 0 14px var(--accent);
 }
 
-/* Rage active : la flamme respire doucement */
-.weapons-buff[data-buff="rage"][aria-pressed="true"] .icon {
-    animation: weapons-flame 2.4s ease-in-out infinite;
-}
-
-@keyframes weapons-flame {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.14); opacity: 0.82; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .weapons-buff[data-buff="rage"][aria-pressed="true"] .icon {
-        animation: none;
-    }
-}
+/* Rage active : pastille incandescente et flamme qui vacille, voir css/feedback.css */
 
 /* ---------- Filtres : bloc segmenté (components.css, .btn-segments) ---------- */
 

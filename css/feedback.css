@@ -4,3 +4,322 @@
    Tout mouvement est coupé sous prefers-reduced-motion.
    Règles : couleurs par variables, aucun !important.
    ============================================================================= */
+
+/* Couleurs : jetons --rage-*, --hp-gauge-* et --pulse-* de base.css (deux thèmes). */
+
+@media screen {
+    /* =========================================================================
+       1. RAGE
+       html[data-rage="on"] (posé par feedback.js) : les cadres des armes, des PV et de la
+       ressource de classe (« Rages ») s'embrasent, la pastille « Rage » devient incandescente.
+       Les mouvements ne jouent qu'au moment où la Rage s'allume (html[data-rage-lit], posé
+       par feedback.js pendant 15 s) : embrasement bref, quelques respirations de la braise,
+       la flamme qui vacille, puis tout reste allumé sans bouger. Rien ne rejoue au retour
+       sur l'onglet, après une impression ni au chargement d'une fiche déjà en Rage, et rien
+       ne tourne pendant tout un combat (en fiche transparente, chaque image recalculerait le
+       verre dépoli de toute la fiche).
+       ========================================================================= */
+
+    /* Calque du halo (.rage-aura) : collé au bord du cadre (-1px : par-dessus la bordure),
+       sans effet sur la mise en page ni sur les clics. Trois couches :
+         - le calque : liseré de braise et halo au repos (apparition / extinction en fondu)
+         - ::after   : braise, fixe à mi-intensité ; elle respire après l'allumage (opacité seule)
+         - ::before  : embrasement bref au moment où la Rage s'allume */
+    .rage-box {
+        position: relative;
+    }
+
+    .rage-aura {
+        position: absolute;
+        inset: -1px;
+        border-radius: inherit;
+        pointer-events: none;
+        opacity: 0;
+        box-shadow:
+            inset 0 0 0 1px var(--rage-rim),
+            inset 0 0 10px var(--rage-inner),
+            0 0 5px var(--rage-glow-soft);
+        transition: opacity 0.6s ease;
+    }
+
+    /* Cadre « Rages » : bordure de 2 px, le halo la recouvre entière */
+    .rage-box.class-resource .rage-aura {
+        inset: -2px;
+    }
+
+    .rage-aura::before,
+    .rage-aura::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        opacity: 0;
+    }
+
+    .rage-aura::after {
+        opacity: 0.55;
+        box-shadow: 0 0 22px 4px var(--rage-glow), inset 0 0 22px var(--rage-inner);
+    }
+
+    .rage-aura::before {
+        box-shadow: inset 0 0 0 2px var(--rage-flare), 0 0 40px 10px var(--rage-flare);
+    }
+
+    :root[data-rage="on"] .rage-aura {
+        opacity: 1;
+        transition-duration: 0.4s;
+        transition-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    /* Respiration après l'allumage : 5,5 allers-retours (environ 14 s), la dernière
+       s'arrête à mi-course, sur l'intensité de repos (0,55) : aucun saut à la fin */
+    :root[data-rage="on"][data-rage-lit] .rage-aura::after {
+        animation: rage-breathe 2.6s ease-in-out 5.5 alternate;
+    }
+
+    :root[data-rage="on"][data-rage-lit="ignite"] .rage-aura::before {
+        animation: rage-flare 0.8s cubic-bezier(0.3, 0.6, 0.3, 1);
+    }
+
+    /* Petites cases (PV, « Rages ») : halo resserré */
+    .rage-box.stat-tile .rage-aura::after,
+    .rage-box.class-resource .rage-aura::after {
+        box-shadow: 0 0 16px 3px var(--rage-glow), inset 0 0 16px var(--rage-inner);
+    }
+
+    .rage-box.stat-tile .rage-aura::before,
+    .rage-box.class-resource .rage-aura::before {
+        box-shadow: inset 0 0 0 2px var(--rage-flare), 0 0 26px 6px var(--rage-flare);
+    }
+
+    /* Tablette : les cases sont plus serrées, le halo reste dans les espaces entre elles
+       (il ne déborde pas sur la rangée du dessous) */
+    @media (max-width: 1100px) {
+        .rage-box.stat-tile .rage-aura::after,
+        .rage-box.class-resource .rage-aura::after {
+            box-shadow: 0 0 10px 1px var(--rage-glow), inset 0 0 14px var(--rage-inner);
+        }
+
+        .rage-box.stat-tile .rage-aura::before,
+        .rage-box.class-resource .rage-aura::before {
+            box-shadow: inset 0 0 0 2px var(--rage-flare), 0 0 16px 3px var(--rage-flare);
+        }
+    }
+
+    @keyframes rage-breathe {
+        from { opacity: 0.12; }
+        to { opacity: 1; }
+    }
+
+    @keyframes rage-flare {
+        0% { opacity: 0; }
+        22% { opacity: 1; }
+        100% { opacity: 0; }
+    }
+
+    /* ---------- Pastille « Rage » incandescente : une braise qui rougeoit par en dessous ----------
+       Le cœur chaud reste sous le libellé (en bas de la pastille) : le texte clair, gravé
+       d'une ombre sombre, garde un contraste d'au moins 4,5:1 sur toute sa hauteur. */
+
+    .weapons-buff[data-buff="rage"][aria-pressed="true"],
+    .weapons-buff[data-buff="rage"][aria-pressed="true"]:hover:not(:disabled) {
+        border-color: var(--rage-chip-rim);
+        background: radial-gradient(110% 120% at 50% 165%,
+            var(--rage-chip-hot) 0%, var(--rage-chip-core) 58%, var(--rage-chip-coal) 100%);
+        color: var(--rage-chip-text);
+        text-shadow: var(--rage-chip-engrave);
+        box-shadow: inset 0 1px 0 var(--rage-chip-shine), 0 0 0 2px var(--rage-glow-soft), 0 0 14px var(--rage-glow);
+    }
+
+    :root[data-rage-lit="ignite"] .weapons-buff[data-buff="rage"][aria-pressed="true"] {
+        animation: rage-chip-ignite 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    /* La flamme : halo fixe ; à l'extinction, elle reprend sa place et sa couleur en douceur */
+    .weapons-buff[data-buff="rage"] .icon {
+        transform-origin: 50% 85%;
+        transition: transform 0.3s ease, filter 0.3s ease, color 0.3s ease;
+    }
+
+    .weapons-buff[data-buff="rage"][aria-pressed="true"] .icon {
+        color: var(--rage-flame);
+        filter: drop-shadow(0 0 3px var(--rage-flare));
+    }
+
+    /* Elle vacille quelques fois à l'allumage (7 oscillations de 1,9 s, moins d'une par seconde) */
+    :root[data-rage-lit] .weapons-buff[data-buff="rage"][aria-pressed="true"] .icon {
+        animation: rage-flame 1.9s ease-in-out 7;
+    }
+
+    /* Anneau de focus : braise sombre sur le parchemin, or clair sur la nuit */
+    .weapons-buff[data-buff="rage"][aria-pressed="true"]:focus-visible {
+        outline-color: var(--rage-focus);
+    }
+
+    @keyframes rage-chip-ignite {
+        from {
+            box-shadow: inset 0 1px 0 var(--rage-chip-shine), 0 0 0 5px var(--rage-glow-soft), 0 0 26px 4px var(--rage-flare);
+        }
+    }
+
+    /* Flamme : vacille doucement (pas de clignotement : moins d'une oscillation par seconde) */
+    @keyframes rage-flame {
+        0%, 100% { transform: scale(1, 1) rotate(0deg); }
+        30% { transform: scale(1.05, 1.12) rotate(-3deg); }
+        60% { transform: scale(0.97, 1.04) rotate(2deg); }
+    }
+
+    /* =========================================================================
+       2. JAUGE DES POINTS DE VIE (sous « PV actuels »)
+       Fine réglette posée au pied de la case, hors de la mise en page. Remplissage par
+       transform (scaleX), teinte selon la part de PV restante (variables posées par
+       feedback.js : --hp-fill, --hp-mix, --hp-temp-start, --hp-temp-size).
+       ========================================================================= */
+
+    .hp-tile {
+        position: relative;
+    }
+
+    /* Largeur de la case moins ses marges, plafonnée et centrée quand la case est large */
+    .hp-gauge {
+        position: absolute;
+        left: 16px;
+        right: 16px;
+        bottom: 7px;
+        max-width: 170px;
+        height: 4px;
+        margin-inline: auto;
+        overflow: hidden;
+        border-radius: 2px;
+        background: var(--hp-gauge-track);
+        box-shadow: inset 0 1px 1px var(--hp-gauge-groove);
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .hp-gauge-fill,
+    .hp-gauge-temp {
+        position: absolute;
+        inset: 0;
+        transform-origin: 0 50%;
+        transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), color 0.5s ease, opacity 0.3s ease;
+    }
+
+    /* Couleur portée par « color » (transition fluide), le fond la reprend ; reflet en haut */
+    .hp-gauge-fill {
+        color: var(--hp-gauge-high);
+        background: linear-gradient(var(--hp-gauge-gloss), transparent 70%) currentColor;
+        transform: scaleX(var(--hp-fill, 0));
+    }
+
+    .hp-gauge[data-level="mid"] .hp-gauge-fill {
+        color: var(--hp-gauge-mid);
+    }
+
+    .hp-gauge[data-level="low"] .hp-gauge-fill {
+        color: var(--hp-gauge-low);
+    }
+
+    /* Teinte progressive entre deux couleurs voisines (navigateurs récents) */
+    @supports (color: color-mix(in oklab, red 50%, blue)) {
+        .hp-gauge[data-band="upper"] .hp-gauge-fill {
+            color: color-mix(in oklab, var(--hp-gauge-high) var(--hp-mix), var(--hp-gauge-mid));
+        }
+
+        .hp-gauge[data-band="lower"] .hp-gauge-fill {
+            color: color-mix(in oklab, var(--hp-gauge-mid) var(--hp-mix), var(--hp-gauge-low));
+        }
+    }
+
+    /* PV temporaires : segment argenté, placé après les PV actuels (ou par-dessus leur fin) */
+    .hp-gauge-temp {
+        background: linear-gradient(var(--hp-gauge-gloss), transparent 70%) var(--hp-gauge-temp);
+        opacity: 0;
+        transform: translateX(calc(var(--hp-temp-start, 0) * 100%)) scaleX(var(--hp-temp-size, 0));
+    }
+
+    .hp-gauge[data-temp="true"] .hp-gauge-temp {
+        opacity: 0.95;
+    }
+
+    /* Valeurs absentes (PV actuels ou maximum vides) : pas de jauge, le soulignement
+       de la case vide suffit */
+    .hp-gauge[data-state="unknown"] {
+        opacity: 0;
+    }
+
+    /* Plus de PV que le maximum : un liseré doré */
+    .hp-gauge[data-over="true"] {
+        box-shadow: inset 0 1px 1px var(--hp-gauge-groove), 0 0 5px var(--gold-glow);
+    }
+
+    /* =========================================================================
+       3. VALEUR QUI CHANGE : brève pulsation dorée (classes posées par feedback.js)
+       Deux animations identiques en alternance pour pouvoir la relancer.
+       ========================================================================= */
+
+    .is-pulsing-a {
+        animation: value-pulse-a 0.42s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    .is-pulsing-b {
+        animation: value-pulse-b 0.42s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    /* Le grossissement part du côté où le texte est aligné */
+    .weapons-calc {
+        transform-origin: 0 50%;
+    }
+
+    .skill-bonus,
+    .feat-asi {
+        transform-origin: 100% 50%;
+    }
+
+    @keyframes value-pulse-a {
+        28% {
+            color: var(--pulse-ink);
+            filter: drop-shadow(0 0 4px var(--pulse-glow));
+            transform: scale(1.08);
+        }
+    }
+
+    @keyframes value-pulse-b {
+        28% {
+            color: var(--pulse-ink);
+            filter: drop-shadow(0 0 4px var(--pulse-glow));
+            transform: scale(1.08);
+        }
+    }
+}
+
+/* ---------- Mouvement réduit : rien ne bouge, la Rage garde un halo fixe ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .rage-aura,
+    :root[data-rage="on"] .rage-aura,
+    .weapons-buff[data-buff="rage"] .icon,
+    .hp-gauge,
+    .hp-gauge-fill,
+    .hp-gauge-temp {
+        transition: none;
+    }
+
+    :root[data-rage="on"][data-rage-lit] .rage-aura::after,
+    :root[data-rage="on"][data-rage-lit="ignite"] .rage-aura::before,
+    :root[data-rage-lit="ignite"] .weapons-buff[data-buff="rage"][aria-pressed="true"],
+    :root[data-rage-lit] .weapons-buff[data-buff="rage"][aria-pressed="true"] .icon,
+    .is-pulsing-a,
+    .is-pulsing-b {
+        animation: none;
+    }
+}
+
+/* ---------- Impression : ni halo, ni jauge (les nombres suffisent sur le papier) ---------- */
+
+@media print {
+    .rage-aura,
+    .hp-gauge {
+        display: none;
+    }
+}
