@@ -71,8 +71,18 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
 
 - ✅ Bouton « Cogneur lourd » à côté de « Rage » dans le tableau des armes (bonus de maîtrise aux
   dégâts avec une arme Lourde), proposé seulement si le don est choisi à un niveau atteint.
-- Autres fonctions envisagées par Franck : à préciser.
 - Puis étape 6 (bascule).
+- Ensuite, projet « dons actifs » (idée de Franck) : chaque don pertinent choisi dans Aptitudes & Traits,
+  à un niveau atteint, ajoute son effet de jeu, comme la Rage pour le Barbare. Cogneur lourd sert de modèle :
+  le mécanisme est déjà générique (`FEAT_BUFFS` et `featBuffs` dans `js/rules/weapons.js`, bouton décrit
+  dans `BUFF_DEFS` de `js/ui/weapons.js`, effet calculé dans `computeWeapon`).
+  1. Lister tous les dons 2024 en trois familles : bouton à activer (ex. Tireur d'élite, Maître des armes
+     d'hast), calcul automatique (ex. Robuste pour les PV, Vigilant pour l'initiative, +1 à une
+     caractéristique), ou texte seulement.
+  2. Franck choisit ceux qui en valent la peine.
+  3. Construction avec des tests vérifiés dans le Manuel du joueur 2024 ; bon candidat pour un workflow
+     Ultracode (un agent par famille de dons, plus des relecteurs de règles). À regrouper éventuellement
+     avec les descriptions des Faveurs épiques.
 
 ## Corrections de règles apportées (vérifiées dans le Manuel du joueur 2024)
 
