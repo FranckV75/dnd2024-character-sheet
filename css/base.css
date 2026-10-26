@@ -78,6 +78,44 @@
     --coin-ink: #241404;
     --coin-shine: rgba(255, 255, 255, 0.55);
     --coin-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.12);
+
+    /* ---------- Effets animés (css/motion.css et css/feedback.css) ---------- */
+    /* Survol d'une carte : reflet doré qui la traverse (cœur, bords adoucis, mode de fusion :
+       en thème clair, « multiply » dore le parchemin sans jamais éclaircir l'encre),
+       ombre ajoutée quand elle se soulève */
+    --motion-sheen: rgba(236, 196, 120, 0.42);
+    --motion-sheen-soft: rgba(236, 196, 120, 0.14);
+    --motion-sheen-blend: multiply;
+    --motion-lift-shadow: rgba(62, 28, 2, 0.3);
+    /* Rage : braise des cadres (liseré, halo, lueur intérieure, embrasement), pastille
+       incandescente (cœur chaud sous le texte, braise, charbon, bord, texte et sa gravure
+       sombre, reflet), flamme et anneau de focus (braise sombre, lisible sur le parchemin) */
+    --rage-rim: rgba(196, 66, 18, 0.7);
+    --rage-glow: rgba(214, 80, 22, 0.42);
+    --rage-glow-soft: rgba(214, 80, 22, 0.16);
+    --rage-inner: rgba(232, 104, 36, 0.13);
+    --rage-flare: rgba(255, 128, 44, 0.6);
+    --rage-chip-hot: #ef7a2c;
+    --rage-chip-core: #b5340d;
+    --rage-chip-coal: #5c1404;
+    --rage-chip-rim: #d9541c;
+    --rage-chip-text: #fff0dc;
+    --rage-chip-engrave: 0 1px 1px rgba(60, 10, 0, 0.55);
+    --rage-chip-shine: rgba(255, 214, 168, 0.45);
+    --rage-flame: #ffd27a;
+    --rage-focus: #5c1404;
+    /* Jauge des PV : laiton (pleine santé) → cuivre → braise ; PV temporaires en argent ;
+       rainure, fond et reflet de la réglette */
+    --hp-gauge-high: #8a7b1f;
+    --hp-gauge-mid: #b8661a;
+    --hp-gauge-low: #a61c14;
+    --hp-gauge-temp: #7d8b99;
+    --hp-gauge-track: rgba(139, 69, 19, 0.16);
+    --hp-gauge-groove: rgba(62, 28, 2, 0.18);
+    --hp-gauge-gloss: rgba(255, 255, 255, 0.42);
+    /* Valeur qui change : encre et halo de la brève pulsation dorée */
+    --pulse-ink: var(--gold);
+    --pulse-glow: var(--gold-glow);
 }
 
 :root[data-theme="dark"] {
@@ -125,6 +163,37 @@
     --veil: rgba(15, 15, 26, 0.62);
     --coin-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 0, 0, 0.3);
     color-scheme: dark;
+
+    /* ---------- Effets animés (voir le thème clair) ---------- */
+    /* Reflet : de la lumière dorée posée sur la nuit (fusion « screen ») */
+    --motion-sheen: rgba(243, 207, 143, 0.3);
+    --motion-sheen-soft: rgba(243, 207, 143, 0.1);
+    --motion-sheen-blend: screen;
+    --motion-lift-shadow: rgba(0, 0, 0, 0.55);
+    --rage-rim: rgba(255, 128, 64, 0.8);
+    --rage-glow: rgba(255, 96, 32, 0.5);
+    --rage-glow-soft: rgba(255, 96, 32, 0.2);
+    --rage-inner: rgba(255, 112, 40, 0.11);
+    --rage-flare: rgba(255, 150, 70, 0.65);
+    --rage-chip-hot: #e0662a;
+    --rage-chip-core: #a8300c;
+    --rage-chip-coal: #4a0f03;
+    --rage-chip-rim: #ff8a45;
+    --rage-chip-text: #fff0dc;
+    --rage-chip-engrave: 0 1px 1px rgba(40, 6, 0, 0.6);
+    --rage-chip-shine: rgba(255, 210, 160, 0.4);
+    --rage-flame: #ffd88a;
+    --rage-focus: #ffd88a;
+    --hp-gauge-high: #d2bb63;
+    --hp-gauge-mid: #e8954a;
+    --hp-gauge-low: #ec5a44;
+    --hp-gauge-temp: #c5cfd8;
+    --hp-gauge-track: rgba(232, 184, 109, 0.14);
+    --hp-gauge-groove: rgba(0, 0, 0, 0.45);
+    --hp-gauge-gloss: rgba(255, 255, 255, 0.28);
+    /* Or plus chaud que --gold : il se détache des chiffres crème */
+    --pulse-ink: #ffc14d;
+    --pulse-glow: rgba(255, 184, 64, 0.75);
 }
 
 * {

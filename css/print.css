@@ -58,6 +58,15 @@
     --check-ring: #000000;
     --veil: transparent;
     --coin-ink: #000000;
+    /* Effets animés (reflet, Rage, pulsation : écran seulement) : neutres sur le papier */
+    --motion-sheen: transparent;
+    --motion-sheen-soft: transparent;
+    --motion-lift-shadow: transparent;
+    --rage-glow: transparent;
+    --rage-glow-soft: transparent;
+    --rage-flare: transparent;
+    --pulse-ink: #000000;
+    --pulse-glow: transparent;
     color-scheme: light;
     /* Les cases cochées, en-têtes de tableau et pièces sont des fonds : on les imprime
        même si l'option « Graphiques d'arrière-plan » est décochée */
