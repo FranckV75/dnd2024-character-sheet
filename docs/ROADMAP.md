@@ -10,7 +10,62 @@ Chaque étape se termine par un jalon validé par Franck.
 | 3. HTML & CSS        | 4 onglets, thèmes, tablette 768–1100 px, sans `!important` ni handlers inline            | Rendu validé à 820, 1024, 1280 px dans les 2 thèmes | ✅ (validé par Franck)                             |
 | 4. Fonctionnalités   | Combat, dons, compétences, repos, grimoire, verrouillage, galerie, impression            | Validation par lots                                 | ✅ (validé par Franck)                             |
 | 5. Cloud             | Supabase (auth, roster, conflits) sur la même base que la v3                             | Synchronisation testée                              | ✅ (testé par Franck)                              |
+| 5 bis. Esthétique    | Passe « chic » de toute la fiche en 3 lots (détail ci-dessous)                           | Captures avant/après validées par Franck            | ⏳ lots 1 et 2 faits, lot 3 en cours               |
 | 6. Bascule           | Comparaison v3/v4, fusion de `v4` dans `master`                                          | 0 régression, 0 erreur console                      | ⏳                                                  |
+
+## Étape 5 bis : passe esthétique (avant la bascule)
+
+Demandée par Franck après l'étape 5 : une fiche « 12 sur 10 », chic et classe, avec un effet « waouh »,
+dans le même esprit que la barre « Gestion » redessinée (verre dépoli, double filet doré, icônes dorées).
+Préalables déjà faits : lisibilité du thème clair, cases des tableaux qui passent à la ligne, fiche
+translucide façon v3 (deux tons, suivant le curseur d'opacité), barre « Gestion » ordonnée et figée.
+Chaque lot est construit par un workflow (constructeurs en parallèle, trois relecteurs indépendants,
+un correcteur), puis vérifié à la main et commité localement sur `v4` (rien n'est publié).
+
+### Lot 1 : finitions chic — ✅ fait (commit `b095127`)
+
+- Titres de section : icônes dorées dessinées à la place des emojis, filet doré qui s'estompe avec un losange.
+- Onglets « marque-pages de grimoire » : onglet actif doré avec soulignement lumineux, une icône par onglet.
+- En-tête : nom du personnage en titre de parchemin (grand, doré, gravé), chevrons dorés sur les listes.
+- Boutons de la fiche (filtres d'armes, Rage, Ajouter, repos, roues, corbeilles) dans le style de la barre.
+- Cases à cocher dorées (maîtrises, expertises, jets contre la mort, rages) avec un éclat quand on coche.
+- Pièces de monnaie en relief (cuivre, argent, électrum, or, platine).
+- Grands chiffres (CA, PV, caractéristiques) d'aspect gravé.
+- Fenêtres (connexion, galerie, import, « Mes personnages »…) en verre dépoli à double filet doré.
+- Textes longs (traits, capacités, compagnons, histoire) : la case s'agrandit, plus de texte caché
+  (point 1 du lot 3, avancé ici).
+- Retouches ensuite demandées par Franck : poing vu de face pour la Force, sablier pour le repos court,
+  plus aucun emoji dans les fenêtres d'import et d'export.
+
+### Lot 2 : effets « waouh » — ✅ fait (commit `87f73f8`)
+
+- Ouverture : la fiche apparaît en fondu, les cadres se posent en cascade (moins d'une seconde).
+- Changement d'onglet en fondu glissé.
+- Survol (ordinateur seulement) : les petites cartes se soulèvent, avec un reflet doré rare et discret.
+- Passage clair / sombre : le nouveau thème se dévoile en cercle depuis le bouton.
+- Mode cinéma : lent zoom de l'illustration.
+- Rage activée : lueur de braise autour des PV, des Rages et des armes, bouton Rage incandescent.
+- Jauge de PV sous « PV actuels » (laiton → cuivre → braise, PV temporaires en argent).
+- Les valeurs calculées pulsent brièvement en doré quand elles changent.
+- Toutes les animations sont coupées si l'appareil demande moins d'animations ; rien n'est animé à l'impression.
+- À ressentir en vrai par Franck (rythme des animations, surtout la Rage) et à ajuster si besoin.
+
+### Lot 3 : lisibilité et confort — ⏳ en cours (workflow interrompu, à relancer)
+
+- Grimoire : seuls les sorts remplis s'affichent, plus une seule ligne vide pour en ajouter (les lignes
+  vides de la sauvegarde restent intactes) ; pour un personnage sans magie, le grimoire se replie en
+  une courte mention avec un bouton « Ouvrir le grimoire ».
+- Dons pas encore atteints (niveaux 8 à 19) : atténués avec « Disponible au niveau 8 » ; un emplacement
+  atteint mais vide est signalé discrètement en doré.
+- Compétences : celles qui sont maîtrisées ressortent (nom plus marqué, bonus doré), les expertises un
+  cran de plus, les autres plus discrètes mais lisibles.
+- Revue de toute la fiche comme un joueur sur iPad : textes trop petits ou trop pâles à corriger.
+
+### Après la passe esthétique
+
+- Nouvelles fonctions envisagées par Franck, dont un bouton « Cogneur lourd » à côté de « Rage » dans
+  le tableau des armes (dégâts supplémentaires égaux au bonus de maîtrise avec une arme Lourde).
+- Puis étape 6 (bascule).
 
 ## Corrections de règles apportées (vérifiées dans le Manuel du joueur 2024)
 
