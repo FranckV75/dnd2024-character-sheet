@@ -83,6 +83,10 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
   3. Construction avec des tests vérifiés dans le Manuel du joueur 2024 ; bon candidat pour un workflow
      Ultracode (un agent par famille de dons, plus des relecteurs de règles). À regrouper éventuellement
      avec les descriptions des Faveurs épiques.
+- Plus tard aussi (idée de Franck) : description de chaque botte d'arme (Enchaînement, Renversement,
+  Ouverture, Sape, Coup double, Ralentissement, Poussée, Écorchure…) accessible depuis le tableau des armes,
+  en infobulle ou petite fenêtre comme les sorts, avec le texte du Manuel du joueur 2024 en français.
+  Peut rejoindre le projet « dons actifs ».
 
 ## Corrections de règles apportées (vérifiées dans le Manuel du joueur 2024)
 
