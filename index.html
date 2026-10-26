@@ -322,7 +322,8 @@
         <!-- ================ ONGLET 4 : MAGIE, ÉQUIPEMENT & TRÉSORS ================ -->
         <section class="tab-panel" id="tab-magic" role="tabpanel" aria-labelledby="tab-btn-magic" tabindex="0">
             <div class="stack">
-                <div class="spell-stats">
+                <!-- Replié avec le grimoire pour un personnage sans magie (js/ui/spells.js) -->
+                <div class="spell-stats" id="spell-stats">
                     <div class="box field">
                         <label for="f-spell_ability">Caractéristique d'incantation</label>
                         <select id="f-spell_ability" data-field="spell_ability" class="input input-title"></select>

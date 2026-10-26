@@ -192,6 +192,26 @@ export function sneakAttackDice(level) {
 }
 
 /**
+ * État d'un emplacement de don (niveaux 1, 4, 8, 12, 16, 19) selon le niveau du personnage.
+ * Sert seulement à l'affichage : aucun calcul de la fiche ne tient compte des dons
+ * (les valeurs de caractéristique sont saisies à la main), un don prévu en avance
+ * ne change donc rien aux statistiques.
+ * @param {number} slotLevel - Niveau de l'emplacement
+ * @param {*} characterLevel - Niveau du personnage (nombre ou saisie libre, ex. "<b>4</b>")
+ * @param {*} choice - Valeur enregistrée (feat_<niveau>) : identifiant du don ou texte libre
+ * @returns {'active'|'pending'|'planned'|'upcoming'}
+ *   active : niveau atteint, don choisi ; pending : niveau atteint, don à choisir ;
+ *   planned : niveau pas encore atteint, don déjà prévu ; upcoming : niveau pas encore atteint, rien de prévu
+ */
+export function featSlotState(slotLevel, characterLevel, choice) {
+    const level = Math.max(1, Math.min(20, parseNumber(characterLevel, 1)));
+    const reached = parseNumber(slotLevel, 1) <= level;
+    const chosen = String(choice ?? '').replace(/<[^>]*>/g, '').trim() !== '';
+    if (reached) return chosen ? 'active' : 'pending';
+    return chosen ? 'planned' : 'upcoming';
+}
+
+/**
  * Attaque et dégâts d'une arme du tableau, avec les bonus de combat actifs.
  * @param {Object} weapon - Ligne de `dynamic_weapons`
  * @param {{ mods: Object, pb: number, level: number, classSlug: string }} stats - issu de deriveCharacter()

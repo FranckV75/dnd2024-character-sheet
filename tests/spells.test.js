@@ -32,7 +32,12 @@ import {
     adjustSlotMax,
     slotLevels,
     nextFreeSlotLevel,
-    MAX_SLOTS_PER_LEVEL
+    MAX_SLOTS_PER_LEVEL,
+    hasSpellContent,
+    spellRowsView,
+    spellcastingStatus,
+    grimoireView,
+    SUBCLASS_SPELLCASTING
 } from '../js/rules/spells.js';
 import { EMPTY_SPELL } from '../js/state/schema.js';
 import { spellSlotsFor } from '../js/rules/character.js';
@@ -322,5 +327,102 @@ describe('Emplacements de sorts', () => {
         // Retirer le dernier emplacement d'un niveau ajouté à la main le fait disparaître
         const removed = adjustSlotMax({ 1: { max: 1, used: 1 } }, 1, -1, 0);
         assert.deepEqual(slotLevels({}, 'fighter', removed), []);
+    });
+});
+
+describe('Lignes affichées : les lignes vides restent dans la fiche sans être affichées', () => {
+    const rows = [
+        { ...EMPTY_SPELL },
+        { ...EMPTY_SPELL, lvl: '3', name: 'Boule de feu', school: 'Évocation' },
+        { ...EMPTY_SPELL, lvl: '2' },
+        { ...EMPTY_SPELL, note: 'Sort du don Initié à la magie' },
+        { ...EMPTY_SPELL, lvl: '0', name: 'Amis', school: 'Enchantement' },
+        { ...EMPTY_SPELL, prep: true }
+    ];
+
+    test('hasSpellContent : un texte ou une case C / R / M, pas le niveau ni « préparé » seuls', () => {
+        assert.deepEqual(rows.map(hasSpellContent), [false, true, false, true, true, false]);
+        assert.equal(hasSpellContent({ ...EMPTY_SPELL, m: true }), true);
+        assert.equal(hasSpellContent({ ...EMPTY_SPELL, school: '<b></b>&nbsp;' }), false);
+        assert.equal(hasSpellContent({ ...EMPTY_SPELL, name: '  ' }), false);
+        assert.equal(hasSpellContent(null), false);
+        assert.equal(hasSpellContent('x'), false);
+    });
+
+    test('Sorts renseignés seulement, dans l\'ordre enregistré ou trié', () => {
+        const view = spellRowsView(rows);
+        assert.deepEqual([...view.shown].sort(), [1, 3, 4]);
+        assert.equal(view.hasDraft, false);
+        assert.deepEqual(view.order, [0, 1, 2, 3, 4, 5]);
+        assert.deepEqual(spellRowsView(rows, { sort: { col: 'lvl', dir: 'asc' } }).order.slice(0, 2), [4, 1]);
+    });
+
+    test('Filtre de niveau : les sorts des autres niveaux sont masqués, une note seule reste', () => {
+        assert.deepEqual([...spellRowsView(rows, { level: '3' }).shown].sort(), [1, 3]);
+        assert.deepEqual([...spellRowsView(rows, { level: '5' }).shown], [3]);
+    });
+
+    test('Ligne épinglée (en cours de saisie) : affichée même vide ou hors filtre', () => {
+        const view = spellRowsView(rows, { level: '3', pinned: [2] });
+        assert.deepEqual([...view.shown].sort(), [1, 2, 3]);
+        assert.equal(view.hasDraft, true);
+        assert.equal(spellRowsView(rows, { level: '0', pinned: [1] }).shown.has(1), true);
+    });
+
+    test('Rien n\'est modifié (les lignes vides de la sauvegarde sont gardées telles quelles)', () => {
+        const copy = structuredClone(rows);
+        spellRowsView(rows, { level: '1', sort: { col: 'name', dir: 'desc' }, pinned: [0] });
+        hasSpellContent(rows[0]);
+        assert.deepEqual(rows, copy);
+        assert.deepEqual(spellRowsView(undefined), { order: [], shown: new Set(), hasDraft: false });
+    });
+});
+
+describe('Le personnage lance-t-il des sorts ? (présentation du grimoire)', () => {
+    const status = (params) => spellcastingStatus(params);
+
+    test('Classes de lanceurs de sorts : dès le niveau 1', () => {
+        for (const classSlug of ['bard', 'cleric', 'druid', 'sorcerer', 'wizard', 'warlock', 'paladin', 'ranger']) {
+            assert.equal(status({ classSlug, level: 1 }).casts, true, classSlug);
+        }
+        assert.equal(status({ classSlug: 'paladin', level: 1 }).source, 'class');
+    });
+
+    test('Classes sans magie : Barbare (Korgul), Guerrier, Moine, Roublard', () => {
+        for (const classSlug of ['barbarian', 'fighter', 'monk', 'rogue', '']) {
+            assert.deepEqual(status({ classSlug, level: 4, spellSlots: spellSlotsFor(classSlug, 4) }),
+                { casts: false, source: '', unlockLevel: 0, subclassName: '' }, classSlug || 'sans classe');
+        }
+        assert.equal(status({ classSlug: 'barbarian', subclass: 'Voie du Zélote', level: 4 }).casts, false);
+    });
+
+    test('Chevalier occulte et Escroc arcanique : Incantation au niveau 3', () => {
+        assert.deepEqual(SUBCLASS_SPELLCASTING, { eldritch_knight: 3, arcane_trickster: 3 });
+        assert.deepEqual(status({ classSlug: 'fighter', subclass: 'Chevalier Occulte', level: 3 }),
+            { casts: true, source: 'subclass', unlockLevel: 0, subclassName: '' });
+        assert.equal(status({ classSlug: 'rogue', subclass: 'arcane trickster', level: 7 }).casts, true);
+        assert.equal(status({ classSlug: 'rogue', subclass: '<b>Escroc arcanique</b>', level: 3 }).casts, true);
+        assert.deepEqual(status({ classSlug: 'fighter', subclass: 'Chevalier Occulte', level: 2 }),
+            { casts: false, source: '', unlockLevel: 3, subclassName: 'Chevalier Occulte' });
+        // Sous-classe d'une autre classe : sans effet
+        assert.equal(status({ classSlug: 'barbarian', subclass: 'Chevalier Occulte', level: 5 }).casts, false);
+        assert.equal(status({ classSlug: 'fighter', subclass: 'Champion', level: 5 }).casts, false);
+    });
+
+    test('Emplacements de la classe ou suivis à la main', () => {
+        assert.equal(status({ classSlug: '', spellSlots: { 1: 2 } }).casts, true);
+        assert.deepEqual(status({ classSlug: 'fighter', level: 2, slotState: { 1: { max: 2, used: 0 } } }),
+            { casts: true, source: 'slots', unlockLevel: 0, subclassName: '' });
+        // Cases cochées sans maximum réglé (ancien suivi) : pas de magie pour autant
+        assert.equal(status({ classSlug: 'fighter', level: 2, slotState: { 1: { used: 1 } } }).casts, false);
+        assert.equal(status().casts, false);
+    });
+
+    test('Grimoire complet, court avis ou ouvert à la demande', () => {
+        assert.equal(grimoireView(true, false, false), 'full');
+        assert.equal(grimoireView(false, true, false), 'full');
+        assert.equal(grimoireView(true, true, true), 'full');
+        assert.equal(grimoireView(false, false, false), 'quiet');
+        assert.equal(grimoireView(false, false, true), 'open');
     });
 });

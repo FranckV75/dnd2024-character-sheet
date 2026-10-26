@@ -583,8 +583,11 @@ fieldset.inline-checks {
     border-radius: 8px;
 }
 
+/* Nom de la caractéristique : petit libellé, mais jamais sous la taille minimale ; « Constitution »
+   tient sur une ligne (lettres moins espacées que les autres libellés) */
 .ability .label {
-    font-size: 0.62rem;
+    font-size: 0.68rem;
+    letter-spacing: 0;
     overflow-wrap: anywhere;
 }
 
@@ -619,6 +622,28 @@ fieldset.inline-checks {
     gap: 4px;
     font-family: var(--font-title);
     font-size: 0.72rem;
+}
+
+/* Jet de sauvegarde (demandé sans cesse en jeu) : la valeur un cran plus grande que « Sauv. » ;
+   maîtrisé, il se lit comme une compétence maîtrisée (gras, encre d'accent), sinon plus calme.
+   Sur le papier, seule la graisse change. */
+.ability .save output {
+    font-size: 0.85rem;
+    font-variant-numeric: lining-nums;
+}
+
+.ability .save:has(.round-check:checked) output {
+    font-weight: 700;
+}
+
+@media screen {
+    .ability .save:has(.round-check:checked) output {
+        color: var(--accent-ink);
+    }
+
+    .ability .save:not(:has(.round-check:checked)) :is(span, output) {
+        color: var(--quiet-ink);
+    }
 }
 
 .combat-main {
@@ -668,7 +693,7 @@ fieldset.inline-checks {
 }
 
 .stat-cell .label {
-    font-size: 0.6rem;
+    font-size: var(--label-min);
 }
 
 .stat-cell + .stat-cell {
@@ -703,7 +728,7 @@ fieldset.inline-checks {
 }
 
 .ac-hex .label {
-    font-size: 0.58rem;
+    font-size: var(--label-min);
     text-align: center;
 }
 
@@ -853,17 +878,26 @@ fieldset.inline-checks {
     gap: 10px;
 }
 
+/* Trois colonnes fixes, les mêmes pour chaque emplacement : pastille, liste du don, puis
+   gain de caractéristique ou légende du niveau. Les listes commencent et finissent toutes
+   au même endroit, les sabliers et les gains s'alignent (calés à gauche de leur colonne). */
 .feat-head {
-    display: flex;
+    display: grid;
+    grid-template-columns: 4.9rem minmax(0, 1fr) 9rem;
     align-items: center;
-    gap: 10px;
+    column-gap: 10px;
+}
+
+.feat-head > .feat-asi,
+.feat-head > .feat-when {
+    grid-column: 3;
+    grid-row: 1;
+    min-width: 0;
 }
 
 /* Pastille gravée, cerclée d'or (l'or plein reste réservé aux états actifs : filtre choisi,
-   Rage, bouton enfoncé) ; largeur fixe pour que les listes de dons commencent au même endroit */
+   Rage, bouton enfoncé) ; elle remplit sa colonne, de largeur fixe */
 .feat-badge {
-    flex: 0 0 auto;
-    min-width: 4.6em;
     padding: 3px 8px;
     border: 1px solid var(--gold-soft);
     border-radius: 4px;
@@ -878,12 +912,11 @@ fieldset.inline-checks {
 }
 
 .feat-asi {
-    flex: 0 0 auto;
-    min-width: 60px;
     font-family: var(--font-title);
     font-size: 0.75rem;
-    text-align: right;
-    color: var(--text-muted);
+    text-align: left;
+    /* encre calme plutôt qu'estompée : reste lisible sur la fiche transparente */
+    color: var(--quiet-ink);
 }
 
 .feat-desc {
@@ -895,14 +928,122 @@ fieldset.inline-checks {
     font-size: 0.95rem;
 }
 
+/* Légende des niveaux pas encore atteints (« À venir », « Actif au niveau 12 ») : petite
+   capitale calme précédée d'un sablier ; imprimée aussi pour un don prévu en avance */
+.feat-when {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    font-family: var(--font-title);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    color: var(--quiet-ink);
+}
+
+.feat-when[hidden] {
+    display: none;
+}
+
+.feat-when .icon {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    color: var(--gold);
+}
+
+/* Emplacement à venir : pas de gain de caractéristique, la légende prend sa place */
+.feat[data-feat-state="upcoming"] .feat-asi {
+    display: none;
+}
+
+/* Don prévu en avance : la légende, puis le gain de caractéristique juste dessous */
+.feat[data-feat-state="planned"] .feat-head > .feat-asi {
+    grid-row: 2;
+}
+
+@media screen {
+    /* Niveau atteint, don à choisir : invitation dorée discrète (cadre en pointillés,
+       « — Choisir un don — » à l'encre d'accent, pastille cerclée d'or plein) */
+    .feat[data-feat-state="pending"] .feat-badge {
+        border-color: var(--gold);
+    }
+
+    .feat[data-feat-state="pending"] select.input {
+        padding-left: 8px;
+        border: 1px dashed var(--gold);
+        border-radius: 5px;
+        background-color: var(--feat-invite-bg);
+        color: var(--accent-ink);
+        transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .feat[data-feat-state="pending"] select.input:hover:not(:disabled) {
+        border-style: solid;
+        background-color: var(--input-bg);
+    }
+
+    /* Niveau pas encore atteint : rangée calme et resserrée (pastille en pointillés,
+       texte plus petit à l'encre calme, chevron estompé). Toujours modifiable. */
+    .feat:is([data-feat-state="upcoming"], [data-feat-state="planned"]) .feat-badge {
+        border-style: dashed;
+        border-color: var(--border-soft);
+        background: transparent;
+        box-shadow: none;
+        color: var(--quiet-ink);
+        text-shadow: none;
+    }
+
+    .feat:is([data-feat-state="upcoming"], [data-feat-state="planned"]) select.input {
+        font-size: 0.9rem;
+        color: var(--quiet-ink);
+    }
+
+    /* (fiche verrouillée : pas de chevron du tout, voir plus haut) */
+    .feat:is([data-feat-state="upcoming"], [data-feat-state="planned"]) select.input:not(:disabled) {
+        background-image:
+            linear-gradient(to top right, transparent 42%, var(--gold-soft) 42% 58%, transparent 58%),
+            linear-gradient(to top left, transparent 42%, var(--gold-soft) 42% 58%, transparent 58%);
+    }
+
+    .feat[data-feat-state="upcoming"] + .feat[data-feat-state="upcoming"] {
+        margin-top: -4px;
+    }
+
+    /* Don prévu en avance : il reste lisible, mais signalé comme pas encore actif
+       (légende à l'encre d'accent, gain de caractéristique et description à l'encre calme,
+       liseré en pointillés au lieu du trait d'accent) */
+    .feat[data-feat-state="planned"] .feat-when {
+        color: var(--accent-ink);
+    }
+
+    .feat[data-feat-state="planned"] .feat-desc {
+        border-left-style: dashed;
+        border-left-color: var(--gold-soft);
+        color: var(--quiet-ink);
+        font-size: 0.88rem;
+    }
+
+    /* Fiche verrouillée : plus d'invitation à cliquer, le cadre devient un simple filet */
+    [data-locked="true"] .feat[data-feat-state="pending"] select.input:disabled {
+        border-style: dashed;
+        border-color: var(--gold-soft);
+    }
+}
+
 /* ---------- Onglet 3 : compétences & Odyssée ---------- */
 
+/* Légende « maîtrise / expertise », juste au-dessus des compétences : encre calme, comme
+   les compétences sans maîtrise (lisible même sur une fiche très transparente) */
 .legend {
     display: flex;
     align-items: center;
     gap: 6px;
     margin: 0 0 8px;
     font-size: 0.9rem;
+    color: var(--quiet-ink);
 }
 
 .skills {
@@ -962,6 +1103,56 @@ fieldset.inline-checks {
     font-variant-numeric: lining-nums;
     text-align: right;
     color: var(--number);
+}
+
+/* Lecture en un coup d'œil (data-rank posé par sheet.js) :
+   - maîtrisée : nom en demi-gras, bonus à l'encre d'accent, ligne à peine dorée ;
+   - experte : un cran au-dessus (lueur un peu plus franche, bonus souligné d'un filet d'or) ;
+   - sans maîtrise : nom et bonus plus calmes (graisse normale, encre calme), toujours lisibles.
+   La ligne déborde de 4 px de chaque côté pour que la lueur ne colle pas aux cases. */
+.skill-row {
+    margin: 0 -4px;
+    padding: 0 4px;
+    border-radius: 4px;
+}
+
+.skill-row:is([data-rank="proficient"], [data-rank="expertise"]) .skill-name {
+    font-weight: 600;
+}
+
+.skill-row[data-rank="none"] .skill-bonus {
+    font-weight: 400;
+}
+
+.skill-row[data-rank="expertise"] .skill-bonus {
+    text-decoration: underline 1px var(--gold);
+    text-underline-offset: 3px;
+}
+
+@media screen {
+    .skill-row {
+        transition: background-color 0.25s ease;
+    }
+
+    .skill-row[data-rank="proficient"] {
+        background-color: var(--skill-prof-tint);
+    }
+
+    .skill-row[data-rank="expertise"] {
+        background-color: var(--skill-exp-tint);
+    }
+
+    .skill-row:is([data-rank="proficient"], [data-rank="expertise"]) .skill-name {
+        color: var(--text);
+    }
+
+    .skill-row:is([data-rank="proficient"], [data-rank="expertise"]) .skill-bonus {
+        color: var(--accent-ink);
+    }
+
+    .skill-row[data-rank="none"] :is(.skill-name, .skill-bonus) {
+        color: var(--quiet-ink);
+    }
 }
 
 .skills-extra {
@@ -1136,8 +1327,13 @@ fieldset.inline-checks {
         gap: 10px;
     }
 
+    /* Colonne plus étroite : marges latérales réduites, le nom garde une taille lisible */
+    .ability {
+        padding-inline: 2px;
+    }
+
     .ability .label {
-        font-size: 0.56rem;
+        font-size: 0.66rem;
     }
 
     .two-cols {
@@ -1261,7 +1457,9 @@ fieldset.inline-checks {
     .tab,
     .tab .icon,
     .round-check,
-    .rich {
+    .rich,
+    .skill-row,
+    .feat select.input {
         transition: none;
     }
 }
