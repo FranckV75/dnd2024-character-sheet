@@ -132,7 +132,7 @@ function openShortRest(store) {
 
     openModal({
         title: 'Repos court (1 h)',
-        icon: 'sun',
+        icon: 'hourglass',
         body,
         actions: [
             { label: 'Annuler' },
@@ -186,7 +186,7 @@ function showShortRestSummary({ summary, rollText }, conMod) {
 
     openModal({
         title: 'Repos court terminé',
-        icon: 'sun',
+        icon: 'hourglass',
         body: el('ul', { class: 'rest-summary' },
             lines.map(([text, name]) => iconLine(text, name)),
             hint && iconLine(hint, 'sparkle', 'muted')),
@@ -260,7 +260,7 @@ export function initRest(ctx) {
     });
     // Une icône par repos : soleil (courte pause dans la journée), lit (la nuit) ;
     // la lune est celle du titre de la section
-    setIconLabel(shortButton, 'sun', 'Repos court (1 h)');
+    setIconLabel(shortButton, 'hourglass', 'Repos court (1 h)');
     setIconLabel(longButton, 'bed', 'Repos long (8 h)');
     container.replaceChildren(el('div', { class: 'rest-actions' }, shortButton, longButton), hint);
 

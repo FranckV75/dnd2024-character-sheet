@@ -163,7 +163,7 @@ export function initToolbar({ store, setStatus }) {
 function openImportModal(store, setStatus) {
     const message = el('p', { class: 'toolbar-modal-msg', role: 'alert' });
     const showError = (text) => {
-        message.textContent = `⚠️ ${text}`;
+        message.replaceChildren(icon('warning'), ` ${text}`);
         message.classList.add('is-error');
     };
 
@@ -195,9 +195,10 @@ function openImportModal(store, setStatus) {
         }
     });
     const chooseButton = el('button', {
-        type: 'button', class: 'btn btn-primary', text: '📂 Choisir un fichier .json…',
+        type: 'button', class: 'btn btn-primary',
         on: { click: () => fileInput.click() }
     });
+    setIconLabel(chooseButton, 'import', 'Choisir un fichier .json…');
 
     // (b) Texte collé
     const pasteArea = el('textarea', {
@@ -299,7 +300,7 @@ function openExportModal(store, setStatus) {
         if (navigator.clipboard?.writeText) {
             try {
                 await navigator.clipboard.writeText(json);
-                say('✔ Fiche copiée dans le presse-papiers. Collez-la où vous voulez (mail, notes…).');
+                say('Fiche copiée dans le presse-papiers. Collez-la où vous voulez (mail, notes…).');
                 setStatus('Fiche copiée dans le presse-papiers');
                 return;
             } catch {
@@ -314,7 +315,7 @@ function openExportModal(store, setStatus) {
             copied = false;
         }
         if (copied) {
-            say('✔ Fiche copiée dans le presse-papiers.');
+            say('Fiche copiée dans le presse-papiers.');
             setStatus('Fiche copiée dans le presse-papiers');
         } else {
             say('La copie automatique est bloquée par le navigateur : le texte est sélectionné ci-dessous, '
@@ -323,8 +324,11 @@ function openExportModal(store, setStatus) {
     };
 
     const downloadButton = el('button', {
-        type: 'button', class: 'btn btn-primary', text: '⬇️ Télécharger', on: { click: download }
+        type: 'button', class: 'btn btn-primary', on: { click: download }
     });
+    setIconLabel(downloadButton, 'export', 'Télécharger');
+    const copyButton = el('button', { type: 'button', class: 'btn', on: { click: copy } });
+    setIconLabel(copyButton, 'scroll', 'Copier dans le presse-papiers');
 
     close = openModal({
         title: '⬇️ Exporter la fiche',
@@ -339,7 +343,7 @@ function openExportModal(store, setStatus) {
                 el('h3', { class: 'toolbar-option-title', text: 'Ou copier le texte de la fiche' }),
                 el('p', { class: 'toolbar-modal-note', text: 'Utile sur tablette quand le téléchargement est bloqué : le texte pourra être recollé dans « Importer ».' }),
                 el('div', { class: 'toolbar-option-row' },
-                    el('button', { type: 'button', class: 'btn', text: '📋 Copier dans le presse-papiers', on: { click: copy } })),
+                    copyButton),
                 fallback),
             message
         ],

@@ -469,6 +469,10 @@ body.cinema #app-bar #view-controls {
     color: var(--ko);
 }
 
+.modal-body .toolbar-modal-msg .icon {
+    vertical-align: -2px;
+}
+
 /* Champ fichier masqué visuellement mais toujours actionnable (Safari iOS) */
 .toolbar-file-input {
     position: absolute;
