@@ -186,6 +186,36 @@ select.value-md {
     display: none;
 }
 
+/* Valeur calculée qu'on peut remplacer par une saisie (perception passive) : le bouton est
+   invisible, seule la valeur s'affiche, à l'identique des valeurs voisines */
+.value-switch {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: text;
+}
+
+.value-switch:disabled {
+    cursor: default;
+}
+
+.value-switch[hidden] {
+    display: none;
+}
+
+/* Fiche déverrouillée : repère de saisie au survol, comme un champ */
+@media (hover: hover) {
+    .value-switch:not(:disabled):hover {
+        box-shadow: inset 0 -1px 0 var(--border-soft);
+    }
+}
+
 /* Cases rondes (jamais ovales : aspect-ratio fixé) : cerclées d'or, légèrement bombées ;
    cochées, une perle dorée avec son reflet et un léger halo */
 .round-check {
@@ -848,6 +878,19 @@ fieldset.inline-checks {
     width: 64px;
 }
 
+/* Épuisement élevé (sheet.js, data-severity) : orange dès le niveau 3, rouge dès le niveau 5 */
+.fatigue output[data-severity] {
+    font-weight: 700;
+}
+
+.fatigue output[data-severity="warning"] {
+    color: var(--warn);
+}
+
+.fatigue output[data-severity="danger"] {
+    color: var(--ko);
+}
+
 /* ---------- Tableaux ---------- */
 
 .table-scroll {
@@ -884,6 +927,7 @@ fieldset.inline-checks {
     line-height: 1.25;
     vertical-align: top;
     overflow-wrap: break-word;
+    -webkit-hyphens: auto;
     hyphens: auto;
 }
 

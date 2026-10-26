@@ -13,10 +13,22 @@
 import { DD_RULES } from '../data/dd-rules.js';
 import { EQUIPMENT_DATA } from '../data/equipment.js';
 import { ABILITY_IDS } from '../data/constants.js';
+import { deriveCharacter, hitDieForClass } from '../rules/character.js';
+import { MAX_SLOTS_PER_LEVEL, SPELL_LEVELS } from '../rules/spells.js';
 import {
     createDefaultCharacter, PLAIN_TEXT_FIELDS, BOOLEAN_FIELDS,
     EMPTY_WEAPON, EMPTY_SPELL, EMPTY_ARMOR
 } from './schema.js';
+
+/**
+ * Sauvegarde jamais réenregistrée par la v4 (fiche v3 du navigateur, fichier ou ligne en
+ * ligne écrits par l'ancienne version) : la v4 y ajoute toujours la clé spell_slots_state.
+ * @param {*} raw - données brutes, avant migration
+ * @returns {boolean}
+ */
+export function isV3Save(raw) {
+    return Boolean(raw) && typeof raw === 'object' && !Array.isArray(raw) && !('spell_slots_state' in raw);
+}
 
 /**
  * Retire les balises HTML et décode les entités courantes (champs texte simples).
@@ -155,6 +167,21 @@ export function migrateCharacter(input) {
         character.hd_current = spent ? spent[0] : '0';
         report.push(`Dés de vie utilisés repris de l'ancien champ (« ${raw.hd_spent} » → ${character.hd_current}).`);
     }
+    // La v3 imposait le dé de vie de la classe à chaque ouverture : une fiche v3 enregistrée
+    // juste après un import pouvait garder un autre dé (« d8 » pour un Barbare). Même règle,
+    // appliquée seulement aux sauvegardes v3 : un dé choisi ensuite dans la v4 est respecté.
+    if (isV3Save(raw)) {
+        const classDie = hitDieForClass(character.char_class);
+        if (classDie && character.hd_type !== classDie) {
+            report.push(`Dé de vie aligné sur la classe (${character.hd_type || 'aucun'} → ${classDie}), comme le faisait la v3.`);
+            character.hd_type = classDie;
+        }
+    }
+    // Dés utilisés : toujours un nombre (une liste v3 périmée pouvait enregistrer '')
+    if (!/^\d+$/.test(character.hd_current)) {
+        if (character.hd_current) report.push(`Dés de vie utilisés illisibles (« ${character.hd_current} ») : remis à 0.`);
+        character.hd_current = '0';
+    }
 
     // 6. Ancien champ des maîtrises d'armes
     if (raw.profs_other && !raw.profs_weapons) {
@@ -178,4 +205,68 @@ export function migrateCharacter(input) {
     character.dynamic_spells = Array.isArray(raw.dynamic_spells) ? raw.dynamic_spells.map(migrateSpell) : [];
 
     return { character, report };
+}
+
+/** Clés du navigateur où la v3 gardait l'état de jeu hors de la fiche */
+export const V3_DEVICE_KEYS = Object.freeze({ spellSlots: 'spell_slots', combatBuffs: 'combat_buffs' });
+
+function parseObject(text) {
+    try {
+        const value = JSON.parse(text || 'null');
+        return value && typeof value === 'object' && !Array.isArray(value) ? value : null;
+    } catch {
+        return null;
+    }
+}
+
+const isEmptyObject = (value) => !value || typeof value !== 'object' || Object.keys(value).length === 0;
+
+function toCount(value) {
+    const n = typeof value === 'number' ? value : parseInt(value, 10);
+    return Number.isFinite(n) && n >= 0 ? Math.min(MAX_SLOTS_PER_LEVEL, Math.floor(n)) : null;
+}
+
+/**
+ * Reprend l'état de jeu que la v3 gardait à part dans le navigateur (hors de la fiche) :
+ *  - 'spell_slots'  { used_N, max_N } : emplacements utilisés et maximum réglé avec + / − ;
+ *  - 'combat_buffs' { rage, sneakAttack, hunterMark } : bonus de combat actifs.
+ * Ces clés appartenaient au navigateur : elles ne sont reprises que dans la fiche v3 qui y
+ * était ouverte, et seulement si la fiche n'a pas déjà son propre état (format v4 :
+ * spell_slots_state { "N": { max?, used } }, max absent = valeur du manuel).
+ * @param {Object} character - fiche déjà migrée
+ * @param {{ spellSlots?: string|null, combatBuffs?: string|null }} legacy - textes JSON lus dans le navigateur
+ * @returns {{ character: Object, report: string[] }} nouvelle fiche (l'ancienne n'est pas modifiée)
+ */
+export function importV3DeviceState(character, { spellSlots = null, combatBuffs = null } = {}) {
+    const report = [];
+    let next = character;
+
+    const slots = parseObject(spellSlots);
+    if (slots && isEmptyObject(character.spell_slots_state)) {
+        const rulebook = deriveCharacter(character).spellSlots || {};
+        const state = {};
+        for (const level of SPELL_LEVELS.slice(1)) {
+            const max = toCount(slots[`max_${level}`]);
+            const book = toCount(rulebook[level]) ?? 0;
+            const used = Math.min(toCount(slots[`used_${level}`]) ?? 0, max ?? book);
+            const entry = { used };
+            if (max !== null && max !== book) entry.max = max;
+            if (entry.max !== undefined || used > 0) state[level] = entry;
+        }
+        if (Object.keys(state).length) {
+            next = { ...next, spell_slots_state: state };
+            report.push('Emplacements de sorts repris de l\'ancienne version (utilisés et nombre réglé à la main).');
+        }
+    }
+
+    const buffs = parseObject(combatBuffs);
+    if (buffs && isEmptyObject(character.combat_buffs)) {
+        const active = Object.fromEntries(Object.entries(buffs).filter(([key, value]) => /^[A-Za-z]+$/.test(key) && value === true));
+        if (Object.keys(active).length) {
+            next = { ...next, combat_buffs: active };
+            report.push('Bonus de combat actifs repris de l\'ancienne version.');
+        }
+    }
+
+    return { character: next, report };
 }

@@ -346,6 +346,7 @@
     /* Les mots ne sont coupés que s'ils sont plus longs que toute la colonne */
     overflow-wrap: break-word;
     word-break: normal;
+    -webkit-hyphens: auto;
     hyphens: auto;
 }
 

@@ -31,17 +31,41 @@ export function attachAutocomplete(input, { getItems, onSelect, minChars = 2, ma
     input.setAttribute('autocomplete', 'off');
 
     function hide() {
+        followViewport(false);
         list.hidden = true;
         input.setAttribute('aria-expanded', 'false');
         input.removeAttribute('aria-activedescendant');
         active = -1;
     }
 
+    /**
+     * Sous le champ, ou au-dessus s'il n'y a pas la place en dessous dans la partie visible de
+     * l'écran (clavier virtuel ouvert sur tablette) et qu'il y en a davantage au-dessus.
+     * La liste doit être affichée (hidden = false) pour être mesurée.
+     */
     function position() {
         const rect = input.getBoundingClientRect();
         list.style.left = `${rect.left + window.scrollX}px`;
-        list.style.top = `${rect.bottom + window.scrollY}px`;
         list.style.minWidth = `${Math.max(rect.width, 220)}px`;
+        const visual = window.visualViewport;
+        const viewTop = visual ? visual.offsetTop : 0;
+        const viewBottom = viewTop + (visual ? visual.height : window.innerHeight);
+        const height = list.offsetHeight;
+        const below = viewBottom - rect.bottom;
+        const above = rect.top - viewTop;
+        // La liste a 4 px de marge haute (components.css) : au-dessus, elle s'arrête 4 px avant le champ
+        const top = height > below && above > below ? rect.top - height - 8 : rect.bottom;
+        list.style.top = `${top + window.scrollY}px`;
+    }
+
+    // Le clavier virtuel s'ouvre ou se ferme, la page défile : la liste suit le champ
+    const reposition = () => { if (!list.hidden) position(); };
+    function followViewport(on) {
+        const visual = window.visualViewport;
+        if (!visual) return;
+        const method = on ? 'addEventListener' : 'removeEventListener';
+        visual[method]('resize', reposition);
+        visual[method]('scroll', reposition);
     }
 
     function highlight(index) {
@@ -71,11 +95,14 @@ export function attachAutocomplete(input, { getItems, onSelect, minChars = 2, ma
             on: { mousedown: (e) => { e.preventDefault(); choose(i); } }
         }, el('span', { class: 'autocomplete-label', text: item.label }),
         item.detail ? el('span', { class: 'autocomplete-detail', text: item.detail }) : null)));
-        position();
         // Nom de la liste relu à chaque ouverture : le libellé du champ peut changer (renumérotation)
         const inputName = input.getAttribute('aria-label') || input.labels?.[0]?.textContent?.trim() || '';
         list.setAttribute('aria-label', inputName ? `Suggestions : ${inputName}` : 'Suggestions');
         list.hidden = false;
+        position();
+        // La saisie peut déplacer le champ (ligne créée ou agrandie juste après) : position revue à l'image suivante
+        requestAnimationFrame(reposition);
+        followViewport(true);
         input.setAttribute('aria-expanded', 'true');
         active = -1;
     }
@@ -84,7 +111,8 @@ export function attachAutocomplete(input, { getItems, onSelect, minChars = 2, ma
         if (list.hidden) return;
         if (event.key === 'ArrowDown') { event.preventDefault(); highlight(Math.min(items.length - 1, active + 1)); }
         else if (event.key === 'ArrowUp') { event.preventDefault(); highlight(Math.max(0, active - 1)); }
-        else if (event.key === 'Enter' && active >= 0) { event.preventDefault(); choose(active); }
+        // Entrée : la suggestion surlignée, ou la seule proposée (comme la v3)
+        else if (event.key === 'Enter' && (active >= 0 || items.length === 1)) { event.preventDefault(); choose(Math.max(0, active)); }
         else if (event.key === 'Escape') { event.preventDefault(); hide(); }
     };
 
@@ -97,6 +125,7 @@ export function attachAutocomplete(input, { getItems, onSelect, minChars = 2, ma
         input.removeEventListener('input', show);
         input.removeEventListener('keydown', onKey);
         input.removeEventListener('blur', hide);
+        followViewport(false);
         list.remove();
     };
 }

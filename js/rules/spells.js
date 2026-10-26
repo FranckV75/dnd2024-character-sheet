@@ -96,14 +96,16 @@ export function cellText(value) {
 /**
  * Description d'un sort de la base (HTML simple : <br>, <strong>, <a>...) en texte brut,
  * avec des retours à la ligne. Le résultat s'affiche avec textContent, jamais en HTML.
+ * Tableaux (Augure, Confusion, Téléportation…) : une ligne par rangée, cases séparées par « · ».
  * @param {string} html
  * @returns {string}
  */
 export function descToPlainText(html) {
     if (!html) return '';
     const text = String(html)
+        .replace(/<\/t[dh]>\s*(?=<t[dh][\s>])/gi, ' · ')
         .replace(/<br\s*\/?>/gi, '\n')
-        .replace(/<\/(p|div|li|tr|h[1-6])>/gi, '\n')
+        .replace(/<\/(p|div|li|tr|table|h[1-6])>/gi, '\n')
         .replace(/<li[^>]*>/gi, '• ')
         .replace(/<[^>]*>/g, '');
     return decodeEntities(text)
@@ -218,15 +220,19 @@ export function findSpellByName(spells, name) {
 
 /**
  * Remplit une ligne du tableau à partir d'un sort de la base.
- * Les clés restent exactement celles de la v3 ; la note et les clés inconnues sont conservées.
+ * Les clés restent exactement celles de la v3 ; les clés inconnues sont conservées, ainsi que
+ * la note quand elle est remplie. Note vide : nom anglais du sort (comme la v3), pratique pour
+ * le retrouver dans un manuel en anglais.
  * @param {Object} spell - sort de la base
  * @param {Object} [row] - ligne existante de dynamic_spells
  * @returns {Object} nouvelle ligne
  */
 export function spellToRow(spell, row = {}) {
     const level = parseInt(spell?.level, 10);
+    const english = plainText(spell?.vo);
     return {
         ...row,
+        ...(english && !plainText(row?.note) ? { note: english } : {}),
         lvl: String(Number.isFinite(level) && level >= 0 && level <= 9 ? level : 0),
         name: spellDisplayName(spell),
         school: String(spell?.school || ''),
@@ -479,13 +485,17 @@ export function slotLevels(spellSlots, classSlug = '', state = {}) {
 }
 
 /**
- * Premier niveau de sort (1 à 9) qui n'a pas encore de suivi d'emplacements.
- * @param {Array<{ level: string }>} shown - résultat de slotLevels()
- * @returns {string} - '' si les neuf niveaux sont déjà suivis
+ * Niveau de sort (1 à 9) proposé pour un suivi d'emplacements ajouté à la main : le premier
+ * niveau sans suivi au-dessus des emplacements du manuel (Arcanum mystique d'un Occultiste
+ * de niveau 11+, multiclasse, Chevalier occulte sans emplacement au manuel…).
+ * @param {Array<{ level: string, rulebook?: number }>} shown - résultat de slotLevels()
+ * @returns {string} - '' si aucun niveau n'est disponible
  */
 export function nextFreeSlotLevel(shown) {
-    const used = new Set((shown || []).map(s => String(s.level)));
-    return SPELL_LEVELS.slice(1).find(level => !used.has(level)) || '';
+    const list = shown || [];
+    const used = new Set(list.map(s => String(s.level)));
+    const floor = Math.max(0, ...list.filter(s => (s.rulebook ?? 0) > 0).map(s => Number(s.level)));
+    return SPELL_LEVELS.slice(1).find(level => Number(level) > floor && !used.has(level)) || '';
 }
 
 // ---------------------------------------------------------------------------

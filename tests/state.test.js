@@ -6,7 +6,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { createDefaultCharacter, BOOLEAN_FIELDS, PLAIN_TEXT_FIELDS } from '../js/state/schema.js';
-import { migrateCharacter, findRulebookWeapon, stripHTML } from '../js/state/migrate.js';
+import { migrateCharacter, findRulebookWeapon, stripHTML, importV3DeviceState } from '../js/state/migrate.js';
 import { createStore } from '../js/state/store.js';
 import {
     loadLocal, saveLocal, serializeCharacter, parseCharacterFile, exportFileName,
@@ -167,6 +167,78 @@ describe('Migration : cas limites', () => {
 
     test('stripHTML décode les entités', () => {
         assert.equal(stripHTML('<b>A&amp;B</b>&nbsp;'), 'A&B');
+    });
+});
+
+describe('Bascule v3 → v4 : dés de vie et état de jeu gardé à part par la v3', () => {
+    test('Fiche v3 : dé de vie aligné sur la classe (la v3 le faisait à chaque ouverture)', () => {
+        const { character, report } = migrateCharacter({ char_class: 'Barbare', char_level: '3', hd_type: 'd8', hd_current: '' });
+        assert.equal(character.hd_type, 'd12');
+        assert.equal(character.hd_current, '0', 'dés utilisés vides → 0');
+        assert.ok(report.some(line => line.includes('aligné sur la classe')));
+        assert.deepEqual(migrateCharacter(character).character, character, 'idempotent');
+    });
+
+    test('Fiche v4 : le dé de vie choisi est respecté', () => {
+        const { character } = migrateCharacter({ char_class: 'Barbare', hd_type: 'd8', hd_current: '2', spell_slots_state: {} });
+        assert.equal(character.hd_type, 'd8');
+        assert.equal(character.hd_current, '2');
+    });
+
+    test('Classe inconnue ou absente : dé de vie inchangé', () => {
+        assert.equal(migrateCharacter({ char_class: 'Inventeur', hd_type: 'd8' }).character.hd_type, 'd8');
+        assert.equal(migrateCharacter({ hd_type: 'd10' }).character.hd_type, 'd10');
+    });
+
+    test('Emplacements v3 { used_N, max_N } → spell_slots_state ; maximum du manuel non recopié', () => {
+        const wizard = migrateCharacter({ char_class: 'Magicien', char_level: '5' }).character; // manuel : 4 / 3 / 2
+        const { character, report } = importV3DeviceState(wizard, {
+            spellSlots: JSON.stringify({ used_1: 2, used_2: 1, max_3: 3, max_2: 3, used_4: 0 })
+        });
+        assert.deepEqual(character.spell_slots_state, { 1: { used: 2 }, 2: { used: 1 }, 3: { max: 3, used: 0 } });
+        assert.equal(report.length, 1);
+        assert.deepEqual(wizard.spell_slots_state, {}, 'fiche d\'origine intacte');
+    });
+
+    test('Emplacements v3 : utilisés bornés au maximum, niveau retiré à 0 conservé', () => {
+        const fighter = migrateCharacter({ char_class: 'Guerrier', char_level: '5' }).character;
+        const { character } = importV3DeviceState(fighter, { spellSlots: JSON.stringify({ max_1: 2, used_1: 5, max_2: 0 }) });
+        assert.deepEqual(character.spell_slots_state, { 1: { max: 2, used: 2 } });
+    });
+
+    test('Bonus de combat v3 actifs repris ; inactifs ou valeurs étranges ignorés', () => {
+        const korgul = migrateCharacter({ char_class: 'Barbare' }).character;
+        const { character } = importV3DeviceState(korgul, {
+            combatBuffs: JSON.stringify({ rage: true, sneakAttack: false, hunterMark: 'oui', 'x y': true })
+        });
+        assert.deepEqual(character.combat_buffs, { rage: true });
+        assert.deepEqual(importV3DeviceState(korgul, { combatBuffs: JSON.stringify({ rage: false }) }).character, korgul);
+    });
+
+    test('État déjà présent dans la fiche, ou clés illisibles : rien n\'est repris', () => {
+        const own = migrateCharacter({ char_class: 'Magicien', char_level: '5', spell_slots_state: { 1: { used: 1 } }, combat_buffs: { rage: false } }).character;
+        const kept = importV3DeviceState(own, { spellSlots: '{"used_1":3}', combatBuffs: '{"rage":true}' });
+        assert.equal(kept.character, own);
+        assert.deepEqual(kept.report, []);
+        const blank = createDefaultCharacter();
+        assert.equal(importV3DeviceState(blank, { spellSlots: '{pas du json', combatBuffs: '[true]' }).character, blank);
+    });
+
+    test('loadLocal : reprise seulement pour une fiche encore au format v3 ; anciennes clés laissées en place', () => {
+        const storage = memoryStorage();
+        storage.setItem('dd2024_char', JSON.stringify({ char_name: 'Iria', char_class: 'Magicien', char_level: '5' }));
+        storage.setItem('spell_slots', JSON.stringify({ used_1: 2 }));
+        storage.setItem('combat_buffs', JSON.stringify({ rage: true }));
+        const first = loadLocal(storage).character;
+        assert.deepEqual(first.spell_slots_state, { 1: { used: 2 } });
+        assert.deepEqual(first.combat_buffs, { rage: true });
+        assert.ok(storage.data.has('spell_slots') && storage.data.has('combat_buffs'));
+
+        // Une fois enregistrée par la v4, la fiche garde son propre état (les anciennes clés ne comptent plus)
+        saveLocal({ ...first, spell_slots_state: {}, combat_buffs: {} }, storage);
+        const later = loadLocal(storage).character;
+        assert.deepEqual(later.spell_slots_state, {});
+        assert.deepEqual(later.combat_buffs, {});
     });
 });
 

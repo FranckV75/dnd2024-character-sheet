@@ -6,7 +6,8 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-    decideOnCheck, sameVersion, cloudName, isRename, friendlyError, fingerprint, canonicalJSON
+    decideOnCheck, sameVersion, cloudName, isRename, friendlyError, fingerprint, canonicalJSON,
+    isLegacyRowName, withoutV4State, newerVersion
 } from '../js/cloud/sync.js';
 import {
     listCharacters, fetchCharacter, insertCharacter, updateIfUnchanged, deleteCharacter, deleteIfUnchanged
@@ -157,5 +158,32 @@ describe('Accès à la table characters', () => {
 
     test('Erreurs réseau traduites', async () => {
         await assert.rejects(listCharacters(fakeSupabase(rows(), { fail: 'select' }), U), /pas de connexion Internet/);
+    });
+});
+
+describe('Bascule depuis la v3 : noms, état de jeu, dates', () => {
+    test('Nom de ligne v3 écrit autrement (mêmes lettres, espaces différents)', () => {
+        assert.equal(isLegacyRowName('Korgul B rise-Crâne', 'Korgul Brise-Crâne'), true);
+        assert.equal(isLegacyRowName('Kor gul', 'Korgul'), true);
+        assert.equal(isLegacyRowName('Korgul', 'Korgul'), false, 'même nom : rien à faire');
+        assert.equal(isLegacyRowName('Iria', 'Korgul'), false);
+        assert.equal(isLegacyRowName('', 'Korgul'), false);
+        assert.equal(isLegacyRowName('Korgul', ''), false);
+    });
+
+    test("Comparaison sans l'état de jeu propre à la v4", () => {
+        const v4 = { char_name: 'Korgul', hp_current: '7', combat_buffs: { rage: true }, spell_slots_state: { 1: { used: 1 } } };
+        assert.deepEqual(withoutV4State(v4), { char_name: 'Korgul', hp_current: '7' });
+        assert.equal(v4.combat_buffs.rage, true, "objet d'origine intact");
+        assert.deepEqual(withoutV4State(null), {});
+    });
+
+    test("Version la plus récente : plus de 5 s d'écart (règle de la v3)", () => {
+        assert.equal(newerVersion(T1, T0), 'cloud');
+        assert.equal(newerVersion(T0, T1), 'local');
+        assert.equal(newerVersion('2026-10-24T10:00:04.000Z', T1), null, 'à moins de 5 s : même version');
+        assert.equal(newerVersion('2026-10-24T10:00:00+00:00', T1), null, 'formats « Z » et « +00:00 »');
+        assert.equal(newerVersion(null, T1), null);
+        assert.equal(newerVersion(T1, 'pas une date'), null);
     });
 });

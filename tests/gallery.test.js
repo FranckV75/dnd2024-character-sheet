@@ -16,7 +16,11 @@ import {
     fitWithin,
     portableBackground,
     toVisualPrefs,
-    fromVisualPrefs
+    fromVisualPrefs,
+    legacySiteImage,
+    needsObjectUrl,
+    dataImageBytes,
+    CSS_VARIABLE_SAFE_CHARS
 } from '../js/rules/gallery.js';
 import { DEFAULT_BGS } from '../js/data/constants.js';
 
@@ -85,6 +89,17 @@ describe('resolveBackground', () => {
     test('image de l\'appareil gardée telle quelle', () => {
         assert.equal(resolveBackground(PNG, opts), PNG);
     });
+    test("ancienne adresse d'une image fournie (racine du site v3) → image fournie", () => {
+        const site = 'https://franckv75.github.io/dnd2024-character-sheet/';
+        assert.equal(resolveBackground(`${site}Fond_Fafnir.webp`, opts), `${assetBase}Fond_Fafnir.webp`);
+        assert.equal(resolveBackground(`${site}Fond_Odyss%C3%A9e.webp`, opts), `${assetBase}Fond_Odyss%C3%A9e.webp`);
+        assert.equal(legacySiteImage(`${site}Fond_Iria.webp`, DEFAULT_BGS), 'Fond_Iria.webp');
+        assert.equal(legacySiteImage(`${site}img/bg_hydra.png`, DEFAULT_BGS), '', 'pas une image fournie');
+        assert.equal(legacySiteImage(`${site}Autre.webp`, DEFAULT_BGS), '');
+        assert.equal(legacySiteImage('https://exemple.fr/dnd2024-character-sheet/Fond_Iria.webp', DEFAULT_BGS), '');
+        // Une autre adresse reste une adresse ordinaire
+        assert.equal(resolveBackground(`${site}assets/backgrounds/Fond_Iria.webp`, opts), `${site}assets/backgrounds/Fond_Iria.webp`);
+    });
     test('valeurs refusées', () => {
         for (const bad of ['', '   ', 'none', 'javascript:alert(1)', 'data:text/html;base64,PHA+',
             'img/x', '/etc/x.png', 'ftp://exemple.fr/a.png', 'url(x)', 'https://', null, undefined, 42, {}]) {
@@ -150,5 +165,23 @@ describe('_visual_prefs (format v3)', () => {
         assert.deepEqual(fromVisualPrefs({ galleryBg: null }, isValid), {});
         assert.equal(fromVisualPrefs(null, isValid), null);
         assert.equal(fromVisualPrefs('x', isValid), null);
+    });
+});
+
+describe("Très grande image de l'appareil (enregistrée par la v3)", () => {
+    test('au-delà de 2 000 000 caractères : affichée par une adresse blob:', () => {
+        const big = `data:image/png;base64,${'A'.repeat(CSS_VARIABLE_SAFE_CHARS)}`;
+        assert.equal(needsObjectUrl(big), true);
+        assert.equal(needsObjectUrl(PNG), false);
+        assert.equal(needsObjectUrl(`https://exemple.fr/${'a'.repeat(CSS_VARIABLE_SAFE_CHARS)}`), false);
+        assert.equal(needsObjectUrl(null), false);
+        assert.ok(CSS_VARIABLE_SAFE_CHARS < 2_097_152, 'sous la limite de Chrome (2 Mio)');
+    });
+    test("contenu binaire de l'image", () => {
+        const out = dataImageBytes(PNG);
+        assert.equal(out.type, 'image/png');
+        assert.deepEqual([...out.bytes.slice(0, 4)], [0x89, 0x50, 0x4e, 0x47]);
+        assert.equal(dataImageBytes('https://exemple.fr/a.png'), null);
+        assert.equal(dataImageBytes('data:image/png;base64,A'), null, 'base64 invalide');
     });
 });

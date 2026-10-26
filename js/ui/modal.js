@@ -49,10 +49,13 @@ function iconAndText({ text, icon: name }) {
 }
 
 /**
- * @param {{ title: string, icon?: string, body?: Node|Node[], actions?: Array<{label: string, icon?: string, primary?: boolean, danger?: boolean, onClick?: () => (void|boolean)}>, wide?: boolean, onClose?: () => void }} options
+ * Le focus va au premier champ de la fenêtre, sinon au bouton principal. focusField: false le
+ * donne directement au bouton principal : sur tablette, focaliser un champ ouvre le clavier
+ * virtuel (inutile quand des boutons − / + suffisent, comme au repos court).
+ * @param {{ title: string, icon?: string, body?: Node|Node[], actions?: Array<{label: string, icon?: string, primary?: boolean, danger?: boolean, onClick?: () => (void|boolean)}>, wide?: boolean, focusField?: boolean, onClose?: () => void }} options
  * @returns {() => void} Fonction qui ferme la fenêtre
  */
-export function openModal({ title, icon, body = [], actions = [{ label: 'Fermer' }], wide = false, onClose }) {
+export function openModal({ title, icon, body = [], actions = [{ label: 'Fermer' }], wide = false, focusField = true, onClose }) {
     const previousFocus = document.activeElement;
     const titleId = `modal-title-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -110,7 +113,7 @@ export function openModal({ title, icon, body = [], actions = [{ label: 'Fermer'
     document.body.append(dialog);
     dialog.showModal();
 
-    const firstInput = dialog.querySelector('.modal-body input, .modal-body select, .modal-body textarea');
+    const firstInput = focusField ? dialog.querySelector('.modal-body input, .modal-body select, .modal-body textarea') : null;
     (firstInput || buttons.find(b => b.classList.contains('btn-primary')) || buttons[0])?.focus();
 
     return close;

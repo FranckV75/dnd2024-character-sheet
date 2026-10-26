@@ -7,10 +7,11 @@
 
 import { test, describe, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { createCloudSync, SYNC_KEY } from '../js/cloud/controller.js';
-import { fingerprint } from '../js/cloud/sync.js';
+import { createCloudSync, SYNC_KEY, ACTIVE_NAME_KEY } from '../js/cloud/controller.js';
+import { fingerprint, withoutV4State } from '../js/cloud/sync.js';
 import { createStore } from '../js/state/store.js';
 import { characterName } from '../js/state/persistence.js';
+import { migrateCharacter } from '../js/state/migrate.js';
 import { createDefaultCharacter } from '../js/state/schema.js';
 import { fakeSupabase } from './helpers/fake-supabase.js';
 
@@ -286,7 +287,8 @@ describe('Nouvelle fiche et import', () => {
         await t.runTimers();
         assert.equal(t.asked.at(-1).kind, 'exists');
         assert.equal(cloud(db, 'Korgul').data.char_level, '5');
-        assert.deepEqual(writes(db).map(w => w.op), ['insert']);
+        // La ligne existante est lue avant toute création : aucune écriture, aucune erreur 409
+        assert.deepEqual(writes(db), []);
     });
 
     test('Aucun envoi tant qu\'une question est ouverte', async () => {
@@ -662,5 +664,132 @@ describe('Robustesse', () => {
         await t.sync.open('Iria');
         await t.sync.remove('Iria');
         assert.ok(t.statuses.length > 0 && t.statuses.every(s => /Connectez-vous/.test(s)));
+    });
+});
+
+// -----------------------------------------------------------------------------
+// Bascule v3 → v4 : premier lancement de la v4 sur une fiche v3, onglet v3 resté ouvert.
+// Une fiche « v3 » n'a pas les clés propres à la v4 (combat_buffs, spell_slots_state).
+// -----------------------------------------------------------------------------
+const v3 = (name, extra = {}) => withoutV4State(sheet(name, extra));
+const fromV3 = (data) => migrateCharacter(data).character;
+/** Navigateur où la v3 était utilisée : nom exact de la ligne en ligne, aucun suivi v4 */
+const v3Storage = (rowName) => memoryStorage({ [ACTIVE_NAME_KEY]: rowName });
+
+describe('Bascule depuis la v3', () => {
+    const fancy = '<font>Korgul <i>B</i><span><i>rise-Crâne</i></span></font>';
+
+    test('Nouvelle fiche au nom d\'un personnage existant : lu d\'abord, aucune création refusée (pas d\'erreur 409)', async () => {
+        const db = fakeSupabase([row('Korgul', sheet('Korgul', { char_level: '5' }), T0)]);
+        const t = tab({ db });
+        await t.sync.setUser(U);
+        t.store.replace(sheet('Korgul'));
+        await t.runTimers();
+        assert.equal(t.asked[0].kind, 'exists');
+        assert.ok(!db.calls.some(c => c.op === 'insert'));
+    });
+
+    test('Nom mis en forme lu autrement par la v3, même contenu : ligne renommée, pas de doublon, pas de question', async () => {
+        const data = v3('', { char_name: fancy, hp_current: '9' });
+        const db = fakeSupabase([row('Korgul B rise-Crâne', data, T0)]);
+        const t = tab({ db, storage: v3Storage('Korgul B rise-Crâne'), character: fromV3(data) });
+        await t.sync.setUser(U);
+        assert.deepEqual(t.asked, []);
+        assert.deepEqual(db.table.map(r => r.name), ['Korgul Brise-Crâne']);
+        assert.equal(t.sync.getState().name, 'Korgul Brise-Crâne');
+        assert.equal(t.store.get().char_name, fancy, 'mise en forme du nom conservée');
+        assert.equal(cloud(db, 'Korgul Brise-Crâne').data.hp_current, '9');
+        t.store.update({ hp_current: '8' });
+        await t.runTimers();
+        assert.equal(cloud(db, 'Korgul Brise-Crâne').data.hp_current, '8', 'les modifications suivantes partent bien en ligne');
+    });
+
+    test('Nom lu autrement par la v3, contenu différent : question ; fermée → rien n\'est écrit', async () => {
+        const db = fakeSupabase([row('Korgul B rise-Crâne', v3('', { char_name: fancy, char_level: '5' }), T1)]);
+        const t = tab({ db, storage: v3Storage('Korgul B rise-Crâne'), character: fromV3(v3('', { char_name: fancy })), answers: [null] });
+        await t.sync.setUser(U);
+        assert.equal(t.asked[0].kind, 'exists');
+        assert.equal(t.asked[0].data.name, 'Korgul B rise-Crâne');
+        assert.deepEqual(writes(db), []);
+        assert.equal(t.sync.getState().detached, true);
+    });
+
+    test('Nom lu autrement par la v3, contenu différent : « ouvrir » charge la version en ligne sans écrire', async () => {
+        const db = fakeSupabase([row('Korgul B rise-Crâne', v3('', { char_name: fancy, char_level: '5' }), T1)]);
+        const t = tab({ db, storage: v3Storage('Korgul B rise-Crâne'), character: fromV3(v3('', { char_name: fancy })), answers: ['open'] });
+        await t.sync.setUser(U);
+        assert.equal(t.store.get().char_level, '5');
+        assert.equal(t.sync.getState().name, 'Korgul B rise-Crâne');
+        assert.deepEqual(writes(db), []);
+    });
+
+    test('Nom lu autrement par la v3, contenu différent : « remplacer » renomme avec la fiche de ce navigateur', async () => {
+        const db = fakeSupabase([row('Korgul B rise-Crâne', v3('', { char_name: fancy, char_level: '5' }), T0)]);
+        const t = tab({ db, storage: v3Storage('Korgul B rise-Crâne'), character: fromV3(v3('', { char_name: fancy })), answers: ['replace'] });
+        await t.sync.setUser(U);
+        assert.deepEqual(db.table.map(r => r.name), ['Korgul Brise-Crâne']);
+        assert.equal(cloud(db, 'Korgul Brise-Crâne').data.char_level, '1');
+    });
+
+    test('Nom identique : l\'indice v3 n\'est pas utilisé', async () => {
+        const data = v3('Korgul');
+        const db = fakeSupabase([row('Korgul', data, T0)]);
+        const t = tab({ db, storage: v3Storage('Korgul'), character: fromV3(data) });
+        await t.sync.setUser(U);
+        assert.deepEqual(t.asked, []);
+        assert.deepEqual(writes(db), []);
+        assert.equal(t.sync.getState().name, 'Korgul');
+    });
+
+    test('État de jeu v3 repris dans la fiche (emplacements, Rage) : liée sans question, puis complétée en ligne', async () => {
+        const data = v3('Korgul', { hp_current: '7' });
+        const db = fakeSupabase([row('Korgul', data, T0)]);
+        const local = { ...fromV3(data), combat_buffs: { rage: true }, spell_slots_state: { 1: { used: 2 } } };
+        const t = tab({ db, storage: v3Storage('Korgul'), character: local });
+        await t.sync.setUser(U);
+        assert.deepEqual(t.asked, []);
+        await t.runTimers();
+        assert.deepEqual(writes(db).map(w => w.op), ['update']);
+        assert.equal(cloud(db, 'Korgul').data.combat_buffs.rage, true);
+        assert.equal(cloud(db, 'Korgul').data.spell_slots_state['1'].used, 2);
+    });
+
+    test('Onglet v3 resté ouvert qui réécrit la fiche : jamais chargée en silence ; « garder ce navigateur » la rétablit', async () => {
+        const online = sheet('Korgul', { hp_current: '3', combat_buffs: { rage: true } });
+        const db = fakeSupabase([row('Korgul', online, T0)]);
+        const t = tab({ db, storage: linkedStorage(online), character: online, answers: ['local'] });
+        await t.sync.setUser(U);
+        db.touch('Korgul', U.id, v3('Korgul', { hp_current: '7' }), T1);   // enregistrement par la v3
+        await t.sync.check();                                                // retour sur l'onglet v4
+        assert.equal(t.asked[0].kind, 'conflict');
+        assert.equal(t.asked[0].data.legacy, true);
+        assert.equal(cloud(db, 'Korgul').data.hp_current, '3');
+        assert.equal(cloud(db, 'Korgul').data.combat_buffs.rage, true);
+        assert.equal(t.store.get().hp_current, '3');
+    });
+
+    test('Onglet v3 resté ouvert : question fermée → rien n\'est chargé ni écrit', async () => {
+        const online = sheet('Korgul', { hp_current: '3' });
+        const db = fakeSupabase([row('Korgul', online, T0)]);
+        const t = tab({ db, storage: linkedStorage(online), character: online, answers: [null] });
+        await t.sync.setUser(U);
+        db.touch('Korgul', U.id, v3('Korgul', { hp_current: '7' }), T1);
+        await t.sync.check();
+        assert.equal(t.store.get().hp_current, '3');
+        assert.deepEqual(writes(db), []);
+        assert.equal(t.sync.getState().detached, true);
+    });
+
+    test('Onglet v3 qui n\'a fait que perdre l\'état de jeu : remis en ligne sans question', async () => {
+        const online = sheet('Korgul', { combat_buffs: { rage: true }, spell_slots_state: { 2: { used: 1 } } });
+        const db = fakeSupabase([row('Korgul', online, T0)]);
+        const t = tab({ db, storage: linkedStorage(online), character: online });
+        await t.sync.setUser(U);
+        db.touch('Korgul', U.id, v3('Korgul'), T1);
+        await t.sync.check();
+        await t.runTimers();
+        assert.deepEqual(t.asked, []);
+        assert.equal(cloud(db, 'Korgul').data.combat_buffs.rage, true);
+        assert.equal(t.store.get().combat_buffs.rage, true);
     });
 });

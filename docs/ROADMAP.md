@@ -11,7 +11,36 @@ Chaque étape se termine par un jalon validé par Franck.
 | 4. Fonctionnalités   | Combat, dons, compétences, repos, grimoire, verrouillage, galerie, impression            | Validation par lots                                 | ✅ (validé par Franck)                             |
 | 5. Cloud             | Supabase (auth, roster, conflits) sur la même base que la v3                             | Synchronisation testée                              | ✅ (testé par Franck)                              |
 | 5 bis. Esthétique    | Passe « chic » de toute la fiche en 3 lots (détail ci-dessous)                           | Captures avant/après validées par Franck            | ✅ lots 1 à 3 faits (à valider par Franck)         |
-| 6. Bascule           | Comparaison v3/v4, fusion de `v4` dans `master`                                          | 0 régression, 0 erreur console                      | ⏳                                                  |
+| 6. Bascule           | Comparaison v3/v4, fusion de `v4` dans `master`                                          | 0 régression, 0 erreur console                      | 🔄 audits et corrections faits (26/10/2026), publication par Franck |
+
+## Étape 6 : bascule (fusion de `v4` dans `master`)
+
+Audits du 26/10/2026 (données, compte en ligne, parité v3/v4, publication, tablettes), puis
+corrections dans la v4 : reprise des emplacements de sorts et de la Rage gardés à part par la v3,
+grande image de fond v3, dé de vie, nom de ligne en ligne lu autrement par la v3, version en ligne
+écrite par un ancien onglet v3 jamais chargée sans question, question « existe déjà en ligne » qui
+signale la version la plus récente, perception passive manuelle, infobulles des sorts au doigt,
+cibles tactiles, outil `dev/preview.html` limité au poste local (détail : CHANGELOG 4.0.0).
+
+Liste de contrôle pour Franck, au moment de publier :
+
+1. Avant : demander à Catherine d'ouvrir la fiche actuelle, de vérifier qu'elle est là, de se
+   connecter (enregistrement en ligne) et d'exporter un fichier JSON (Safari efface le stockage d'un
+   site non utilisé depuis 7 jours). Faire de même sur la tablette et l'ordinateur de Franck.
+2. Supabase (tableau de bord → Authentication → Policies, table `characters`) : RLS activé et les
+   4 règles présentes (SELECT, INSERT, UPDATE, DELETE pour `authenticated`, `auth.uid() = user_id`) ;
+   sinon exécuter `supabase/policies.sql` (peut être relancé sans risque). La règle DELETE sert au
+   renommage et à « Supprimer » dans « Mes personnages ».
+3. Publier entre deux parties. Juste avant, fermer TOUS les onglets de la fiche sur tous les appareils.
+4. Après la publication : ouvrir la fiche de nouveau, puis recharger une fois environ 10 minutes plus
+   tard (cache GitHub Pages). Ne jamais modifier une fiche dans un onglet ouvert avant la publication,
+   ni revenir dessus avec « Précédent ».
+5. Prévenir les joueurs : au premier lancement sur un 2ᵉ appareil, la question « Ce personnage existe
+   déjà en ligne » peut apparaître une fois ; choisir la version marquée « (plus récente) ».
+6. Retour en arrière possible : l'étiquette `v3-final` (à envoyer aussi sur GitHub avant la fusion).
+   Après un retour à la v3 : les bonus de combat actifs et les emplacements de sorts utilisés repartent
+   de l'état gardé par la v3 dans chaque navigateur, et un texte long saisi sur plusieurs lignes dans la
+   v4 peut voir ses lignes collées par la v3 (à relire).
 
 ## Étape 5 bis : passe esthétique (avant la bascule)
 
@@ -145,7 +174,8 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
   forme (gras, couleur) posée en v3 sur ces champs s'affiche en texte simple.
 
 - En v3, les emplacements de sorts cochés et les bonus de combat (Rage…) étaient stockés à part,
-  hors de la fiche : ils n'étaient ni exportés ni synchronisés. En v4, ils feront partie de la fiche.
+  hors de la fiche : ils n'étaient ni exportés ni synchronisés. En v4, ils font partie de la fiche ;
+  au premier lancement, ceux que la v3 avait gardés dans le navigateur sont repris (étape 6).
 
 ## Décisions prises
 

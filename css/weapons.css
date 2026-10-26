@@ -70,6 +70,15 @@
     border-radius: 16px;
 }
 
+/* Écrans tactiles : 44 px comme les autres pastilles (la règle ci-dessus, plus loin dans la
+   cascade que celle de components.css, l'annulait) ; Rage est le bouton le plus touché en jeu */
+@media (pointer: coarse) {
+    .weapons-buff {
+        min-height: 44px;
+        border-radius: 22px;
+    }
+}
+
 .weapons-buff[aria-pressed="true"] {
     box-shadow: var(--btn-shadow), 0 0 0 3px var(--track), 0 0 14px var(--accent);
 }

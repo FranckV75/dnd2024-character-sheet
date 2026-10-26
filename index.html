@@ -118,9 +118,15 @@
                         </div>
                         <div class="box stat-tile">
                             <label class="label" for="f-passive_perception">Perception passive</label>
-                            <output class="value-lg" data-out="passivePerception"></output>
+                            <!-- Valeur calculée ; la toucher (fiche déverrouillée) permet d'en saisir une autre,
+                                 effacer la saisie revient au calcul (comme la v3) -->
+                            <button type="button" class="value-switch" data-manual-switch="passive_perc_manual"
+                                title="Valeur calculée : toucher pour saisir une autre valeur">
+                                <output class="value-lg" data-out="passivePerception"></output>
+                            </button>
                             <input id="f-passive_perception" data-field="passive_perception"
-                                class="input value-lg center" data-manual-only="passive_perc_manual" autocomplete="off">
+                                class="input value-lg center" data-manual-only="passive_perc_manual" autocomplete="off"
+                                title="Valeur saisie : l'effacer pour revenir au calcul automatique">
                         </div>
                         <div class="box stat-group">
                             <div class="stat-cell">

@@ -133,6 +133,8 @@ function openShortRest(store) {
     openModal({
         title: 'Repos court (1 h)',
         icon: 'hourglass',
+        // Focus sur « Lancer les dés » : les boutons − / + suffisent, pas de clavier virtuel à l'ouverture
+        focusField: false,
         body,
         actions: [
             { label: 'Annuler' },

@@ -279,8 +279,9 @@ export function initSpells(ctx) {
             // Nombre d'emplacements changé : reconstruction, en gardant le focus sur le même bouton
             const focusedLabel = slotsBox.contains(document.activeElement) ? document.activeElement.getAttribute('aria-label') : null;
             slotsSignature = signature;
-            // Ajout manuel d'un niveau : seulement sans emplacements au manuel (Chevalier occulte, Escroc arcanique...)
-            const free = levels.some(info => info.rulebook > 0) ? '' : nextFreeSlotLevel(levels);
+            // Ajout manuel d'un niveau au-dessus de ceux du manuel (comme le « + » de la v3) : Chevalier
+            // occulte, Escroc arcanique, Arcanum mystique de l'Occultiste, multiclasse...
+            const free = nextFreeSlotLevel(levels);
             slotsBox.replaceChildren(...[
                 ...levels.map(info => buildSlotGroup(info, state)),
                 levels.length === 0
@@ -796,6 +797,8 @@ export function initSpells(ctx) {
     const tooltip = el('div', { class: 'spell-tooltip', id: 'spell-tooltip', role: 'tooltip', hidden: true });
     let hideTimer = null;
     let tooltipOwner = null;
+    /** Le dernier toucher / clic a eu lieu dans l'infobulle */
+    let touchedTooltip = false;
 
     function fillTooltip(spell) {
         const components = String(spell.components || '').split(/[\s,]+/).filter(Boolean).join(', ');
@@ -816,12 +819,29 @@ export function initSpells(ctx) {
             el('p', { class: 'spell-tooltip-desc', text: descToPlainText(spell.desc) || 'Description non disponible.' }));
     }
 
+    /**
+     * Au-dessus du nom s'il y a la place, sinon en dessous ; toujours entièrement dans la partie
+     * visible de l'écran (clavier virtuel compris) : une longue description qui ne tient pas est
+     * raccourcie à la place disponible et défile à l'intérieur de l'infobulle.
+     */
     function positionTooltip(anchor) {
         const rect = anchor.getBoundingClientRect();
         const margin = 8;
         const viewportWidth = document.documentElement.clientWidth;
-        let top = rect.top - tooltip.offsetHeight - margin;
-        if (top < margin) top = rect.bottom + margin;
+        const visual = window.visualViewport;
+        const viewTop = visual ? visual.offsetTop : 0;
+        const viewBottom = viewTop + (visual ? visual.height : window.innerHeight);
+        tooltip.style.maxHeight = '';
+        const natural = tooltip.offsetHeight;
+        const above = rect.top - viewTop - 2 * margin;
+        const below = viewBottom - rect.bottom - 2 * margin;
+        const placeAbove = natural <= above || (natural > below && above > below);
+        const room = placeAbove ? above : below;
+        if (natural > room) tooltip.style.maxHeight = `${Math.max(120, Math.floor(room))}px`;
+        const height = tooltip.offsetHeight;
+        let top = placeAbove ? rect.top - height - margin : rect.bottom + margin;
+        // Jamais au-dessus du haut de l'écran visible (très petit espace disponible)
+        if (top < viewTop + margin) top = viewTop + margin;
         const left = Math.max(margin, Math.min(rect.left, viewportWidth - tooltip.offsetWidth - margin));
         tooltip.style.left = `${left + window.scrollX}px`;
         tooltip.style.top = `${top + window.scrollY}px`;
@@ -852,6 +872,7 @@ export function initSpells(ctx) {
 
     function hideTooltip() {
         clearTimeout(hideTimer);
+        touchedTooltip = false;
         tooltip.hidden = true;
         if (tooltipOwner) tooltipOwner.removeAttribute('aria-describedby');
         tooltipOwner = null;
@@ -860,20 +881,23 @@ export function initSpells(ctx) {
     function scheduleHide() {
         clearTimeout(hideTimer);
         hideTimer = setTimeout(() => {
-            // Pointeur sur l'infobulle (lecture d'une longue description) : elle reste
-            if (tooltip.matches(':hover')) return;
+            // Pointeur ou doigt sur l'infobulle (lecture d'une longue description) : elle reste
+            if (tooltip.matches(':hover') || touchedTooltip) return;
             // Le nom garde le focus : l'infobulle reste (accès au clavier)
             if (tooltipOwner && tooltipOwner === document.activeElement) return;
             hideTooltip();
         }, 150);
     }
 
-    // Toucher / clic hors du nom : l'infobulle se ferme (sur tablette, elle ne doit pas
-    // masquer les lignes du dessus ; le :hover « collant » d'iOS la garderait sinon).
-    // À la souris, un clic dans l'infobulle (sélection de texte) la laisse ouverte.
+    // Toucher / clic hors du nom et de l'infobulle : elle se ferme (sur tablette, elle ne doit
+    // pas masquer les lignes du dessus ; le :hover « collant » d'iOS la garderait sinon).
+    // Dans l'infobulle (faire défiler une longue description du doigt, sélectionner du texte
+    // à la souris), elle reste ouverte.
     document.addEventListener('pointerdown', (event) => {
-        if (tooltip.hidden || event.target === tooltipOwner) return;
-        if (event.pointerType === 'mouse' && tooltip.contains(event.target)) return;
+        const inside = !tooltip.hidden && tooltip.contains(event.target);
+        // Au doigt, le nom perd le focus en touchant l'infobulle : elle ne doit pas se fermer pour autant
+        touchedTooltip = inside && event.pointerType !== 'mouse';
+        if (tooltip.hidden || event.target === tooltipOwner || inside) return;
         hideTooltip();
     }, true);
     tooltip.addEventListener('mouseenter', () => clearTimeout(hideTimer));

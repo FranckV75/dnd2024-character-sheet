@@ -29,18 +29,30 @@
 //    fiche, import, chargement) ou de compte s'arrête sans rien écrire (« génération ») ;
 //  - un renommage n'est traité qu'une fois le nom validé (champ quitté) ;
 //  - les opérations en ligne s'exécutent l'une après l'autre (file d'attente).
+//
+// Bascule depuis la v3 (même table, mêmes clés du navigateur) :
+//  - une version en ligne écrite par la v3 (sans spell_slots_state) n'est jamais chargée en
+//    silence : un onglet v3 resté ouvert a pu remettre des valeurs anciennes (question 'conflict',
+//    legacy = true), sauf si elle ne diffère que par l'état de jeu v4, qui est alors remis en ligne ;
+//  - premier lancement : une ligne nommée par la v3 un peu autrement (mise en forme dans le nom,
+//    dd2024_active_char_name) est renommée au nom de la v4 si son contenu est identique (création
+//    puis suppression conditionnelle de l'ancienne), sinon la question 'exists' est posée.
 // =============================================================================
 
 import {
     listCharacters, fetchCharacter, insertCharacter, updateIfUnchanged, deleteCharacter, deleteIfUnchanged
 } from './repository.js';
-import { decideOnCheck, cloudName, fingerprint, friendlyError } from './sync.js';
-import { characterName } from '../state/persistence.js';
-import { migrateCharacter } from '../state/migrate.js';
+import {
+    decideOnCheck, cloudName, fingerprint, friendlyError, isLegacyRowName, withoutV4State
+} from './sync.js';
+import { characterName, STORAGE_KEYS } from '../state/persistence.js';
+import { migrateCharacter, isV3Save } from '../state/migrate.js';
 import { createDefaultCharacter } from '../state/schema.js';
 
 export const SYNC_KEY = 'dd2024_cloud_sync';
 export const LAST_SAVED_KEY = 'dd2024_last_saved';
+/** Nom exact de la ligne en ligne enregistré par la v3 (puis par la v4 à chaque sauvegarde) */
+export const ACTIVE_NAME_KEY = STORAGE_KEYS.activeName;
 const PUSH_DELAY_MS = 2000;
 
 /** La fiche ne contient rien qui mérite d'être préservé */
@@ -87,7 +99,8 @@ export function parseBase(text) {
  *
  * Questions posées (ui.ask) et réponses attendues (null = fenêtre fermée sans choix) :
  *   'exists'           {name, cloudUpdatedAt, localSavedAt} → 'open' | 'replace' | null
- *   'conflict'         {name, cloudUpdatedAt, localSavedAt} → 'cloud' | 'local' | null
+ *   'conflict'         {name, cloudUpdatedAt, localSavedAt, legacy} → 'cloud' | 'local' | null
+ *                      (legacy = la version en ligne vient d'être écrite par l'ancienne version, v3)
  *   'missing'          {name}                               → 'recreate' | null
  *   'rename'           {oldName, newName}                   → 'rename' | 'copy' | null
  *   'rename-taken'     {oldName, newName}                   → (information)
@@ -107,6 +120,9 @@ export function createCloudSync({
     let queue = Promise.resolve();
     let needsCheck = false;
     let lastError = '';
+    // Premier lancement de la v4 dans ce navigateur (aucun suivi de synchronisation) : nom exact
+    // sous lequel la v3 a enregistré cette fiche en ligne, utilisé une seule fois par attach()
+    let legacyName = storage.get(SYNC_KEY) === null ? String(storage.get(ACTIVE_NAME_KEY) || '').trim() : '';
     const listeners = new Set();
 
     /** Base enregistrée, seulement si elle correspond bien à la fiche enregistrée avec elle */
@@ -122,6 +138,9 @@ export function createCloudSync({
     const linked = () => (base.name && !base.detached && user && base.userId === user.id ? base.name : '');
     const isDirty = () => fingerprint(store.get()) !== base.hash;
     const contentOf = (row) => fingerprint(migrateCharacter(row.data).character);
+    /** Version écrite par la v3, identique à la fiche à l'état de jeu v4 près (que la v3 ne connaît pas) */
+    const sameApartFromV4State = (row, character) => isV3Save(row.data)
+        && fingerprint(withoutV4State(migrateCharacter(row.data).character)) === fingerprint(withoutV4State(character));
 
     /** Photographie (génération + compte) ; stale(s) = la fiche ou le compte a changé depuis */
     const snapshot = () => ({ epoch, userId: user?.id || null });
@@ -253,23 +272,52 @@ export function createCloudSync({
         else await handleConflict(name, row, s);
     }
 
+    /**
+     * Lie une fiche non liée au personnage en ligne du même nom, ou le crée.
+     * La ligne existante est lue AVANT toute création (une création refusée laisserait une
+     * erreur 409 dans la console du navigateur) ; la création reste « création seule ».
+     */
     async function attach(name, s) {
-        const data = store.get();
-        const result = await insertCharacter(client, s.userId, name, data, now());
+        // Date de la fiche de ce navigateur avant toute écriture faite ici (comparée à la version en ligne)
+        const localSavedAt = storage.get(LAST_SAVED_KEY);
+        const hint = legacyName;
+        legacyName = '';
+        let row = await fetchCharacter(client, s.userId, name);
         if (stale(s)) return;
-        if (result.ok) {
-            linkTo(name, s.userId, result.updatedAt, data);
-            ui.status(`☁️ « ${name} » ajouté à votre compte.`);
-            return;
+        if (!row && isLegacyRowName(hint, name)) {
+            // Fiche enregistrée par la v3 sous un nom un peu différent (mise en forme dans le nom)
+            const old = await fetchCharacter(client, s.userId, hint);
+            if (stale(s)) return;
+            if (old) {
+                await attachLegacyRow(name, old, localSavedAt, s);
+                return;
+            }
         }
-        const row = await fetchCharacter(client, s.userId, name);
-        if (stale(s)) return;
+        if (!row) {
+            const data = store.get();
+            const result = await insertCharacter(client, s.userId, name, data, now());
+            if (stale(s)) return;
+            if (result.ok) {
+                linkTo(name, s.userId, result.updatedAt, data);
+                ui.status(`☁️ « ${name} » ajouté à votre compte.`);
+                return;
+            }
+            // Créé ailleurs entre la lecture et la création
+            row = await fetchCharacter(client, s.userId, name);
+            if (stale(s)) return;
+        }
         if (!row) throw new Error(`« ${name} » est momentanément indisponible en ligne, nouvel essai à la prochaine modification`);
         if (contentOf(row) === fingerprint(store.get())) {
             linkTo(name, s.userId, row.updated_at, store.get());
             return;
         }
-        const choice = await ask('exists', { name, cloudUpdatedAt: row.updated_at, localSavedAt: storage.get(LAST_SAVED_KEY) });
+        // Version écrite par la v3, identique à l'état de jeu près (repris des anciennes clés du
+        // navigateur) : liée, puis complétée en ligne par l'envoi qui suit
+        if (sameApartFromV4State(row, store.get())) {
+            linkTo(name, s.userId, row.updated_at, migrateCharacter(row.data).character);
+            return;
+        }
+        const choice = await ask('exists', { name, cloudUpdatedAt: row.updated_at, localSavedAt });
         if (stale(s)) return;
         if (choice === 'open') {
             load(row);
@@ -285,6 +333,42 @@ export function createCloudSync({
             }
         } else {
             detach('', `Fiche « ${name} » gardée dans ce navigateur seulement : votre compte n'est pas modifié.`);
+        }
+    }
+
+    /**
+     * Premier lancement de la v4 : la v3 avait enregistré cette fiche en ligne sous un nom écrit
+     * autrement (`old.name`, ex. « Korgul B rise-Crâne »). Plutôt qu'un doublon, la ligne passe au
+     * nom de la v4 : création sous ce nom, puis suppression de l'ancienne ligne seulement si elle
+     * n'a pas changé entre-temps. Contenu différent : la question habituelle est posée d'abord.
+     */
+    async function attachLegacyRow(name, old, localSavedAt, s) {
+        const same = contentOf(old) === fingerprint(store.get()) || sameApartFromV4State(old, store.get());
+        if (!same) {
+            const choice = await ask('exists', { name: old.name, cloudUpdatedAt: old.updated_at, localSavedAt });
+            if (stale(s)) return;
+            if (choice === 'open') {
+                load(old);
+                return;
+            }
+            if (choice !== 'replace') {
+                detach('', `Fiche « ${name} » gardée dans ce navigateur seulement : votre compte n'est pas modifié.`);
+                return;
+            }
+        }
+        const data = store.get();
+        const result = await insertCharacter(client, s.userId, name, data, now());
+        if (stale(s)) return;
+        if (!result.ok) {
+            // Le nouveau nom vient d'être créé ailleurs : cas ordinaire (lecture, comparaison, question)
+            await attach(name, s);
+            return;
+        }
+        linkTo(name, s.userId, result.updatedAt, data);
+        if (await deleteIfUnchanged(client, s.userId, old.name, old.updated_at)) {
+            ui.status(`☁️ « ${old.name} » (nom enregistré par l'ancienne version) renommé en « ${name} ».`);
+        } else {
+            ui.status(`☁️ « ${name} » ajouté ; « ${old.name} » a été modifié ailleurs et a été conservé.`);
         }
     }
 
@@ -312,8 +396,14 @@ export function createCloudSync({
             schedulePush();
             return;
         }
+        // Réenregistrée par la v3 (onglet resté ouvert) sans autre changement que la perte de
+        // l'état de jeu v4 : rien à demander, la fiche de ce navigateur le remet en ligne
+        if (sameApartFromV4State(row, store.get())) {
+            linkTo(name, s.userId, row.updated_at, migrateCharacter(row.data).character);
+            return;
+        }
         const choice = await ask('conflict', {
-            name, cloudUpdatedAt: row.updated_at, localSavedAt: storage.get(LAST_SAVED_KEY)
+            name, cloudUpdatedAt: row.updated_at, localSavedAt: storage.get(LAST_SAVED_KEY), legacy: isV3Save(row.data)
         });
         if (stale(s)) return;
         if (choice === 'cloud') {
@@ -395,7 +485,10 @@ export function createCloudSync({
                     await push(true);
                     break;
                 case 'load':
-                    load(row, `☁️ « ${row.name} » mis à jour depuis votre compte (modifié sur un autre appareil).`);
+                    // Écrite par l'ancienne version (onglet v3 resté ouvert ailleurs) : elle a pu remettre
+                    // des valeurs plus anciennes et a perdu l'état de jeu v4 → jamais chargée sans demander
+                    if (isV3Save(row.data)) await handleConflict(attachedName, row, s);
+                    else load(row, `☁️ « ${row.name} » mis à jour depuis votre compte (modifié sur un autre appareil).`);
                     break;
                 case 'load-latest':
                     load(latest);
@@ -434,6 +527,7 @@ export function createCloudSync({
             clearTimer(timer);
             timer = null;
             base = { ...EMPTY_BASE };
+            legacyName = '';
             emit();
             if (user && current()) schedulePush();
             return;
