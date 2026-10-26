@@ -451,12 +451,12 @@ h1, h2, h3, h4 {
 }
 
 .box.ac-hex {
-    background: var(--border);
+    background: var(--hex-bg);
 }
 
 .ac-hex {
     min-height: 100px;
-    padding: 20px 8px 14px;
+    padding: 10px 12px 24px;
 }
 
 .class-resource {

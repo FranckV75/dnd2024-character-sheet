@@ -24,7 +24,7 @@ Toutes les modifications notables du projet sont documentées dans ce fichier. L
 - Lisibilité (lot 3) : grimoire sans lignes vides (seuls les sorts remplis plus une ligne de saisie ; les lignes vides de la sauvegarde restent intactes) et replié pour un personnage sans magie (« Ouvrir le grimoire ») ; sorts non préparés plus discrets.
 - Dons : emplacement atteint mais vide signalé en doré, niveaux à venir atténués (« À venir », « Actif au niveau N » pour un don prévu) ; compétences maîtrisées et expertises mises en valeur, les autres plus discrètes.
 - Revue de toute la fiche : bonus d'attaque sur une seule ligne sur iPad, sauvegardes plus grandes et maîtrisées en gras, taille minimale des petits libellés, contrastes renforcés (texte atténué plus foncé en clair), colonnes du grimoire sans mots coupés à 820 px.
-- Retours de Franck sur iPad : valeurs centrées dans les cases bonus de maîtrise / inspiration / vitesse (alignées entre elles), jauge de PV en dégradé du vert au rouge (jaune, orange), encadré Odyssée aux libellés centrés sur leurs valeurs.
+- Retours de Franck sur iPad : valeurs centrées dans les cases bonus de maîtrise / inspiration / vitesse (alignées entre elles), jauge de PV en dégradé du vert au rouge (jaune, orange), encadré Odyssée aux titres sur une même ligne et valeurs alignées, quelle que soit la largeur ; classe d'armure dans un bouclier à double filet doré (à la place de l'hexagone, même place).
 - Barre « Gestion » : disposition figée, les messages d'état (compte, enregistrement) ne déplacent plus les boutons ; trop longs, ils se terminent par « … » (texte complet au survol).
 ### Fixed
 - Champ en cours de saisie rafraîchi quand une autre version de la fiche est chargée.
