@@ -1,0 +1,776 @@
+/* =============================================================================
+   SPELLS.CSS - Grimoire (js/ui/spells.js) : avis « Pas de magie » et bouton ouvrir /
+   replier, filtres, emplacements de sorts, tableau des sorts et ligne de saisie,
+   infobulles. Couleurs : uniquement les variables de base.css.
+   ============================================================================= */
+
+/* ---------- Grimoire : titre, avis « Pas de magie », bouton ouvrir / replier ---------- */
+
+/* Grille : le titre, l'avis et le grimoire occupent toute la largeur ; le bouton ouvrir /
+   replier se pose à droite du titre, grimoire replié comme ouvert. Il ne bouge donc pas
+   sous le doigt quand on l'actionne (les cases d'incantation, montrées avec le grimoire
+   ouvert à la demande, viennent après lui : voir renderGrimoire dans js/ui/spells.js). */
+#spells-feature {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 16px;
+}
+
+#spells-feature > * {
+    grid-column: 1 / -1;
+    min-width: 0;
+}
+
+/* Ligne 1 : titre (et bouton) ; ligne 2 : l'avis ou le grimoire (jamais les deux) */
+#spells-feature > h3,
+#spells-feature > .grimoire-toggle {
+    grid-row: 1;
+}
+
+#spells-feature > .grimoire-notice,
+#spells-feature > .spells-body {
+    grid-row: 2;
+}
+
+#spells-feature > .grimoire-toggle {
+    grid-column: 2;
+}
+
+#spells-feature:is([data-grimoire="quiet"], [data-grimoire="open"]) > h3 {
+    grid-column: 1;
+}
+
+/* Bouton et titre sur une ligne, même marge basse (alignés au centre) */
+#spells-feature[data-grimoire="open"] > .grimoire-toggle {
+    margin-bottom: 10px;
+}
+
+/* Grimoire replié : la boîte se fait discrète, une seule ligne sous le titre */
+#spells-feature[data-grimoire="quiet"] {
+    padding-bottom: 10px;
+}
+
+#spells-feature[data-grimoire="quiet"] > h3,
+#spells-feature[data-grimoire="quiet"] > .grimoire-toggle {
+    margin-bottom: 6px;
+}
+
+/* Cases « Caractéristique d'incantation / DD / Bonus d'attaque » repliées (sheet.css leur
+   donne display: grid, qui l'emporterait sur l'attribut hidden) */
+.spell-stats[hidden],
+.grimoire-toggle[hidden] {
+    display: none;
+}
+
+/* Avis aligné sur le texte du titre (icône de 18 px + 9 px d'écart, sheet.css) */
+.grimoire-notice {
+    padding-left: 27px;
+}
+
+.grimoire-notice-main {
+    margin: 0;
+    font-family: var(--font-text);
+    font-size: 1.02rem;
+    font-weight: 400;
+    line-height: 1.3;
+    color: var(--text);
+}
+
+/* Aide en italique, à l'encre calme (contraste AA sur la fiche transparente) */
+.grimoire-notice-hint {
+    margin: 2px 0 0;
+    font-family: var(--font-text);
+    font-size: 0.92rem;
+    font-style: italic;
+    line-height: 1.3;
+    color: var(--quiet-ink);
+}
+
+/* Bouton ouvrir / replier : pastille bombée, chevron qui pivote */
+.grimoire-toggle {
+    justify-self: end;
+}
+
+.grimoire-chevron {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    margin: -3px 1px 0 1px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    color: var(--accent);
+    transform: rotate(45deg);
+    transition: transform 0.25s ease, margin 0.25s ease;
+}
+
+.grimoire-toggle[aria-expanded="true"] .grimoire-chevron {
+    margin-top: 3px;
+    transform: rotate(-135deg);
+}
+
+/* Ouverture : le grimoire et les cases d'incantation apparaissent en fondu, en glissant à peine */
+@media (prefers-reduced-motion: no-preference) {
+    .spells-body.is-revealed,
+    .spell-stats.is-revealed {
+        animation: grimoire-reveal 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+}
+
+@keyframes grimoire-reveal {
+    from {
+        opacity: 0;
+        translate: 0 -6px;
+    }
+}
+
+/* ---------- Barre de filtres ---------- */
+
+.spells-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    margin-bottom: 8px;
+}
+
+/* Niveaux : bloc segmenté (components.css, .btn-segments) */
+.spell-level-chips .btn-chip {
+    min-width: 32px;
+    padding: 0 8px;
+}
+
+.spell-class-filter {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.spell-class-filter label {
+    flex: 0 0 auto;
+}
+
+/* Assez large pour « Classe du personnage (Magicien) » en entier */
+.spell-class-select {
+    width: auto;
+    max-width: 300px;
+    font-size: 0.8rem;
+}
+
+/* Infobulles : bouton doré quand elles sont actives (famille .btn-icon) */
+.spell-tooltip-toggle {
+    min-width: 30px;
+    min-height: 30px;
+    border-radius: 8px;
+}
+
+.spell-tooltip-toggle .icon {
+    width: 15px;
+    height: 15px;
+}
+
+.spell-tooltip-toggle[aria-pressed="false"] .icon {
+    color: var(--text-muted);
+}
+
+.spell-count {
+    margin-left: auto;
+    font-family: var(--font-title);
+    font-size: 0.75rem;
+    color: var(--quiet-ink);
+}
+
+/* ---------- Emplacements de sorts ---------- */
+
+.spell-slots {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+    margin-bottom: 10px;
+    padding: 6px 8px;
+    border: 1px dashed var(--border-soft);
+    border-radius: 6px;
+    background: var(--input-bg);
+}
+
+.slot-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+}
+
+.slot-group.is-active {
+    border-color: var(--border-soft);
+    background: var(--head-bg);
+}
+
+.slot-group .label {
+    margin-right: 2px;
+}
+
+.slot-group[data-pact="true"] .label {
+    color: var(--accent);
+}
+
+.slot-boxes {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px;
+}
+
+/* + / − : petites pastilles rondes */
+.slot-group .btn-icon {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 0;
+    border-radius: 50%;
+}
+
+.slot-group .btn-icon .icon {
+    width: 11px;
+    height: 11px;
+}
+
+.slot-add-level .icon {
+    width: 11px;
+    height: 11px;
+}
+
+/* Messages en italique : l'italique les distingue, l'encre calme les garde lisibles */
+.slot-none,
+.slots-empty,
+.spells-empty {
+    font-family: var(--font-text);
+    font-style: italic;
+    color: var(--quiet-ink);
+}
+
+.slot-none {
+    font-size: 0.85rem;
+}
+
+.slots-empty {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.spells-empty {
+    margin: 6px 0;
+    font-size: 0.95rem;
+}
+
+/* ---------- Tableau des sorts ---------- */
+
+.table-scroll.spells-scroll {
+    max-height: 60vh;
+}
+
+.spells-table {
+    table-layout: fixed;
+}
+
+.spells-table th,
+.spells-table td {
+    vertical-align: middle;
+}
+
+.spells-table th.col-prep,
+.spells-table td.col-prep {
+    width: 30px;
+    padding-left: 2px;
+    padding-right: 2px;
+    text-align: center;
+}
+
+.spells-table .col-lvl {
+    width: 52px;
+}
+
+.spells-table .col-name {
+    width: 22%;
+}
+
+.spells-table .col-school,
+.spells-table .col-time {
+    width: 12%;
+}
+
+.spells-table .col-range {
+    width: 10%;
+}
+
+.spells-table .col-crm {
+    width: 82px;
+    text-align: center;
+}
+
+.spells-table .col-del {
+    width: 40px;
+    text-align: center;
+}
+
+.spells-table abbr {
+    text-decoration: none;
+    cursor: help;
+}
+
+.sort-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.sort-btn:hover {
+    text-decoration: underline;
+}
+
+.sort-icon {
+    font-size: 0.55rem;
+}
+
+.spells-table select.cell-input {
+    padding-left: 0;
+    cursor: pointer;
+}
+
+.spells-table select option {
+    background: var(--box-strong);
+    color: var(--text);
+}
+
+.spells-table select:disabled {
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: default;
+}
+
+/* Losange « préparé » ; ∞ pour un sort mineur (toujours disponible) */
+.spell-prep {
+    display: inline-grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--font-title);
+    font-size: 0.95rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.spell-prep:hover:not(:disabled) {
+    background: var(--input-bg);
+}
+
+.spell-prep.is-prepared {
+    color: var(--accent);
+}
+
+/* Losange vide (non préparé) et ∞ (sort mineur) : encre calme, lisible sur un fond d'écran */
+.spell-prep:not(.is-prepared):not(.is-entry) {
+    color: var(--quiet-ink);
+}
+
+/* Le joueur suit ses sorts préparés (au moins un losange plein) : les sorts de niveau 1+
+   non préparés se font plus calmes (graisse normale, encre calme), ceux qu'il peut lancer
+   ressortent. Sans aucun sort préparé, rien ne change. Sorts mineurs : toujours nets. */
+@media screen {
+    .spells-table tbody:has(tr:not([hidden]) .spell-prep[aria-pressed="true"]) tr:has(.spell-prep[aria-pressed="false"]) .spell-name {
+        font-weight: 400;
+        color: var(--quiet-ink);
+    }
+}
+
+.spell-prep:disabled {
+    opacity: 1;
+    cursor: default;
+}
+
+/* Écrans tactiles : zone de toucher agrandie par un calque invisible (taille visible inchangée),
+   sans déborder sur les cases voisines : tri = toute la marge de l'en-tête (4 px × 6 px, voir
+   .data-table th) ; losange = presque toute la hauteur de la ligne */
+@media (pointer: coarse) {
+    .sort-btn,
+    .spell-prep {
+        position: relative;
+    }
+
+    .sort-btn::after,
+    .spell-prep::after {
+        content: "";
+        position: absolute;
+    }
+
+    .sort-btn::after {
+        inset: -4px -6px;
+    }
+
+    .spell-prep::after {
+        inset: -10px -3px;
+    }
+}
+
+.spell-prep.is-cantrip {
+    font-size: 1.05rem;
+}
+
+/* Cases C / R / M */
+.spell-flags {
+    display: inline-flex;
+    gap: 3px;
+}
+
+.spells-table label.spell-flag {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    font-size: var(--label-min);
+    cursor: pointer;
+}
+
+.spell-flag .round-check {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+}
+
+.spell-flag .round-check:disabled {
+    opacity: 1;
+    cursor: default;
+}
+
+.spell-del {
+    min-width: 28px;
+    min-height: 28px;
+}
+
+/* ---------- Ligne de saisie (toujours la dernière du tableau) ----------
+   Une ligne prête à écrire : repère + dans la colonne P, invitation « Nouveau sort… »
+   lisible (le texte d'aide des autres lignes est plus pâle). Pas de filet : le cadre
+   « Ajouter un sort », juste dessous, ferme déjà le tableau. */
+
+.spells-table tr.spell-entry > td {
+    border-bottom-color: transparent;
+}
+
+/* Repère décoratif : le toucher passe à la case, qui met le curseur dans le nom (spells.js) */
+.spell-prep.is-entry {
+    pointer-events: none;
+}
+
+.spell-prep.is-entry::before {
+    content: "+";
+    content: "+" / "";
+    font-size: 1.05rem;
+    color: var(--gold);
+}
+
+.spells-table tr.spell-entry .spell-del {
+    visibility: hidden;
+}
+
+@media screen {
+    /* Alegreya italique n'est chargée qu'en graisse normale (pas de faux gras) ;
+       encre calme : l'invitation reste lisible sur la fiche transparente */
+    .spells-table tr.spell-entry .spell-name::placeholder {
+        font-style: italic;
+        font-weight: 400;
+        color: var(--quiet-ink);
+        opacity: 1;
+    }
+
+    .spells-table tr.spell-entry .spell-name[readonly]::placeholder {
+        color: transparent;
+    }
+
+    /* Tant qu'on n'y écrit pas, la ligne de saisie ne ressemble pas à un sort mineur déjà
+       noté : niveau et cases C / R / M n'apparaissent qu'au focus (toucher le nom suffit) */
+    .spells-table tr.spell-entry:not(:focus-within) :is(.col-lvl, .col-crm) > * {
+        visibility: hidden;
+    }
+}
+
+/* « Ajouter un sort » : la ligne de saisie s'illumine brièvement */
+@media (prefers-reduced-motion: no-preference) {
+    .spells-table tr.is-called > td {
+        animation: spell-entry-call 0.9s ease-out;
+    }
+}
+
+@keyframes spell-entry-call {
+    from {
+        background-color: color-mix(in srgb, var(--gold-glow) 55%, transparent);
+    }
+}
+
+/* ---------- Infobulle d'un sort ---------- */
+
+/* Verre dépoli et double filet doré, comme la barre « Gestion » et les fenêtres */
+.spell-tooltip {
+    position: absolute;
+    z-index: 60;
+    width: max-content;
+    max-width: min(420px, calc(100vw - 16px));
+    max-height: 55vh;
+    overflow-y: auto;
+    /* Faire défiler la description du doigt ne fait pas défiler la page derrière */
+    overscroll-behavior: contain;
+    padding: 14px 16px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--bar-shadow);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3);
+    backdrop-filter: blur(14px) saturate(1.3);
+    font-family: var(--font-text);
+    font-size: 0.92rem;
+    line-height: 1.4;
+}
+
+@supports (background: color-mix(in srgb, red 50%, transparent)) {
+    .spell-tooltip {
+        background: color-mix(in srgb, var(--box-strong) 90%, transparent);
+    }
+}
+
+/* Second filet, fin, à l'intérieur du cadre : un contour rentré, qui ne défile pas
+   avec une longue description (contrairement à un calque ::before) */
+.spell-tooltip {
+    outline: 1px solid var(--border-soft);
+    outline-offset: -4px;
+}
+
+.spell-tooltip[hidden] {
+    display: none;
+}
+
+.spell-tooltip-head {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 8px;
+}
+
+.spell-tooltip-name {
+    font-family: var(--font-title);
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+}
+
+/* Ornement décoratif : texte de remplacement vide, il n'est pas lu par les lecteurs d'écran
+   (la seconde déclaration est ignorée par les navigateurs qui ne la comprennent pas) */
+.spell-tooltip-name::before {
+    content: "✦ ";
+    content: "✦ " / "";
+    font-size: 0.7em;
+    vertical-align: 0.15em;
+    opacity: 0.85;
+}
+
+.spell-tooltip-level {
+    font-family: var(--font-title);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--label);
+}
+
+.spell-tooltip-tags {
+    font-size: 0.85rem;
+    font-style: italic;
+    color: var(--text-muted);
+}
+
+.spell-tooltip-meta {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 10px;
+    margin: 0 0 6px;
+}
+
+.spell-tooltip-meta div {
+    display: contents;
+}
+
+.spell-tooltip-meta dt {
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    line-height: 1.9;
+    text-transform: uppercase;
+    color: var(--label);
+}
+
+.spell-tooltip-meta dd {
+    margin: 0;
+}
+
+.spell-tooltip-desc {
+    margin: 0;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-soft);
+    white-space: pre-line;
+}
+
+/* Écrans tactiles : cibles d'au moins 44 px (zone de toucher agrandie, components.css) */
+@media (pointer: coarse) {
+    .spell-tooltip-toggle {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .slot-group .btn-icon {
+        min-width: 32px;
+        min-height: 32px;
+    }
+
+    /* 32 + 2 × 1 px de cadre + 2 × 5 = 44 px */
+    .slot-group .btn-icon::after {
+        inset: -7px;
+    }
+
+    .slot-group .btn-icon + .btn-icon {
+        margin-left: 12px;
+    }
+
+    .spell-level-chips .btn-chip {
+        min-width: 44px;
+    }
+
+    .spells-table .col-del {
+        width: 48px;
+    }
+
+    .spell-del {
+        min-width: 36px;
+        min-height: 36px;
+    }
+}
+
+/* Cases C / R / M : boîte de 44 px (voir sheet.css), rond visible de 14 px */
+@media screen and (pointer: coarse) {
+    .spell-flag .round-check {
+        width: 44px;
+        height: 44px;
+        margin: -15px -4px;
+        border-width: 15px;
+    }
+
+    /* Ligne de saisie : nom et niveau hauts de 44 px sous le doigt (le texte reste centré :
+       la case de texte grandit par ses marges intérieures, la ligne garde la hauteur des autres) */
+    .spells-table tr.spell-entry > td {
+        padding-block: 0;
+    }
+
+    .spells-table tr.spell-entry textarea.spell-name {
+        padding-block: 12.5px;
+    }
+
+    .spells-table tr.spell-entry select.cell-input {
+        min-height: 44px;
+    }
+}
+
+/* ---------- Tablettes ---------- */
+
+@media (max-width: 1100px) {
+    .spell-count {
+        margin-left: 0;
+    }
+
+    /* Aucun mot coupé de 768 à 1100 px (mesuré sur les 377 sorts de la base) : l'école loge
+       « Transmutation » et « Enchantement », le temps d'incantation « minutes » et
+       « Réaction » ; le nom (qui passe à la ligne entre les mots) et les notes cèdent la place */
+    .spells-table .col-name {
+        width: 20%;
+    }
+
+    .spells-table .col-school {
+        width: 17%;
+    }
+
+    .spells-table .col-time {
+        width: 11%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .grimoire-chevron {
+        transition: none;
+    }
+}
+
+/* ---------- Impression ---------- */
+
+@media print {
+    .spell-tooltip,
+    .spell-tooltip-toggle,
+    .spell-level-chips {
+        display: none;
+    }
+
+    .table-scroll.spells-scroll {
+        max-height: none;
+        overflow: visible;
+    }
+
+    /* Grimoire replié : le titre et l'avis seuls (ni tableau vide ni cases d'incantation) ;
+       les invitations à saisir et le bouton ouvrir / replier n'ont pas de sens sur le papier */
+    #spells-feature {
+        display: block;
+    }
+
+    #spells-feature > .grimoire-toggle,
+    .grimoire-notice-hint,
+    .spells-empty-hint,
+    .spells-table tr.spell-entry {
+        display: none;
+    }
+
+    #spells-feature[data-grimoire="quiet"] {
+        padding-bottom: 5px;
+    }
+
+    .grimoire-notice {
+        padding-left: 0;
+    }
+
+    /* Niveau du sort : la valeur seule, sans le chevron de la liste (sheet.css) */
+    .spells-table select.cell-input {
+        padding-right: 2px;
+        background-image: none;
+    }
+
+    /* Aucun sort noté : pas de tableau réduit à ses en-têtes */
+    #spells-feature[data-no-spells] .spells-scroll {
+        display: none;
+    }
+
+    /* Grimoire ouvert à l'écran, mais toujours sans sort ni magie : le papier est celui du
+       grimoire replié (l'avis seul, sans les cases d'incantation qui n'ont pas de sens ici).
+       L'avis, masqué à l'écran dans ce cas, est donc imprimé malgré son attribut hidden. */
+    #spells-feature[data-grimoire="open"][data-no-spells] > .grimoire-notice {
+        display: block;
+    }
+
+    #spells-feature[data-grimoire="open"][data-no-spells] > .spells-body,
+    :root:has(#spells-feature[data-grimoire="open"][data-no-spells]) #spell-stats {
+        display: none;
+    }
+}

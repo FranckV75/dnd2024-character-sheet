@@ -1,0 +1,303 @@
+/* =============================================================================
+   WEAPONS.CSS - Tableau des armes (js/ui/weapons.js) : en-tête avec bonus de combat,
+   filtres, tableau éditable, annulation de suppression, fenêtre de configuration
+   ============================================================================= */
+
+/* ---------- En-tête : titre + bonus de combat ---------- */
+
+.weapons-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 14px;
+    margin-bottom: 10px;
+}
+
+/* Même titre que les autres sections (sheet.css, .box > h3) : icône dorée, titre, losange
+   et filet d'or qui s'efface jusqu'aux bonus de combat */
+.box .weapons-head h3 {
+    display: flex;
+    flex: 1 1 240px;
+    align-items: center;
+    gap: 9px;
+    margin: 0;
+    padding: 0;
+    border-bottom: none;
+}
+
+.weapons-head h3 > .icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: var(--gold, var(--accent));
+}
+
+.weapons-head h3::before {
+    content: "";
+    order: 2;
+    flex: none;
+    width: 5px;
+    height: 5px;
+    margin-left: 3px;
+    background: var(--gold, var(--accent));
+    transform: rotate(45deg);
+}
+
+.weapons-head h3::after {
+    content: "";
+    order: 3;
+    flex: 1 1 24px;
+    height: 1px;
+    margin-left: -6px;
+    background: linear-gradient(to right, var(--gold, var(--accent)), var(--gold-soft, var(--border-soft)) 35%, transparent);
+}
+
+.weapons-buffs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.weapons-buffs[hidden] {
+    display: none;
+}
+
+/* Bonus de combat : pastilles arrondies ; actif = doré et auréolé */
+.weapons-buff {
+    min-height: 30px;
+    padding: 0 14px 0 11px;
+    border-radius: 16px;
+}
+
+/* Écrans tactiles : 44 px comme les autres pastilles (la règle ci-dessus, plus loin dans la
+   cascade que celle de components.css, l'annulait) ; Rage est le bouton le plus touché en jeu */
+@media (pointer: coarse) {
+    .weapons-buff {
+        min-height: 44px;
+        border-radius: 22px;
+    }
+}
+
+.weapons-buff[aria-pressed="true"] {
+    box-shadow: var(--btn-shadow), 0 0 0 3px var(--track), 0 0 14px var(--accent);
+}
+
+.weapons-buff[aria-pressed="true"]:hover:not(:disabled) {
+    box-shadow: var(--btn-glow), 0 0 14px var(--accent);
+}
+
+/* Rage active : pastille incandescente et flamme qui vacille, voir css/feedback.css */
+
+/* ---------- Filtres : bloc segmenté (components.css, .btn-segments) ---------- */
+
+.weapons-filters {
+    margin-bottom: 8px;
+}
+
+.weapons-filters .btn-chip {
+    padding: 0 14px;
+}
+
+/* ---------- Tableau ---------- */
+
+/* Les cases passent à la ligne : toutes les armes restent visibles, sans défilement interne */
+#weapons-feature .table-scroll {
+    max-height: none;
+}
+
+.weapons-table {
+    table-layout: fixed;
+    min-width: 780px;
+}
+
+/* La botte d'arme (utile à la table) passe avant les colonnes souvent vides */
+.weapons-col-name { width: 20%; }
+.weapons-col-atk { width: 9%; }
+.weapons-col-dmg { width: 14%; }
+.weapons-col-prop { width: 18%; }
+.weapons-col-prof { width: 17%; }
+.weapons-col-ammo { width: 10%; }
+.weapons-col-note { width: 12%; }
+.weapons-col-actions { width: 70px; }
+
+[data-locked="true"] .weapons-col-actions {
+    width: 0;
+}
+
+.weapons-table td {
+    vertical-align: middle;
+}
+
+/* Valeur calculée : même police, taille, graisse et couleur que les champs voisins */
+.weapons-calc {
+    display: block;
+    padding: 2px 3px;
+    border-bottom: 1px solid transparent;
+    font: inherit;
+    line-height: normal;
+    color: var(--text);
+}
+
+.weapons-calc[title]:not([title=""]) {
+    cursor: help;
+}
+
+/* Ancienne valeur saisie à la main (arme hors manuel) : affichée en retrait */
+.weapons-calc.is-legacy {
+    color: var(--text-muted);
+}
+
+.weapons-actions {
+    white-space: nowrap;
+}
+
+.weapons-actions .btn-icon + .btn-icon {
+    margin-left: 5px;
+}
+
+.weapons-table tr[hidden] {
+    display: none;
+}
+
+/* En-tête abrégé (« Mun. ») : seulement sur tablette */
+.weapons-th-short {
+    display: none;
+}
+
+/* Tablettes : le tableau tient dans la carte, sans défilement horizontal
+   (les boutons de configuration et de suppression restent visibles) */
+@media screen and (max-width: 1000px) {
+    .weapons-table { min-width: 0; }
+    .weapons-table th,
+    .weapons-table td { padding: 4px 3px; }
+    .weapons-table th { overflow-wrap: anywhere; }
+    /* À 820 px, les cases passent à la ligne sans couper les mots : la colonne des
+       propriétés loge « Rechargement », celle des bottes « Ralentissement ». Le bonus
+       d'attaque (« FOR : +7 », le chiffre le plus demandé en combat) tient sur une ligne
+       (2e colonne du tableau, construit par weapons.js). */
+    .weapons-col-name { width: 19%; }
+    .weapons-col-atk { width: 13%; }
+    .weapons-table td:nth-child(2) > .weapons-calc { white-space: nowrap; }
+    .weapons-col-dmg { width: 14%; }
+    .weapons-col-prop { width: 19%; }
+    .weapons-col-prof { width: 20%; }
+    .weapons-col-ammo { width: 7%; }
+    .weapons-col-note { width: 8%; }
+    /* Deux boutons de 28 px + 2 px d'écart + 2 × 2 px de marge */
+    .weapons-col-actions { width: 62px; }
+    .weapons-table td.weapons-actions { padding-inline: 2px; }
+    .weapons-actions .btn-icon + .btn-icon { margin-left: 2px; }
+    /* Les pastilles de filtre gardent leur bloc d'une seule pièce, sur une ou deux lignes */
+    .weapons-filters .btn-chip { padding: 0 10px; }
+    .weapons-th-short { display: inline; }
+    /* Libellé complet gardé pour les lecteurs d'écran */
+    .weapons-th-long {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+    }
+}
+
+/* Écrans tactiles : deux boutons de 36 px (zone de toucher de 44 px) côte à côte */
+@media (pointer: coarse) {
+    .weapons-col-actions { width: 90px; }
+    .weapons-actions .btn-icon + .btn-icon { margin-left: 8px; }
+}
+
+[data-locked="true"] .weapons-table .cell-input[readonly]:hover,
+[data-locked="true"] .weapons-table .cell-input[readonly]:focus {
+    border-bottom-color: transparent;
+    background: transparent;
+    cursor: default;
+}
+
+/* Texte réservé aux lecteurs d'écran (en-tête de la colonne d'actions) */
+.weapons-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ---------- Annulation de suppression ---------- */
+
+.weapons-undo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0 0;
+    font-family: var(--font-text);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.weapons-undo[hidden] {
+    display: none;
+}
+
+/* ---------- Fenêtre « Configuration de l'arme » ---------- */
+
+.weapons-config {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.weapons-config p {
+    margin: 0;
+}
+
+.weapons-config-name {
+    font-family: var(--font-title);
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.weapons-config-note,
+.weapons-config-help {
+    font-family: var(--font-text);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.weapons-config-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.weapons-config-field .input {
+    font-size: 0.85rem;
+}
+
+.weapons-config-error {
+    font-family: var(--font-text);
+    font-size: 0.9rem;
+    color: var(--ko);
+}
+
+.weapons-config-error[hidden] {
+    display: none;
+}
+
+/* Ligne de saisie (ligne vide) : rien à configurer ni à supprimer tant qu'elle est vide */
+.weapons-table tr.is-entry .weapons-actions > * {
+    visibility: hidden;
+}
+
+.weapons-table tr.is-entry .cell-input::placeholder {
+    font-style: italic;
+}

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choix de la police des textes longs</title>
+    <link rel="icon" href="data:,">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Alegreya:ital,wght@0,400;0,600;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/base.css">
+    <style>
+        .samples {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+        }
+
+        .sample {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+        }
+
+        .sample h2 {
+            margin: 0 0 2px;
+            font-size: 1rem;
+        }
+
+        .sample .label {
+            font-family: var(--font-title);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin: 10px 0 2px;
+        }
+
+        .sample p {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .intro {
+            max-width: 1100px;
+            margin: 16px auto 0;
+            padding: 0 16px;
+        }
+
+        button {
+            font: inherit;
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="intro">
+        <h1>Police des textes longs</h1>
+        <p>Les titres restent en <strong>Cinzel</strong>. Chaque carte montre la même histoire dans une police
+            différente. Dites-moi laquelle vous préférez (A, B, C ou D).</p>
+        <button type="button" id="theme">🌗 Thème clair / sombre</button>
+    </div>
+
+    <main class="samples" id="samples"></main>
+
+    <script type="module">
+        import { initTheme, toggleTheme } from '../js/ui/theme.js';
+
+        const FONTS = [
+            ['A', 'EB Garamond', 'Classique, élégante, proche des livres de règles'],
+            ['B', 'Crimson Pro', 'Classique, un peu plus grande et contrastée'],
+            ['C', 'Alegreya', 'Calligraphique, ambiance « manuscrit »'],
+            ['D', 'Lora', 'Moderne et très lisible sur écran']
+        ];
+        const STORY = "(Texte d'exemple) Né sous les remparts d'une cité oubliée, le héros a quitté les siens pour suivre la voie des anciens. Son regard trahit une colère contenue, mais ses compagnons savent qu'il protège toujours les plus faibles.";
+        const TRAITS = 'Acharnement : 0 PV ⇒ 1 PV (1×/repos long). Poussée d\'adrénaline : action Foncer en action bonus.';
+
+        const host = document.getElementById('samples');
+        for (const [letter, font, description] of FONTS) {
+            const card = document.createElement('section');
+            card.className = 'sample';
+            const title = document.createElement('h2');
+            title.textContent = `${letter}. ${font}`;
+            const desc = document.createElement('div');
+            desc.className = 'label';
+            desc.textContent = description;
+            const l1 = document.createElement('div');
+            l1.className = 'label';
+            l1.textContent = 'Histoire & Personnalité';
+            const p1 = document.createElement('p');
+            p1.style.fontFamily = `'${font}', serif`;
+            p1.textContent = STORY;
+            const l2 = document.createElement('div');
+            l2.className = 'label';
+            l2.textContent = 'Traits de personnage';
+            const p2 = document.createElement('p');
+            p2.style.fontFamily = `'${font}', serif`;
+            p2.textContent = TRAITS;
+            card.append(title, desc, l1, p1, l2, p2);
+            host.append(card);
+        }
+        initTheme();
+        document.getElementById('theme').addEventListener('click', toggleTheme);
+    </script>
+</body>
+
+</html>

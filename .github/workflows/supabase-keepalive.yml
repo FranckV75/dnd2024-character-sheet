@@ -1,6 +1,6 @@
 # Empêche la mise en pause du projet Supabase gratuit (après ~7 jours sans activité).
 # Tous les 3 jours, une lecture anonyme (sans rien modifier) est envoyée à la base.
-# La clé utilisée est la clé publique, déjà présente dans js/supabase-config.js.
+# La clé utilisée est la clé publique, déjà présente dans js/cloud/client.js (v4).
 name: Supabase keep-alive
 
 on:

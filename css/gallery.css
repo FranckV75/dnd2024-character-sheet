@@ -1,0 +1,437 @@
+/* =============================================================================
+   GALLERY.CSS - Fond d'écran, opacité de la fiche, galerie (js/ui/gallery.js)
+   Variables posées par gallery.js sur <html> :
+     --app-bg-image (url("…") ou absente), --app-bg-size, --app-bg-pos-y, --sheet-alpha (0.2 → 1)
+   ============================================================================= */
+
+:root {
+    --sheet-alpha: 1;
+    /* Teinte multipliée avec l'image de fond : blanc = image intacte (thème clair) */
+    --app-bg-tint: #ffffff;
+}
+
+:root[data-theme="dark"] {
+    /* Thème sombre : l'image est assombrie et bleutée (comme la v3, background-blend-mode: multiply),
+       mais moins que la v3 (qui multipliait par le fond presque noir et rendait l'image invisible) */
+    --app-bg-tint: #8e8eb0;
+}
+
+/* ---------- Fond d'écran : calque fixe derrière toute la page ----------
+   Un calque position: fixed plutôt que background-attachment: fixed, que Safari iPad ignore
+   (l'image y serait étirée sur toute la hauteur de la page). */
+
+@media screen {
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background-color: var(--app-bg-tint);
+        background-image: var(--app-bg-image, none);
+        background-size: var(--app-bg-size, cover);
+        background-position: center var(--app-bg-pos-y, 50%);
+        background-repeat: no-repeat;
+        background-blend-mode: multiply;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    :root[data-app-bg="on"] body::before {
+        opacity: 1;
+    }
+
+    /* ---------- Fiche translucide ---------- */
+
+    /* Fiche opaque par défaut : c'est ce que gardent les navigateurs sans color-mix()
+       (Safari < 16.2). Une déclaration contenant var() n'est jamais rejetée à la lecture :
+       sans @supports, elle écraserait celle-ci et rendrait la fiche totalement transparente. */
+    .sheet {
+        background: var(--surface);
+    }
+
+    @supports (background: color-mix(in srgb, red 50%, transparent)) {
+        .sheet {
+            background: color-mix(in srgb, var(--surface) calc(var(--sheet-alpha) * 100%), transparent);
+        }
+
+        /* Fiche transparente : deux tons, comme la v3. Le fond de la fiche suit le curseur ;
+           les cadres de texte, un peu plus couvrants, le suivent aussi (l'illustration se devine
+           à travers eux), et les pastilles (en-têtes de tableaux, modificateurs, onglets)
+           restent les plus marquées.
+             curseur        20 %   50 %   85 %
+             cadres         39 %   53 %   68 %   (couverture propre, posés sur la fiche)
+             pastilles      58 %   70 %   84 % */
+        :root[data-translucent="true"] {
+            --pane-alpha: calc(0.3 + 0.45 * var(--sheet-alpha));
+            --chip-alpha: calc(0.5 + 0.4 * var(--sheet-alpha));
+        }
+
+        :root[data-translucent="true"] .sheet .box,
+        :root[data-translucent="true"] .sheet .ability,
+        :root[data-translucent="true"] .sheet .skill-group,
+        :root[data-translucent="true"] .sheet .sheet-header {
+            background: color-mix(in srgb, var(--box-strong) calc(var(--pane-alpha) * 100%), transparent);
+            box-shadow: var(--pane-shadow);
+        }
+
+        :root[data-translucent="true"] .sheet .data-table th {
+            background: color-mix(in srgb, var(--head-bg) calc(var(--chip-alpha) * 100%), transparent);
+        }
+
+        :root[data-translucent="true"] .sheet .ability .mod {
+            background: color-mix(in srgb, var(--mod-bg) calc(var(--chip-alpha) * 100%), transparent);
+        }
+
+        /* Bouclier de la CA : seul son remplissage devient translucide (le contour est
+           tracé par ::before, voir sheet.css) */
+        :root[data-translucent="true"] .sheet .ac-hex {
+            background: color-mix(in srgb, var(--hex-bg) calc(var(--chip-alpha) * 100%), transparent);
+            box-shadow: none;
+        }
+
+        :root[data-translucent="true"] .sheet .tab {
+            background: color-mix(in srgb, var(--tab-bg) calc(var(--chip-alpha) * 100%), transparent);
+        }
+
+        :root[data-translucent="true"] .sheet .tab[aria-selected="true"] {
+            background: color-mix(in srgb, var(--tab-active-bg) calc(var(--chip-alpha) * 100%), transparent);
+        }
+
+        /* « Ajouter … » : un voile de verre sous le libellé, qui reste lisible sur l'illustration */
+        :root[data-translucent="true"] .sheet .add-row:not(:hover) {
+            background: color-mix(in srgb, var(--box-strong) calc(var(--chip-alpha) * 100%), transparent);
+        }
+    }
+
+    /* Titres de section et nom de la ressource de classe : teinte la plus soutenue de
+       l'accent, pour rester lisibles quand l'illustration transparaît */
+    :root[data-translucent="true"] .sheet .box h3,
+    :root[data-translucent="true"] .sheet .class-resource .label.accent {
+        color: var(--accent-strong);
+    }
+
+    /* L'en-tête n'a pas de cadre sinon : il en reçoit un pour se détacher de l'illustration */
+    :root[data-translucent="true"] .sheet .sheet-header {
+        padding: 8px 10px;
+        border-radius: 6px;
+    }
+
+    /* Verre dépoli (comme la v3) : l'illustration reste visible mais légèrement floutée derrière
+       la fiche, ce qui garde le texte lisible. Le flou est porté par un calque ::before et non
+       par .sheet : un backdrop-filter sur .sheet ferait de la fiche le repère des éléments
+       position: fixed qu'elle contient (barre de mise en forme du texte). Pas de contexte
+       d'empilement sur .sheet non plus (isolation, z-index) : cette barre doit pouvoir passer
+       au-dessus de la barre de gestion. Le calque se place donc entre l'illustration
+       (body::before, plus tôt dans la page) et le fond translucide de la fiche. */
+    .sheet {
+        position: relative;
+    }
+
+    :root[data-translucent="true"] .sheet::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        border-radius: inherit;
+        pointer-events: none;
+        -webkit-backdrop-filter: blur(3px);
+        backdrop-filter: blur(3px);
+    }
+}
+
+@media print {
+    body::before {
+        display: none;
+    }
+}
+
+/* ---------- Commandes compactes (barre de gestion) ---------- */
+
+.appearance-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 18px;
+}
+
+.appearance-gallery-btn {
+    white-space: nowrap;
+}
+
+.appearance-slider {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.appearance-slider .appearance-slider-label {
+    display: inline;
+    margin: 0;
+    white-space: nowrap;
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+/* Glissière fine dorée : partie remplie jusqu'au curseur (--fill, posé par gallery.js),
+   bouton rond bombé cerclé d'or */
+.appearance-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 88px;
+    height: 20px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.appearance-range::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(to right, var(--accent) var(--fill, 50%), var(--track) var(--fill, 50%));
+}
+
+.appearance-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    margin-top: -6px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.appearance-range:hover::-webkit-slider-thumb {
+    transform: scale(1.12);
+    box-shadow: var(--btn-glow);
+}
+
+.appearance-range::-moz-range-track {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--track);
+}
+
+.appearance-range::-moz-range-progress {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--accent);
+}
+
+.appearance-range::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
+}
+
+.appearance-range:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+/* iPad : glissière plus longue et bouton plus gros sous le doigt */
+@media (pointer: coarse) {
+    .appearance-range {
+        width: 110px;
+        height: 32px;
+    }
+
+    .appearance-range::-webkit-slider-thumb {
+        width: 22px;
+        height: 22px;
+        margin-top: -9px;
+    }
+}
+
+/* ---------- Galerie (fenêtre) ----------
+   Tuiles bombées comme les boutons de la barre : reflet doré au survol,
+   cadre doré et pastille ✦ pour le fond choisi. */
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
+    gap: 12px;
+    padding: 2px;
+}
+
+.gallery-item {
+    position: relative;
+    min-width: 0;
+}
+
+.gallery-pick {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 4px;
+    overflow: hidden;
+    border: 1px solid var(--btn-border);
+    border-radius: 10px;
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.gallery-pick:hover {
+    border-color: var(--accent);
+    box-shadow: var(--btn-glow);
+    transform: translateY(-1px);
+}
+
+.gallery-pick[aria-pressed="true"] {
+    border-color: var(--accent);
+    box-shadow: var(--btn-shadow), 0 0 0 2px var(--accent);
+}
+
+/* Pastille dorée du fond choisi */
+/* Texte de remplacement vide : l'état choisi est déjà annoncé par aria-pressed */
+.gallery-pick[aria-pressed="true"]::after {
+    content: "✦";
+    content: "✦" / "";
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--accent-strong);
+    border-radius: 50%;
+    background: linear-gradient(var(--accent), var(--accent-strong));
+    box-shadow: var(--btn-shadow);
+    color: var(--btn-top);
+    font-size: 0.65rem;
+    line-height: 1;
+}
+
+.gallery-thumb {
+    display: block;
+    width: 100%;
+    height: 80px;
+    border-radius: 7px;
+    object-fit: cover;
+    background: var(--head-bg);
+}
+
+.gallery-thumb-empty {
+    display: grid;
+    place-items: center;
+    font-family: var(--font-title);
+    font-size: 1.6rem;
+    color: var(--text-muted);
+}
+
+.gallery-name {
+    display: block;
+    padding: 6px 4px 2px;
+    overflow: hidden;
+    font-family: var(--font-title);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gallery-pick[aria-pressed="true"] .gallery-name {
+    color: var(--accent);
+}
+
+/* Retirer un fond ajouté : petite pastille ronde, rouge au survol */
+.gallery-remove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    min-width: 26px;
+    min-height: 26px;
+    padding: 0;
+    border-radius: 50%;
+}
+
+.gallery-remove .icon {
+    width: 12px;
+    height: 12px;
+}
+
+.gallery-remove:hover:not(:disabled),
+.gallery-remove:hover:not(:disabled) .icon {
+    border-color: var(--ko);
+    color: var(--ko);
+}
+
+.gallery-add {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-soft);
+}
+
+.gallery-add .gallery-add-label {
+    margin-bottom: 6px;
+}
+
+.gallery-add-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Cadre, creux et reflet doré au focus : règles communes des champs des fenêtres (components.css) */
+.gallery-url {
+    flex: 1 1 220px;
+    min-width: 0;
+}
+
+@media (pointer: coarse) {
+    .gallery-remove {
+        min-width: 36px;
+        min-height: 36px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gallery-pick {
+        transition: none;
+    }
+
+    .gallery-pick:hover {
+        transform: none;
+    }
+}
+
+/* Champ fichier caché visuellement (ouvert par le bouton « Image de l'appareil ») ;
+   pas de display: none, que certains Safari refusent d'ouvrir par programme */
+.gallery-file {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    opacity: 0;
+}
+
+.gallery-message {
+    min-height: 1.2em;
+    margin: 8px 0 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.gallery-message:empty {
+    display: none;
+}

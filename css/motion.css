@@ -1,0 +1,147 @@
+/* =============================================================================
+   MOTION.CSS - Mouvements de la fiche (js/ui/motion.js) : ouverture en cascade,
+   changement d'onglet, survol des cartes, passage clair / sombre, mode cinéma.
+   Tout mouvement est coupé sous prefers-reduced-motion.
+   Règles : couleurs par variables (jetons --motion-* de base.css), aucun !important.
+   Les mouvements des cadres eux-mêmes (cascade d'ouverture, panneau qui glisse, carte
+   soulevée au survol) sont joués par motion.js avec l'API Web Animations : ils ne touchent
+   ni aux propriétés transition / animation ni aux ombres (box-shadow) des cadres.
+   Jamais de transform, filter, backdrop-filter, contain ni will-change sur .sheet ni sur
+   ses ancêtres : la barre de mise en forme du texte, en position: fixed dans la fiche,
+   doit rester calée sur l'écran (le fondu d'ouverture de <body> ne joue que sur l'opacité).
+   ============================================================================= */
+
+/* Avant que motion.js ait pris la main (chargement) : le thème mémorisé, appliqué par le
+   script, remplace d'un coup le fond par défaut, sans fondu de couleur (pas de passage par
+   des gris entre le parchemin et la nuit) */
+:root:not([data-motion]) body {
+    transition: none;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+
+    /* =========================================================================
+       1. OUVERTURE
+       La page attend, invisible, que le script ait construit la fiche (pas d'éclair de
+       fiche vide), puis motion.js la fait apparaître (attribut data-motion sur <html>).
+       Filet de sécurité : si le script ne démarre pas, tout apparaît seul après 2,5 s.
+       ========================================================================= */
+
+    :root:not([data-motion]) body {
+        animation: motion-hold 1ms linear 2.5s backwards;
+    }
+
+    @keyframes motion-hold {
+        from, to { opacity: 0; }
+    }
+
+    /* =========================================================================
+       2. ONGLETS
+       Onglet choisi : le trait lumineux s'étire depuis le centre et le losange d'or se pose
+       (à l'ouverture, après l'apparition de la rangée d'onglets)
+       ========================================================================= */
+
+    :root[data-motion] .tab[aria-selected="true"]::after {
+        animation: motion-tab-line 0.38s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    }
+
+    :root[data-motion] .tab[aria-selected="true"]::before {
+        animation: motion-tab-gem 0.38s cubic-bezier(0.16, 1, 0.3, 1) 0.06s backwards;
+    }
+
+    :root[data-motion="intro"] .tab[aria-selected="true"]::after {
+        animation-delay: 0.2s;
+    }
+
+    :root[data-motion="intro"] .tab[aria-selected="true"]::before {
+        animation-delay: 0.26s;
+    }
+
+    @keyframes motion-tab-line {
+        from { opacity: 0; transform: scaleX(0.2); }
+        to { opacity: 1; transform: none; }
+    }
+
+    @keyframes motion-tab-gem {
+        from { opacity: 0; transform: rotate(45deg) scale(0.2); }
+        to { opacity: 1; transform: rotate(45deg); }
+    }
+
+    /* =========================================================================
+       3. SURVOL DES CARTES (ordinateur seulement)
+       motion.js soulève la carte et, si la souris s'y pose, ajoute la classe .motion-sheen :
+       un reflet doré la traverse une fois, de gauche à droite (comme un reflet sur du verre).
+       Bande de largeur fixe (environ 80 px, quelle que soit la taille de la carte), posée
+       sur une tuile de 200 px qui glisse d'un bord à l'autre ; elle suit les coins arrondis
+       de la carte (et l'hexagone de la CA, découpé par clip-path). Fusion par jeton
+       (--motion-sheen-blend) : en thème clair, le reflet dore le parchemin sans éclaircir
+       l'encre ; en thème sombre, il éclaire la nuit. Le calque n'existe que pendant le reflet.
+       ========================================================================= */
+
+    @media (hover: hover) {
+        .sheet .box,
+        .sheet .ability {
+            position: relative;
+        }
+
+        .sheet :is(.box, .ability).motion-sheen::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            mix-blend-mode: var(--motion-sheen-blend);
+            background: linear-gradient(112deg,
+                transparent calc(50% - 40px), var(--motion-sheen-soft) calc(50% - 15px),
+                var(--motion-sheen) 50%,
+                var(--motion-sheen-soft) calc(50% + 15px), transparent calc(50% + 40px))
+                no-repeat -200px 0 / 200px 100%;
+            animation: motion-sheen 0.8s cubic-bezier(0.45, 0, 0.25, 1);
+        }
+    }
+
+    @keyframes motion-sheen {
+        from { opacity: 0; background-position: -200px 0; }
+        18% { opacity: 1; }
+        82% { opacity: 1; }
+        to { opacity: 0; background-position: calc(100% + 200px) 0; }
+    }
+
+    /* =========================================================================
+       4. THÈME CLAIR / SOMBRE : dévoilement circulaire (theme.js, View Transitions API)
+       Le nouveau thème s'ouvre en cercle depuis le bouton du thème (animation jouée par
+       theme.js) : pas de fondu enchaîné, qui passerait par une image grise et terne.
+       ========================================================================= */
+
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation: none;
+        mix-blend-mode: normal;
+    }
+
+    /* Pendant le passage (attribut posé par theme.js), les transitions de couleur des
+       éléments sont suspendues : la nouvelle image est déjà dans ses couleurs finales */
+    :root[data-theme-fading] *,
+    :root[data-theme-fading] *::before,
+    :root[data-theme-fading] *::after {
+        transition: none;
+    }
+
+    /* =========================================================================
+       5. MODE CINÉMA (body.cinema, toolbar.js) : l'illustration (body::before, gallery.css)
+       avance lentement vers le haut à gauche, puis revient en douceur à la sortie.
+       Un seul mouvement de 28 s, qui s'arrête ensuite (rien ne tourne en boucle).
+       Agrandie de 7 %, elle couvre toujours tout l'écran malgré le décalage.
+       La transition d'opacité de gallery.css est reprise telle quelle.
+       ========================================================================= */
+
+    body::before {
+        transform-origin: 50% 40%;
+        transition: opacity 0.3s ease, transform 2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body.cinema::before {
+        transform: scale(1.07) translate(-1.2%, -0.8%);
+        transition: opacity 0.3s ease, transform 28s cubic-bezier(0.2, 0.3, 0.5, 1);
+    }
+}

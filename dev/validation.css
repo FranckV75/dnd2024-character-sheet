@@ -1,0 +1,104 @@
+/* Page de validation temporaire (étapes 0 à 2) — supprimée à la bascule */
+
+.v-header {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+.v-header h1 {
+    margin: 0 0 4px;
+}
+
+.v-muted {
+    color: var(--text-muted);
+    margin: 0 0 12px;
+}
+
+.v-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.v-btn {
+    font: inherit;
+    font-size: 0.95rem;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.v-btn:hover,
+.v-btn:focus-visible {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.v-status {
+    min-height: 1.5em;
+    margin: 10px 0 0;
+    color: var(--accent);
+}
+
+.v-grid {
+    max-width: 1100px;
+    margin: 0 auto 32px;
+    padding: 0 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    align-items: start;
+}
+
+.v-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.v-card.wide {
+    grid-column: 1 / -1;
+}
+
+.v-card h2 {
+    font-size: 1rem;
+    margin: 0 0 8px;
+}
+
+.v-card table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.v-card th,
+.v-card td {
+    text-align: left;
+    padding: 3px 6px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+}
+
+.v-card th {
+    font-family: var(--font-title);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.v-card ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.ok {
+    color: var(--ok);
+}
+
+.ko {
+    color: var(--ko);
+}

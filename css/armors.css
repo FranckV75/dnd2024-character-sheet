@@ -1,0 +1,195 @@
+/* =============================================================================
+   ARMORS.CSS - Tableau des armures (js/ui/armors.js)
+   Couleurs : uniquement les variables de css/base.css (thèmes clair et sombre).
+   ============================================================================= */
+
+/* Largeurs fixes : le tableau tient dans la colonne de contenu de l'iPad (~630-640 px)
+   et défile horizontalement (.table-scroll) en dessous. */
+.armors-table {
+    table-layout: fixed;
+    min-width: 600px;
+}
+
+/* Les cases passent à la ligne : toutes les armures restent visibles, sans défilement interne */
+#armors-feature .table-scroll {
+    max-height: none;
+}
+
+.armors-table .col-name { width: 17%; }
+.armors-table .col-type { width: 14%; }
+.armors-table .col-ca { width: 6%; }
+.armors-table .col-str { width: 6%; }
+.armors-table .col-check { width: 7%; }
+.armors-table .col-weight { width: 9%; }
+.armors-table .col-price { width: 9%; }
+.armors-table .col-equip { width: 9%; }
+.armors-table .col-comment { width: auto; }
+.armors-table .col-del { width: 40px; }
+
+/* Tablettes : le nom et le type (qui pilote la CA) passent avant les colonnes numériques */
+@media screen and (max-width: 1100px) {
+    .armors-table .col-name,
+    .armors-table .col-type { width: 19%; }
+    .armors-table .col-ca,
+    .armors-table .col-str { width: 5%; }
+    .armors-table .col-weight,
+    .armors-table .col-price { width: 8%; }
+}
+
+.armors-table th {
+    vertical-align: bottom;
+    line-height: 1.2;
+}
+
+.armors-table th.col-check,
+.armors-table td.col-check,
+.armors-table th.col-equip,
+.armors-table td.col-equip,
+.armors-table td.col-del {
+    text-align: center;
+}
+
+.armors-table th,
+.armors-table td {
+    padding-right: 3px;
+    padding-left: 3px;
+}
+
+.armors-table td {
+    vertical-align: middle;
+}
+
+.armors-table td.empty {
+    text-align: center;
+}
+
+/* Le type se lit comme les champs voisins */
+.armors-table select.cell-input {
+    cursor: pointer;
+    text-overflow: ellipsis;
+}
+
+.armors-table select.cell-input option {
+    background: var(--box-strong);
+    color: var(--text);
+}
+
+[data-locked="true"] .armors-table .cell-input[readonly],
+[data-locked="true"] .armors-table select.cell-input:disabled {
+    cursor: default;
+}
+
+[data-locked="true"] .armors-table .cell-input[readonly]:hover,
+[data-locked="true"] .armors-table .cell-input[readonly]:focus {
+    border-bottom-color: transparent;
+    background: transparent;
+}
+
+[data-locked="true"] .armors-table .round-check:disabled {
+    cursor: default;
+}
+
+/* Équipée + avertissement côte à côte */
+.armor-equip {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+/* Avertissement : triangle dessiné, rouge, dans une petite pastille bombée au survol */
+.armor-warn {
+    display: inline-grid;
+    place-items: center;
+    min-width: 24px;
+    min-height: 24px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--ko);
+    line-height: 1;
+    cursor: help;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.armor-warn .icon {
+    width: 15px;
+    height: 15px;
+}
+
+.armor-warn[hidden] {
+    display: none;
+}
+
+.armor-warn:hover,
+.armor-warn:focus-visible {
+    border-color: var(--ko);
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
+}
+
+@media (pointer: coarse) {
+    .armor-warn {
+        position: relative;
+        min-width: 32px;
+        min-height: 32px;
+    }
+
+    /* Zone de toucher de 44 px de haut (32 + 2 × 1 px de cadre + 2 × 5), sans empiéter
+       sur la case « Équipée » à gauche */
+    .armor-warn::after {
+        content: "";
+        position: absolute;
+        inset: -7px -7px -7px -4px;
+    }
+
+    .armor-equip {
+        gap: 6px;
+    }
+
+    .armors-table .col-del { width: 48px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .armor-warn {
+        transition: none;
+    }
+}
+
+/* Ligne à vérifier : liseré discret à gauche */
+.armors-table tr.armor-warning td:first-child {
+    box-shadow: inset 3px 0 0 var(--ko);
+}
+
+/* Texte réservé aux lecteurs d'écran */
+.armors-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media print {
+    .armor-warn {
+        display: none;
+    }
+}
+
+/* Ligne de saisie (ligne vide) : pas de suppression tant qu'elle est vide ; lignes vides
+   masquées par armors.js */
+.armors-table tr[hidden] {
+    display: none;
+}
+
+.armors-table tr.is-entry .col-del > * {
+    visibility: hidden;
+}
+
+.armors-table tr.is-entry .cell-input::placeholder {
+    font-style: italic;
+}

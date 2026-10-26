@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validation v4 — Étapes 0 à 2</title>
+    <link rel="icon" href="data:,">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="validation.css">
+</head>
+
+<body>
+    <header class="v-header">
+        <h1>Page de validation — moteur v4</h1>
+        <p class="v-muted">Page temporaire : elle montre ce que le nouveau moteur comprend d'une fiche, avant que
+            l'interface finale n'existe. Rien n'est envoyé sur Internet.</p>
+        <div class="v-toolbar" role="toolbar" aria-label="Actions">
+            <label class="v-btn" for="file-input">📂 Importer un fichier JSON</label>
+            <input type="file" id="file-input" accept=".json,application/json" hidden>
+            <button type="button" class="v-btn" id="btn-load-local">💾 Recharger la sauvegarde du navigateur</button>
+            <button type="button" class="v-btn" id="btn-save-local">📥 Enregistrer dans le navigateur</button>
+            <button type="button" class="v-btn" id="btn-export">⬇️ Exporter en JSON</button>
+            <button type="button" class="v-btn" id="btn-theme">🌗 Thème clair / sombre</button>
+        </div>
+        <p id="status" class="v-status" role="status" aria-live="polite"></p>
+    </header>
+
+    <main id="output" class="v-grid"></main>
+
+    <script type="module" src="validation.js"></script>
+</body>
+
+</html>

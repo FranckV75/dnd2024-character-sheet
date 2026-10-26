@@ -2,6 +2,114 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.0.0] - 2026-10-26 (Bascule : la v4 remplace la v3 à la même adresse)
+### Added
+- Reprise de la v3 sans perte au premier lancement : emplacements de sorts utilisés, nombre
+  d'emplacements réglé à la main et bonus de combat actifs (Rage…), que la v3 gardait à part dans le
+  navigateur, entrent dans la fiche (les anciennes clés restent en place pour un retour à la v3).
+- Personnage en ligne au nom écrit autrement par la v3 (mise en forme au milieu du nom, par ex.
+  « Korgul B rise-Crâne ») : retrouvé et renommé au premier lancement, au lieu d'un doublon.
+- Perception passive : toucher la valeur calculée (fiche déverrouillée) permet d'en saisir une autre ;
+  effacer la saisie revient au calcul (comme la v3).
+- Grimoire : « Emplacements niv. N » proposé aussi au-dessus des emplacements du manuel (Arcanum
+  mystique de l'Occultiste, multiclasse), comme le « + » de la v3.
+- Lien d'e-mail expiré ou déjà utilisé (mot de passe oublié) : message clair, la session reste ouverte.
+### Changed
+- Barre « Gestion » repliée aussi sur les tablettes tactiles en paysage (jusqu'à 1400 px : Lenovo,
+  iPad), et centrée au-dessus de la fiche ; dépliée, elle couvrait un quart de la hauteur de l'écran.
+- Une version en ligne enregistrée par l'ancienne version (onglet v3 resté ouvert) n'est jamais chargée
+  en silence : une question propose de garder celle de ce navigateur. Si la v3 n'a fait qu'effacer
+  l'état de jeu (Rage, emplacements), il est remis en ligne sans question.
+- « Ce personnage existe déjà en ligne » : la version la plus récente est signalée « (plus récente) » ;
+  si c'est la version en ligne, « Ouvrir la version en ligne » est le choix proposé par défaut.
+- Création en ligne : la fiche existante est lue avant toute création (plus d'erreur 409 dans la console).
+- Déconnexion : ce navigateur seulement (les autres appareils restent connectés).
+- Épuisement élevé mis en évidence (orange dès 3, rouge dès 5), comme la v3.
+- Sorts : note vide remplie avec le nom anglais du sort choisi (comme la v3) ; tableaux des
+  descriptions lisibles (Augure, Confusion, Téléportation…) ; Entrée choisit la seule suggestion.
+- Tablettes : boutons Rage et Cogneur lourd de 44 px de haut, zones de toucher agrandies pour le tri
+  des sorts et le losange « préparé », plus de rectangle gris au toucher ; repos court sans clavier
+  virtuel à l'ouverture ; infobulle de sort qui défile au doigt et tient dans l'écran ; suggestions
+  affichées au-dessus du champ quand le clavier virtuel couvre le dessous.
+- `dev/preview.html` (outil de capture) ne fonctionne plus qu'en local : sur le site publié, il ne
+  peut plus remplacer la fiche du joueur.
+### Fixed
+- Grande image de fond importée en v3 (plus de 1,5 Mo environ) : de nouveau affichée (Chrome et Edge
+  ignoraient une variable CSS de plus de 2 Mio).
+- Ancienne adresse complète d'une image fournie (racine du site v3) : affichée depuis `assets/backgrounds/`.
+- Dé de vie d'une fiche v3 aligné sur la classe (la v3 le faisait à chaque ouverture) ; « Dés utilisés »
+  vide remis à 0.
+- Voile des fenêtres visible sur les navigateurs plus anciens (Chrome < 122, Safari < 17.4) ; coupure des
+  mots longs avec trait d'union sur Safari < 17.
+
+## [4.0.0-alpha.4] - 2026-10-25 (Reconstruction v4 : étape 5, branche `v4`)
+### Added
+- Compte en ligne (même base Supabase que la v3) : connexion avec mot de passe mémorisable, création de compte, mot de passe oublié, « Mes personnages » (ouvrir, supprimer), renommage / copie.
+- Synchronisation sûre : version en ligne jamais écrasée si elle a changé ailleurs, nouvelle fiche ou import en création seule, questions dont la fermeture n'écrase rien, opérations périmées abandonnées, suivi enregistré avec la fiche (plusieurs onglets).
+- 46 scénarios de synchronisation testés (faux Supabase réaliste), vérifiés par trois relectures indépendantes et des tests de mutation.
+### Changed
+- Tableaux d'armes, d'armures et de sorts : les cases passent à la ligne et s'agrandissent au lieu de tronquer le texte (nom complet de l'arme, dégâts, propriétés) ; plus de défilement interne.
+- Valeurs des tableaux en Alegreya (en-têtes en Cinzel) : plus lisibles, mots jamais coupés à 820 px ; colonne des propriétés élargie sur tablette.
+- Fiche transparente façon v3 : les cadres de texte suivent le curseur d'opacité (deux tons, l'illustration se voit à travers), verre dépoli derrière la fiche, ombre et reflet légers sur les cadres ; l'hexagone de la CA garde son contour.
+- Barre « Gestion » redessinée : barre flottante en verre dépoli à double filet doré, commandes ordonnées (Fiche ; Affichage et Compte ; états à droite), boutons groupés à icônes dessinées, glissières dorées ; une seule ligne repliée sur tablette.
+- Thème sombre : illustration de fond moins assombrie.
+- Finitions « chic » de toute la fiche (lot 1) : icônes dorées dessinées à la place des emojis (titres, onglets, groupes de compétences, boutons, fenêtres), titres de section ornés d'un filet doré, onglets « marque-pages » avec onglet actif doré, nom du personnage en titre de parchemin, chevrons dorés sur les listes, cases rondes perlées d'or, pièces de monnaie en relief, grands chiffres gravés.
+- Boutons de la fiche (filtres, Rage, ajouter, repos, réglages) et fenêtres (verre dépoli, double filet doré) dans le style de la barre « Gestion ».
+- Textes longs (traits, capacités de classe, compagnons…) : la case s'agrandit pour tout montrer, plus de défilement interne.
+- Accessibilité : contrastes revus dans les deux thèmes, focus clavier visible partout, zones tactiles de 44 px sur iPad, animations coupées si l'appareil le demande.
+- Effets « waouh » (lot 2) : ouverture de la fiche en cascade, changement d'onglet en fondu glissé, cartes qui se soulèvent au survol avec un rare reflet doré, passage clair / sombre en cercle depuis le bouton, lent zoom de l'illustration en mode cinéma.
+- Réactions de jeu : Rage active = lueur de braise autour des PV, des Rages et des armes, bouton Rage incandescent ; jauge de PV (laiton → cuivre → braise, PV temporaires en argent) ; les valeurs calculées pulsent en doré quand elles changent.
+- Icônes : poing vu de face pour la Force, sablier pour le repos court ; thème sombre appliqué dès le premier affichage (plus de flash clair).
+- Toutes les animations sont coupées si l'appareil demande moins d'animations ; rien n'est animé à l'impression.
+- Lisibilité (lot 3) : grimoire sans lignes vides (seuls les sorts remplis plus une ligne de saisie ; les lignes vides de la sauvegarde restent intactes) et replié pour un personnage sans magie (« Ouvrir le grimoire ») ; sorts non préparés plus discrets.
+- Dons : emplacement atteint mais vide signalé en doré, niveaux à venir atténués (« À venir », « Actif au niveau N » pour un don prévu) ; compétences maîtrisées et expertises mises en valeur, les autres plus discrètes.
+- Revue de toute la fiche : bonus d'attaque sur une seule ligne sur iPad, sauvegardes plus grandes et maîtrisées en gras, taille minimale des petits libellés, contrastes renforcés (texte atténué plus foncé en clair), colonnes du grimoire sans mots coupés à 820 px.
+- Retours de Franck sur iPad : valeurs centrées dans les cases bonus de maîtrise / inspiration / vitesse (alignées entre elles), jauge de PV en dégradé du vert au rouge (jaune, orange), encadré Odyssée aux titres sur une même ligne et valeurs alignées, quelle que soit la largeur ; classe d'armure dans un bouclier à double filet doré (à la place de l'hexagone, même place).
+- Bouton « Cogneur lourd » à côté de « Rage » (don choisi à un niveau atteint) : + bonus de maîtrise aux dégâts des armes Lourdes, cumulable avec la Rage.
+- Armes et armures : les lignes vides enregistrées sont masquées, une seule ligne « Nouvelle arme… » / « Nouvelle armure… » reste pour la saisie (aucune quand la fiche est verrouillée ni à l'impression) ; « Ajouter » y place le curseur.
+- Barre « Gestion » : disposition figée, les messages d'état (compte, enregistrement) ne déplacent plus les boutons ; trop longs, ils se terminent par « … » (texte complet au survol).
+### Fixed
+- Champ en cours de saisie rafraîchi quand une autre version de la fiche est chargée.
+- Noms v3 sur plusieurs lignes lus comme la v3 (« Kor gul »).
+
+## [4.0.0-alpha.3] - 2026-10-25 (Reconstruction v4 : étape 4, branche `v4`)
+### Added
+- Tableaux d'armes, d'armures et de sorts modifiables avec auto-complétion depuis le manuel, filtres, configuration d'arme, bonus de combat (Rage, Attaque sournoise, Marque du chasseur).
+- Grimoire : emplacements de sorts cochables (magie de pacte comprise), tri, infobulles de description.
+- Repos court (dés de vie, minimum 1 PV par dé) et repos long conformes au PHB 2024.
+- Barre « Gestion » repliable : verrou, mode cinéma, import/export (fichier ou presse-papiers), nouvelle fiche, impression, galerie de fonds, cadrage et opacité.
+- Éditeur de style (gras, italique, souligné, tailles, couleurs lisibles dans les deux thèmes).
+- Impression A4 : 4 pages, une par section, noir sur blanc quel que soit le thème.
+### Fixed
+- Bouclier sans formation sans effet sur la CA ; un seul bouclier compte.
+- Sauvegarde automatique faite immédiatement à l'import et à la fermeture de la page ; messages d'état préservés.
+- Tableau des armes sans défilement latéral à 820 px ; couleurs de texte v3 lisibles en thème sombre ; barres de défilement sombres ; texte riche nettoyé plus strictement ; aucune erreur console.
+
+## [4.0.0-alpha.2] - 2026-10-25 (Reconstruction v4 : étape 3, branche `v4`)
+### Added
+- Fiche complète sur 4 onglets (en-tête, caractéristiques, combat, traits, dons, compétences, Odyssée, magie, trésor), reliée au store avec sauvegarde automatique dans le navigateur.
+- Thèmes clair et sombre (palette v3), mise en page tablette 768–1100 px sans défilement horizontal (vérifiée à 820, 1024 et 1280 px).
+- Textes longs en police à vraies minuscules (Alegreya, choisie par Franck sur la page `dev/polices.html`).
+- Import / export JSON depuis la barre « Gestion ».
+- Palier de renommée de l'Odyssée calculé par le moteur de règles.
+### Fixed
+- Cases à cocher toujours rondes, texte « 18(16) » qui ne déborde plus, aucun `!important` ni gestionnaire inline.
+
+## [4.0.0-alpha.1] - 2026-10-25 (Reconstruction v4 : étapes 0 à 2, branche `v4`)
+### Added
+- Nouvelle structure (`js/data`, `js/rules`, `js/state`, `js/ui`), serveur local sans dépendance, garde-fous `npm run check` et CI.
+- Moteur de règles pur `js/rules/character.js` : CA, sauvegardes, compétences, sorts, armes, épuisement.
+- État unique (`js/state/store.js`), migration de toutes les anciennes sauvegardes (`js/state/migrate.js`), sauvegarde locale et fichiers JSON compatibles v3.
+- Page de validation temporaire `dev/validation.html`.
+- 109 tests (règles, données, migration, vraies sauvegardes de Korgul en local).
+### Fixed
+- Règles corrigées d'après le Manuel du joueur 2024 (emplacements Paladin/Rôdeur au niveau 1, Conduit divin, Forme sauvage, points de discipline et de sorcellerie, Défense sans armure du Moine avec bouclier).
+- Dons de style de combat classés « Style de combat ».
+
+## [3.1.1] - 2026-10-25 (Réparation express de la v3, branche `master`)
+### Fixed
+- L'application redémarre (déclaration `switchTab` dupliquée), boutons du grimoire et « Nouvelle fiche » réparés, chargement des sorts rétabli.
+
 ## [2.9.13] - 2026-07-26 (Story E : Performances & Chargement)
 ### Added
 - Attribut `defer` sur les 15 balises `<script>` dans `index.html` pour débloquer l'analyse du DOM.
