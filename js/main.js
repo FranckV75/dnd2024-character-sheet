@@ -17,6 +17,8 @@ import { initArmors } from './ui/armors.js';
 import { initSpells } from './ui/spells.js';
 import { initRest } from './ui/rest.js';
 import { initStyleEditor } from './ui/style-editor.js';
+import { initMotion } from './ui/motion.js';
+import { initFeedback } from './ui/feedback.js';
 import { initAccount } from './ui/account.js';
 import { fitCellTexts } from './ui/cell-text.js';
 import { createStore } from './state/store.js';
@@ -86,7 +88,7 @@ const ctx = {
 createSheet(root, store);
 decorateIcons(root); // icônes dorées des titres et des onglets (data-icon)
 initTabs(root);
-for (const init of [initToolbar, initAccount, initGallery, initWeapons, initArmors, initSpells, initRest, initStyleEditor]) {
+for (const init of [initToolbar, initAccount, initGallery, initWeapons, initArmors, initSpells, initRest, initStyleEditor, initMotion, initFeedback]) {
     try {
         init(ctx);
     } catch (error) {
