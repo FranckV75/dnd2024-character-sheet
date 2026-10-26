@@ -13,7 +13,10 @@ import {
     readWeaponConfig,
     buildWeaponConfig,
     buffsForClass,
+    buffsForCharacter,
+    featBuffs,
     effectiveBuffs,
+    isBlankWeapon,
     toggleBuff,
     removeWeapon,
     restoreWeapon
@@ -195,11 +198,37 @@ describe('bonus de combat', () => {
         assert.deepEqual(buffsForClass('wizard'), []);
         assert.deepEqual(buffsForClass(''), []);
     });
-    test('un bonus hors de la classe actuelle n\'est pas appliqué', () => {
+    test("un bonus hors de la classe actuelle n'est pas appliqué", () => {
         const buffs = { rage: true, sneakAttack: true, hunterMark: true };
-        assert.deepEqual(effectiveBuffs('barbarian', buffs), { rage: true, sneakAttack: false, hunterMark: false });
-        assert.deepEqual(effectiveBuffs('fighter', buffs), { rage: false, sneakAttack: false, hunterMark: false });
-        assert.deepEqual(effectiveBuffs('rogue', undefined), { rage: false, sneakAttack: false, hunterMark: false });
+        const none = { rage: false, sneakAttack: false, hunterMark: false, heavyWeaponMaster: false };
+        assert.deepEqual(effectiveBuffs('barbarian', buffs), { ...none, rage: true });
+        assert.deepEqual(effectiveBuffs('fighter', buffs), none);
+        assert.deepEqual(effectiveBuffs('rogue', undefined), none);
+    });
+    test('Cogneur lourd : proposé seulement si le don est choisi à un niveau atteint', () => {
+        const id = 'maitre_des_armes_lourdes_cogneur_lourd';
+        assert.deepEqual(featBuffs({ char_level: '4', feat_4: id }), ['heavyWeaponMaster']);
+        assert.deepEqual(featBuffs({ char_level: '<b>4</b>', feat_4: id }), ['heavyWeaponMaster']);
+        assert.deepEqual(featBuffs({ char_level: '7', feat_8: id }), [], 'don prévu pour plus tard');
+        assert.deepEqual(featBuffs({ char_level: '12', feat_4: 'alerte' }), []);
+        assert.deepEqual(featBuffs(null), []);
+        assert.deepEqual(buffsForCharacter('barbarian', { char_level: '4', feat_4: id }), ['rage', 'heavyWeaponMaster']);
+        assert.deepEqual(buffsForCharacter('fighter', { char_level: '3' }), []);
+    });
+    test('Cogneur lourd : appliqué seulement avec le don, quelle que soit la classe', () => {
+        const id = 'maitre_des_armes_lourdes_cogneur_lourd';
+        const on = { heavyWeaponMaster: true };
+        assert.equal(effectiveBuffs('fighter', on, { char_level: '4', feat_4: id }).heavyWeaponMaster, true);
+        assert.equal(effectiveBuffs('fighter', on, { char_level: '4' }).heavyWeaponMaster, false);
+        assert.equal(effectiveBuffs('fighter', on).heavyWeaponMaster, false, 'sans le personnage : classe seule');
+    });
+    test("ligne d'arme vide", () => {
+        assert.equal(isBlankWeapon({ ...EMPTY_WEAPON }), true);
+        assert.equal(isBlankWeapon({ ...EMPTY_WEAPON, name: '<br>' }), true);
+        assert.equal(isBlankWeapon(null), true);
+        assert.equal(isBlankWeapon({ ...EMPTY_WEAPON, name: 'Hachette' }), false);
+        assert.equal(isBlankWeapon({ ...EMPTY_WEAPON, note: 'x4' }), false);
+        assert.equal(isBlankWeapon({ ...EMPTY_WEAPON, dmg: '1d6' }), false, 'ancienne valeur v3 saisie à la main');
     });
     test('bascule sans modifier l\'objet d\'origine', () => {
         const before = { rage: true };

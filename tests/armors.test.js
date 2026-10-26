@@ -11,12 +11,28 @@ import {
     armorRowFromCatalogue,
     strengthRequirement,
     armorWarnings,
-    armorTraining
+    armorTraining,
+    isBlankArmor
 } from '../js/rules/armors.js';
 import { EQUIPMENT_DATA } from '../js/data/equipment.js';
 import { EMPTY_ARMOR } from '../js/state/schema.js';
 
 const byName = (name) => EQUIPMENT_DATA.armors.find(a => a.name === name);
+
+describe("isBlankArmor : ligne d'armure vide", () => {
+    test('Ligne neuve ou sans contenu : vide', () => {
+        assert.equal(isBlankArmor({ ...EMPTY_ARMOR }), true);
+        assert.equal(isBlankArmor({ name: '<br>', type: '' }), true);
+        assert.equal(isBlankArmor(null), true);
+    });
+    test('Le moindre contenu en fait une vraie ligne', () => {
+        assert.equal(isBlankArmor({ ...EMPTY_ARMOR, name: 'Bouclier' }), false);
+        assert.equal(isBlankArmor({ ...EMPTY_ARMOR, type: 'shield' }), false);
+        assert.equal(isBlankArmor({ ...EMPTY_ARMOR, ca: '+2' }), false);
+        assert.equal(isBlankArmor({ ...EMPTY_ARMOR, equipped: true }), false);
+        assert.equal(isBlankArmor({ ...EMPTY_ARMOR, comment: 'pour info' }), false);
+    });
+});
 const ALL = { light: true, medium: true, heavy: true, shield: true };
 
 describe('ARMOR_TYPES', () => {

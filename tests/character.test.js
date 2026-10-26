@@ -248,6 +248,14 @@ describe('computeWeapon : armes avec bonus de combat', () => {
         assert.equal(computeWeapon(dagger, stats('barbarian'), { rage: true }).damage.text, '1d4 +4 PERF +2 (Rage)');
     });
 
+    test('Cogneur lourd : + bonus de maîtrise, armes Lourdes seulement', () => {
+        const handaxe = { name: 'Hachette', atkKey: 'FOR', baseDmg: '1d6 tran.', prop: 'Légère, Lancer (6/18 m)', category: 'Courante' };
+        assert.equal(computeWeapon(greataxe, stats('fighter'), { heavyWeaponMaster: true }).damage.text, '1d12 +4 TRAN +3 (Cogneur lourd)');
+        assert.equal(computeWeapon(handaxe, stats('fighter'), { heavyWeaponMaster: true }).damage.text, '1d6 +4 TRAN');
+        assert.equal(computeWeapon(greataxe, stats('barbarian'), { rage: true, heavyWeaponMaster: true }).damage.text,
+            '1d12 +4 TRAN +2 (Rage) +3 (Cogneur lourd)');
+    });
+
     test('Attaque sournoise : armes de finesse ou à distance', () => {
         assert.equal(computeWeapon(dagger, stats('rogue', 5), { sneakAttack: true }).damage.text, '1d4 +4 PERF +3d6 (Sournoise)');
         assert.equal(computeWeapon(greataxe, stats('rogue', 5), { sneakAttack: true }).damage.text, '1d12 +4 TRAN');

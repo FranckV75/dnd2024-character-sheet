@@ -2,7 +2,7 @@
 // WEAPONS.JS - Tableau des armes (édition, auto-complétion, filtres, configuration, bonus de combat)
 //
 // Données : character.dynamic_weapons (lignes au format v3, voir EMPTY_WEAPON) et
-// character.combat_buffs { rage, sneakAttack, hunterMark }.
+// character.combat_buffs { rage, sneakAttack, hunterMark, heavyWeaponMaster }.
 // Les valeurs d'attaque et de dégâts sont calculées (computeWeapon), jamais enregistrées.
 // Les règles (filtres, remplissage depuis le manuel, validation) sont dans js/rules/weapons.js.
 // =============================================================================
@@ -14,7 +14,8 @@ import { deriveCharacter, computeWeapon, sneakAttackDice } from '../rules/charac
 import { getRageBonus } from '../rules/logic.js';
 import {
     matchesWeaponFilter, rowFromRulebookWeapon, completeRowFromRulebook,
-    readWeaponConfig, buildWeaponConfig, normalizeDamageDie, buffsForClass, effectiveBuffs, toggleBuff,
+    readWeaponConfig, buildWeaponConfig, normalizeDamageDie, buffsForCharacter, effectiveBuffs, toggleBuff,
+    isBlankWeapon,
     removeWeapon, restoreWeapon, WEAPON_DAMAGE_TYPES
 } from '../rules/weapons.js';
 import { el, icon, setIconLabel } from './dom.js';
@@ -58,13 +59,14 @@ const DAMAGE_TYPE_LABELS = {
     ACIDE: 'Acide', FOUDRE: 'Foudre', TONNERRE: 'Tonnerre'
 };
 
+/** Boutons des bonus de combat ; chaque définition reçoit deriveCharacter() (niveau, bonus de maîtrise) */
 const BUFF_DEFS = {
-    rage: (level) => ({
+    rage: ({ level }) => ({
         icon: 'flame',
         text: `Rage (+${getRageBonus(level)})`,
         title: `Rage : +${getRageBonus(level)} aux dégâts des attaques utilisant la Force`
     }),
-    sneakAttack: (level) => ({
+    sneakAttack: ({ level }) => ({
         icon: 'swords',
         text: `Attaque sournoise (${sneakAttackDice(level)}d6)`,
         title: `Attaque sournoise : +${sneakAttackDice(level)}d6 avec une arme de finesse ou à distance (une fois par tour)`
@@ -73,6 +75,11 @@ const BUFF_DEFS = {
         icon: 'target',
         text: 'Marque du chasseur (+1d6)',
         title: 'Marque du chasseur : +1d6 dégâts de force contre la cible marquée'
+    }),
+    heavyWeaponMaster: ({ pb }) => ({
+        icon: 'fist',
+        text: `Cogneur lourd (+${pb})`,
+        title: `Cogneur lourd : +${pb} (bonus de maîtrise) aux dégâts quand vous touchez avec une arme Lourde lors de l'action Attaque à votre tour`
     })
 };
 
@@ -170,6 +177,13 @@ export function initWeapons(ctx) {
 
     function addWeapon() {
         if (isLocked()) return;
+        // Une ligne de saisie vide est déjà affichée : on y place le curseur plutôt que
+        // d'ajouter une ligne vide de plus (qui serait masquée)
+        const entry = rows.find((row, i) => !row.tr.hidden && isBlankWeapon(weapons()[i]));
+        if (entry) {
+            focusRowName(entry);
+            return;
+        }
         store.update({ dynamic_weapons: [...weapons(), { ...EMPTY_WEAPON }] });
         focusRowName(rows[rows.length - 1]);
     }
@@ -332,6 +346,11 @@ export function initWeapons(ctx) {
 
     function refreshRows(list, derived, buffs) {
         let visible = 0;
+        // Lignes vides enregistrées (ajoutées puis laissées vides) : une seule reste affichée,
+        // comme ligne de saisie, et aucune quand la fiche est verrouillée. Les autres sont
+        // seulement masquées : la sauvegarde n'est jamais réécrite par l'affichage.
+        const locked = isLocked();
+        let entryShown = false;
         list.forEach((weapon, i) => {
             const row = rows[i];
             if (!row || !weapon || typeof weapon !== 'object') return;
@@ -355,8 +374,13 @@ export function initWeapons(ctx) {
             row.configBtn.setAttribute('aria-label', `Configurer l'arme ${label}`);
             row.deleteBtn.setAttribute('aria-label', `Supprimer l'arme ${label}`);
 
-            const shown = row === pinnedRow || matchesWeaponFilter(weapon, filter);
+            const blank = isBlankWeapon(weapon);
+            const shown = row === pinnedRow
+                || (blank ? !locked && !entryShown : matchesWeaponFilter(weapon, filter));
+            if (blank && shown) entryShown = true;
             row.tr.hidden = !shown;
+            row.tr.classList.toggle('is-entry', blank);
+            row.inputs.name.placeholder = blank ? 'Nouvelle arme…' : 'Nom…';
             if (shown) visible++;
         });
 
@@ -371,7 +395,7 @@ export function initWeapons(ctx) {
     // ---------------------------------------------------------------------
 
     function refreshBuffs(character, derived) {
-        const defs = buffsForClass(derived.classSlug).map(key => ({ key, ...BUFF_DEFS[key](derived.level) }));
+        const defs = buffsForCharacter(derived.classSlug, character).map(key => ({ key, ...BUFF_DEFS[key](derived) }));
         const signature = defs.map(d => `${d.key}:${d.text}`).join('|');
         if (signature !== buffsSignature) {
             buffsSignature = signature;
@@ -484,7 +508,7 @@ export function initWeapons(ctx) {
 
     function refresh(character) {
         const derived = deriveCharacter(character);
-        const buffs = effectiveBuffs(derived.classSlug, character.combat_buffs);
+        const buffs = effectiveBuffs(derived.classSlug, character.combat_buffs, character);
         refreshBuffs(character, derived);
         refreshRows(weapons(), derived, buffs);
     }
@@ -496,7 +520,12 @@ export function initWeapons(ctx) {
         refresh(character);
     }
 
-    document.addEventListener('dd:lockchange', applyLockState);
+    document.addEventListener('dd:lockchange', () => {
+        applyLockState();
+        // Fiche verrouillée : plus de saisie, la ligne vide épinglée disparaît aussi
+        if (isLocked()) pinnedRow = null;
+        refresh(store.get());
+    });
     store.subscribe(render);
     render(store.get(), null);
 }

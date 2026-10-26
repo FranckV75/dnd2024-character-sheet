@@ -179,3 +179,17 @@
         display: none;
     }
 }
+
+/* Ligne de saisie (ligne vide) : pas de suppression tant qu'elle est vide ; lignes vides
+   masquées par armors.js */
+.armors-table tr[hidden] {
+    display: none;
+}
+
+.armors-table tr.is-entry .col-del > * {
+    visibility: hidden;
+}
+
+.armors-table tr.is-entry .cell-input::placeholder {
+    font-style: italic;
+}

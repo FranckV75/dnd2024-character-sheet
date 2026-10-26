@@ -29,6 +29,20 @@ const fold = (text) => String(text ?? '').toLowerCase().normalize('NFD').replace
  * @param {Array} [catalogue]
  * @returns {Array<{name: string, type: string, ca: string, str: string, stealth: boolean, weight: string, price: string}>}
  */
+/**
+ * Ligne d'armure vide : rien n'a été saisi ni coché (le type par défaut « Standard / Aucun »
+ * ne compte pas). L'affichage n'en garde qu'une, comme ligne de saisie.
+ * @param {Object} armor - ligne de dynamic_armors
+ * @returns {boolean}
+ */
+export function isBlankArmor(armor) {
+    if (!armor || typeof armor !== 'object') return true;
+    const text = (value) => String(value ?? '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+    const typed = ['name', 'ca', 'str', 'weight', 'price', 'comment'].some(key => text(armor[key]) !== '');
+    const type = text(armor.type);
+    return !typed && armor.stealth !== true && armor.equipped !== true && (type === '' || type === EMPTY_ARMOR.type);
+}
+
 export function searchArmorCatalogue(query, catalogue = EQUIPMENT_DATA.armors) {
     const q = fold(query);
     if (!q) return [];

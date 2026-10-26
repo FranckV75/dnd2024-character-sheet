@@ -4,6 +4,8 @@
 //  - ligne d'arme remplie à partir du manuel (DD_RULES.weapons)
 //  - configuration personnalisée d'une arme (champ weaponConfig, format v3)
 //  - bonus de combat proposés selon la classe (Rage, Attaque sournoise, Marque du chasseur)
+//    ou selon un don (Cogneur lourd)
+//  - ligne vide (rien de saisi), masquée par l'affichage sauf une ligne de saisie
 // =============================================================================
 
 import { parseWeaponConfig } from './logic.js';
@@ -28,6 +30,14 @@ const CLASS_BUFFS = {
     rogue: ['sneakAttack'],
     ranger: ['hunterMark']
 };
+
+/** Bonus de combat ouverts par un don : clé de combat_buffs → identifiant du don (js/data/feats.js) */
+const FEAT_BUFFS = {
+    heavyWeaponMaster: 'maitre_des_armes_lourdes_cogneur_lourd'
+};
+
+/** Champs d'une ligne d'arme qui, remplis, en font une vraie ligne (format v3, voir EMPTY_WEAPON) */
+const WEAPON_CONTENT_KEYS = ['name', 'prop', 'prof', 'ammo', 'note', 'atk', 'dmg', 'atkKey', 'baseDmg', 'weaponConfig'];
 
 /** Texte brut (les anciennes sauvegardes peuvent contenir un peu de HTML) */
 function plain(value) {
@@ -215,16 +225,60 @@ export function buffsForClass(slug) {
 }
 
 /**
- * Bonus réellement appliqués aux dégâts : seulement ceux que la classe actuelle propose
- * (un bonus resté actif après un changement de classe n'est plus compté).
+ * Bonus réellement appliqués aux dégâts : seulement ceux que la classe actuelle (et, si le
+ * personnage est fourni, ses dons) propose ; un bonus resté actif après un changement de
+ * classe ou de don n'est plus compté.
  * @param {string} slug
  * @param {Object} buffs - combat_buffs
- * @returns {{ rage: boolean, sneakAttack: boolean, hunterMark: boolean }}
+ * @param {Object} [character] - pour les bonus ouverts par un don (Cogneur lourd)
+ * @returns {{ rage: boolean, sneakAttack: boolean, hunterMark: boolean, heavyWeaponMaster: boolean }}
  */
-export function effectiveBuffs(slug, buffs) {
-    const allowed = buffsForClass(slug);
+export function effectiveBuffs(slug, buffs, character) {
+    const allowed = character ? buffsForCharacter(slug, character) : buffsForClass(slug);
     const on = (key) => allowed.includes(key) && buffs?.[key] === true;
-    return { rage: on('rage'), sneakAttack: on('sneakAttack'), hunterMark: on('hunterMark') };
+    return {
+        rage: on('rage'), sneakAttack: on('sneakAttack'), hunterMark: on('hunterMark'),
+        heavyWeaponMaster: on('heavyWeaponMaster')
+    };
+}
+
+/**
+ * Bonus de combat ouverts par les dons du personnage : le don doit être choisi dans un
+ * emplacement (feat_<niveau>) que le personnage a atteint. Un don prévu pour plus tard
+ * n'ouvre rien.
+ * @param {Object} character
+ * @returns {string[]} clés de combat_buffs
+ */
+export function featBuffs(character) {
+    if (!character || typeof character !== 'object') return [];
+    const parsed = Number.parseInt(plain(character.char_level), 10);
+    const level = Number.isFinite(parsed) ? Math.min(20, Math.max(1, parsed)) : 1;
+    const reachedFeats = Object.entries(character)
+        .filter(([key]) => /^feat_\d+$/.test(key) && Number(key.slice(5)) <= level)
+        .map(([, value]) => plain(value));
+    return Object.entries(FEAT_BUFFS)
+        .filter(([, featId]) => reachedFeats.includes(featId))
+        .map(([key]) => key);
+}
+
+/**
+ * Tous les bonus de combat proposés au personnage : ceux de sa classe, puis ceux de ses dons.
+ * @param {string} slug - identifiant de classe
+ * @param {Object} character
+ * @returns {string[]}
+ */
+export function buffsForCharacter(slug, character) {
+    return [...buffsForClass(slug), ...featBuffs(character)];
+}
+
+/**
+ * Ligne d'arme vide : rien n'a été saisi (ancienne ligne ajoutée puis laissée vide).
+ * @param {Object} weapon
+ * @returns {boolean}
+ */
+export function isBlankWeapon(weapon) {
+    if (!weapon || typeof weapon !== 'object') return true;
+    return WEAPON_CONTENT_KEYS.every(key => plain(weapon[key]) === '');
 }
 
 /**

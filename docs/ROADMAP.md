@@ -65,12 +65,13 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
 - Revue de toute la fiche comme un joueur sur iPad : bonus d'attaque sur une seule ligne, jets de
   sauvegarde plus grands (maîtrisés en gras), taille minimale des petits libellés, contrastes renforcés,
   colonnes du grimoire sans mots coupés à 820 px.
-- Reste pour plus tard : les tableaux d'armes et d'armures affichent encore leurs lignes vides enregistrées.
+- Ensuite (fait) : les tableaux d'armes et d'armures n'affichent plus qu'une ligne vide de saisie.
 
 ### Après la passe esthétique
 
-- Nouvelles fonctions envisagées par Franck, dont un bouton « Cogneur lourd » à côté de « Rage » dans
-  le tableau des armes (dégâts supplémentaires égaux au bonus de maîtrise avec une arme Lourde).
+- ✅ Bouton « Cogneur lourd » à côté de « Rage » dans le tableau des armes (bonus de maîtrise aux
+  dégâts avec une arme Lourde), proposé seulement si le don est choisi à un niveau atteint.
+- Autres fonctions envisagées par Franck : à préciser.
 - Puis étape 6 (bascule).
 
 ## Corrections de règles apportées (vérifiées dans le Manuel du joueur 2024)

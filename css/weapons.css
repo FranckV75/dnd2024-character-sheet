@@ -283,3 +283,12 @@
 .weapons-config-error[hidden] {
     display: none;
 }
+
+/* Ligne de saisie (ligne vide) : rien à configurer ni à supprimer tant qu'elle est vide */
+.weapons-table tr.is-entry .weapons-actions > * {
+    visibility: hidden;
+}
+
+.weapons-table tr.is-entry .cell-input::placeholder {
+    font-style: italic;
+}
