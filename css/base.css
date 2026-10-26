@@ -41,6 +41,8 @@
     --track: rgba(139, 69, 19, 0.22);
     --ok: #2e7d32;
     --ko: #b3261e;
+    /* Avertissement (épuisement élevé) : orange brûlé, lisible sur le parchemin */
+    --warn: #9a5200;
     --focus: #b5651d;
     /* Finitions de la fiche : or des ornements (filets, losanges, cases cochées), halo doré,
        chiffres gravés (couleur + ombre portée claire sous le trait, comme une gravure) */
@@ -165,6 +167,7 @@
     --track: rgba(232, 184, 109, 0.22);
     --ok: #7bc77f;
     --ko: #f28b82;
+    --warn: #f0a35a;
     --focus: #f3cf8f;
     --gold: #e8b86d;
     --gold-soft: rgba(232, 184, 109, 0.45);
@@ -218,12 +221,25 @@
     --feat-invite-bg: rgba(232, 184, 109, 0.06);
 }
 
+/* Voile des fenêtres : avant Chrome 122 et Safari 17.4, ::backdrop n'hérite pas des variables
+   de :root (le voile serait transparent) ; il reçoit donc les siennes, mêmes valeurs que ci-dessus */
+.modal::backdrop {
+    --veil: rgba(62, 28, 2, 0.3);
+}
+
+:root[data-theme="dark"] .modal::backdrop {
+    --veil: rgba(15, 15, 26, 0.62);
+}
+
 * {
     box-sizing: border-box;
 }
 
 html {
     -webkit-text-size-adjust: 100%;
+    /* Pas de rectangle gris au toucher (Chrome Android, Safari iOS) : les états :active et
+       :focus-visible dorés des boutons suffisent */
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {

@@ -2,6 +2,44 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.0.0] - 2026-10-26 (Bascule : la v4 remplace la v3 à la même adresse)
+### Added
+- Reprise de la v3 sans perte au premier lancement : emplacements de sorts utilisés, nombre
+  d'emplacements réglé à la main et bonus de combat actifs (Rage…), que la v3 gardait à part dans le
+  navigateur, entrent dans la fiche (les anciennes clés restent en place pour un retour à la v3).
+- Personnage en ligne au nom écrit autrement par la v3 (mise en forme au milieu du nom, par ex.
+  « Korgul B rise-Crâne ») : retrouvé et renommé au premier lancement, au lieu d'un doublon.
+- Perception passive : toucher la valeur calculée (fiche déverrouillée) permet d'en saisir une autre ;
+  effacer la saisie revient au calcul (comme la v3).
+- Grimoire : « Emplacements niv. N » proposé aussi au-dessus des emplacements du manuel (Arcanum
+  mystique de l'Occultiste, multiclasse), comme le « + » de la v3.
+- Lien d'e-mail expiré ou déjà utilisé (mot de passe oublié) : message clair, la session reste ouverte.
+### Changed
+- Une version en ligne enregistrée par l'ancienne version (onglet v3 resté ouvert) n'est jamais chargée
+  en silence : une question propose de garder celle de ce navigateur. Si la v3 n'a fait qu'effacer
+  l'état de jeu (Rage, emplacements), il est remis en ligne sans question.
+- « Ce personnage existe déjà en ligne » : la version la plus récente est signalée « (plus récente) » ;
+  si c'est la version en ligne, « Ouvrir la version en ligne » est le choix proposé par défaut.
+- Création en ligne : la fiche existante est lue avant toute création (plus d'erreur 409 dans la console).
+- Déconnexion : ce navigateur seulement (les autres appareils restent connectés).
+- Épuisement élevé mis en évidence (orange dès 3, rouge dès 5), comme la v3.
+- Sorts : note vide remplie avec le nom anglais du sort choisi (comme la v3) ; tableaux des
+  descriptions lisibles (Augure, Confusion, Téléportation…) ; Entrée choisit la seule suggestion.
+- Tablettes : boutons Rage et Cogneur lourd de 44 px de haut, zones de toucher agrandies pour le tri
+  des sorts et le losange « préparé », plus de rectangle gris au toucher ; repos court sans clavier
+  virtuel à l'ouverture ; infobulle de sort qui défile au doigt et tient dans l'écran ; suggestions
+  affichées au-dessus du champ quand le clavier virtuel couvre le dessous.
+- `dev/preview.html` (outil de capture) ne fonctionne plus qu'en local : sur le site publié, il ne
+  peut plus remplacer la fiche du joueur.
+### Fixed
+- Grande image de fond importée en v3 (plus de 1,5 Mo environ) : de nouveau affichée (Chrome et Edge
+  ignoraient une variable CSS de plus de 2 Mio).
+- Ancienne adresse complète d'une image fournie (racine du site v3) : affichée depuis `assets/backgrounds/`.
+- Dé de vie d'une fiche v3 aligné sur la classe (la v3 le faisait à chaque ouverture) ; « Dés utilisés »
+  vide remis à 0.
+- Voile des fenêtres visible sur les navigateurs plus anciens (Chrome < 122, Safari < 17.4) ; coupure des
+  mots longs avec trait d'union sur Safari < 17.
+
 ## [4.0.0-alpha.4] - 2026-10-25 (Reconstruction v4 : étape 5, branche `v4`)
 ### Added
 - Compte en ligne (même base Supabase que la v3) : connexion avec mot de passe mémorisable, création de compte, mot de passe oublié, « Mes personnages » (ouvrir, supprimer), renommage / copie.

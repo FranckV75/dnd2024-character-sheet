@@ -103,6 +103,52 @@ export function isRename(attachedName, currentName) {
 }
 
 /**
+ * Nom de ligne écrit par la v3 pour la même fiche ? La v3 nommait la ligne d'après le texte
+ * affiché du champ Nom, où une mise en forme posée au milieu d'un mot ajoutait un espace
+ * (« Korgul B rise-Crâne » pour « Korgul B<i>rise</i>-Crâne ») : mêmes lettres, espaces différents.
+ * @param {string} legacyName - nom exact enregistré par la v3 (dd2024_active_char_name)
+ * @param {string} name - nom calculé par la v4
+ * @returns {boolean}
+ */
+export function isLegacyRowName(legacyName, name) {
+    const a = String(legacyName || '').trim();
+    const b = String(name || '').trim();
+    return Boolean(a) && Boolean(b) && a !== b && a.replace(/\s+/g, '') === b.replace(/\s+/g, '');
+}
+
+/** État de jeu propre à la v4 (bonus de combat, emplacements de sorts) : la v3 l'efface en enregistrant */
+export const V4_ONLY_KEYS = Object.freeze(['combat_buffs', 'spell_slots_state']);
+
+/**
+ * Fiche sans l'état de jeu propre à la v4, pour comparer avec une version écrite par la v3.
+ * @param {Object} character
+ * @returns {Object}
+ */
+export function withoutV4State(character) {
+    const copy = { ...(character || {}) };
+    for (const key of V4_ONLY_KEYS) delete copy[key];
+    return copy;
+}
+
+/** Écart en dessous duquel deux dates sont considérées comme la même version (règle de la v3) */
+export const SAME_TIME_MS = 5000;
+
+/**
+ * Laquelle des deux versions est la plus récente (plus de 5 s d'écart, comme la v3) ?
+ * @param {string|null} cloudUpdatedAt
+ * @param {string|null} localSavedAt
+ * @returns {'cloud'|'local'|null} null si les dates sont proches ou illisibles
+ */
+export function newerVersion(cloudUpdatedAt, localSavedAt) {
+    const cloud = time(cloudUpdatedAt);
+    const local = time(localSavedAt);
+    if (cloud === null || local === null) return null;
+    if (cloud > local + SAME_TIME_MS) return 'cloud';
+    if (local > cloud + SAME_TIME_MS) return 'local';
+    return null;
+}
+
+/**
  * Erreur réseau ou serveur → message compréhensible.
  * @param {*} error
  * @returns {string}

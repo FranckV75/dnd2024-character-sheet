@@ -14,8 +14,12 @@ ne jamais publier (push, déploiement) sans son accord explicite.
   `E:\2 - CODE\Ressources_0_Feuille_de_Perso_Antigravity`.
 - Manuels qui font foi pour les règles : `E:\2 - CODE\0_Feuille_de_Perso_Antigravity\Manuels\`
   et `...\Ressources_0_Feuille_de_Perso_Antigravity\Documentation\`.
-- Dépôt GitHub : `FranckV75/dnd2024-character-sheet`. `master` = site en ligne (v3, GitHub Pages).
-  Ce dossier travaille sur la branche **`v4`** ; la bascule vers `master` se fera à la fin (étape 6).
+- Dépôt GitHub : `FranckV75/dnd2024-character-sheet`. `master` = site en ligne (GitHub Pages) :
+  la v4 y est fusionnée à la bascule (étape 6) ; la v3 reste disponible sous l'étiquette `v3-final`.
+  Travailler sur une branche (par ex. `v4`) et ne fusionner dans `master` qu'avec l'accord de Franck :
+  toute fusion poussée sur `master` est publiée aux joueurs (cache GitHub Pages : 10 minutes).
+- Les joueurs (Franck, Catherine) jouent sur tablette (Android, iPad) : un changement du format de
+  sauvegarde ou de la synchronisation doit rester lisible par les fiches déjà enregistrées.
 - Feuille de route : `docs/ROADMAP.md`. Architecture : `docs/ARCHITECTURE.md`.
 
 ## Commandes

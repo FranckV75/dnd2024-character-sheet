@@ -13,6 +13,7 @@ import {
     computeArmorClass,
     computeSpellcasting,
     exhaustionEffects,
+    exhaustionSeverity,
     sneakAttackDice,
     deriveCharacter,
     computeWeapon,
@@ -167,6 +168,11 @@ describe('Sorts, épuisement et attaque sournoise', () => {
         assert.deepEqual(exhaustionEffects(3), { level: 3, d20Penalty: -6, speedPenaltyM: 4.5, dead: false });
         assert.equal(exhaustionEffects(6).dead, true);
         assert.equal(exhaustionEffects(9).level, 6);
+    });
+
+    test('Épuisement : gravité affichée comme la v3 (avertissement dès 3, danger dès 5)', () => {
+        assert.deepEqual([0, 1, 2, 3, 4, 5, 6, '9', 'x'].map(exhaustionSeverity),
+            ['', '', '', 'warning', 'warning', 'danger', 'danger', 'danger', '']);
     });
 
     test('Attaque sournoise : 1d6 tous les 2 niveaux (arrondi supérieur)', () => {

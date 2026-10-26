@@ -400,6 +400,30 @@
     cursor: default;
 }
 
+/* Écrans tactiles : zone de toucher agrandie par un calque invisible (taille visible inchangée),
+   sans déborder sur les cases voisines : tri = toute la marge de l'en-tête (4 px × 6 px, voir
+   .data-table th) ; losange = presque toute la hauteur de la ligne */
+@media (pointer: coarse) {
+    .sort-btn,
+    .spell-prep {
+        position: relative;
+    }
+
+    .sort-btn::after,
+    .spell-prep::after {
+        content: "";
+        position: absolute;
+    }
+
+    .sort-btn::after {
+        inset: -4px -6px;
+    }
+
+    .spell-prep::after {
+        inset: -10px -3px;
+    }
+}
+
 .spell-prep.is-cantrip {
     font-size: 1.05rem;
 }
@@ -504,6 +528,8 @@
     max-width: min(420px, calc(100vw - 16px));
     max-height: 55vh;
     overflow-y: auto;
+    /* Faire défiler la description du doigt ne fait pas défiler la page derrière */
+    overscroll-behavior: contain;
     padding: 14px 16px 12px;
     border: 1px solid var(--border);
     border-radius: 12px;

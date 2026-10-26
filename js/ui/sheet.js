@@ -14,10 +14,10 @@ import { DD_RULES } from '../data/dd-rules.js';
 import { FEATS_DATA } from '../data/feats.js';
 import { FEAT_LEVELS } from '../state/schema.js';
 import { stripHTML } from '../state/migrate.js';
-import { deriveCharacter, featSlotState, hitDieForClass } from '../rules/character.js';
+import { deriveCharacter, featSlotState, hitDieForClass, exhaustionSeverity } from '../rules/character.js';
 import { sanitizeRich, sanitizeRulesText } from './sanitize.js';
 import { el, fillSelect, icon, signed } from './dom.js';
-import { applyLock } from './lock.js';
+import { applyLock, isLocked } from './lock.js';
 
 const SKILL_STATS = ['str', 'dex', 'int', 'wis', 'cha'];
 // Icônes dorées des groupes de compétences (dessinées par dom.js, à la place des émojis)
@@ -158,10 +158,28 @@ function bindFields(root, store) {
             const die = hitDieForClass(patch.char_class);
             if (die) patch.hd_type = die;
         }
+
+        // Perception passive saisie puis effacée (champ quitté) : retour au calcul automatique,
+        // comme la v3. Pendant la saisie, le champ vide reste affiché (le focus n'est pas perdu).
+        if (key === 'passive_perception' && event.type === 'change' && !String(patch[key]).trim()) {
+            patch.passive_perc_manual = '';
+        }
         store.update(patch);
     };
     root.addEventListener('input', onEdit);
     root.addEventListener('change', onEdit);
+
+    // Valeur calculée touchée (fiche déverrouillée) : elle devient une saisie libre, pré-remplie
+    for (const button of root.querySelectorAll('[data-manual-switch]')) {
+        const flag = button.dataset.manualSwitch;
+        button.addEventListener('click', () => {
+            if (isLocked()) return;
+            store.update({ [flag]: 'true', passive_perception: String(deriveCharacter(store.get()).passivePerception) });
+            const input = root.querySelector(`[data-manual-only="${flag}"]`);
+            input?.focus();
+            input?.select();
+        });
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -277,10 +295,20 @@ function renderOutputs(root, character, d) {
     }
     root.querySelector('[data-out="armorClass"]').title = d.armorClass.source;
 
-    // Perception passive : valeur calculée, ou saisie libre si la fiche v3 l'avait rendue manuelle
+    // Perception passive : valeur calculée (la toucher, fiche déverrouillée, permet d'en saisir
+    // une autre), ou saisie libre (passive_perc_manual, même clé que la v3)
     const manual = String(character.passive_perc_manual) === 'true';
-    root.querySelector('[data-out="passivePerception"]').hidden = manual;
+    const ppSwitch = root.querySelector('[data-manual-switch="passive_perc_manual"]');
+    ppSwitch.hidden = manual;
+    ppSwitch.disabled = isLocked();
+    ppSwitch.setAttribute('aria-label', `Perception passive calculée : ${d.passivePerception}. Saisir une autre valeur`);
     root.querySelector('[data-manual-only="passive_perc_manual"]').hidden = !manual;
+
+    // Épuisement élevé mis en évidence (comme la v3) : avertissement dès 3, danger dès 5
+    const exhaustion = root.querySelector('[data-out="exhaustion"]');
+    const severity = exhaustionSeverity(character.fatigue_level);
+    if (severity) exhaustion.dataset.severity = severity;
+    else delete exhaustion.dataset.severity;
 }
 
 /** Légende des emplacements pas encore atteints (le don reste modifiable : on peut le prévoir).
@@ -350,5 +378,9 @@ export function createSheet(root, store) {
     }
     bindFields(root, store);
     store.subscribe((character, changedKeys) => render(root, character, changedKeys === null));
+    // Verrouillage : la valeur calculée de la perception passive n'est plus remplaçable
+    document.addEventListener('dd:lockchange', () => {
+        for (const button of root.querySelectorAll('[data-manual-switch]')) button.disabled = isLocked();
+    });
     render(root, store.get());
 }

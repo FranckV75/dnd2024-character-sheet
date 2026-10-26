@@ -17,6 +17,8 @@
 // Validation des valeurs et conversions _visual_prefs : fonctions pures de js/rules/gallery.js.
 // Image de l'appareil : réduite (≤ 1920 px, JPEG) avant d'être mémorisée, pour laisser de la place
 // à la sauvegarde automatique du personnage ; au-delà de 1,5 M caractères elle n'est pas mémorisée.
+// Une très grande image enregistrée par la v3 (non réduite) est affichée par une adresse blob:
+// (une variable CSS de plus de 2 Mio serait ignorée par Chrome / Edge) ; dd2024_bg reste intact.
 // =============================================================================
 
 import { el, icon, setIconLabel } from './dom.js';
@@ -28,6 +30,8 @@ import {
     DEVICE_IMAGE_MAX_CHARS,
     clampNumber,
     isDataImage,
+    needsObjectUrl,
+    dataImageBytes,
     resolveBackground as resolveRaw,
     displayName,
     parseSavedBackgrounds,
@@ -105,9 +109,37 @@ function setSavedBackgrounds(list) {
 // Application à la page
 // ---------------------------------------------------------------------------
 
+/** Adresse blob: de l'image affichée quand elle est trop longue pour une variable CSS */
+let objectUrl = { source: '', href: '' };
+
+function releaseObjectUrl() {
+    if (objectUrl.href) URL.revokeObjectURL(objectUrl.href);
+    objectUrl = { source: '', href: '' };
+}
+
+/**
+ * Adresse à placer dans --app-bg-image. Une grande image de l'appareil (enregistrée par la v3,
+ * qui ne la réduisait pas) dépasserait la longueur qu'accepte une variable CSS : elle est alors
+ * affichée par une adresse blob: équivalente. La valeur mémorisée (dd2024_bg) n'est pas modifiée.
+ * @param {string|null} url
+ * @returns {string|null}
+ */
+function displayUrl(url) {
+    if (!needsObjectUrl(url)) {
+        releaseObjectUrl();
+        return url;
+    }
+    if (objectUrl.source === url) return objectUrl.href;
+    const decoded = dataImageBytes(url);
+    releaseObjectUrl();
+    if (!decoded) return null;
+    objectUrl = { source: url, href: URL.createObjectURL(new Blob([decoded.bytes], { type: decoded.type })) };
+    return objectUrl.href;
+}
+
 function applyBackground() {
     const root = document.documentElement;
-    const url = resolveBackground(prefs.bg);
+    const url = displayUrl(resolveBackground(prefs.bg));
     if (url) {
         root.style.setProperty('--app-bg-image', `url("${url}")`);
         root.dataset.appBg = 'on';

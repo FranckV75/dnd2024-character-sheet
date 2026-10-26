@@ -168,6 +168,17 @@ export function exhaustionEffects(level) {
 }
 
 /**
+ * Gravité affichée de l'Épuisement (mêmes seuils que la v3) : avertissement à partir du
+ * niveau 3, danger à partir du niveau 5 (le niveau 6 est la mort).
+ * @param {number} level
+ * @returns {'' | 'warning' | 'danger'}
+ */
+export function exhaustionSeverity(level) {
+    const lvl = exhaustionEffects(level).level;
+    return lvl >= 5 ? 'danger' : lvl >= 3 ? 'warning' : '';
+}
+
+/**
  * Palier de renommée de L'Odyssée des Seigneurs Dragons selon les points (identique à la v3).
  * @param {*} points
  * @returns {string}

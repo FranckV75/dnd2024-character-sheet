@@ -6,7 +6,7 @@
 // Le stockage est injectable pour pouvoir tester sans navigateur.
 // =============================================================================
 
-import { migrateCharacter, stripHTML } from './migrate.js';
+import { migrateCharacter, stripHTML, isV3Save, importV3DeviceState, V3_DEVICE_KEYS } from './migrate.js';
 
 export const STORAGE_KEYS = {
     character: 'dd2024_char',
@@ -16,8 +16,19 @@ export const STORAGE_KEYS = {
 
 const defaultStorage = () => (typeof localStorage !== 'undefined' ? localStorage : null);
 
+function readItem(storage, key) {
+    try {
+        return storage?.getItem(key) ?? null;
+    } catch {
+        return null;
+    }
+}
+
 /**
  * Lit le personnage enregistré dans le navigateur.
+ * Fiche encore au format v3 (premier lancement de la v4) : les emplacements de sorts et
+ * les bonus de combat que la v3 gardait à part dans le navigateur sont repris dans la fiche.
+ * Les anciennes clés restent en place (un retour à la v3 les utiliserait encore).
  * @param {Storage} [storage]
  * @returns {{ character: Object, report: string[] } | null} null si rien d'enregistré
  */
@@ -29,11 +40,19 @@ export function loadLocal(storage = defaultStorage()) {
         return null;
     }
     if (!text) return null;
+    let raw;
     try {
-        return migrateCharacter(JSON.parse(text));
+        raw = JSON.parse(text);
     } catch {
         return { ...migrateCharacter({}), report: ['Sauvegarde locale illisible : fiche vierge chargée.'] };
     }
+    const result = migrateCharacter(raw);
+    if (!isV3Save(raw)) return result;
+    const imported = importV3DeviceState(result.character, {
+        spellSlots: readItem(storage, V3_DEVICE_KEYS.spellSlots),
+        combatBuffs: readItem(storage, V3_DEVICE_KEYS.combatBuffs)
+    });
+    return { character: imported.character, report: [...result.report, ...imported.report] };
 }
 
 /**

@@ -160,6 +160,11 @@ document.getElementById('btn-load-local').addEventListener('click', () => {
 });
 
 document.getElementById('btn-save-local').addEventListener('click', () => {
+    // Sur le site publié, ce navigateur contient la vraie fiche du joueur : ne jamais la remplacer
+    if (!['localhost', '127.0.0.1', '[::1]', '::1'].includes(location.hostname)) {
+        status.textContent = 'Page de développement : enregistrement disponible seulement en local.';
+        return;
+    }
     status.textContent = saveLocal(store.get())
         ? `Fiche « ${characterName(store.get()) || 'sans nom'} » enregistrée dans ce navigateur.`
         : '⚠️ Enregistrement impossible (stockage du navigateur indisponible).';

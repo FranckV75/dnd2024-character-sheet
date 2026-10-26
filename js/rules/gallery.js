@@ -57,9 +57,65 @@ export function isDefaultName(value, defaults = []) {
     return defaults.includes(value) || /^Fond[^/\\"'()<>\s]*\.(webp|png|jpe?g)$/i.test(value);
 }
 
+/** Adresse du site publié : la v3 y servait les images fournies à la racine (« …/Fond_Iria.webp ») */
+const LEGACY_SITE_IMAGE = /^https?:\/\/franckv75\.github\.io\/dnd2024-character-sheet\/([^/?#]+)$/i;
+
+/**
+ * Adresse complète d'une image fournie telle que la v3 la servait (à la racine du site) :
+ * le fichier a été déplacé dans assets/backgrounds/, l'ancienne adresse n'existe plus.
+ * @param {unknown} value
+ * @param {string[]} [defaults] liste des images fournies (DEFAULT_BGS)
+ * @returns {string} nom de l'image fournie ('Fond_Iria.webp'), ou '' si ce n'est pas le cas
+ */
+export function legacySiteImage(value, defaults = []) {
+    const match = typeof value === 'string' ? value.trim().match(LEGACY_SITE_IMAGE) : null;
+    if (!match) return '';
+    try {
+        const name = decodeURIComponent(match[1]);
+        return defaults.includes(name) ? name : '';
+    } catch {
+        return '';
+    }
+}
+
+/**
+ * Chrome, Edge et Chrome Android ignorent sans erreur une variable CSS de plus de 2 Mio
+ * (2 097 152 caractères) : une grande image de l'appareil enregistrée par la v3 ne s'afficherait
+ * pas. Au-delà de cette longueur, l'interface passe par une adresse blob: (dataImageBytes).
+ */
+export const CSS_VARIABLE_SAFE_CHARS = 2_000_000;
+
+/**
+ * @param {unknown} value
+ * @returns {boolean} true si l'image de l'appareil est trop longue pour une variable CSS
+ */
+export function needsObjectUrl(value) {
+    return typeof value === 'string' && value.length > CSS_VARIABLE_SAFE_CHARS && isDataImage(value);
+}
+
+/**
+ * Contenu binaire d'une image de l'appareil (data:image/…;base64,…), pour créer une adresse blob:.
+ * @param {unknown} value
+ * @returns {{type: string, bytes: Uint8Array}|null} null si ce n'est pas une image data: lisible
+ */
+export function dataImageBytes(value) {
+    if (!isDataImage(value)) return null;
+    const comma = value.indexOf(',');
+    const type = value.slice('data:'.length, value.indexOf(';'));
+    try {
+        const binary = atob(value.slice(comma + 1));
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        return { type, bytes };
+    } catch {
+        return null;
+    }
+}
+
 /**
  * Transforme une valeur mémorisée en adresse utilisable dans url("…"), ou null si elle est
  * vide ou refusée (protocole inconnu, chemin relatif, caractères dangereux).
+ * L'ancienne adresse complète d'une image fournie (racine du site v3) désigne l'image fournie.
  * @param {unknown} value '' | 'Fond_X.webp' | 'https://…' | 'data:image/…'
  * @param {{assetBase: string|URL, defaults?: string[]}} options assetBase = dossier des images fournies (se termine par /)
  * @returns {string|null}
@@ -69,9 +125,10 @@ export function resolveBackground(value, { assetBase, defaults = [] }) {
     const v = value.trim();
     if (!v || v === 'none') return null;
     if (isDataImage(v)) return v;
-    if (isDefaultName(v, defaults)) {
+    const name = isDefaultName(v, defaults) ? v : legacySiteImage(v, defaults);
+    if (name) {
         try {
-            return new URL(encodeURIComponent(v), assetBase).href;
+            return new URL(encodeURIComponent(name), assetBase).href;
         } catch {
             return null;
         }

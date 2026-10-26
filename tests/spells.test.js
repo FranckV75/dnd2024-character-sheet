@@ -109,6 +109,12 @@ describe('Texte : HTML des anciennes sauvegardes et descriptions', () => {
         assert.equal(descToPlainText(''), '');
     });
 
+    test('descToPlainText : tableaux lisibles (une ligne par rangée, cases séparées)', () => {
+        const html = 'Avant :<br><table><tr><th>Présage</th><th>Issue</th></tr><tr><td>Fortune</td><td>Favorable</td></tr>'
+            + '<tr><td>Misère</td> <td>Défavorable</td></tr></table><br>Après.';
+        assert.equal(descToPlainText(html), 'Avant :\nPrésage · Issue\nFortune · Favorable\nMisère · Défavorable\n\nAprès.');
+    });
+
     test('normalizeText ignore casse, accents et ligatures', () => {
         assert.equal(normalizeText('Éclair de SORCIÈRE'), 'eclair de sorciere');
         assert.equal(normalizeText('Œil'), 'oeil');
@@ -194,6 +200,12 @@ describe('spellToRow : un sort de la base devient une ligne v3', () => {
         assert.equal(friends.name, 'Amis');
         assert.equal(friends.lvl, '0');
         assert.equal(friends.m, true);
+    });
+    test('Note vide : nom anglais du sort (comme la v3) ; note remplie : gardée', () => {
+        assert.equal(spellToRow(BASE[0], { ...EMPTY_SPELL }).note, 'Fireball');
+        assert.equal(spellToRow(BASE[0], { ...EMPTY_SPELL, note: '<b></b>' }).note, 'Fireball');
+        assert.equal(spellToRow(BASE[0], { ...EMPTY_SPELL, note: 'Du don' }).note, 'Du don');
+        assert.equal(spellToRow({ ...BASE[0], vo: '' }, { ...EMPTY_SPELL }).note, '');
     });
     test('Les clés de la ligne restent exactement celles de EMPTY_SPELL', () => {
         assert.deepEqual(Object.keys(spellToRow(BASE[0], { ...EMPTY_SPELL })).sort(), Object.keys(EMPTY_SPELL).sort());
@@ -327,6 +339,16 @@ describe('Emplacements de sorts', () => {
         // Retirer le dernier emplacement d'un niveau ajouté à la main le fait disparaître
         const removed = adjustSlotMax({ 1: { max: 1, used: 1 } }, 1, -1, 0);
         assert.deepEqual(slotLevels({}, 'fighter', removed), []);
+    });
+
+    test('Niveau ajouté à la main au-dessus des emplacements du manuel (Arcanum mystique, multiclasse)', () => {
+        const warlock = slotLevels(spellSlotsFor('Sorcier', 11), 'warlock');
+        assert.deepEqual(warlock.map(s => s.level), ['5']);
+        assert.equal(nextFreeSlotLevel(warlock), '6', 'Arcanum mystique de niveau 6');
+        const wizard = slotLevels(spellSlotsFor('Magicien', 5), 'wizard');
+        assert.equal(nextFreeSlotLevel(wizard), '4');
+        assert.equal(nextFreeSlotLevel(slotLevels(spellSlotsFor('Magicien', 5), 'wizard', { 4: { max: 1, used: 0 } })), '5');
+        assert.equal(nextFreeSlotLevel(slotLevels(spellSlotsFor('Magicien', 17), 'wizard')), '');
     });
 });
 

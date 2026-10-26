@@ -11,7 +11,7 @@ import { el, icon, setIconLabel } from './dom.js';
 import { openModal, confirmModal } from './modal.js';
 import { getClient } from '../cloud/client.js';
 import { createCloudSync, SYNC_KEY } from '../cloud/controller.js';
-import { friendlyError } from '../cloud/sync.js';
+import { friendlyError, newerVersion } from '../cloud/sync.js';
 
 const storage = {
     get(key) { try { return localStorage.getItem(key); } catch { return null; } }
@@ -24,10 +24,17 @@ const formatDate = (iso) => {
     });
 };
 
-/** Les deux versions comparées (en ligne / ce navigateur), précédées d'une icône dorée */
-const versionsList = (cloudUpdatedAt, localSavedAt) => el('ul', { class: 'account-versions' },
-    el('li', {}, icon('cloud'), el('span', { text: `Version en ligne : ${formatDate(cloudUpdatedAt)}` })),
-    el('li', {}, icon('scroll'), el('span', { text: `Version de ce navigateur : ${formatDate(localSavedAt)}` })));
+/** Les deux versions comparées (en ligne / ce navigateur), précédées d'une icône dorée ;
+ *  la plus récente (plus de 5 s d'écart) est signalée */
+const versionsList = (cloudUpdatedAt, localSavedAt) => {
+    const newer = newerVersion(cloudUpdatedAt, localSavedAt);
+    const line = (iconName, label, iso, isNewer) => el('li', {}, icon(iconName),
+        el('span', { text: `${label} : ${formatDate(iso)}` }),
+        isNewer ? el('strong', { class: 'account-newer', text: '(plus récente)' }) : null);
+    return el('ul', { class: 'account-versions' },
+        line('cloud', 'Version en ligne', cloudUpdatedAt, newer === 'cloud'),
+        line('scroll', 'Version de ce navigateur', localSavedAt, newer === 'local'));
+};
 
 /**
  * Pose une question avec des boutons ; la promesse renvoie la valeur du bouton choisi,
@@ -50,23 +57,34 @@ function choose(title, body, buttons) {
 
 /** Questions posées par le contrôleur de synchronisation */
 const QUESTIONS = {
-    exists: ({ name, cloudUpdatedAt, localSavedAt }) => choose('☁️ Ce personnage existe déjà en ligne', [
-        el('p', { text: `Votre compte contient déjà « ${name} », différent de la fiche ouverte dans ce navigateur.` }),
-        versionsList(cloudUpdatedAt, localSavedAt),
-        el('p', { text: 'Que voulez-vous faire ?' }),
-        el('ul', {},
-            el('li', { text: 'Ouvrir la version en ligne : la fiche de ce navigateur sera remplacée.' }),
-            el('li', { text: 'Remplacer la version en ligne : celle de votre compte sera perdue.' }),
-            el('li', { text: 'Ne rien faire : la fiche reste dans ce navigateur seulement (pensez à l\'exporter).' }))
-    ], [
-        { label: 'Ne rien faire' },
-        { label: '☁️ Ouvrir la version en ligne', value: 'open' },
-        { label: '⚠️ Remplacer la version en ligne', value: 'replace', danger: true }
-    ]),
+    exists: ({ name, cloudUpdatedAt, localSavedAt }) => {
+        // Version en ligne plus récente (cas habituel d'un 2ᵉ appareil au premier lancement de la
+        // nouvelle version) : l'ouvrir est le choix proposé par défaut (bouton principal, focus)
+        const cloudNewer = newerVersion(cloudUpdatedAt, localSavedAt) === 'cloud';
+        return choose('☁️ Ce personnage existe déjà en ligne', [
+            el('p', { text: `Votre compte contient déjà « ${name} », différent de la fiche ouverte dans ce navigateur.` }),
+            versionsList(cloudUpdatedAt, localSavedAt),
+            cloudNewer ? el('p', { text: 'La version en ligne est la plus récente : c\'est probablement celle que vous avez utilisée en dernier, sur un autre appareil.' }) : null,
+            el('p', { text: 'Que voulez-vous faire ?' }),
+            el('ul', {},
+                el('li', { text: 'Ouvrir la version en ligne : la fiche de ce navigateur sera remplacée.' }),
+                el('li', { text: 'Remplacer la version en ligne : celle de votre compte sera perdue.' }),
+                el('li', { text: 'Ne rien faire : la fiche reste dans ce navigateur seulement (pensez à l\'exporter).' }))
+        ], [
+            { label: 'Ne rien faire' },
+            { label: '☁️ Ouvrir la version en ligne', value: 'open', primary: cloudNewer },
+            { label: '⚠️ Remplacer la version en ligne', value: 'replace', danger: true }
+        ]);
+    },
 
-    conflict: ({ name, cloudUpdatedAt, localSavedAt }) => choose('⚔️ Deux versions différentes', [
-        el('p', { text: `« ${name} » a été modifié sur un autre appareil (ou dans un autre onglet), et aussi dans ce navigateur.` }),
+    conflict: ({ name, cloudUpdatedAt, localSavedAt, legacy }) => choose(legacy ? '⚠️ Modifié par l\'ancienne version de la fiche' : '⚔️ Deux versions différentes', [
+        el('p', {
+            text: legacy
+                ? `« ${name} » vient d'être enregistré en ligne par l'ancienne version de la fiche (un onglet ou un appareil resté ouvert depuis la mise à jour). Elle ne connaît pas les bonus de combat actifs ni les emplacements de sorts utilisés, et a pu remettre des valeurs plus anciennes.`
+                : `« ${name} » a été modifié sur un autre appareil (ou dans un autre onglet), et aussi dans ce navigateur.`
+        }),
         versionsList(cloudUpdatedAt, localSavedAt),
+        legacy ? el('p', { text: 'Rechargez ou fermez la fiche sur vos autres appareils et onglets, puis choisissez la version à garder.' }) : null,
         el('p', { class: 'muted', text: 'La version que vous ne gardez pas sera perdue. En cas de doute, choisissez « Décider plus tard » et exportez cette fiche d\'abord.' })
     ], [
         { label: 'Décider plus tard' },
@@ -105,12 +123,40 @@ const QUESTIONS = {
 };
 
 /**
+ * Lien reçu par e-mail (mot de passe oublié, confirmation) expiré ou déjà utilisé : Supabase
+ * renvoie sur la fiche avec « #error=…&error_description=… ». L'adresse est nettoyée AVANT la
+ * création du client : la bibliothèque ne voit pas l'erreur et ne ferme pas la session ouverte.
+ * @returns {boolean} true si un tel lien vient d'être ouvert
+ */
+function takeEmailLinkError() {
+    const hash = window.location.hash || '';
+    if (!/(^#|&)(error|error_code|error_description)=/.test(hash)) return false;
+    try {
+        history.replaceState(history.state, '', window.location.pathname + window.location.search);
+    } catch {
+        // Adresse laissée telle quelle
+    }
+    return true;
+}
+
+/**
  * @param {{ store: Object, setStatus: (message: string) => void, saveWithCharacter: Function, saveNow: Function }} ctx
  */
 export function initAccount({ store, setStatus, saveWithCharacter, saveNow }) {
     const host = document.getElementById('account-controls');
     if (!host) return;
+    const linkFailed = takeEmailLinkError();
     const client = getClient();
+    if (linkFailed) {
+        openModal({
+            title: '⚠️ Lien expiré ou déjà utilisé',
+            body: [
+                el('p', { text: 'Le lien reçu par e-mail ne fonctionne plus : il a expiré ou il a déjà servi.' }),
+                el('p', { text: 'Pour choisir un nouveau mot de passe : « Se connecter », saisissez votre e-mail, puis « Mot de passe oublié ? ». Utilisez ensuite le lien du dernier e-mail reçu.' })
+            ],
+            actions: [{ label: 'Compris', primary: true }]
+        });
+    }
 
     const sync = createCloudSync({
         client, store, storage,
@@ -177,7 +223,8 @@ export function initAccount({ store, setStatus, saveWithCharacter, saveNow }) {
     async function signOut() {
         await sync.flush();
         try {
-            await client.auth.signOut();
+            // Ce navigateur seulement : les autres appareils du joueur restent connectés
+            await client.auth.signOut({ scope: 'local' });
         } catch {
             // Déconnexion locale malgré une erreur réseau
         }
