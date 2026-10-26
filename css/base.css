@@ -107,9 +107,8 @@
     --rage-focus: #5c1404;
     /* Jauge des PV : laiton (pleine santé) → cuivre → braise ; PV temporaires en argent ;
        rainure, fond et reflet de la réglette */
-    --hp-gauge-high: #8a7b1f;
-    --hp-gauge-mid: #b8661a;
-    --hp-gauge-low: #a61c14;
+    --hp-gauge-sat: 72%;
+    --hp-gauge-light: 40%;
     --hp-gauge-temp: #7d8b99;
     --hp-gauge-track: rgba(139, 69, 19, 0.16);
     --hp-gauge-groove: rgba(62, 28, 2, 0.18);
@@ -201,9 +200,8 @@
     --rage-chip-shine: rgba(255, 210, 160, 0.4);
     --rage-flame: #ffd88a;
     --rage-focus: #ffd88a;
-    --hp-gauge-high: #d2bb63;
-    --hp-gauge-mid: #e8954a;
-    --hp-gauge-low: #ec5a44;
+    --hp-gauge-sat: 70%;
+    --hp-gauge-light: 55%;
     --hp-gauge-temp: #c5cfd8;
     --hp-gauge-track: rgba(232, 184, 109, 0.14);
     --hp-gauge-groove: rgba(0, 0, 0, 0.45);

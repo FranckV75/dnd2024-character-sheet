@@ -687,9 +687,26 @@ fieldset.inline-checks {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     padding: 0 6px;
     text-align: center;
+}
+
+/* Libellé et valeur groupés au centre de la case ; dans un même groupe, les libellés de
+   longueurs différentes (« Inspiration héroïque ou points de Foi » sur 3 lignes, « Vitesse »
+   sur 1) se calent en bas d'une même hauteur, pour que les valeurs restent alignées */
+.stat-group .stat-cell .label {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-height: calc(3 * 1.2em);
+    line-height: 1.2;
+}
+
+.vitals-2 .stat-group .stat-cell .label {
+    min-height: 0;
 }
 
 .stat-cell .label {
@@ -1164,8 +1181,29 @@ fieldset.inline-checks {
 .odyssey-grid {
     display: grid;
     grid-template-columns: 1.8fr 0.8fr 1.4fr;
-    gap: 12px;
-    align-items: end;
+    gap: 12px 18px;
+    align-items: stretch;
+}
+
+/* Chaque case : libellé centré au-dessus de sa valeur, valeurs alignées sur une même ligne */
+.odyssey-grid .field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    text-align: center;
+}
+
+.odyssey-grid .field > :is(label, .field-label) {
+    margin: 0;
+    text-align: center;
+}
+
+.odyssey-grid .field > :is(.input, output) {
+    width: 100%;
+    text-align: center;
+    text-align-last: center;
 }
 
 /* Palier calculé : mêmes police, taille, graisse et couleur que les champs voisins (.input) */

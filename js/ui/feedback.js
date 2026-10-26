@@ -107,10 +107,8 @@ function initRage(root, store) {
 // 2. Jauge des points de vie
 // ---------------------------------------------------------------------------
 
-/** Teinte de la jauge : pleine santé (laiton) → cuivre → braise */
-const HP_HEALTHY = 0.6;
-const HP_WOUNDED = 0.35;
-const HP_CRITICAL = 0.12;
+/** Teinte de la jauge (roue des couleurs) : 120 = vert à pleine santé, 60 = jaune, 30 = orange, 0 = rouge */
+const HP_HUE_FULL = 120;
 
 /**
  * Proportions de la jauge (de 0 à 1) à partir des valeurs saisies, même absentes ou
@@ -134,22 +132,12 @@ function hpGaugeModel(character) {
 }
 
 /**
- * Teinte de la jauge : niveau simple (navigateurs sans color-mix) et mélange progressif
- * entre deux teintes voisines (pourcentage de la teinte la plus saine).
- * @param {number} ratio
- * @returns {{ level: string, band: string, mix: number }}
+ * Teinte de la jauge : dégradé continu du vert (pleins PV) au rouge (0 PV), en passant
+ * par le jaune et l'orange.
+ * @param {number} ratio PV actuels / PV maximum (0 à 1)
+ * @returns {number} teinte en degrés
  */
-function hpTint(ratio) {
-    const level = ratio >= 0.5 ? 'high' : ratio >= 0.25 ? 'mid' : 'low';
-    if (ratio >= HP_HEALTHY) return { level, band: 'high', mix: 100 };
-    if (ratio >= HP_WOUNDED) {
-        return { level, band: 'upper', mix: Math.round((ratio - HP_WOUNDED) / (HP_HEALTHY - HP_WOUNDED) * 100) };
-    }
-    if (ratio >= HP_CRITICAL) {
-        return { level, band: 'lower', mix: Math.round((ratio - HP_CRITICAL) / (HP_WOUNDED - HP_CRITICAL) * 100) };
-    }
-    return { level, band: 'low', mix: 0 };
-}
+const hpHue = (ratio) => Math.round(Math.max(0, Math.min(1, ratio)) * HP_HUE_FULL);
 
 function initHpGauge(root, store) {
     const tile = root.querySelector('#f-hp_current')?.closest('.box');
@@ -165,18 +153,16 @@ function initHpGauge(root, store) {
     const apply = (character) => {
         const model = hpGaugeModel(character);
         // Jauge masquée (valeurs absentes) : teinte de pleine santé, pour ne pas partir du rouge
-        const tint = hpTint(model.known ? model.fill : 1);
-        const next = [model.known, model.fill, model.tempStart, model.tempSize, model.over, tint.band, tint.mix].join('|');
+        const hue = hpHue(model.known ? model.fill : 1);
+        const next = [model.known, model.fill, model.tempStart, model.tempSize, model.over, hue].join('|');
         if (next === signature) return;
         signature = next;
 
         gauge.dataset.state = model.known ? 'known' : 'unknown';
-        gauge.dataset.level = tint.level;
-        gauge.dataset.band = tint.band;
         gauge.dataset.over = String(model.over);
         gauge.dataset.temp = String(model.tempSize > 0);
         gauge.style.setProperty('--hp-fill', model.fill.toFixed(4));
-        gauge.style.setProperty('--hp-mix', `${tint.mix}%`);
+        gauge.style.setProperty('--hp-hue', String(hue));
         gauge.style.setProperty('--hp-temp-start', model.tempStart.toFixed(4));
         gauge.style.setProperty('--hp-temp-size', model.tempSize.toFixed(4));
     };
