@@ -1,0 +1,6 @@
+/* =============================================================================
+   MOTION.CSS - Mouvements de la fiche (js/ui/motion.js) : ouverture en cascade,
+   changement d'onglet, survol des cadres, passage clair / sombre, mode cinéma.
+   Tout mouvement est coupé sous prefers-reduced-motion.
+   Règles : couleurs par variables, aucun !important.
+   ============================================================================= */
