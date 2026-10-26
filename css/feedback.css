@@ -173,7 +173,7 @@
        2. JAUGE DES POINTS DE VIE (sous « PV actuels »)
        Fine réglette posée au pied de la case, hors de la mise en page. Remplissage par
        transform (scaleX), teinte selon la part de PV restante (variables posées par
-       feedback.js : --hp-fill, --hp-mix, --hp-temp-start, --hp-temp-size).
+       feedback.js : --hp-fill, --hp-hue, --hp-temp-start, --hp-temp-size).
        ========================================================================= */
 
     .hp-tile {
@@ -207,28 +207,11 @@
 
     /* Couleur portée par « color » (transition fluide), le fond la reprend ; reflet en haut */
     .hp-gauge-fill {
-        color: var(--hp-gauge-high);
+        /* Teinte calculée par feedback.js (--hp-hue : 120 vert → 60 jaune → 30 orange → 0 rouge) ;
+           saturation et luminosité propres à chaque thème */
+        color: hsl(var(--hp-hue, 120) var(--hp-gauge-sat) var(--hp-gauge-light));
         background: linear-gradient(var(--hp-gauge-gloss), transparent 70%) currentColor;
         transform: scaleX(var(--hp-fill, 0));
-    }
-
-    .hp-gauge[data-level="mid"] .hp-gauge-fill {
-        color: var(--hp-gauge-mid);
-    }
-
-    .hp-gauge[data-level="low"] .hp-gauge-fill {
-        color: var(--hp-gauge-low);
-    }
-
-    /* Teinte progressive entre deux couleurs voisines (navigateurs récents) */
-    @supports (color: color-mix(in oklab, red 50%, blue)) {
-        .hp-gauge[data-band="upper"] .hp-gauge-fill {
-            color: color-mix(in oklab, var(--hp-gauge-high) var(--hp-mix), var(--hp-gauge-mid));
-        }
-
-        .hp-gauge[data-band="lower"] .hp-gauge-fill {
-            color: color-mix(in oklab, var(--hp-gauge-mid) var(--hp-mix), var(--hp-gauge-low));
-        }
     }
 
     /* PV temporaires : segment argenté, placé après les PV actuels (ou par-dessus leur fin) */
