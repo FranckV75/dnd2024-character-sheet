@@ -21,7 +21,7 @@ import { applyLock } from './lock.js';
 
 const SKILL_STATS = ['str', 'dex', 'int', 'wis', 'cha'];
 // Icônes dorées des groupes de compétences (dessinées par dom.js, à la place des émojis)
-const SKILL_GROUP_ICONS = { str: 'arm', dex: 'feather', int: 'book', wis: 'eye', cha: 'sparkle' };
+const SKILL_GROUP_ICONS = { str: 'fist', dex: 'feather', int: 'book', wis: 'eye', cha: 'sparkle' };
 const FEAT_TYPE_ORDER = ['Origine', 'Général', 'Style de combat', 'Épique'];
 const SPELL_ABILITY_LABELS = { none: '—', int: 'Intelligence', wis: 'Sagesse', cha: 'Charisme' };
 

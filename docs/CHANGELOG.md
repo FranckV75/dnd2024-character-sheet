@@ -19,7 +19,7 @@ Toutes les modifications notables du projet sont documentées dans ce fichier. L
 - Accessibilité : contrastes revus dans les deux thèmes, focus clavier visible partout, zones tactiles de 44 px sur iPad, animations coupées si l'appareil le demande.
 - Effets « waouh » (lot 2) : ouverture de la fiche en cascade, changement d'onglet en fondu glissé, cartes qui se soulèvent au survol avec un rare reflet doré, passage clair / sombre en cercle depuis le bouton, lent zoom de l'illustration en mode cinéma.
 - Réactions de jeu : Rage active = lueur de braise autour des PV, des Rages et des armes, bouton Rage incandescent ; jauge de PV (laiton → cuivre → braise, PV temporaires en argent) ; les valeurs calculées pulsent en doré quand elles changent.
-- Icônes : bras qui montre son biceps pour la Force, sablier pour le repos court ; thème sombre appliqué dès le premier affichage (plus de flash clair).
+- Icônes : poing vu de face pour la Force, sablier pour le repos court ; thème sombre appliqué dès le premier affichage (plus de flash clair).
 - Toutes les animations sont coupées si l'appareil demande moins d'animations ; rien n'est animé à l'impression.
 - Barre « Gestion » : disposition figée, les messages d'état (compte, enregistrement) ne déplacent plus les boutons ; trop longs, ils se terminent par « … » (texte complet au survol).
 ### Fixed
