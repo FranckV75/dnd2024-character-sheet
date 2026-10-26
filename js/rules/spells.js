@@ -2,8 +2,10 @@
 // SPELLS.JS (règles) - Grimoire : fonctions pures (aucun accès au DOM)
 //  - recherche de sorts dans la base (insensible aux accents, filtre de classe)
 //  - conversion d'un sort de la base en ligne du tableau (clés v3 inchangées)
-//  - filtre par niveau, tri d'affichage, compteurs
+//  - filtre par niveau, tri d'affichage, compteurs, lignes affichées (les lignes vides
+//    restent dans la fiche mais ne sont pas affichées)
 //  - emplacements de sorts : maximum effectif, cases utilisées, ajustements
+//  - le personnage lance-t-il des sorts ? (grimoire complet ou court avis « Pas de magie »)
 //
 // Règles D&D 2024 (Player's Handbook, chap. 7) : un sort mineur se lance sans
 // emplacement (il n'a donc pas à être « préparé ») ; un sort de niveau 1+ dépense
@@ -255,6 +257,19 @@ export function isSpellRowEmpty(row) {
     return !plainText(row?.name) && !plainText(row?.time) && !plainText(row?.range);
 }
 
+/**
+ * La ligne contient-elle quelque chose à afficher ? (un texte quelconque, ou une case C / R / M
+ * cochée). Plus large que « non vide » : une ligne qui n'a qu'une note reste affichée.
+ * Le niveau seul et le losange « préparé » seul ne comptent pas (valeurs d'une ligne vierge).
+ * @param {Object} row
+ * @returns {boolean}
+ */
+export function hasSpellContent(row) {
+    if (!row || typeof row !== 'object') return false;
+    return ['name', 'time', 'range', 'school', 'note'].some(key => plainText(row[key]) !== '')
+        || row.c === true || row.r === true || row.m === true;
+}
+
 /** Un sort mineur est toujours disponible : il ne compte jamais comme « préparé » */
 export function isPrepared(row) {
     return row?.prep === true && rowLevel(row) !== '0';
@@ -471,4 +486,99 @@ export function slotLevels(spellSlots, classSlug = '', state = {}) {
 export function nextFreeSlotLevel(shown) {
     const used = new Set((shown || []).map(s => String(s.level)));
     return SPELL_LEVELS.slice(1).find(level => !used.has(level)) || '';
+}
+
+// ---------------------------------------------------------------------------
+// Le personnage lance-t-il des sorts ? (présentation du grimoire)
+// ---------------------------------------------------------------------------
+
+/**
+ * Sous-classes qui apportent l'Incantation à une classe sans magie (PHB 2024),
+ * avec le niveau de personnage où elle arrive : Chevalier occulte (Guerrier)
+ * et Escroc arcanique (Roublard), tous deux au niveau 3.
+ */
+export const SUBCLASS_SPELLCASTING = { eldritch_knight: 3, arcane_trickster: 3 };
+
+/**
+ * Sous-classe lanceuse de sorts correspondant à la valeur enregistrée
+ * (nom français, anglais ou identifiant ; ancien HTML v3 toléré).
+ * @param {string} subclass - character.char_subclass
+ * @param {string} classSlug
+ * @returns {{ slug: string, nameFr: string, level: number } | null}
+ */
+function spellcastingSubclass(subclass, classSlug) {
+    const wanted = normalizeText(subclass);
+    if (!wanted) return null;
+    for (const [slug, level] of Object.entries(SUBCLASS_SPELLCASTING)) {
+        const info = DD_RULES.subclasses?.[slug];
+        if (!info || (classSlug && info.class !== classSlug)) continue;
+        if ([slug, info.name, info.nameFr].some(name => normalizeText(name) === wanted)) {
+            return { slug, nameFr: info.nameFr, level };
+        }
+    }
+    return null;
+}
+
+/**
+ * Le personnage lance-t-il des sorts à son niveau ?
+ *  - classe de lanceur de sorts (Barde, Clerc, Druide, Ensorceleur, Magicien, Occultiste,
+ *    Paladin, Rôdeur : Incantation ou Magie de pacte dès le niveau 1 en 2024) ;
+ *  - sous-classe lanceuse (Chevalier occulte, Escroc arcanique) à partir du niveau 3 ;
+ *  - ou emplacements suivis à la main dans spell_slots_state (multiclasse, règle maison).
+ * Les sorts accordés par un don ou une espèce ne comptent pas : ils se voient dans le grimoire.
+ * @param {{ classSlug?: string, subclass?: string, level?: number, spellSlots?: Object, slotState?: Object }} params
+ *        spellSlots : deriveCharacter().spellSlots ; slotState : character.spell_slots_state
+ * @returns {{ casts: boolean, source: 'class'|'subclass'|'slots'|'', unlockLevel: number, subclassName: string }}
+ *          unlockLevel / subclassName : sous-classe lanceuse pas encore au niveau requis (sinon 0 / '')
+ */
+export function spellcastingStatus({ classSlug = '', subclass = '', level = 1, spellSlots = {}, slotState = {} } = {}) {
+    const result = (casts, source, unlockLevel = 0, subclassName = '') => ({ casts, source, unlockLevel, subclassName });
+    const hasRulebookSlots = Object.values(spellSlots || {}).some(count => (toCount(count) ?? 0) > 0);
+    if (DD_RULES.casterType[classSlug] || hasRulebookSlots) return result(true, 'class');
+    const sub = spellcastingSubclass(subclass, classSlug);
+    const n = toCount(level) ?? 1;
+    if (sub && n >= sub.level) return result(true, 'subclass');
+    if (slotLevels({}, classSlug, slotState).length > 0) return result(true, 'slots');
+    return sub ? result(false, '', sub.level, sub.nameFr) : result(false, '');
+}
+
+/**
+ * Présentation du grimoire :
+ *  - 'full'  : le personnage lance des sorts, ou au moins un sort est noté → grimoire complet ;
+ *  - 'quiet' : ni magie ni sort noté → court avis « Pas de magie… » et bouton pour l'ouvrir ;
+ *  - 'open'  : ni magie ni sort noté, mais le joueur a ouvert le grimoire (sort de don, d'espèce).
+ * @param {boolean} casts - spellcastingStatus().casts
+ * @param {boolean} hasSpells - au moins une ligne avec du contenu (hasSpellContent)
+ * @param {boolean} openChoice - choix « grimoire ouvert » mémorisé dans le navigateur
+ * @returns {'full'|'quiet'|'open'}
+ */
+export function grimoireView(casts, hasSpells, openChoice) {
+    if (casts || hasSpells) return 'full';
+    return openChoice ? 'open' : 'quiet';
+}
+
+/**
+ * Lignes affichées dans le tableau, dans l'ordre d'affichage : les lignes qui ont du contenu
+ * (hasSpellContent) et qui passent le filtre de niveau, plus les lignes « épinglées »
+ * (en cours de saisie : elles ne disparaissent pas sous les doigts, même vidées).
+ * Les autres lignes vides restent dans la fiche, simplement non affichées.
+ * @param {Array<Object>} rows - dynamic_spells
+ * @param {{ level?: string, sort?: Object, pinned?: number[] }} [options]
+ * @returns {{ order: number[], shown: Set<number>, hasDraft: boolean }}
+ *          order : indices dans l'ordre d'affichage (tri) ; shown : indices affichés ;
+ *          hasDraft : une ligne affichée est vide (la ligne de saisie n'est alors pas ajoutée)
+ */
+export function spellRowsView(rows, { level = '', sort = {}, pinned = [] } = {}) {
+    const list = Array.isArray(rows) ? rows : [];
+    const keep = new Set(pinned);
+    const shown = new Set();
+    let hasDraft = false;
+    list.forEach((row, i) => {
+        const content = hasSpellContent(row);
+        if (keep.has(i) || (content && matchesLevelFilter(row, level))) {
+            shown.add(i);
+            if (!content) hasDraft = true;
+        }
+    });
+    return { order: sortedSpellIndices(list, sort), shown, hasDraft };
 }

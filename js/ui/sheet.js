@@ -14,7 +14,7 @@ import { DD_RULES } from '../data/dd-rules.js';
 import { FEATS_DATA } from '../data/feats.js';
 import { FEAT_LEVELS } from '../state/schema.js';
 import { stripHTML } from '../state/migrate.js';
-import { deriveCharacter, hitDieForClass } from '../rules/character.js';
+import { deriveCharacter, featSlotState, hitDieForClass } from '../rules/character.js';
 import { sanitizeRich, sanitizeRulesText } from './sanitize.js';
 import { el, fillSelect, icon, signed } from './dom.js';
 import { applyLock } from './lock.js';
@@ -57,7 +57,8 @@ function buildSkills(root) {
                 icon(SKILL_GROUP_ICONS[stat]),
                 el('span', { text: ability.name }),
                 el('output', { class: 'mod', 'data-out': `mod:${stat}` })),
-            SKILLS_BY_STAT[stat].map(skill => el('div', { class: 'skill-row' },
+            // data-rank (posé au rendu) : maîtrise / expertise, pour faire ressortir la ligne
+            SKILLS_BY_STAT[stat].map(skill => el('div', { class: 'skill-row', 'data-skill': skill.id },
                 el('input', {
                     type: 'checkbox', class: 'round-check', 'data-field': `skill_prof_${skill.id}`,
                     'aria-label': `Maîtrise : ${skill.name}`
@@ -90,13 +91,18 @@ function buildFeats(root) {
     root.querySelector('#feats').replaceChildren(...FEAT_LEVELS.map(level => {
         const select = el('select', {
             id: `f-feat_${level}`, class: 'input', 'data-field': `feat_${level}`,
-            'aria-label': `Don du niveau ${level}`
+            'aria-label': `Don du niveau ${level}`,
+            'aria-describedby': `feat-when-${level}`
         }, el('option', { value: '', text: '— Choisir un don —' }), featOptions());
-        return el('div', { class: 'feat' },
+        // data-feat-state (posé au rendu, voir featSlotState) : actif, à choisir, prévu ou à venir ;
+        // la légende (« À venir », « Actif au niveau 12 ») ne s'affiche que pour les niveaux pas encore atteints
+        return el('div', { class: 'feat', 'data-feat-slot': String(level) },
             el('div', { class: 'feat-head' },
                 el('span', { class: 'feat-badge', text: `Niv. ${level}` }),
                 select,
-                el('output', { class: 'feat-asi', 'data-out': `featAsi:${level}` })),
+                el('output', { class: 'feat-asi', 'data-out': `featAsi:${level}` }),
+                el('span', { class: 'feat-when', id: `feat-when-${level}`, hidden: true },
+                    icon('hourglass'), el('span', { class: 'feat-when-text' }))),
             el('div', { class: 'feat-desc', 'data-feat-desc': String(level), hidden: true }));
     }));
 }
@@ -277,14 +283,39 @@ function renderOutputs(root, character, d) {
     root.querySelector('[data-manual-only="passive_perc_manual"]').hidden = !manual;
 }
 
-function renderFeats(root, character) {
+/** Légende des emplacements pas encore atteints (le don reste modifiable : on peut le prévoir).
+ *  Emplacement libre : « À venir » suffit, la pastille dit déjà le niveau. */
+const FEAT_WHEN = {
+    upcoming: () => 'À venir',
+    planned: (level) => `Actif au niveau ${level}`
+};
+
+function renderFeats(root, character, d) {
     for (const level of FEAT_LEVELS) {
+        const slot = root.querySelector(`[data-feat-slot="${level}"]`);
+        const state = featSlotState(level, d.level, character[`feat_${level}`]);
+        if (slot.dataset.featState !== state) slot.dataset.featState = state;
+        const when = slot.querySelector('.feat-when');
+        const caption = FEAT_WHEN[state]?.(level) ?? '';
+        const text = when.querySelector('.feat-when-text');
+        if (text.textContent !== caption) text.textContent = caption;
+        when.hidden = !caption;
+
         const box = root.querySelector(`[data-feat-desc="${level}"]`);
         const feat = FEATS_DATA[character[`feat_${level}`]];
         box.hidden = !feat;
         if (feat) {
             box.innerHTML = sanitizeRulesText(`<strong>Prérequis :</strong> ${feat.prereq}<br>${feat.desc || '<em>Description à compléter.</em>'}`);
         }
+    }
+}
+
+/** Compétences maîtrisées (et expertes) mises en avant : la règle vient de deriveCharacter */
+function renderSkillRanks(root, d) {
+    for (const row of root.querySelectorAll('.skill-row[data-skill]')) {
+        const skill = d.skills[row.dataset.skill];
+        const rank = skill?.expertise ? 'expertise' : skill?.proficient ? 'proficient' : 'none';
+        if (row.dataset.rank !== rank) row.dataset.rank = rank;
     }
 }
 
@@ -296,7 +327,8 @@ function render(root, character, replaced = false) {
         writeField(field, character[field.dataset.field], replaced);
     }
     renderOutputs(root, character, d);
-    renderFeats(root, character);
+    renderFeats(root, character, d);
+    renderSkillRanks(root, d);
     applyLock(root);
 }
 

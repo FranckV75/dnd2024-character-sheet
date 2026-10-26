@@ -67,6 +67,13 @@
     --rage-flare: transparent;
     --pulse-ink: #000000;
     --pulse-glow: transparent;
+    /* Lisibilité (lot 3) : encres calme et d'accent en noir, lueurs dorées effacées
+       (sur le papier, seuls la graisse et les soulignés distinguent les maîtrises) */
+    --quiet-ink: #000000;
+    --accent-ink: #000000;
+    --skill-prof-tint: transparent;
+    --skill-exp-tint: transparent;
+    --feat-invite-bg: transparent;
     color-scheme: light;
     /* Les cases cochées, en-têtes de tableau et pièces sont des fonds : on les imprime
        même si l'option « Graphiques d'arrière-plan » est décochée */
@@ -144,6 +151,12 @@ dialog,
 
 /* Dons non choisis (« — Choisir un don — ») : rien à imprimer */
 .feat:has(> .feat-desc[hidden]) {
+    display: none;
+}
+
+/* Don prévu pour un niveau pas encore atteint : son nom et « Actif au niveau N » sur une
+   ligne, sans la description (il ne s'applique pas encore ; la feuille reste sur 4 pages) */
+.feat[data-feat-state="planned"] .feat-desc {
     display: none;
 }
 

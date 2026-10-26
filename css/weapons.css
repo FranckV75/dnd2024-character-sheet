@@ -164,9 +164,12 @@
     .weapons-table td { padding: 4px 3px; }
     .weapons-table th { overflow-wrap: anywhere; }
     /* À 820 px, les cases passent à la ligne sans couper les mots : la colonne des
-       propriétés loge « Rechargement », celle des bottes « Ralentissement » */
-    .weapons-col-name { width: 22%; }
-    .weapons-col-atk { width: 10%; }
+       propriétés loge « Rechargement », celle des bottes « Ralentissement ». Le bonus
+       d'attaque (« FOR : +7 », le chiffre le plus demandé en combat) tient sur une ligne
+       (2e colonne du tableau, construit par weapons.js). */
+    .weapons-col-name { width: 19%; }
+    .weapons-col-atk { width: 13%; }
+    .weapons-table td:nth-child(2) > .weapons-calc { white-space: nowrap; }
     .weapons-col-dmg { width: 14%; }
     .weapons-col-prop { width: 19%; }
     .weapons-col-prof { width: 20%; }

@@ -14,7 +14,8 @@
     --box: rgba(255, 255, 255, 0.55);
     --box-strong: #f4ead5;
     --text: #2a1b0a;
-    --text-muted: #6b5a45;
+    /* Texte secondaire : assez soutenu pour le contraste AA sur la fiche transparente */
+    --text-muted: #5a4632;
     --label: #2a1b0a;
     --accent: #8b4513;
     --accent-strong: #3e1c02;
@@ -116,6 +117,22 @@
     /* Valeur qui change : encre et halo de la brève pulsation dorée */
     --pulse-ink: var(--gold);
     --pulse-glow: var(--gold-glow);
+
+    /* ---------- Lisibilité en jeu (lot 3) ---------- */
+    /* Encre « calme » (compétence ou sauvegarde sans maîtrise, sort non préparé, aides du
+       grimoire) : entre --text et --text-muted, assez soutenue pour rester lisible (contraste
+       AA) même sur la fiche transparente posée sur un fond d'écran.
+       Encre d'accent « lisible » (bonus maîtrisés, invitation à choisir un don) : l'accent,
+       un ton plus profond en thème clair pour rester lisible sur la lueur dorée et la fiche
+       transparente. Lueurs dorées très légères : ligne d'une compétence maîtrisée (puis
+       experte), emplacement de don à choisir. */
+    --quiet-ink: #4a3825;
+    --accent-ink: #5c2a09;
+    --skill-prof-tint: rgba(168, 116, 26, 0.09);
+    --skill-exp-tint: rgba(168, 116, 26, 0.16);
+    --feat-invite-bg: rgba(168, 116, 26, 0.07);
+    /* Taille minimale des petits libellés (Cinzel, capitales) : rien de plus petit sur la fiche */
+    --label-min: 0.64rem;
 }
 
 :root[data-theme="dark"] {
@@ -194,6 +211,13 @@
     /* Or plus chaud que --gold : il se détache des chiffres crème */
     --pulse-ink: #ffc14d;
     --pulse-glow: rgba(255, 184, 64, 0.75);
+
+    /* ---------- Lisibilité en jeu (voir le thème clair) ---------- */
+    --quiet-ink: #cbbca2;
+    --accent-ink: #e8b86d;
+    --skill-prof-tint: rgba(232, 184, 109, 0.08);
+    --skill-exp-tint: rgba(232, 184, 109, 0.14);
+    --feat-invite-bg: rgba(232, 184, 109, 0.06);
 }
 
 * {

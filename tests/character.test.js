@@ -16,7 +16,8 @@ import {
     sneakAttackDice,
     deriveCharacter,
     computeWeapon,
-    renownTier
+    renownTier,
+    featSlotState
 } from '../js/rules/character.js';
 
 const MODS = { str: 3, dex: 2, con: 3, int: 0, wis: 1, cha: -1 };
@@ -275,5 +276,33 @@ describe('Odyssée des Seigneurs Dragons : palier de renommée', () => {
         assert.equal(renownTier(15), 'Culte');
         assert.equal(renownTier(19), 'Divin');
         assert.equal(renownTier(''), 'Inconnu');
+    });
+});
+
+describe('featSlotState : emplacements de dons selon le niveau', () => {
+    test('Niveau atteint : don choisi (actif) ou à choisir', () => {
+        assert.equal(featSlotState(1, 4, 'sauvagerie_martiale'), 'active');
+        assert.equal(featSlotState(4, 4, 'maitre_des_armes_lourdes_cogneur_lourd'), 'active');
+        assert.equal(featSlotState(4, 4, ''), 'pending');
+        assert.equal(featSlotState(1, 1, undefined), 'pending');
+    });
+
+    test('Niveau pas encore atteint : don prévu en avance ou emplacement à venir', () => {
+        assert.equal(featSlotState(8, 4, 'robuste'), 'planned');
+        assert.equal(featSlotState(8, 4, ''), 'upcoming');
+        assert.equal(featSlotState(19, 18, null), 'upcoming');
+        assert.equal(featSlotState(19, 19, ''), 'pending');
+    });
+
+    test('Niveau saisi librement (texte, HTML, vide) et choix vide ou espaces', () => {
+        assert.equal(featSlotState(4, '<font color="#1a1a1a">4</font>', ''), 'pending');
+        assert.equal(featSlotState(4, '3', 'robuste'), 'planned');
+        // Niveau absent ou illisible : niveau 1, comme deriveCharacter
+        assert.equal(featSlotState(1, '', ''), 'pending');
+        assert.equal(featSlotState(4, 'abc', ''), 'upcoming');
+        // Au-delà de 20 : ramené à 20
+        assert.equal(featSlotState(19, 25, 'x'), 'active');
+        assert.equal(featSlotState(8, 8, '   '), 'pending');
+        assert.equal(featSlotState(8, 8, '<b></b>'), 'pending');
     });
 });

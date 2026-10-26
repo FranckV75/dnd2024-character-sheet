@@ -180,7 +180,7 @@
     margin: 0;
     white-space: nowrap;
     font-family: var(--font-title);
-    font-size: 0.62rem;
+    font-size: var(--label-min);
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
