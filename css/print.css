@@ -612,3 +612,9 @@ h1, h2, h3, h4 {
 .coin-icon.electrum { border-color: #857424; box-shadow: inset 0 0 0 3px var(--coin-electrum); }
 .coin-icon.gold { border-color: #8d7012; box-shadow: inset 0 0 0 3px var(--coin-gold); }
 .coin-icon.platinum { border-color: #57707f; box-shadow: inset 0 0 0 3px var(--coin-platinum); }
+
+/* Lignes de saisie vides des armes et armures : rien à imprimer */
+.weapons-table tr.is-entry,
+.armors-table tr.is-entry {
+    display: none;
+}

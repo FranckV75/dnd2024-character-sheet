@@ -25,6 +25,8 @@ Toutes les modifications notables du projet sont documentées dans ce fichier. L
 - Dons : emplacement atteint mais vide signalé en doré, niveaux à venir atténués (« À venir », « Actif au niveau N » pour un don prévu) ; compétences maîtrisées et expertises mises en valeur, les autres plus discrètes.
 - Revue de toute la fiche : bonus d'attaque sur une seule ligne sur iPad, sauvegardes plus grandes et maîtrisées en gras, taille minimale des petits libellés, contrastes renforcés (texte atténué plus foncé en clair), colonnes du grimoire sans mots coupés à 820 px.
 - Retours de Franck sur iPad : valeurs centrées dans les cases bonus de maîtrise / inspiration / vitesse (alignées entre elles), jauge de PV en dégradé du vert au rouge (jaune, orange), encadré Odyssée aux titres sur une même ligne et valeurs alignées, quelle que soit la largeur ; classe d'armure dans un bouclier à double filet doré (à la place de l'hexagone, même place).
+- Bouton « Cogneur lourd » à côté de « Rage » (don choisi à un niveau atteint) : + bonus de maîtrise aux dégâts des armes Lourdes, cumulable avec la Rage.
+- Armes et armures : les lignes vides enregistrées sont masquées, une seule ligne « Nouvelle arme… » / « Nouvelle armure… » reste pour la saisie (aucune quand la fiche est verrouillée ni à l'impression) ; « Ajouter » y place le curseur.
 - Barre « Gestion » : disposition figée, les messages d'état (compte, enregistrement) ne déplacent plus les boutons ; trop longs, ils se terminent par « … » (texte complet au survol).
 ### Fixed
 - Champ en cours de saisie rafraîchi quand une autre version de la fiche est chargée.

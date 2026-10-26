@@ -215,7 +215,7 @@ export function featSlotState(slotLevel, characterLevel, choice) {
  * Attaque et dégâts d'une arme du tableau, avec les bonus de combat actifs.
  * @param {Object} weapon - Ligne de `dynamic_weapons`
  * @param {{ mods: Object, pb: number, level: number, classSlug: string }} stats - issu de deriveCharacter()
- * @param {{ rage?: boolean, sneakAttack?: boolean, hunterMark?: boolean }} [buffs]
+ * @param {{ rage?: boolean, sneakAttack?: boolean, hunterMark?: boolean, heavyWeaponMaster?: boolean }} [buffs]
  * @returns {{ attack: {text: string, tooltip: string}, damage: {text: string, tooltip: string} } | null}
  *          null si l'arme n'est pas rattachée au manuel (pas de calcul possible)
  */
@@ -232,6 +232,10 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     const extraDmg = [];
     if (buffs.rage && stat === 'FOR') extraDmg.push({ die: String(getRageBonus(level)), type: 'Rage' });
     if (buffs.hunterMark) extraDmg.push({ die: '1d6', type: 'Force' });
+    // Cogneur lourd (PHB 2024, « Expert en armes lourdes ») : arme Lourde, bonus de maîtrise
+    if (buffs.heavyWeaponMaster && prop.toLowerCase().split(/[,;]/).some(p => p.trim().startsWith('lourde'))) {
+        extraDmg.push({ die: String(pb), type: 'Cogneur lourd' });
+    }
     if (buffs.sneakAttack && (prop.toLowerCase().includes('finesse') || isRanged)) {
         extraDmg.push({ die: `${sneakAttackDice(level)}d6`, type: 'Sournoise' });
     }

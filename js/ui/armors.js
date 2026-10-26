@@ -11,7 +11,7 @@ import { EMPTY_ARMOR } from '../state/schema.js';
 import { stripHTML } from '../state/migrate.js';
 import { parseNumber } from '../rules/character.js';
 import {
-    ARMOR_TYPES, searchArmorCatalogue, armorRowFromCatalogue, armorWarnings, armorTraining
+    ARMOR_TYPES, searchArmorCatalogue, armorRowFromCatalogue, armorWarnings, armorTraining, isBlankArmor
 } from '../rules/armors.js';
 import { el, icon, setIconLabel } from './dom.js';
 import { cellText } from './cell-text.js';
@@ -90,6 +90,13 @@ export function initArmors({ root, store, setStatus }) {
 
     function addRow() {
         if (isLocked()) return;
+        // Une ligne de saisie vide est déjà affichée : on y place le curseur
+        const list = armorsOf(store.get());
+        const entry = rows.find((row, i) => !row.tr.hidden && isBlankArmor(asObject(list[i])));
+        if (entry) {
+            entry.controls.name.focus();
+            return;
+        }
         store.update({ dynamic_armors: [...armorsOf(store.get()), { ...EMPTY_ARMOR }] });
         rows.at(-1)?.controls.name.focus();
     }
@@ -235,8 +242,19 @@ export function initArmors({ root, store, setStatus }) {
     function fill(character) {
         const list = armorsOf(character);
         const warnings = armorWarnings(list, armorTraining(character), parseNumber(character.str_score, 10));
+        // Lignes vides enregistrées : une seule reste affichée (ligne de saisie), aucune quand
+        // la fiche est verrouillée ; une ligne en cours de saisie reste visible. Les autres sont
+        // seulement masquées, la sauvegarde n'est pas réécrite.
+        const locked = isLocked();
+        let entryShown = false;
         rows.forEach(({ tr, controls }, i) => {
             const row = asObject(list[i]);
+            const blank = isBlankArmor(row);
+            const shown = !blank || tr.contains(document.activeElement) || (!locked && !entryShown);
+            if (blank && shown) entryShown = true;
+            tr.hidden = !shown;
+            tr.classList.toggle('is-entry', blank);
+            controls.name.placeholder = blank ? 'Nouvelle armure…' : 'Nom…';
             for (const key of Object.keys(TEXT_COLUMNS)) setText(controls[key], textOf(row[key]));
             controls.ca.title = textOf(row.ca);
             controls.comment.title = textOf(row.comment);
@@ -275,6 +293,9 @@ export function initArmors({ root, store, setStatus }) {
     }
 
     store.subscribe(render);
-    document.addEventListener('dd:lockchange', applyLocked);
+    document.addEventListener('dd:lockchange', () => {
+        applyLocked();
+        fill(store.get());
+    });
     render(store.get(), null);
 }
