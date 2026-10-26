@@ -718,26 +718,33 @@ fieldset.inline-checks {
 }
 
 .ac-hex {
+    /* Bouclier : la forme vient de deux masques SVG (seule leur opacité compte, pas leur
+       couleur). L'élément porte le remplissage, découpé en bouclier ; ::before trace le
+       contour (trait de 2,5 px et filet intérieur plus fin). Le contenu reste dans la
+       partie large du bouclier, au-dessus de la pointe. */
+    --shield-fill: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M50 3C62 9 79 11 95 8V44C95 70 76 87 50 97C24 87 5 70 5 44V8C21 11 38 9 50 3Z' fill='black'/%3E%3C/svg%3E");
+    --shield-ring: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='black' vector-effect='non-scaling-stroke'%3E%3Cpath d='M50 3C62 9 79 11 95 8V44C95 70 76 87 50 97C24 87 5 70 5 44V8C21 11 38 9 50 3Z' stroke-width='2.5' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 10C61 15 76 17 88 15V45C88 66 72 80 50 89C28 80 12 66 12 45V15C24 17 39 15 50 10Z' stroke-width='1' stroke-opacity='0.55' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/svg%3E");
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     min-height: 120px;
-    padding: 26px 10px 18px;
+    padding: 18px 16px 30px;
     border: none;
-    background: var(--border);
-    clip-path: polygon(50% 0, 100% 22%, 100% 78%, 50% 100%, 0 78%, 0 22%);
+    background: radial-gradient(ellipse at 50% 22%, var(--hex-light), var(--hex-bg) 72%);
+    -webkit-mask: var(--shield-fill) center / 100% 100% no-repeat;
+    mask: var(--shield-fill) center / 100% 100% no-repeat;
     position: relative;
 }
 
-/* Remplissage légèrement bombé (reflet en haut) ; en fiche transparente, gallery.css
-   redessine l'hexagone et ce calque ne trace plus que le cadre */
 .ac-hex::before {
     content: '';
     position: absolute;
-    inset: 2px;
-    background: radial-gradient(ellipse at 50% 22%, var(--hex-light), var(--hex-bg) 72%);
-    clip-path: inherit;
+    inset: 0;
+    background: var(--border);
+    -webkit-mask: var(--shield-ring) center / 100% 100% no-repeat;
+    mask: var(--shield-ring) center / 100% 100% no-repeat;
+    pointer-events: none;
 }
 
 .ac-hex > * {
@@ -1181,26 +1188,26 @@ fieldset.inline-checks {
 .odyssey-grid {
     display: grid;
     grid-template-columns: 1.8fr 0.8fr 1.4fr;
-    gap: 12px 18px;
-    align-items: stretch;
+    /* Deux rangées communes à toutes les cases : les titres sur la première (calés en bas,
+       même si l'un passe sur deux lignes), les valeurs sur la seconde */
+    grid-template-rows: auto auto;
+    grid-auto-flow: column;
+    gap: 4px 18px;
 }
 
-/* Chaque case : libellé centré au-dessus de sa valeur, valeurs alignées sur une même ligne */
+/* Le libellé et la valeur de chaque case deviennent des cellules directes de la grille */
 .odyssey-grid .field {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 4px;
-    text-align: center;
+    display: contents;
 }
 
 .odyssey-grid .field > :is(label, .field-label) {
+    align-self: end;
     margin: 0;
     text-align: center;
 }
 
 .odyssey-grid .field > :is(.input, output) {
+    align-self: start;
     width: 100%;
     text-align: center;
     text-align-last: center;
@@ -1376,14 +1383,6 @@ fieldset.inline-checks {
 
     .two-cols {
         grid-template-columns: 1fr;
-    }
-
-    .odyssey-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .odyssey-grid .field:first-child {
-        grid-column: 1 / -1;
     }
 
     .spell-stats {

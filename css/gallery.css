@@ -83,21 +83,11 @@
             background: color-mix(in srgb, var(--mod-bg) calc(var(--chip-alpha) * 100%), transparent);
         }
 
-        /* Hexagone de la CA : opaque, son cadre est le fond brun débordant sous le remplissage
-           (::before). Translucide, ce fond brun teinterait tout l'hexagone : le remplissage passe
-           sur l'hexagone lui-même et ::before ne dessine plus que le cadre (anneau de 2 px). */
+        /* Bouclier de la CA : seul son remplissage devient translucide (le contour est
+           tracé par ::before, voir sheet.css) */
         :root[data-translucent="true"] .sheet .ac-hex {
             background: color-mix(in srgb, var(--hex-bg) calc(var(--chip-alpha) * 100%), transparent);
             box-shadow: none;
-        }
-
-        :root[data-translucent="true"] .sheet .ac-hex::before {
-            inset: 0;
-            background: var(--border);
-            clip-path: polygon(evenodd,
-                50% 0, 100% 22%, 100% 78%, 50% 100%, 0 78%, 0 22%, 50% 0,
-                50% 2px, 2px calc(22% + 1px), 2px calc(78% - 1px), 50% calc(100% - 2px),
-                calc(100% - 2px) calc(78% - 1px), calc(100% - 2px) calc(22% + 1px), 50% 2px);
         }
 
         :root[data-translucent="true"] .sheet .tab {
