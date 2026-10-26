@@ -15,6 +15,8 @@ Toutes les modifications notables du projet sont documentées dans ce fichier. L
   mystique de l'Occultiste, multiclasse), comme le « + » de la v3.
 - Lien d'e-mail expiré ou déjà utilisé (mot de passe oublié) : message clair, la session reste ouverte.
 ### Changed
+- Barre « Gestion » repliée aussi sur les tablettes tactiles en paysage (jusqu'à 1400 px : Lenovo,
+  iPad), et centrée au-dessus de la fiche ; dépliée, elle couvrait un quart de la hauteur de l'écran.
 - Une version en ligne enregistrée par l'ancienne version (onglet v3 resté ouvert) n'est jamais chargée
   en silence : une question propose de garder celle de ce navigateur. Si la v3 n'a fait qu'effacer
   l'état de jeu (Rage, emplacements), il est remis en ligne sans question.

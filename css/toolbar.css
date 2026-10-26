@@ -4,7 +4,8 @@
    - Groupes : Fiche (#toolbar-panel), Affichage (#view-group), Compte (#account-group),
      états du compte et de l'enregistrement (.app-bar-statuses). Le contenu des groupes
      vient de toolbar.js, gallery.js et account.js ; leur place est réglée ici.
-   - Repli sur tablette (≤ 1100 px) : classe .app-bar--collapsed posée par toolbar.js.
+   - Repli sur tablette (≤ 1100 px, et écrans tactiles ≤ 1400 px : tablettes en paysage) :
+     classe .app-bar--collapsed posée par toolbar.js (même condition que COMPACT_QUERY).
    - Mode cinéma : classe .cinema sur <body>, la fiche s'efface pour montrer le fond.
    - Fenêtres d'import / export.
    Règles : couleurs par variables (base.css), aucun !important.
@@ -242,9 +243,11 @@
     display: none;
 }
 
-/* ---------- Tablettes : barre repliée par défaut ---------- */
+/* ---------- Tablettes : barre repliée par défaut ----------
+   Aussi en paysage (Lenovo 1280 px, iPad 1180 px) : dépliée, la barre couvrait un quart de
+   la hauteur de l'écran. Même condition que COMPACT_QUERY (toolbar.js). */
 
-@media (max-width: 1100px) {
+@media (max-width: 1100px), (pointer: coarse) and (max-width: 1400px) {
     .app-bar {
         top: 6px;
         grid-template-columns: auto minmax(0, 1fr);
@@ -254,7 +257,9 @@
             "view view"
             "account account";
         gap: 10px 12px;
-        margin: 8px 8px 0;
+        /* 8 px de chaque côté, centrée au-dessus de la fiche (tablette en paysage : 1100 px au plus) */
+        width: calc(100% - 16px);
+        margin: 8px auto 0;
         padding: 8px 12px;
     }
 

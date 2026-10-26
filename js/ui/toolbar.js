@@ -1,7 +1,7 @@
 // =============================================================================
 // TOOLBAR.JS - Barre « Gestion » de la fiche
 //
-//  - Repli : sur tablette (≤ 1100 px), la barre démarre repliée sur un seul bouton
+//  - Repli : sur tablette (≤ 1100 px, ou écran tactile ≤ 1400 px en paysage), la barre démarre repliée sur un seul bouton
 //    « Gestion » qui déplie les commandes (affichage et compte compris).
 //  - Groupe « Fiche » : verrou (lock.js), puis nouvelle fiche, import, export, impression.
 //  - Groupe « Affichage » (#view-controls) : thème et mode cinéma, avant « Fonds » (gallery.js).
@@ -20,8 +20,9 @@ import { openModal, confirmModal } from './modal.js';
 import { createDefaultCharacter } from '../state/schema.js';
 import { parseCharacterFile, serializeCharacter, exportFileName, STORAGE_KEYS } from '../state/persistence.js';
 
-/** Largeur en dessous de laquelle la barre démarre repliée (même seuil que sheet.css) */
-const COMPACT_QUERY = '(max-width: 1100px)';
+/** Écrans où la barre démarre repliée : tablettes (même seuil que sheet.css), et tablettes tactiles
+ *  en paysage (Lenovo 1280 px, iPad 1180 px). Même condition que css/toolbar.css. */
+const COMPACT_QUERY = '(max-width: 1100px), (pointer: coarse) and (max-width: 1400px)';
 const COLLAPSED_CLASS = 'app-bar--collapsed';
 const CINEMA_CLASS = 'cinema';
 
