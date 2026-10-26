@@ -1206,11 +1206,19 @@ fieldset.inline-checks {
     text-align: center;
 }
 
+/* Valeurs : même hauteur pour les trois (la liste déroulante est plus haute sur tablette,
+   44 px pour le doigt), texte centré verticalement : les contenus restent alignés */
 .odyssey-grid .field > :is(.input, output) {
-    align-self: start;
+    align-self: stretch;
     width: 100%;
     text-align: center;
     text-align-last: center;
+}
+
+.odyssey-grid .field > output {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Palier calculé : mêmes police, taille, graisse et couleur que les champs voisins (.input) */
