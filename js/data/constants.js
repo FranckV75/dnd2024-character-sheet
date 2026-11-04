@@ -57,5 +57,6 @@ export const DEFAULT_BGS = [
     'Fond_Iria.webp',
     'Fond_Hedera.webp',
     'Fond_Cephalus.webp',
-    'Fond_La_Team.webp'
+    'Fond_La_Team.webp',
+    'Fond_Hache_du_Phoenix.webp'
 ];
