@@ -242,6 +242,8 @@ export function getRageBonus(level) {
 
 /**
  * Vérifie si une arme peut bénéficier des Arts Martiaux du Moine (D&D 2024).
+ * PHB 2024 p. 101 (« Monk weapons ») : armes courantes de corps à corps, et armes de guerre
+ * de corps à corps qui ont la propriété Légère (Cimeterre, Épée courte).
  * @param {string}  category
  * @param {boolean} isRanged
  * @param {string}  prop
@@ -249,8 +251,10 @@ export function getRageBonus(level) {
  */
 export function isMartialArtsWeapon(category, isRanged, prop) {
     if (isRanged) return false;
-    if ((category || '').toLowerCase() !== 'courante') return false;
-    return !(prop || '').toLowerCase().includes('lourde');
+    const fold = (text) => (text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const kind = fold(category);
+    if (kind === 'courante') return true;
+    return kind === 'guerre' && fold(prop).split(/[,;]/).some(p => p.trim().startsWith('legere'));
 }
 
 /**

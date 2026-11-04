@@ -4,11 +4,13 @@
 //  - ligne d'arme remplie à partir du manuel (DD_RULES.weapons)
 //  - configuration personnalisée d'une arme (champ weaponConfig, format v3)
 //  - bonus de combat proposés selon la classe (Rage, Attaque sournoise, Marque du chasseur)
-//    ou selon un don (Cogneur lourd)
+//    ou selon un don (Cogneur lourd, Expert de la charge)
+//  - type de dégâts d'une arme (rappels des dons Trancheur, Broyeur, Perforateur)
 //  - ligne vide (rien de saisi), masquée par l'affichage sauf une ligne de saisie
 // =============================================================================
 
 import { parseWeaponConfig } from './logic.js';
+import { reachedFeatIds } from './feats.js';
 
 export const WEAPON_FILTERS = ['all', 'simple', 'martial', 'melee', 'ranged'];
 
@@ -33,8 +35,17 @@ const CLASS_BUFFS = {
 
 /** Bonus de combat ouverts par un don : clé de combat_buffs → identifiant du don (js/data/feats.js) */
 const FEAT_BUFFS = {
-    heavyWeaponMaster: 'maitre_des_armes_lourdes_cogneur_lourd'
+    heavyWeaponMaster: 'maitre_des_armes_lourdes_cogneur_lourd',
+    // Expert de la charge (PHB 2024 « Charger », p. 202) : +1d8 aux dégâts d'une attaque au corps à corps
+    charger: 'expert_de_la_charge'
 };
+
+/** Début du type de dégâts écrit dans le manuel (« 1d8 tran. ») → abréviation v3 (WEAPON_DAMAGE_TYPES) */
+const DAMAGE_TYPE_PREFIXES = [
+    ['tran', 'TRAN'], ['cont', 'CONT'], ['perf', 'PERF'], ['perc', 'PERF'], ['feu', 'FEU'], ['froid', 'FROID'],
+    ['necr', 'NECR'], ['radi', 'RADI'], ['force', 'FORCE'], ['psy', 'PSYCH'], ['poison', 'POISON'],
+    ['acide', 'ACIDE'], ['foudre', 'FOUDRE'], ['tonnerre', 'TONNERRE']
+];
 
 /** Champs d'une ligne d'arme qui, remplis, en font une vraie ligne (format v3, voir EMPTY_WEAPON) */
 const WEAPON_CONTENT_KEYS = ['name', 'prop', 'prof', 'ammo', 'note', 'atk', 'dmg', 'atkKey', 'baseDmg', 'weaponConfig'];
@@ -68,6 +79,20 @@ export function weaponReach(weapon) {
     if (fold(weapon?.name).startsWith('flechette')) return { melee: false, ranged: true };
     if (prop.includes('lancer')) return { melee: true, ranged: true };
     return { melee: true, ranged: false };
+}
+
+/**
+ * Type de dégâts d'une arme : celui imposé dans sa configuration, sinon celui du manuel
+ * écrit après le dé (« 1d12 tran. » → 'TRAN'), comme calcWeaponDamage (logic.js).
+ * @param {{ baseDmg?: string, weaponConfig?: string|Object }} weapon
+ * @returns {string} abréviation de WEAPON_DAMAGE_TYPES, ou '' si inconnu
+ */
+export function weaponDamageType(weapon) {
+    const override = parseWeaponConfig(weapon?.weaponConfig).dmgTypeOverride;
+    if (WEAPON_DAMAGE_TYPES.includes(override)) return override;
+    const match = fold(weapon?.baseDmg).match(/^(?:\d*d\d+|\d+)\s*([a-z]+)/);
+    if (!match) return '';
+    return DAMAGE_TYPE_PREFIXES.find(([prefix]) => match[1].startsWith(prefix))?.[1] || '';
 }
 
 /**
@@ -230,15 +255,15 @@ export function buffsForClass(slug) {
  * classe ou de don n'est plus compté.
  * @param {string} slug
  * @param {Object} buffs - combat_buffs
- * @param {Object} [character] - pour les bonus ouverts par un don (Cogneur lourd)
- * @returns {{ rage: boolean, sneakAttack: boolean, hunterMark: boolean, heavyWeaponMaster: boolean }}
+ * @param {Object} [character] - pour les bonus ouverts par un don (Cogneur lourd, Expert de la charge)
+ * @returns {{ rage: boolean, sneakAttack: boolean, hunterMark: boolean, heavyWeaponMaster: boolean, charger: boolean }}
  */
 export function effectiveBuffs(slug, buffs, character) {
     const allowed = character ? buffsForCharacter(slug, character) : buffsForClass(slug);
     const on = (key) => allowed.includes(key) && buffs?.[key] === true;
     return {
         rage: on('rage'), sneakAttack: on('sneakAttack'), hunterMark: on('hunterMark'),
-        heavyWeaponMaster: on('heavyWeaponMaster')
+        heavyWeaponMaster: on('heavyWeaponMaster'), charger: on('charger')
     };
 }
 
@@ -250,12 +275,7 @@ export function effectiveBuffs(slug, buffs, character) {
  * @returns {string[]} clés de combat_buffs
  */
 export function featBuffs(character) {
-    if (!character || typeof character !== 'object') return [];
-    const parsed = Number.parseInt(plain(character.char_level), 10);
-    const level = Number.isFinite(parsed) ? Math.min(20, Math.max(1, parsed)) : 1;
-    const reachedFeats = Object.entries(character)
-        .filter(([key]) => /^feat_\d+$/.test(key) && Number(key.slice(5)) <= level)
-        .map(([, value]) => plain(value));
+    const reachedFeats = reachedFeatIds(character);
     return Object.entries(FEAT_BUFFS)
         .filter(([, featId]) => reachedFeats.includes(featId))
         .map(([key]) => key);

@@ -5,10 +5,11 @@
 // Les règles (soins, ressources récupérées...) sont dans js/rules/rest.js ;
 // ce module demande les choix du joueur, lance les dés (Math.random) et
 // envoie le patch au store en une seule fois.
+// Dons : les rappels de fin de repos (Musicien) viennent de summary.featNotes.
 // =============================================================================
 
 import { el, signed, icon, setIconLabel } from './dom.js';
-import { openModal, confirmModal } from './modal.js';
+import { openModal } from './modal.js';
 import { deriveCharacter } from '../rules/character.js';
 import {
     hitDiceState, hitDiceHealing, parseManualHitDice, canStartRest, planShortRest, planLongRest
@@ -24,6 +25,17 @@ const iconLine = (text, name, className) => el('li', { class: [name ? 'has-icon'
 
 /** Avertissement : triangle dessiné puis texte */
 const warning = (text) => el('p', { class: 'rest-warning' }, icon('warning'), el('span', { text }));
+
+/** Rappel d'un don (FeatNote) : son nom en petites capitales, puis le texte */
+const featLine = (note) => el('li', { class: 'has-icon rest-feat' }, icon('star'),
+    el('span', {}, el('strong', { class: 'rest-feat-name', text: note.featName }), ` ${note.text}`));
+
+/** Rappels des dons à la fin du repos (Musicien), ou rien */
+const featBlock = (notes) => (notes?.length
+    ? el('div', { class: 'rest-also rest-feats' },
+        el('span', { class: 'label', text: 'À la fin du repos' }),
+        el('ul', {}, notes.map(featLine)))
+    : null);
 
 // ---------------------------------------------------------------------------
 // Repos court
@@ -118,7 +130,8 @@ function openShortRest(store) {
                 also.map(text => iconLine(text)),
                 sorcererBox && el('li', { class: 'has-icon' }, el('label', { class: 'rest-check' }, sorcererBox,
                     el('span', { text: `Utiliser Restauration ensorcelée : jusqu'à ${sorcerousMax} points de sorcellerie (une fois par repos long)` }))),
-                hint && iconLine(hint, 'sparkle', 'muted')))
+                hint && iconLine(hint, 'sparkle', 'muted'))),
+        featBlock(preview.featNotes)
     ];
 
     let result = null;
@@ -189,9 +202,12 @@ function showShortRestSummary({ summary, rollText }, conMod) {
     openModal({
         title: 'Repos court terminé',
         icon: 'hourglass',
-        body: el('ul', { class: 'rest-summary' },
-            lines.map(([text, name]) => iconLine(text, name)),
-            hint && iconLine(hint, 'sparkle', 'muted')),
+        body: [
+            el('ul', { class: 'rest-summary' },
+                lines.map(([text, name]) => iconLine(text, name)),
+                hint && iconLine(hint, 'sparkle', 'muted')),
+            featBlock(summary.featNotes)
+        ].filter(Boolean),
         actions: [{ label: 'OK', primary: true }]
     });
 }
@@ -218,14 +234,25 @@ function longRestMessage(summary) {
     return message;
 }
 
-async function longRest(store, setStatus) {
-    const ok = await confirmModal({
-        title: 'Repos long (8 h)',
-        icon: 'bed',
-        message: longRestMessage(planLongRest(store.get()).summary),
-        confirmLabel: 'Se reposer',
-        confirmIcon: 'bed'
+/** Confirmation du repos long : le message, puis les rappels des dons (comme confirmModal) */
+function confirmLongRest(summary) {
+    return new Promise((resolve) => {
+        let answered = false;
+        openModal({
+            title: 'Repos long (8 h)',
+            icon: 'bed',
+            body: [el('p', { text: longRestMessage(summary) }), featBlock(summary.featNotes)].filter(Boolean),
+            actions: [
+                { label: 'Annuler' },
+                { label: 'Se reposer', icon: 'bed', primary: true, onClick: () => { answered = true; } }
+            ],
+            onClose: () => resolve(answered)
+        });
     });
+}
+
+async function longRest(store, setStatus) {
+    const ok = await confirmLongRest(planLongRest(store.get()).summary);
     if (!ok) return;
     store.update(planLongRest(store.get()).patch);
     setStatus('Repos long terminé');

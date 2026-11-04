@@ -525,9 +525,35 @@ h1, h2, h3, h4 {
     overflow: visible;
 }
 
+/* En-tête abrégé (« Mun. ») comme sur tablette : la colonne des munitions, souvent vide, laisse
+   sa largeur aux dégâts et aux propriétés (moins de lignes coupées, la page garde sa hauteur) */
+.weapons-th-short {
+    display: inline;
+}
+
+.weapons-th-long {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
 /* Valeurs calculées des armes (« FOR : +7 », « 1d12 +5 TRAN ») : jamais coupées en morceaux */
 .weapons-calc {
     white-space: nowrap;
+}
+
+/* Bonus de Charge (bouton d'Expert de la charge) : il ne vaut que pour une attaque, juste après
+   3 m en ligne droite ; sur le papier, il élargirait la colonne des dégâts de chaque arme de
+   corps à corps et ferait déborder la page. Le don reste décrit dans la liste des dons imprimée
+   (js/ui/weapons.js isole ce bonus dans un span). */
+.weapons-calc-charge {
+    display: none;
 }
 
 /* Liseré « armure à vérifier » : avertissement d'écran, pas de sens sur papier */
@@ -617,4 +643,87 @@ h1, h2, h3, h4 {
 .weapons-table tr.is-entry,
 .armors-table tr.is-entry {
     display: none;
+}
+
+/* ---------- Dons ---------- */
+
+/* Mentions (« Vigilant », « dont +8 grâce à Robuste ») : simple texte en italique sur le
+   papier, placé pour ne pas rehausser les cases (la feuille garde son nombre de pages) */
+.feat-mention {
+    display: block;
+    min-height: 0;
+    margin: 0 auto;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 0.68rem;
+    line-height: 1.1;
+}
+
+.feat-mention-line {
+    display: block;
+}
+
+.feat-mention .icon,
+.weapons-feat-toggle {
+    display: none;
+}
+
+/* Jets de sauvegarde (« Avantage Concentration », « Interposition ») : déjà dans la liste des
+   dons imprimée ; la colonne étroite des caractéristiques garde sa hauteur */
+.ability .feat-mention {
+    display: none;
+}
+
+/* CA : quand une mention l'accompagne, le bouclier se resserre et la case garde ses 100 px */
+.ac-cell {
+    gap: 1px;
+}
+
+.ac-cell:has(> .feat-mention:not([hidden])) > .ac-hex {
+    min-height: 78px;
+    padding: 8px 12px 18px;
+}
+
+/* PV maximum : « dont +X grâce à Robuste » à droite de la valeur, sur la même ligne */
+.stat-tile:has(> .feat-mention:not([hidden])) {
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: center;
+    column-gap: 6px;
+}
+
+.stat-tile:has(> .feat-mention:not([hidden])) > .label {
+    flex-basis: 100%;
+}
+
+.stat-tile:has(> .feat-mention:not([hidden])) > :is(.input, output) {
+    flex: none;
+    width: auto;
+    field-sizing: content;
+}
+
+.stat-tile > .feat-mention {
+    flex: 0 1 auto;
+    margin: 0;
+    text-align: left;
+}
+
+/* Encadré « Dans la fiche » : il décrit l'écran (boutons, mentions), pas le papier ; les
+   chiffres utiles sont déjà imprimés près des valeurs. */
+.feat-sheet {
+    display: none;
+}
+
+/* Liste des dons plus haute qu'une page (6 dons décrits) : elle peut se couper entre deux
+   dons plutôt que de laisser une page blanche ; chaque don reste d'un seul tenant */
+.tab-panel .stack > .box:has(#feats) {
+    break-inside: auto;
+}
+
+.weapons-feat-notes {
+    padding: 2px 6px;
+    background: transparent;
+    font-size: 0.85rem;
 }

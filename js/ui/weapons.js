@@ -2,8 +2,11 @@
 // WEAPONS.JS - Tableau des armes (édition, auto-complétion, filtres, configuration, bonus de combat)
 //
 // Données : character.dynamic_weapons (lignes au format v3, voir EMPTY_WEAPON) et
-// character.combat_buffs { rage, sneakAttack, hunterMark, heavyWeaponMaster }.
+// character.combat_buffs { rage, sneakAttack, hunterMark, heavyWeaponMaster, charger }.
 // Les valeurs d'attaque et de dégâts sont calculées (computeWeapon), jamais enregistrées.
+// Rappels des dons par arme (Sauvagerie martiale, Sentinelle, Trancheur…) : weaponFeatNotes
+// (js/rules/feat-effects.js), dans l'infobulle des dégâts et une ligne repliable sous l'arme,
+// ouverte par une pastille placée à côté du bonus d'attaque.
 // Les règles (filtres, remplissage depuis le manuel, validation) sont dans js/rules/weapons.js.
 // =============================================================================
 
@@ -12,6 +15,7 @@ import { EMPTY_WEAPON } from '../state/schema.js';
 import { stripHTML, findRulebookWeapon } from '../state/migrate.js';
 import { deriveCharacter, computeWeapon, sneakAttackDice } from '../rules/character.js';
 import { getRageBonus } from '../rules/logic.js';
+import { weaponFeatNotes } from '../rules/feat-effects.js';
 import {
     matchesWeaponFilter, rowFromRulebookWeapon, completeRowFromRulebook,
     readWeaponConfig, buildWeaponConfig, normalizeDamageDie, buffsForCharacter, effectiveBuffs, toggleBuff,
@@ -80,10 +84,20 @@ const BUFF_DEFS = {
         icon: 'fist',
         text: `Cogneur lourd (+${pb})`,
         title: `Cogneur lourd : +${pb} (bonus de maîtrise) aux dégâts quand vous touchez avec une arme Lourde lors de l'action Attaque à votre tour`
+    }),
+    // Expert de la charge (PHB 2024 « Charger », p. 202)
+    charger: () => ({
+        icon: 'swords',
+        text: 'Charge (+1d8)',
+        title: "Expert de la charge : +1d8 aux dégâts d'une attaque au corps à corps après 3 m en ligne droite vers la cible (une fois par tour). Foncer : +3 m de vitesse pour cette action."
     })
 };
 
+/** Bonus de Charge dans le texte des dégâts (computeWeapon : « +1d8 (Charge) ») */
+const CHARGE_BONUS = /\+1d8 \(Charge\)/;
+
 let configCounter = 0;
+let notesCounter = 0;
 
 const fold = (text) => text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const plain = (value) => stripHTML(String(value ?? ''));
@@ -97,7 +111,7 @@ export function initWeapons(ctx) {
     if (!container) return;
 
     let filter = 'all';
-    /** @type {Array<{ tr: HTMLTableRowElement, inputs: Object<string, HTMLInputElement>, atk: HTMLElement, dmg: HTMLElement, configBtn: HTMLButtonElement, deleteBtn: HTMLButtonElement, detach: () => void }>} */
+    /** @type {Array<{ tr: HTMLTableRowElement, inputs: Object<string, HTMLInputElement>, atk: HTMLElement, dmg: HTMLElement, configBtn: HTMLButtonElement, deleteBtn: HTMLButtonElement, notesBtn: HTMLButtonElement, notesTr: HTMLTableRowElement, notesList: HTMLUListElement, notesOpen: boolean, notesSignature: string, detach: () => void }>} */
     let rows = [];
     let buffsSignature = null;
     let undoTimer = null;
@@ -284,6 +298,17 @@ export function initWeapons(ctx) {
 
         const atk = el('span', { class: 'weapons-calc' });
         const dmg = el('span', { class: 'weapons-calc' });
+        // Rappels des dons pour cette arme : une ligne repliable sous l'arme (ouverte au toucher,
+        // les infobulles n'existant pas sur tablette)
+        const notesId = `weapon-feats-${++notesCounter}`;
+        const notesBtn = el('button', {
+            type: 'button', class: 'weapons-feat-toggle', hidden: true,
+            'aria-expanded': 'false', 'aria-controls': notesId,
+            on: { click: () => toggleNotes(row) }
+        });
+        const notesList = el('ul', { class: 'weapons-feat-notes' });
+        const notesTr = el('tr', { class: 'weapons-feat-row', id: notesId, hidden: true },
+            el('td', { colspan: String(COLUMN_COUNT) }, notesList));
         const configBtn = el('button', {
             type: 'button', class: 'btn-icon', title: "Configuration de l'arme",
             on: { click: () => openConfig(index) }
@@ -295,12 +320,14 @@ export function initWeapons(ctx) {
 
         const tr = el('tr', {},
             el('td', {}, inputs.name),
-            el('td', {}, atk),
+            // Bouton des rappels à côté du bonus d'attaque : sur tablette, il loge sous « FOR : +7 »
+            // (une seule ligne, les dégâts en ont deux ou plus) sans rehausser la ligne de l'arme
+            el('td', { class: 'weapons-atk' }, atk, notesBtn),
             el('td', {}, dmg),
             TEXT_COLUMNS.map(c => el('td', {}, inputs[c.key])),
             el('td', { class: 'weapons-actions edit-only' }, configBtn, deleteBtn));
 
-        const row = { tr, inputs, atk, dmg, configBtn, deleteBtn, detach };
+        const row = { tr, inputs, atk, dmg, configBtn, deleteBtn, notesBtn, notesTr, notesList, notesOpen: false, notesSignature: '', detach };
 
         // Ligne épinglée tant que le focus y reste ; le filtre est réappliqué à la sortie
         // (après la fin du changement de focus, pour qu'un passage d'une cellule à l'autre
@@ -321,8 +348,35 @@ export function initWeapons(ctx) {
     function rebuild(list) {
         for (const row of rows) row.detach();
         rows = list.map((_, i) => buildRow(i));
-        tbody.replaceChildren(...rows.map(r => r.tr), emptyRow);
+        tbody.replaceChildren(...rows.flatMap(r => [r.tr, r.notesTr]), emptyRow);
         applyLockState();
+    }
+
+    function toggleNotes(row) {
+        row.notesOpen = !row.notesOpen;
+        refresh(store.get());
+    }
+
+    /** Rappels des dons d'une arme : bouton (étoile + nombre), ligne repliable, infobulle des dégâts */
+    function writeFeatNotes(row, notes, label, shown) {
+        const signature = JSON.stringify(notes);
+        if (row.notesSignature !== signature) {
+            row.notesSignature = signature;
+            row.notesList.replaceChildren(...notes.map(note => el('li', {},
+                el('strong', { text: note.featName }), el('span', { text: note.text }))));
+            row.notesBtn.replaceChildren(icon('star'), el('span', { text: String(notes.length) }));
+        }
+        const has = notes.length > 0;
+        if (!has) row.notesOpen = false;
+        row.notesBtn.hidden = !has;
+        row.notesBtn.setAttribute('aria-expanded', String(row.notesOpen));
+        const names = [...new Set(notes.map(note => note.featName))].join(', ');
+        const action = row.notesOpen ? 'Masquer' : 'Afficher';
+        row.notesBtn.setAttribute('aria-label', `${action} les rappels des dons pour l'arme ${label} (${names})`);
+        row.notesBtn.title = `Rappels des dons : ${names}`;
+        row.notesTr.hidden = !(has && row.notesOpen && shown);
+        row.tr.classList.toggle('has-feat-notes', has && row.notesOpen && shown);
+        if (has && row.dmg.title) row.dmg.title += `\nRappels des dons : ${names}`;
     }
 
     function writeInput(input, value) {
@@ -331,9 +385,26 @@ export function initWeapons(ctx) {
         if (input.value !== text) input.value = text;
     }
 
+    /**
+     * Texte calculé ; le bonus de Charge (« +1d8 (Charge) », Expert de la charge) est isolé dans
+     * un span : il ne vaut que pour une attaque, l'impression ne le reprend pas (css/print.css),
+     * la colonne des dégâts garde sa largeur et la page ne déborde pas. À l'écran, rien ne change.
+     */
+    function writeCalcText(node, text) {
+        if (node.textContent === text) return;
+        const match = text.match(CHARGE_BONUS);
+        if (!match) {
+            node.textContent = text;
+            return;
+        }
+        node.replaceChildren(text.slice(0, match.index),
+            el('span', { class: 'weapons-calc-charge', text: match[0] }),
+            text.slice(match.index + match[0].length));
+    }
+
     function writeCalc(node, computed, legacy) {
         if (computed) {
-            node.textContent = computed.text;
+            writeCalcText(node, computed.text);
             node.title = computed.tooltip;
             node.classList.remove('is-legacy');
             return;
@@ -344,7 +415,7 @@ export function initWeapons(ctx) {
         node.classList.toggle('is-legacy', Boolean(text));
     }
 
-    function refreshRows(list, derived, buffs) {
+    function refreshRows(list, derived, buffs, character) {
         let visible = 0;
         // Lignes vides enregistrées (ajoutées puis laissées vides) : une seule reste affichée,
         // comme ligne de saisie, et aucune quand la fiche est verrouillée. Les autres sont
@@ -380,6 +451,7 @@ export function initWeapons(ctx) {
             if (blank && shown) entryShown = true;
             row.tr.hidden = !shown;
             row.tr.classList.toggle('is-entry', blank);
+            writeFeatNotes(row, weaponFeatNotes(weapon, character, derived), label, shown);
             row.inputs.name.placeholder = blank ? 'Nouvelle arme…' : 'Nom…';
             if (shown) visible++;
         });
@@ -510,7 +582,7 @@ export function initWeapons(ctx) {
         const derived = deriveCharacter(character);
         const buffs = effectiveBuffs(derived.classSlug, character.combat_buffs, character);
         refreshBuffs(character, derived);
-        refreshRows(weapons(), derived, buffs);
+        refreshRows(weapons(), derived, buffs, character);
     }
 
     function render(character, changedKeys) {

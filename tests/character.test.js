@@ -262,6 +262,16 @@ describe('computeWeapon : armes avec bonus de combat', () => {
             '1d12 +4 TRAN +2 (Rage) +3 (Cogneur lourd)');
     });
 
+    test('Charge (Expert de la charge) : +1d8 aux armes de corps à corps seulement', () => {
+        const handaxe = { name: 'Hachette', atkKey: 'FOR', baseDmg: '1d6 tran.', prop: 'Légère, Lancer (6/18 m)', category: 'Courante' };
+        assert.equal(computeWeapon(greataxe, stats('fighter'), { charger: true }).damage.text, '1d12 +4 TRAN +1d8 (Charge)');
+        assert.equal(computeWeapon(handaxe, stats('fighter'), { charger: true }).damage.text, '1d6 +4 TRAN +1d8 (Charge)');
+        assert.equal(computeWeapon(shortbow, stats('fighter'), { charger: true }).damage.text, '1d6 +3 PERF');
+        assert.equal(computeWeapon(greataxe, stats('barbarian'), { rage: true, heavyWeaponMaster: true, charger: true }).damage.text,
+            '1d12 +4 TRAN +2 (Rage) +3 (Cogneur lourd) +1d8 (Charge)');
+        assert.equal(computeWeapon(greataxe, stats('fighter'), { charger: false }).damage.text, '1d12 +4 TRAN');
+    });
+
     test('Attaque sournoise : armes de finesse ou à distance', () => {
         assert.equal(computeWeapon(dagger, stats('rogue', 5), { sneakAttack: true }).damage.text, '1d4 +4 PERF +3d6 (Sournoise)');
         assert.equal(computeWeapon(greataxe, stats('rogue', 5), { sneakAttack: true }).damage.text, '1d12 +4 TRAN');

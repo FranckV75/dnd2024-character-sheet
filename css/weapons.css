@@ -231,6 +231,109 @@
     border: 0;
 }
 
+/* ---------- Rappels des dons par arme (weaponFeatNotes) ---------- */
+
+/* À côté du bonus d'attaque : petite pastille « étoile + nombre de rappels » ; elle ouvre une
+   ligne repliable sous l'arme (aucun rappel affiché d'office). Sur grand écran, elle tient sur la
+   ligne de « FOR : +7 » ; sur tablette, elle passe dessous, dans la place laissée libre par les
+   dégâts (deux lignes ou plus) : la ligne de l'arme garde sa hauteur. */
+.weapons-atk > .weapons-calc {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.weapons-feat-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    min-height: 18px;
+    margin: 0 0 0 3px;
+    padding: 0 7px;
+    border: 1px solid var(--gold-soft);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--accent-ink);
+    font-family: var(--font-title);
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1;
+    vertical-align: middle;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.weapons-feat-toggle[hidden] {
+    display: none;
+}
+
+.weapons-feat-toggle .icon {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    color: var(--gold);
+}
+
+.weapons-feat-toggle:hover,
+.weapons-feat-toggle[aria-expanded="true"] {
+    border-color: var(--gold);
+    background: var(--feat-invite-bg);
+}
+
+/* Tactile : 44 px sous le doigt (zone élargie invisible, au-dessus du bonus d'attaque qui
+   n'est pas un contrôle) ; la pastille visible reste fine pour ne pas rehausser la ligne */
+@media (pointer: coarse) {
+    .weapons-feat-toggle {
+        min-width: 36px;
+        justify-content: center;
+    }
+
+    .weapons-feat-toggle::before {
+        content: "";
+        position: absolute;
+        /* inset mesuré depuis l'intérieur du liseré : 16 + 2 × 14 = 44 px de haut */
+        inset: -14px -5px;
+    }
+}
+
+/* Ligne de rappels ouverte : collée à son arme (pas de filet entre les deux) */
+.weapons-table tr.has-feat-notes td {
+    border-bottom-color: transparent;
+}
+
+.weapons-table tr.weapons-feat-row td {
+    padding: 0 6px 8px;
+}
+
+.weapons-feat-notes {
+    margin: 0;
+    padding: 6px 10px;
+    border-left: 3px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+    background: var(--feat-invite-bg);
+    list-style: none;
+    font-weight: 400;
+    font-size: 0.9rem;
+}
+
+.weapons-feat-notes li + li {
+    margin-top: 3px;
+}
+
+.weapons-feat-notes strong {
+    margin-right: 6px;
+    font-family: var(--font-title);
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+    color: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .weapons-feat-toggle {
+        transition: none;
+    }
+}
+
 /* ---------- Annulation de suppression ---------- */
 
 .weapons-undo {

@@ -76,6 +76,25 @@ export function findRulebookWeapon(name) {
         || null;
 }
 
+/**
+ * Coutille (« Glaive ») : l'ancienne liste du manuel en faisait une arme courante 1d4 Finesse, Légère.
+ * PHB 2024 p. 215 : arme de guerre, 1d10 tranchants, Lourde, Allonge, Deux mains. Une ligne remplie
+ * avec ces anciennes valeurs (nom exact, dégâts et propriétés inchangés) est corrigée ; une ligne
+ * retouchée par le joueur est laissée telle quelle.
+ */
+const OLD_GLAIVE = { baseDmg: '1d4 tran.', prop: 'Allonge, Finesse, Légère', category: 'Courante' };
+
+function fixOldGlaive(weapon, report) {
+    if (normalizeWeaponName(weapon.name) !== 'coutille') return;
+    if (stripHTML(weapon.baseDmg) !== OLD_GLAIVE.baseDmg || stripHTML(weapon.prop) !== OLD_GLAIVE.prop) return;
+    const ref = DD_RULES.weapons.find(w => w.name === 'Coutille');
+    if (!ref) return;
+    weapon.baseDmg = ref.dmg;
+    weapon.prop = ref.prop;
+    if (stripHTML(weapon.category) === OLD_GLAIVE.category) weapon.category = ref.category;
+    report.push('Coutille corrigée selon le Manuel des joueurs 2024 : arme de guerre, 1d10 tranchants, Lourde, Allonge, Deux mains.');
+}
+
 function migrateWeapon(raw, report) {
     const weapon = { ...EMPTY_WEAPON, ...(raw && typeof raw === 'object' ? raw : {}) };
 
@@ -92,6 +111,7 @@ function migrateWeapon(raw, report) {
             report.push(`Arme « ${stripHTML(weapon.name)} » rattachée au manuel (${ref.name}) pour le calcul automatique.`);
         }
     }
+    fixOldGlaive(weapon, report);
     if (weapon.weaponConfig && typeof weapon.weaponConfig === 'object') {
         weapon.weaponConfig = JSON.stringify(weapon.weaponConfig);
     }
