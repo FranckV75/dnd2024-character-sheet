@@ -223,10 +223,13 @@ Le guide n'ajoute **aucun don**. Ses espèces suivent l'ancien format, avec des 
 
 ### Découpage proposé en lots
 
+Lots 0 et 1 faits le 04/11/2026 (commit local, en attente de publication). Effets en `js/rules/feats.js`
+et `js/rules/feat-effects.js` ; la fiche ne modifie jamais une valeur saisie (« dont +X grâce à… »).
+
 | Lot | Contenu | Pourquoi |
 |---|---|---|
-| 0 — Données | Corriger les champs « asi », les textes, la Coutille, et rédiger les descriptions des faveurs. | Rapide, visible tout de suite, sans risque pour les sauvegardes. |
-| 1 — Gains rapides | Socle « dons atteints », puis Vigilant, Mage de guerre (avec une note sur les jets de sauvegarde), Robuste, Maître des armures lourdes, Maître des boucliers, Expert de la charge, Cogneur lourd (Abattage), et les rappels (Sauvagerie martiale, Sentinelle, Trancheur, Broyeur, Perforateur, Musicien, Guérisseur). | Le plus de bénéfice pour le moins d'effort. |
+| 0 — Données ✅ | Corriger les champs « asi », les textes, la Coutille, et rédiger les descriptions des faveurs. | Rapide, visible tout de suite, sans risque pour les sauvegardes. |
+| 1 — Gains rapides ✅ | Socle « dons atteints », puis Vigilant, Mage de guerre (avec une note sur les jets de sauvegarde), Robuste, Maître des armures lourdes, Maître des boucliers, Expert de la charge, Cogneur lourd (Abattage), et les rappels (Sauvagerie martiale, Sentinelle, Trancheur, Broyeur, Perforateur, Musicien, Guérisseur). | Le plus de bénéfice pour le moins d'effort. |
 | 2 — Compteurs | Socle « cases vidées au repos », puis Chanceux, Tueur de mages. | Chanceux est fort pour les 5. |
 | 3 — Choix | Socle « choix mémorisés », puis Amélioration de caractéristique, Résilient, Observateur, Expert, Esprit affûté, Doué, Adepte élémentaire. | Les dons les plus souvent pris aux niveaux 4 et 8. |
 | 4 — Styles de combat | Socle « Style de combat », puis Défense, Duel et les rappels de styles. | Dépend de la réponse sur Iria ; à avancer si elle a un style. |

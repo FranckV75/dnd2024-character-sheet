@@ -201,6 +201,18 @@
     margin-top: 6px;
 }
 
+/* Rappels des dons à la fin du repos (Musicien) : nom du don en petites capitales */
+.rest-feat-name {
+    font-family: var(--font-title);
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+    color: var(--accent);
+}
+
+.rest-feats {
+    margin-top: 12px;
+}
+
 .rest-check {
     display: inline-flex;
     align-items: flex-start;

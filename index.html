@@ -108,13 +108,20 @@
 
                 <div class="combat-main">
                     <div class="vitals vitals-1">
-                        <div class="box ac-hex" title="Calculée selon les armures équipées">
-                            <span class="label">Classe d'armure</span>
-                            <output class="value-xl" data-out="armorClass"></output>
+                        <!-- Bouclier de la CA, puis, dessous, les dons qui s'y rapportent (Maître des armures
+                             lourdes, Maître des boucliers : js/ui/sheet.js) ; le bouclier reste intact -->
+                        <div class="ac-cell">
+                            <div class="box ac-hex" title="Calculée selon les armures équipées">
+                                <span class="label">Classe d'armure</span>
+                                <output class="value-xl" data-out="armorClass"></output>
+                            </div>
+                            <button type="button" class="feat-mention" data-feat-zone="armorClass" hidden></button>
                         </div>
                         <div class="box stat-tile">
                             <span class="label">Initiative</span>
                             <output class="value-lg" data-out="initiative"></output>
+                            <!-- Don compté dans l'Initiative (Vigilant) : js/ui/sheet.js -->
+                            <button type="button" class="feat-mention" data-feat-zone="initiative" hidden></button>
                         </div>
                         <div class="box stat-tile">
                             <label class="label" for="f-passive_perception">Perception passive</label>
@@ -169,6 +176,8 @@
                             <label class="label" for="f-hp_max">PV maximum</label>
                             <input id="f-hp_max" data-field="hp_max" class="input value-lg center" inputmode="numeric"
                                 autocomplete="off" placeholder="—">
+                            <!-- « dont +X grâce à Robuste » : la valeur saisie n'est jamais modifiée (js/ui/sheet.js) -->
+                            <button type="button" class="feat-mention" data-feat-zone="hpMax" hidden></button>
                         </div>
                         <div class="box stat-tile">
                             <label class="label" for="f-hp_temp">PV temp.</label>

@@ -160,12 +160,16 @@ describe('6. Calculs d\'Attaque et de Dégâts d\'armes (calcWeaponAttack / calc
 });
 
 describe('7. Règles Moine 2024 (Arts Martiaux)', () => {
-    test('isMartialArtsWeapon : Arme Courante de mêlée sans la propriété Lourde', () => {
+    test('isMartialArtsWeapon : armes courantes de corps à corps et armes de guerre Légères (PHB 2024)', () => {
         assert.equal(isMartialArtsWeapon('Courante', false, ''), true);
         assert.equal(isMartialArtsWeapon('Courante', false, 'Finesse'), true);
-        assert.equal(isMartialArtsWeapon('Courante', false, 'Lourde'), false);
         assert.equal(isMartialArtsWeapon('Courante', true, ''), false); // à distance = false
         assert.equal(isMartialArtsWeapon('Guerre', false, ''), false);
+        // Armes de guerre de corps à corps Légères : Cimeterre, Épée courte
+        assert.equal(isMartialArtsWeapon('Guerre', false, 'Finesse, Légère'), true);
+        assert.equal(isMartialArtsWeapon('guerre', false, 'finesse, legere'), true);
+        assert.equal(isMartialArtsWeapon('Guerre', true, 'Munitions (9/36 m), Légère, Chargement'), false); // arbalète de poing
+        assert.equal(isMartialArtsWeapon('Guerre', false, 'Lourde, Allonge, Deux mains'), false);
     });
 
     test('getMartialArtsDie : Dé de dégâts selon le niveau Moine D&D 2024', () => {

@@ -2,6 +2,22 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.1.0] - 2026-11-04 (Dons actifs, lots 0 et 1)
+### Added
+- Dons pris à un niveau atteint : la fiche affiche leur effet sans jamais modifier une valeur saisie.
+  Vigilant (Initiative + maîtrise), Robuste (« dont +X grâce à Robuste » sous les PV max, à reporter),
+  Mage de guerre (Avantage Concentration), Maître des armures lourdes (dégâts C/P/T réduits, sous la CA),
+  Maître des boucliers (DD du coup de bouclier, Interposition), Expert de la charge (bouton « Charge (+1d8) »).
+- Rappels par arme (étoile sous le bonus d'attaque) : Sauvagerie martiale, Abattage, Sentinelle, Trancheur,
+  Broyeur, Perforateur, Coup de bouclier ; rappel Musicien en fin de repos ; encadré « Dans la fiche » sous
+  chaque don choisi.
+- Descriptions des 12 faveurs épiques.
+### Fixed
+- Coutille : arme de guerre 1d10 tranchants, Lourde, Allonge, Deux mains (corrigée aussi dans les
+  sauvegardes qui avaient gardé les anciennes valeurs du manuel). Lance d'arçon, Sarbacane, Mousquet.
+- Augmentations de caractéristique des dons (ex. « +1 For ou Dex ») et coquilles des descriptions.
+- Moine : le Cimeterre et l'Épée courte comptent comme armes de moine.
+
 ## [4.0.0] - 2026-10-26 (Bascule : la v4 remplace la v3 à la même adresse)
 ### Added
 - Reprise de la v3 sans perte au premier lancement : emplacements de sorts utilisés, nombre

@@ -16,6 +16,7 @@ import {
     buffsForCharacter,
     featBuffs,
     effectiveBuffs,
+    weaponDamageType,
     isBlankWeapon,
     toggleBuff,
     removeWeapon,
@@ -27,6 +28,24 @@ import { findRulebookWeapon } from '../js/state/migrate.js';
 
 const ref = (name) => DD_RULES.weapons.find(w => w.name === name);
 const row = (name) => rowFromRulebookWeapon({ ...EMPTY_WEAPON }, ref(name));
+
+describe('weaponDamageType', () => {
+    test('type du manuel écrit après le dé', () => {
+        assert.equal(weaponDamageType(row('Hache à deux mains')), 'TRAN');
+        assert.equal(weaponDamageType(row("Maillet d'armes")), 'CONT');
+        assert.equal(weaponDamageType(row('Rapière')), 'PERF');
+        assert.equal(weaponDamageType({ baseDmg: '1d6 perç.' }), 'PERF');
+    });
+    test('type imposé dans la configuration prioritaire', () => {
+        assert.equal(weaponDamageType({ ...row('Rapière'), weaponConfig: '{"dmgTypeOverride":"FEU"}' }), 'FEU');
+        assert.equal(weaponDamageType({ ...row('Rapière'), weaponConfig: '{"dmgTypeOverride":"???"}' }), 'PERF');
+    });
+    test('inconnu : chaîne vide', () => {
+        assert.equal(weaponDamageType({ name: 'Bâton maudit' }), '');
+        assert.equal(weaponDamageType({ baseDmg: '1d6' }), '');
+        assert.equal(weaponDamageType(null), '');
+    });
+});
 
 describe('weaponReach', () => {
     test('munitions : à distance uniquement', () => {
@@ -200,7 +219,7 @@ describe('bonus de combat', () => {
     });
     test("un bonus hors de la classe actuelle n'est pas appliqué", () => {
         const buffs = { rage: true, sneakAttack: true, hunterMark: true };
-        const none = { rage: false, sneakAttack: false, hunterMark: false, heavyWeaponMaster: false };
+        const none = { rage: false, sneakAttack: false, hunterMark: false, heavyWeaponMaster: false, charger: false };
         assert.deepEqual(effectiveBuffs('barbarian', buffs), { ...none, rage: true });
         assert.deepEqual(effectiveBuffs('fighter', buffs), none);
         assert.deepEqual(effectiveBuffs('rogue', undefined), none);
@@ -221,6 +240,22 @@ describe('bonus de combat', () => {
         assert.equal(effectiveBuffs('fighter', on, { char_level: '4', feat_4: id }).heavyWeaponMaster, true);
         assert.equal(effectiveBuffs('fighter', on, { char_level: '4' }).heavyWeaponMaster, false);
         assert.equal(effectiveBuffs('fighter', on).heavyWeaponMaster, false, 'sans le personnage : classe seule');
+    });
+    test('Expert de la charge : bouton « charger » ouvert par le don atteint', () => {
+        const id = 'expert_de_la_charge';
+        assert.deepEqual(featBuffs({ char_level: '4', feat_4: id }), ['charger']);
+        assert.deepEqual(featBuffs({ char_level: '3', feat_4: id }), [], 'don prévu pour plus tard');
+        assert.deepEqual(buffsForCharacter('barbarian', { char_level: '8', feat_4: 'maitre_des_armes_lourdes_cogneur_lourd', feat_8: id }),
+            ['rage', 'heavyWeaponMaster', 'charger']);
+        const on = { charger: true };
+        assert.equal(effectiveBuffs('fighter', on, { char_level: '4', feat_4: id }).charger, true);
+        assert.equal(effectiveBuffs('fighter', on, { char_level: '4', feat_4: 'vigilant' }).charger, false);
+        assert.equal(effectiveBuffs('fighter', on).charger, false);
+    });
+    test('niveau lu comme la fiche (premier entier), HTML et doublons ignorés', () => {
+        const id = 'maitre_des_armes_lourdes_cogneur_lourd';
+        assert.deepEqual(featBuffs({ char_level: 'Niveau 4', feat_4: id }), ['heavyWeaponMaster']);
+        assert.deepEqual(featBuffs({ char_level: 4, feat_1: `<b>${id}</b>`, feat_4: id }), ['heavyWeaponMaster']);
     });
     test("ligne d'arme vide", () => {
         assert.equal(isBlankWeapon({ ...EMPTY_WEAPON }), true);

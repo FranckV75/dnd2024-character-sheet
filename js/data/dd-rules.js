@@ -732,7 +732,6 @@ const DD_RULES = {
     weapons: [
         // ARMES COURANTES DE CORPS À CORPS
         { name: "Bâton", atk: "FOR", dmg: "1d6 cont.", prop: "Polyvalente (1d8)", prof: "Renversement", ammo: "-", category: "Courante" },
-        { name: "Coutille", atk: "FOR", dmg: "1d4 tran.", prop: "Allonge, Finesse, Légère", prof: "Écorchure", ammo: "-", category: "Courante" },
         { name: "Dague", atk: "DEX", dmg: "1d4 perf.", prop: "Finesse, Légère, Lancer (6/18 m)", prof: "Coup double", ammo: "-", category: "Courante" },
         { name: "Gourdin", atk: "FOR", dmg: "1d4 cont.", prop: "Légère", prof: "Ralentissement", ammo: "-", category: "Courante" },
         { name: "Hachette", atk: "FOR", dmg: "1d6 tran.", prop: "Légère, Lancer (6/18 m)", prof: "Ouverture", ammo: "-", category: "Courante" },
@@ -751,6 +750,7 @@ const DD_RULES = {
 
         // ARMES DE GUERRE DE CORPS À CORPS
         { name: "Cimeterre", atk: "DEX", dmg: "1d6 tran.", prop: "Finesse, Légère", prof: "Coup double", ammo: "-", category: "Guerre" },
+        { name: "Coutille", atk: "FOR", dmg: "1d10 tran.", prop: "Lourde, Allonge, Deux mains", prof: "Écorchure", ammo: "-", category: "Guerre" },
         { name: "Épée à deux mains", atk: "FOR", dmg: "2d6 tran.", prop: "Lourde, Deux mains", prof: "Écorchure", ammo: "-", category: "Guerre" },
         { name: "Épée courte", atk: "DEX", dmg: "1d6 perf.", prop: "Finesse, Légère", prof: "Ouverture", ammo: "-", category: "Guerre" },
         { name: "Épée longue", atk: "FOR", dmg: "1d8 tran.", prop: "Polyvalente (1d10)", prof: "Sape", ammo: "-", category: "Guerre" },
@@ -759,7 +759,7 @@ const DD_RULES = {
         { name: "Hache d'armes", atk: "FOR", dmg: "1d8 tran.", prop: "Polyvalente (1d10)", prof: "Renversement", ammo: "-", category: "Guerre" },
         { name: "Hache à deux mains", atk: "FOR", dmg: "1d12 tran.", prop: "Lourde, Deux mains", prof: "Enchaînement", ammo: "-", category: "Guerre" },
         { name: "Hallebarde", atk: "FOR", dmg: "1d10 tran.", prop: "Lourde, Allonge, Deux mains", prof: "Enchaînement", ammo: "-", category: "Guerre" },
-        { name: "Lance d'arçon", atk: "FOR", dmg: "1d10 perf.", prop: "Allonge, Lourde, Deux mains (si monté)", prof: "Renversement", ammo: "-", category: "Guerre" },
+        { name: "Lance d'arçon", atk: "FOR", dmg: "1d10 perf.", prop: "Lourde, Allonge, Deux mains (sauf si monté)", prof: "Renversement", ammo: "-", category: "Guerre" },
         { name: "Maillet d'armes", atk: "FOR", dmg: "2d6 cont.", prop: "Lourde, Deux mains", prof: "Renversement", ammo: "-", category: "Guerre" },
         { name: "Marteau de guerre", atk: "FOR", dmg: "1d8 cont.", prop: "Polyvalente (1d10)", prof: "Poussée", ammo: "-", category: "Guerre" },
         { name: "Morgenstern", atk: "FOR", dmg: "1d8 perf.", prop: "-", prof: "Sape", ammo: "-", category: "Guerre" },
@@ -772,10 +772,10 @@ const DD_RULES = {
         { name: "Arbalète de poing", atk: "DEX", dmg: "1d6 perf.", prop: "Munitions (9/36 m), Légère, Chargement", prof: "Ouverture", ammo: "-", category: "Guerre" },
         { name: "Arbalète lourde", atk: "DEX", dmg: "1d10 perf.", prop: "Munitions (30/120 m), Lourde, Chargement, Deux mains", prof: "Poussée", ammo: "-", category: "Guerre" },
         { name: "Arc long", atk: "DEX", dmg: "1d8 perf.", prop: "Munitions (45/180 m), Lourde, Deux mains", prof: "Ralentissement", ammo: "-", category: "Guerre" },
-        { name: "Sarbacane", atk: "DEX", dmg: "1 perf.", prop: "Munitions (6/15 m), Chargement", prof: "Ouverture", ammo: "-", category: "Guerre" },
+        { name: "Sarbacane", atk: "DEX", dmg: "1 perf.", prop: "Munitions (7,5/30 m), Chargement", prof: "Ouverture", ammo: "-", category: "Guerre" },
 
-        // ARMES À FEU (Optionnel / Guide du Maître)
-        { name: "Mousquet", atk: "DEX", dmg: "1d12 perf.", prop: "Munitions (12/36 m), Chargement, Deux mains", prof: "Poussée", ammo: "-", category: "Guerre" },
+        // ARMES À FEU (table des armes du Manuel des joueurs 2024, p. 215)
+        { name: "Mousquet", atk: "DEX", dmg: "1d12 perf.", prop: "Munitions (12/36 m), Chargement, Deux mains", prof: "Ralentissement", ammo: "-", category: "Guerre" },
         { name: "Pistolet", atk: "DEX", dmg: "1d10 perf.", prop: "Munitions (9/27 m), Chargement", prof: "Ouverture", ammo: "-", category: "Guerre" }
     ]
 };

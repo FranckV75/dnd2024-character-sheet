@@ -13,6 +13,8 @@ import {
     parseWeaponConfig, resolveWeaponAttackStat, calcWeaponAttack, calcWeaponDamage,
     getRageBonus, isMartialArtsWeapon, getMartialArtsDie
 } from './logic.js';
+import { reachedFeatIds } from './feats.js';
+import { weaponReach } from './weapons.js';
 
 /**
  * Extrait le premier entier d'une valeur saisie librement ("19", "+3", "<b>19</b>", "3?").
@@ -204,9 +206,9 @@ export function sneakAttackDice(level) {
 
 /**
  * État d'un emplacement de don (niveaux 1, 4, 8, 12, 16, 19) selon le niveau du personnage.
- * Sert seulement à l'affichage : aucun calcul de la fiche ne tient compte des dons
- * (les valeurs de caractéristique sont saisies à la main), un don prévu en avance
- * ne change donc rien aux statistiques.
+ * Seuls les dons « actifs » (niveau atteint) comptent dans les calculs de la fiche
+ * (reachedFeatIds, js/rules/feats.js) : un don prévu en avance ne change rien aux statistiques.
+ * Les valeurs saisies à la main (caractéristiques, PV max, vitesse) ne sont jamais modifiées.
  * @param {number} slotLevel - Niveau de l'emplacement
  * @param {*} characterLevel - Niveau du personnage (nombre ou saisie libre, ex. "<b>4</b>")
  * @param {*} choice - Valeur enregistrée (feat_<niveau>) : identifiant du don ou texte libre
@@ -226,7 +228,7 @@ export function featSlotState(slotLevel, characterLevel, choice) {
  * Attaque et dégâts d'une arme du tableau, avec les bonus de combat actifs.
  * @param {Object} weapon - Ligne de `dynamic_weapons`
  * @param {{ mods: Object, pb: number, level: number, classSlug: string }} stats - issu de deriveCharacter()
- * @param {{ rage?: boolean, sneakAttack?: boolean, hunterMark?: boolean, heavyWeaponMaster?: boolean }} [buffs]
+ * @param {{ rage?: boolean, sneakAttack?: boolean, hunterMark?: boolean, heavyWeaponMaster?: boolean, charger?: boolean }} [buffs]
  * @returns {{ attack: {text: string, tooltip: string}, damage: {text: string, tooltip: string} } | null}
  *          null si l'arme n'est pas rattachée au manuel (pas de calcul possible)
  */
@@ -247,6 +249,9 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     if (buffs.heavyWeaponMaster && prop.toLowerCase().split(/[,;]/).some(p => p.trim().startsWith('lourde'))) {
         extraDmg.push({ die: String(pb), type: 'Cogneur lourd' });
     }
+    // Attaque de charge (PHB 2024, « Charger » p. 202) : +1d8 à une attaque au corps à corps,
+    // une fois par tour ; une arme de lancer reste une arme de corps à corps (weaponReach)
+    if (buffs.charger && weaponReach(weapon).melee) extraDmg.push({ die: '1d8', type: 'Charge' });
     if (buffs.sneakAttack && (prop.toLowerCase().includes('finesse') || isRanged)) {
         extraDmg.push({ die: `${sneakAttackDice(level)}d6`, type: 'Sournoise' });
     }
@@ -265,6 +270,12 @@ export function computeWeapon(weapon, stats, buffs = {}) {
 
 /**
  * Calcule toutes les statistiques dérivées d'un personnage.
+ * Champs liés aux dons :
+ *  - feats : identifiants des dons atteints (reachedFeatIds) ;
+ *  - initiative : mod. Dex, + bonus de maîtrise avec Vigilant ; initiativeDetail : « Dex +2, Vigilant +2 » ;
+ *  - wornArmor : { light, medium, heavy, shield } — catégories des armures équipées ;
+ *    shieldTrained : formation aux boucliers cochée (sans elle, le bouclier est sans effet).
+ * Les notes de dons à afficher (rappels, « dont +X ») viennent de featEffects (feat-effects.js).
  * @param {Object} record - Personnage au format de sauvegarde (v3)
  * @returns {Object}
  */
@@ -296,6 +307,17 @@ export function deriveCharacter(record = {}) {
         };
     }
 
+    // Dons atteints (emplacement feat_<N> avec N ≤ niveau). Seules les valeurs calculées par la
+    // fiche peuvent intégrer un don ; les valeurs saisies à la main ne sont jamais modifiées.
+    const feats = reachedFeatIds(record);
+    // Vigilant (PHB 2024 « Alert », p. 200) : bonus de maîtrise ajouté au jet d'Initiative
+    const alert = feats.includes('vigilant') ? pb : 0;
+    const signedText = (n) => `${n >= 0 ? '+' : ''}${n}`;
+
+    const armors = record.dynamic_armors || [];
+    const worn = new Set((Array.isArray(armors) ? armors : [])
+        .filter(armor => armor && armor.equipped).map(armorCategory));
+
     return {
         level,
         pb,
@@ -305,10 +327,16 @@ export function deriveCharacter(record = {}) {
         mods,
         saves,
         skills,
-        initiative: mods.dex,
+        feats,
+        initiative: mods.dex + alert,
+        initiativeDetail: `Dex ${signedText(mods.dex)}` + (alert ? `, Vigilant ${signedText(alert)}` : ''),
+        wornArmor: {
+            light: worn.has('light'), medium: worn.has('medium'), heavy: worn.has('heavy'), shield: worn.has('shield'),
+            shieldTrained: record.prof_armor_shield === true
+        },
         passivePerception: 10 + skills.perception.bonus,
         armorClass: computeArmorClass({
-            armors: record.dynamic_armors || [], className, mods, pb,
+            armors, className, mods, pb,
             shieldTrained: record.prof_armor_shield === true
         }),
         spellcasting: computeSpellcasting(record.spell_ability, mods, pb),

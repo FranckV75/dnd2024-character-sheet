@@ -9,12 +9,15 @@
 //    l'Épuisement baisse de 1, les PV temporaires disparaissent (ils durent
 //    « jusqu'à la fin d'un repos long »).
 //  - Pour commencer l'un ou l'autre, il faut avoir au moins 1 PV.
+//  - Dons : le résumé donne les rappels de fin de repos (summary.featNotes, voir
+//    restFeatNotes dans feat-effects.js), par exemple le Chant d'encouragement du Musicien.
 //
 // Chaque fonction renvoie un « patch » pour store.update() : un objet neuf,
 // le personnage reçu n'est jamais modifié.
 // =============================================================================
 
 import { deriveCharacter, parseNumber } from './character.js';
+import { restFeatNotes } from './feat-effects.js';
 
 export const DEATH_SAVE_KEYS = ['ds_s1', 'ds_s2', 'ds_s3', 'ds_f1', 'ds_f2', 'ds_f3'];
 
@@ -168,7 +171,8 @@ function slotRecoveryFeature(character, d) {
  * @param {{ diceSpent?: number, healing?: number, sorcerousRestoration?: boolean }} [options]
  *        healing = PV rendus par les dés (déjà calculés par hitDiceHealing ou saisis) ;
  *        sorcerousRestoration = Ensorceleur niv. 5+ qui utilise Restauration ensorcelée
- * @returns {{ patch: Object, summary: Object }}
+ * @returns {{ patch: Object, summary: Object }} summary.featNotes : rappels des dons à la fin du
+ *          repos (FeatNote[], voir feat-effects.js), vide sans don concerné
  */
 export function planShortRest(character, { diceSpent = 0, healing = 0, sorcerousRestoration = false } = {}) {
     const d = deriveCharacter(character);
@@ -230,6 +234,7 @@ export function planShortRest(character, { diceSpent = 0, healing = 0, sorcerous
             resourcesRestored: toRestore.length,
             pactSlotsRestored,
             slotRecovery: slotRecoveryFeature(character, d),
+            featNotes: restFeatNotes(character, d),
             canStart: canStartRest(character)
         }
     };
@@ -248,7 +253,7 @@ export function shortRestPatch(character, options) {
 /**
  * Calcule un repos long.
  * @param {Object} character
- * @returns {{ patch: Object, summary: Object }}
+ * @returns {{ patch: Object, summary: Object }} summary.featNotes : comme pour planShortRest
  */
 export function planLongRest(character) {
     const d = deriveCharacter(character);
@@ -295,6 +300,7 @@ export function planLongRest(character) {
             resourceLabel: d.classResource.label,
             resourcesRestored,
             heroicInspiration: /^(humain|human)$/i.test(String(character.char_species ?? '').replace(/<[^>]*>/g, '').trim()),
+            featNotes: restFeatNotes(character, d),
             canStart: canStartRest(character)
         }
     };

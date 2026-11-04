@@ -1101,6 +1101,217 @@ fieldset.inline-checks {
     }
 }
 
+/* ---------- Dons : mentions près des valeurs (js/ui/sheet.js, renderFeatMentions) ---------- */
+
+/* Petite pastille dorée sous une valeur (« Vigilant », « dont +8 grâce à Robuste »,
+   « Avantage Concentration ») : texte à l'encre d'accent (contraste AA), étoile et liseré
+   dorés. C'est un bouton : un toucher ouvre le détail des dons (pas d'infobulle sur tablette).
+   La valeur saisie à côté n'est jamais modifiée. */
+.feat-mention {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    gap: 1px;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 1px 8px 2px;
+    border: 1px solid var(--gold-soft);
+    border-radius: 10px;
+    background: var(--feat-invite-bg);
+    color: var(--accent-ink);
+    font-family: var(--font-text);
+    font-size: 0.8rem;
+    font-style: italic;
+    font-weight: 600;
+    line-height: 1.15;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feat-mention[hidden] {
+    display: none;
+}
+
+.feat-mention:hover {
+    border-color: var(--gold);
+    box-shadow: 0 0 6px var(--gold-glow);
+}
+
+.feat-mention-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.feat-mention .icon {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    color: var(--gold);
+}
+
+/* Sous le jet de sauvegarde, dans la colonne étroite des caractéristiques */
+.ability .feat-mention {
+    margin-top: 3px;
+    padding-inline: 5px;
+    font-size: 0.74rem;
+}
+
+/* Sous le bouclier de la CA (case étroite) : le bouclier garde toute la hauteur restante */
+.ac-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.ac-cell > .ac-hex {
+    flex: 1 1 auto;
+}
+
+.ac-cell > .feat-mention {
+    padding-inline: 6px;
+    font-size: 0.74rem;
+}
+
+/* ---------- Dons : encadré « Dans la fiche » sous la description (renderFeatSheet) ---------- */
+
+/* Même filet que la description, en or : ce que la fiche calcule ou rappelle pour ce don */
+.feat-sheet {
+    margin-top: 4px;
+    padding: 6px 10px 7px;
+    border-left: 3px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+    background: var(--feat-invite-bg);
+    font-size: 0.92rem;
+}
+
+.feat-sheet[hidden] {
+    display: none;
+}
+
+.feat-sheet-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-title);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+}
+
+.feat-sheet-title .icon {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    color: var(--gold);
+}
+
+.feat-sheet-list {
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.feat-sheet-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.feat-sheet-list li + li {
+    margin-top: 4px;
+}
+
+/* Étiquette « Calculé / Rappel / En attente » : largeur fixe, les textes s'alignent */
+.feat-tag {
+    flex: none;
+    display: inline-block;
+    min-width: 5.4rem;
+    padding: 0 6px;
+    border: 1px solid var(--gold-soft);
+    border-radius: 8px;
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+    text-align: center;
+    color: var(--accent-ink);
+}
+
+.feat-sheet-list li[data-kind="reminder"] .feat-tag {
+    border-style: dashed;
+    color: var(--quiet-ink);
+}
+
+/* « À reporter » : chiffre que le joueur ajoute lui-même à une valeur saisie (Robuste) */
+.feat-sheet-list li[data-kind="manual"] .feat-tag,
+.feat-notes .feat-tag[data-kind="manual"] {
+    border-color: var(--gold);
+    color: var(--accent);
+}
+
+.feat-sheet-list li[data-kind="waiting"] {
+    color: var(--quiet-ink);
+}
+
+.feat-sheet-list li[data-kind="waiting"] .feat-tag {
+    border-style: dotted;
+    color: var(--quiet-ink);
+}
+
+.feat-sheet-none {
+    margin: 4px 0 0;
+    font-style: italic;
+    color: var(--quiet-ink);
+}
+
+/* ---------- Dons : fenêtre de détail (toucher d'une mention) ---------- */
+
+.feat-notes-intro {
+    margin: 0 0 10px;
+    color: var(--text-muted);
+}
+
+.modal-body .feat-notes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.feat-notes li {
+    padding-left: 10px;
+    border-left: 2px solid var(--gold);
+}
+
+.feat-notes-name {
+    display: block;
+    font-family: var(--font-title);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+}
+
+.feat-notes .feat-tag {
+    min-width: 0;
+    margin-left: 6px;
+}
+
+.feat-notes li.is-inactive {
+    border-left-style: dashed;
+    border-left-color: var(--gold-soft);
+    color: var(--quiet-ink);
+}
+
 /* ---------- Onglet 3 : compétences & Odyssée ---------- */
 
 /* Légende « maîtrise / expertise », juste au-dessus des compétences : encre calme, comme
@@ -1526,6 +1737,26 @@ fieldset.inline-checks {
     .sheet-header .input {
         min-height: 44px;
     }
+
+    /* Mention d'un don : 44 px sous le doigt (zone élargie invisible), la pastille reste fine */
+    .feat-mention {
+        position: relative;
+        min-height: 28px;
+        padding-inline: 10px;
+    }
+
+    /* inset mesuré depuis l'intérieur du liseré : 26 + 2 × 9 = 44 px de haut */
+    .feat-mention::before {
+        content: "";
+        position: absolute;
+        inset: -9px -4px;
+    }
+
+    /* Sous un jet de sauvegarde, la case de maîtrise est juste au-dessus : la zone élargie ne
+       monte pas jusqu'à elle et s'étend vers le bas (toujours 44 px : 2 + 26 + 16) */
+    .ability .feat-mention::before {
+        inset: -2px -4px -16px;
+    }
 }
 
 /* Desktop : chaque onglet prend la largeur de son libellé, sur une seule ligne
@@ -1548,7 +1779,8 @@ fieldset.inline-checks {
     .round-check,
     .rich,
     .skill-row,
-    .feat select.input {
+    .feat select.input,
+    .feat-mention {
         transition: none;
     }
 }
