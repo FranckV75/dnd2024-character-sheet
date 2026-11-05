@@ -320,3 +320,62 @@
         color: inherit;
     }
 }
+
+/* ---------- Écusson CA (haut de la fiche) : bulle de l'addition complète (js/ui/sheet.js) ---------- */
+.ac-hex {
+    cursor: pointer;
+}
+
+/* Le masque en bouclier couperait le contour de focus : le liseré du bouclier passe en doré */
+.ac-hex:focus-visible {
+    outline: none;
+}
+
+.ac-hex:focus-visible::before {
+    background: var(--focus);
+}
+
+.ac-calc-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ac-calc-list li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: 12px;
+    padding: 4px 0;
+}
+
+.ac-calc-list li + li {
+    border-top: 1px dashed var(--border-soft);
+}
+
+.ac-calc-value {
+    font-weight: 700;
+    color: var(--number);
+    text-align: right;
+}
+
+.ac-calc-formula {
+    grid-column: 1 / -1;
+    font-size: 0.86rem;
+    color: var(--text-muted);
+}
+
+.ac-calc-total {
+    display: flex;
+    justify-content: space-between;
+    margin: 4px 0 0;
+    padding-top: 4px;
+    border-top: 1px solid var(--border);
+    font-weight: 700;
+    color: var(--number);
+}
+
+.ac-calc-hint {
+    margin: 6px 0 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}

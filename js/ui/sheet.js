@@ -20,6 +20,7 @@ import { sanitizeRich, sanitizeRulesText } from './sanitize.js';
 import { el, fillSelect, icon, signed } from './dom.js';
 import { applyLock, isLocked } from './lock.js';
 import { openModal } from './modal.js';
+import { createCalcBubble } from './calc-bubble.js';
 
 const SKILL_STATS = ['str', 'dex', 'int', 'wis', 'cha'];
 // Icônes dorées des groupes de compétences (dessinées par dom.js, à la place des émojis)
@@ -293,13 +294,57 @@ const OUTPUTS = {
     }
 };
 
+// ---------------------------------------------------------------------------
+// Écusson CA : la toucher (ou la survoler) affiche l'addition complète
+// ---------------------------------------------------------------------------
+
+let acBubble = null;
+let lastArmorClass = null;
+
+/** Contenu de la bulle : une ligne par élément compté, le total, puis les remarques */
+function armorClassBubble() {
+    const ac = lastArmorClass;
+    if (!ac) return null;
+    const parts = ac.parts ?? [];
+    const items = parts.map(part => el('li', {},
+        el('span', { class: 'ac-calc-label', text: part.label }),
+        el('span', { class: 'ac-calc-value', text: part.value }),
+        // « +2 bouclier » répète la valeur : seul un calcul (« = ») ou une précision entre parenthèses est utile
+        /[=(]/.test(part.formula) ? el('small', { class: 'ac-calc-formula', text: part.formula }) : null));
+    return [
+        el('div', { class: 'spell-tooltip-head' },
+            el('strong', { class: 'spell-tooltip-name', text: "Classe d'armure" })),
+        el('ul', { class: 'ac-calc-list' }, ...items),
+        parts.length > 1
+            ? el('p', { class: 'ac-calc-total' }, el('span', { text: 'Total' }), el('span', { text: String(ac.value) }))
+            : null,
+        ...(ac.notes ?? []).map(text => el('p', { class: 'armor-ca-note', text })),
+        el('p', { class: 'ac-calc-hint', text: 'Le détail de chaque ligne est dans le tableau des armures.' })
+    ];
+}
+
+function bindArmorClassBubble(root) {
+    const badge = root.querySelector('.ac-hex');
+    if (!badge) return;
+    acBubble = createCalcBubble({ id: 'ac-bubble', className: 'armor-ca-bubble ac-bubble' });
+    acBubble.attach(badge, armorClassBubble);
+    // Élément non bouton : Entrée et Espace l'ouvrent comme un clic
+    badge.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        badge.click();
+    });
+}
+
 function renderOutputs(root, character, d) {
     for (const out of root.querySelectorAll('[data-out]')) {
         const [name, arg] = out.dataset.out.split(':');
         const value = OUTPUTS[name]?.(d, arg, character);
         out.textContent = value ?? '';
     }
-    root.querySelector('[data-out="armorClass"]').title = d.armorClass.source;
+    lastArmorClass = d.armorClass;
+    root.querySelector('.ac-hex').setAttribute('aria-label', `Classe d'armure ${d.armorClass.value} : détail du calcul`);
+    acBubble?.refresh();
     // Détail de l'Initiative calculée (« Dex +2, Vigilant +2 »)
     root.querySelector('[data-out="initiative"]').title = `Initiative : ${d.initiativeDetail}`;
 
@@ -544,6 +589,7 @@ export function createSheet(root, store) {
         rich.setAttribute('aria-keyshortcuts', 'Alt+F10');
     }
     bindFields(root, store);
+    bindArmorClassBubble(root);
     // Mention d'un don (Initiative, PV max, CA, sauvegardes) : détail dans une fenêtre,
     // même fiche verrouillée (lecture seule)
     root.addEventListener('click', (event) => {

@@ -531,3 +531,75 @@ describe('Colonne CA calculée : ce que chaque ligne apporte, et pourquoi', () =
         assert.equal(plain.rows[0].note, '');
     });
 });
+
+describe("Écusson CA : détail de l'addition (parts) et remarques (notes)", () => {
+    const row = (name, type, ca, extra = {}) => ({ name, type, ca, equipped: true, ...extra });
+    const M = '−';
+
+    test('Demi-plate +1, Bouclier +1, Cape : trois parts, total 22', () => {
+        const r = computeArmorClass({
+            armors: [row('Demi-plate', 'Interméd.', '15', { magic: 1 }), row('Bouclier', 'Bouclier', '+2', { magic: 1 }),
+                row('Cape de protection', 'Bonus', '+1'), row('Cotte de mailles', 'Lourde', '16', { equipped: false })],
+            className: 'Guerrier', mods: { ...MODS, dex: 3 }, pb: 2
+        });
+        assert.equal(r.value, 22);
+        assert.deepEqual(r.parts, [
+            { label: 'Demi-plate', value: '18', formula: '15 + 2 Dex (max 2) + 1 magique = 18' },
+            { label: 'Bouclier', value: '+3', formula: '+2 bouclier + 1 magique = +3' },
+            { label: 'Cape de protection', value: '+1', formula: '+1 à la CA (bonus fixe)' }
+        ]);
+        assert.deepEqual(r.notes, []);
+    });
+
+    test('Sans armure : 10 + Dex', () => {
+        const r = computeArmorClass({ armors: [], className: 'Guerrier', mods: { ...MODS, dex: -1 }, pb: 2 });
+        assert.deepEqual(r.parts, [{ label: 'Sans armure', value: '9', formula: `10 ${M} 1 Dex = 9` }]);
+    });
+
+    test('Barbare sans armure : 10 + Dex + Con, bouclier autorisé', () => {
+        const r = computeArmorClass({ armors: [row('Bouclier', 'Bouclier', '+2')], className: 'Barbare', mods: MODS, pb: 2 });
+        assert.equal(r.value, 17);
+        assert.deepEqual(r.parts, [
+            { label: 'Défense sans armure (Barbare)', value: '15', formula: '10 + 2 Dex + 3 Con = 15' },
+            { label: 'Bouclier', value: '+2', formula: '+2 bouclier' }
+        ]);
+    });
+
+    test('Moine sans armure ni bouclier : 10 + Dex + Sag', () => {
+        const r = computeArmorClass({ armors: [], className: 'Moine', mods: { ...MODS, dex: 3, wis: 3 }, pb: 2 });
+        assert.deepEqual(r.parts, [{ label: 'Défense sans armure (Moine)', value: '16', formula: '10 + 3 Dex + 3 Sag = 16' }]);
+    });
+
+    test('Moine avec bouclier : 10 + Dex, plus le bouclier, et la perte expliquée', () => {
+        const r = computeArmorClass({ armors: [row('Bouclier', 'Bouclier', '+2')], className: 'Moine', mods: { ...MODS, dex: 3, wis: 3 }, pb: 2 });
+        assert.equal(r.value, 15);
+        assert.equal(r.parts[0].formula, '10 + 3 Dex = 13');
+        assert.deepEqual(r.notes, ['Défense sans armure (Moine) perdue avec un bouclier : 16 sans le bouclier.']);
+    });
+
+    test('Barbare en armure : sa Défense sans armure plus forte est signalée', () => {
+        const r = computeArmorClass({ armors: [row('Armure de cuir', 'Légère', '11')], className: 'Barbare', mods: MODS, pb: 2 });
+        assert.equal(r.value, 13);
+        assert.deepEqual(r.notes, ['Défense sans armure (Barbare) : 15 sans armure, mais elle ne compte pas quand on porte une armure.']);
+    });
+
+    test('Bouclier non maîtrisé : pas de part, une remarque', () => {
+        const r = computeArmorClass({ armors: [row('Bouclier', 'Bouclier', '+2')], className: 'Guerrier', mods: MODS, pb: 2, shieldTrained: false });
+        assert.equal(r.value, 12);
+        assert.equal(r.parts.length, 1);
+        assert.match(r.notes[0], /^Bouclier non maîtrisé/);
+    });
+
+    test('La somme des parts donne toujours la CA', () => {
+        const cases = [
+            { armors: [row('Harnois', 'Lourde', '18'), row('Bouclier', 'Bouclier', '+2'), row('Anneau', 'Bonus', '+1'), row('Style', 'Maîtrise', '')], className: 'Paladin' },
+            { armors: [], className: 'Barbare' },
+            { armors: [row('Bouclier', 'Bouclier', '+2', { magic: 3 })], className: 'Moine' }
+        ];
+        for (const c of cases) {
+            const r = computeArmorClass({ ...c, mods: MODS, pb: 3 });
+            const sum = r.parts.reduce((total, part) => total + Number(part.value.replace(M, '-')), 0);
+            assert.equal(sum, r.value, c.className);
+        }
+    });
+});

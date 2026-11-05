@@ -23,6 +23,7 @@ import { cellText } from './cell-text.js';
 import { attachAutocomplete } from './autocomplete.js';
 import { openModal, confirmModal } from './modal.js';
 import { isLocked } from './lock.js';
+import { createCalcBubble } from './calc-bubble.js';
 
 /** Colonnes de texte libre : clé de la sauvegarde → libellé accessible */
 const TEXT_COLUMNS = {
@@ -301,79 +302,20 @@ export function initArmors({ root, store, setStatus }) {
     // Bulle du calcul de CA (toucher, survol, focus ; fonctionne aussi verrouillé)
     // -----------------------------------------------------------------------
 
-    const bubble = el('div', { class: 'spell-tooltip armor-ca-bubble', id: 'armor-ca-bubble', role: 'tooltip', hidden: true });
-    let bubbleOwner = null;
-    let hideTimer = null;
+    const caBubble = createCalcBubble({ id: 'armor-ca-bubble', className: 'armor-ca-bubble' });
+    caBubble.hideOnScroll(tableScroll);
 
-    function fillBubble(index) {
+    function bubbleContent(index) {
         const info = details[index];
-        if (!info) return false;
-        // replaceChildren écrirait « null » en toutes lettres : on ne lui passe que des nœuds
-        const parts = [
+        if (!info) return null;
+        return [
             el('div', { class: 'spell-tooltip-head' },
                 el('strong', { class: 'spell-tooltip-name', text: info.name || 'Sans nom' }),
                 info.category ? el('span', { class: 'spell-tooltip-level', text: info.category }) : null),
-            el('p', { class: 'armor-ca-formula', text: info.formula })
+            el('p', { class: 'armor-ca-formula', text: info.formula }),
+            info.note ? el('p', { class: 'armor-ca-note', 'data-counted': String(info.counted), text: info.note }) : null
         ];
-        if (info.note) parts.push(el('p', { class: 'armor-ca-note', 'data-counted': String(info.counted), text: info.note }));
-        bubble.replaceChildren(...parts);
-        return true;
     }
-
-    function positionBubble(anchor) {
-        const rect = anchor.getBoundingClientRect();
-        const margin = 8;
-        const viewportWidth = document.documentElement.clientWidth;
-        const visual = window.visualViewport;
-        const viewTop = visual ? visual.offsetTop : 0;
-        const height = bubble.offsetHeight;
-        // Au-dessus de la valeur s'il y a la place (la ligne reste lisible), sinon en dessous
-        let top = rect.top - viewTop >= height + 2 * margin ? rect.top - height - margin : rect.bottom + margin;
-        if (top < viewTop + margin) top = viewTop + margin;
-        const left = Math.max(margin, Math.min(rect.left + rect.width / 2 - bubble.offsetWidth / 2, viewportWidth - bubble.offsetWidth - margin));
-        bubble.style.left = `${left + window.scrollX}px`;
-        bubble.style.top = `${top + window.scrollY}px`;
-    }
-
-    function showBubble(button, index) {
-        clearTimeout(hideTimer);
-        if (!fillBubble(index)) return;
-        if (bubbleOwner && bubbleOwner !== button) bubbleOwner.removeAttribute('aria-describedby');
-        bubble.hidden = false;
-        positionBubble(button);
-        bubbleOwner = button;
-        button.setAttribute('aria-describedby', bubble.id);
-    }
-
-    function hideBubble() {
-        clearTimeout(hideTimer);
-        bubble.hidden = true;
-        if (bubbleOwner) bubbleOwner.removeAttribute('aria-describedby');
-        bubbleOwner = null;
-    }
-
-    function scheduleHide() {
-        clearTimeout(hideTimer);
-        hideTimer = setTimeout(() => {
-            if (bubble.matches(':hover') || (bubbleOwner && bubbleOwner === document.activeElement)) return;
-            hideBubble();
-        }, 150);
-    }
-
-    const canHover = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-    document.addEventListener('pointerdown', (event) => {
-        if (bubble.hidden || bubble.contains(event.target) || bubbleOwner?.contains(event.target)) return;
-        hideBubble();
-    }, true);
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && !bubble.hidden) hideBubble();
-    });
-    bubble.addEventListener('mouseenter', () => clearTimeout(hideTimer));
-    bubble.addEventListener('mouseleave', scheduleHide);
-    tableScroll.addEventListener('scroll', hideBubble, { passive: true });
-    window.addEventListener('resize', hideBubble, { passive: true });
-    document.body.append(bubble);
 
     // -----------------------------------------------------------------------
     // Construction des lignes
@@ -396,25 +338,8 @@ export function initArmors({ root, store, setStatus }) {
         // Type : lu (catégorie du calcul de CA), réglé avec l'engrenage
         controls.type = el('span', { class: 'armor-type' });
         // CA : valeur calculée ; la toucher (ou la survoler) affiche le calcul
-        // Toucher ou clic : ouvre / ferme. Le focus qui accompagne ce toucher n'ouvre rien (sinon
-        // le clic qui suit refermerait aussitôt la bulle) ; le focus au clavier (Tab) l'ouvre.
-        let pressing = false;
-        controls.ca = el('button', {
-            type: 'button', class: 'armor-ca-value',
-            on: {
-                pointerdown: () => { pressing = true; },
-                click: () => {
-                    pressing = false;
-                    // À la souris, la bulle est déjà ouverte par le survol : le clic la garde ouverte
-                    if (bubbleOwner === controls.ca && !bubble.hidden && !canHover()) hideBubble();
-                    else showBubble(controls.ca, index);
-                },
-                mouseenter: () => { if (canHover()) showBubble(controls.ca, index); },
-                mouseleave: () => { if (canHover()) scheduleHide(); },
-                focus: () => { if (!pressing) showBubble(controls.ca, index); },
-                blur: () => { pressing = false; scheduleHide(); }
-            }
-        });
+        controls.ca = el('button', { type: 'button', class: 'armor-ca-value' });
+        caBubble.attach(controls.ca, () => bubbleContent(index));
 
         controls.stealth = el('input', {
             type: 'checkbox', class: 'round-check',
@@ -481,7 +406,7 @@ export function initArmors({ root, store, setStatus }) {
     }
 
     function rebuild(count) {
-        hideBubble();
+        caBubble.hide();
         detachers.forEach(detach => detach());
         detachers = [];
         rows = Array.from({ length: count }, (_, i) => buildRow(i));
@@ -558,11 +483,7 @@ export function initArmors({ root, store, setStatus }) {
             tr.classList.toggle('armor-warning', messages.length > 0);
         });
         // Bulle ouverte : son contenu suit le calcul (Dextérité modifiée, armure équipée…)
-        if (bubbleOwner && !bubble.hidden) {
-            const at = rows.findIndex(r => r.controls.ca === bubbleOwner);
-            if (at === -1 || bubbleOwner.hidden) hideBubble();
-            else fillBubble(at);
-        }
+        caBubble.refresh();
     }
 
     function applyLocked() {

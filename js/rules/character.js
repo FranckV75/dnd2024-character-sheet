@@ -289,17 +289,32 @@ export function computeArmorClass({ armors = [], className = '', mods, pb, shiel
     let bodyAC;
     let bodySource;
     let monkLost = null;
+    // Détail de l'addition (bulle de l'écusson CA) : une part par élément compté, et des remarques
+    const parts = [];
+    const notes = [];
     if (body !== -1) {
-        bodyAC = rows[body].line.value;
-        const magic = rows[body].line.magic;
-        bodySource = (plainName(list[body]) || 'Armure') + (magic ? ` (+${magic} magique)` : '');
+        const { line } = rows[body];
+        bodyAC = line.value;
+        bodySource = (plainName(list[body]) || 'Armure') + (line.magic ? ` (+${line.magic} magique)` : '');
+        parts.push({ label: plainName(list[body]) || 'Armure', value: line.display, formula: line.formula });
+        // Défense sans armure plus forte que l'armure portée : on le signale (elle ne marche pas en armure)
+        const slug = classSlug(className);
+        const unarmored = slug === 'barbarian' ? { value: 10 + mods.dex + mods.con, name: 'Barbare' }
+            : slug === 'monk' ? { value: 10 + mods.dex + mods.wis, name: 'Moine' } : null;
+        if (unarmored && unarmored.value > bodyAC) {
+            notes.push(`Défense sans armure (${unarmored.name}) : ${unarmored.value} sans armure, mais elle ne compte pas quand on porte une armure.`);
+        }
     } else {
         const slug = classSlug(className);
+        const dexTerm = `10 ${term(mods.dex)} Dex`;
         bodyAC = 10 + mods.dex;
         bodySource = 'Sans armure';
+        let label = 'Sans armure';
+        let formula = `${dexTerm} = ${bodyAC}`;
         if (slug === 'barbarian' && 10 + mods.dex + mods.con > bodyAC) {
             bodyAC = 10 + mods.dex + mods.con;
-            bodySource = 'Défense sans armure (Barbare)';
+            bodySource = label = 'Défense sans armure (Barbare)';
+            formula = `${dexTerm} ${term(mods.con)} Con = ${bodyAC}`;
         } else if (slug === 'monk' && 10 + mods.dex + mods.wis > bodyAC) {
             if (hasShield) {
                 // PHB 2024 : la Défense sans armure du Moine ne marche ni en armure ni avec un bouclier
@@ -307,12 +322,15 @@ export function computeArmorClass({ armors = [], className = '', mods, pb, shiel
                 bodySource = 'Sans armure — Défense sans armure (Moine) perdue : bouclier en main';
             } else {
                 bodyAC = 10 + mods.dex + mods.wis;
-                bodySource = 'Défense sans armure (Moine)';
+                bodySource = label = 'Défense sans armure (Moine)';
+                formula = `${dexTerm} ${term(mods.wis)} Sag = ${bodyAC}`;
             }
         }
+        parts.push({ label, value: String(bodyAC), formula });
     }
     if (monkLost !== null) {
         const lost = `Défense sans armure (Moine) perdue avec un bouclier : ${monkLost} sans le bouclier.`;
+        notes.push(lost);
         rows.forEach((row, i) => {
             if (row.line.kind === 'shield' && list[i]?.equipped) row.note = row.note ? `${row.note} ${lost}` : lost;
         });
@@ -321,12 +339,20 @@ export function computeArmorClass({ armors = [], className = '', mods, pb, shiel
     let source = bodySource;
     if (hasShield && !shieldTrained) {
         source = monkLost !== null ? `${bodySource}, bouclier non maîtrisé : aucun bonus` : `${bodySource} — bouclier non maîtrisé : sans effet`;
+        notes.push("Bouclier non maîtrisé (formation aux boucliers non cochée) : il n'ajoute rien.");
     } else if (shield !== -1) {
-        bonus += rows[shield].line.value;
-        const magic = rows[shield].line.magic;
-        if (magic) source = `${bodySource}, bouclier +${magic} magique`;
+        const { line } = rows[shield];
+        bonus += line.value;
+        if (line.magic) source = `${bodySource}, bouclier +${line.magic} magique`;
+        parts.push({ label: plainName(list[shield]) || 'Bouclier', value: line.display, formula: line.formula });
     }
-    return { value: bodyAC + bonus, source, rows };
+    rows.forEach((row, i) => {
+        const { kind } = row.line;
+        if (row.status === 'counted' && (kind === 'bonus' || kind === 'proficiency')) {
+            parts.push({ label: plainName(list[i]) || (kind === 'bonus' ? 'Bonus' : 'Maîtrise'), value: row.line.display, formula: row.line.formula });
+        }
+    });
+    return { value: bodyAC + bonus, source, rows, parts, notes };
 }
 
 /**
