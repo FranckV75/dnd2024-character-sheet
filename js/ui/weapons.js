@@ -30,7 +30,7 @@ import {
 } from '../rules/weapons.js';
 import { el, icon, setIconLabel } from './dom.js';
 import { cellText } from './cell-text.js';
-import { openModal } from './modal.js';
+import { openModal, confirmModal } from './modal.js';
 import { attachAutocomplete } from './autocomplete.js';
 import { isLocked } from './lock.js';
 
@@ -208,12 +208,29 @@ export function initWeapons(ctx) {
         focusRowName(rows[rows.length - 1]);
     }
 
-    function deleteWeapon(index) {
+    async function deleteWeapon(index) {
         if (isLocked()) return;
-        const list = weapons();
-        const row = list[index];
+        const row = weapons()[index];
         if (!row) return;
-        const name = plain(row.name) || 'sans nom';
+        const typed = plain(row.name).trim();
+        // Comme pour les armures : une arme nommée n'est supprimée qu'après confirmation
+        if (typed) {
+            const ok = await confirmModal({
+                title: "Supprimer l'arme",
+                icon: 'trash',
+                message: `Supprimer « ${typed} » du tableau des armes ?`,
+                confirmLabel: 'Supprimer',
+                confirmIcon: 'trash',
+                danger: true
+            });
+            if (!ok || isLocked()) return;
+        }
+        // Le tableau a pu changer pendant la confirmation : on retire la ligne demandée
+        const list = weapons();
+        const at = list.indexOf(row);
+        if (at === -1) return;
+        index = at;
+        const name = typed || 'sans nom';
         store.update({ dynamic_weapons: removeWeapon(list, index) });
 
         lastDeleted = { index, row };

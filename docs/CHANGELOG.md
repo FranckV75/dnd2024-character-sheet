@@ -8,6 +8,9 @@ Toutes les modifications notables du projet sont documentées dans ce fichier. L
   joueurs 2024, p. 214), avec les valeurs calculées pour l'arme (DD de Renversement, dégâts
   d'Écorchure et d'Enchaînement, Rage comprise) et la capacité Maîtrise des armes de la classe.
 - Galerie : fond d'écran « Hache du Phénix ».
+### Changed
+- Armes : supprimer une arme nommée demande d'abord une confirmation, comme pour les armures
+  (le bouton « Annuler la suppression » reste disponible quelques secondes après).
 
 ## [4.1.0] - 2026-11-04 (Dons actifs, lots 0 et 1)
 ### Added
