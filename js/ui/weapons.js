@@ -7,6 +7,11 @@
 // Rappels des dons par arme (Sauvagerie martiale, Sentinelle, Trancheur…) : weaponFeatNotes
 // (js/rules/feat-effects.js), dans l'infobulle des dégâts et une ligne repliable sous l'arme,
 // ouverte par une pastille placée à côté du bonus d'attaque.
+// Botte d'arme reconnue dans la colonne « Botte d'arme » (findMastery, js/rules/weapon-masteries.js) :
+// une pastille (livre), posée dans le coin bas droit de la case, ouvre la règle du manuel, les
+// valeurs calculées pour l'arme et la capacité Maîtrise des armes de la classe, fiche verrouillée
+// ou non. Elle est hors du flux (position absolue) : elle ne rehausse jamais la ligne. La saisie
+// n'est jamais réécrite : la pastille apparaît ou disparaît selon ce qui est écrit.
 // Les règles (filtres, remplissage depuis le manuel, validation) sont dans js/rules/weapons.js.
 // =============================================================================
 
@@ -16,6 +21,7 @@ import { stripHTML, findRulebookWeapon } from '../state/migrate.js';
 import { deriveCharacter, computeWeapon, sneakAttackDice } from '../rules/character.js';
 import { getRageBonus } from '../rules/logic.js';
 import { weaponFeatNotes } from '../rules/feat-effects.js';
+import { findMastery, masteryDetails, masteryParagraphs, masteryAccessNote, weaponMasteryFeature } from '../rules/weapon-masteries.js';
 import {
     matchesWeaponFilter, rowFromRulebookWeapon, completeRowFromRulebook,
     readWeaponConfig, buildWeaponConfig, normalizeDamageDie, buffsForCharacter, effectiveBuffs, toggleBuff,
@@ -111,7 +117,7 @@ export function initWeapons(ctx) {
     if (!container) return;
 
     let filter = 'all';
-    /** @type {Array<{ tr: HTMLTableRowElement, inputs: Object<string, HTMLInputElement>, atk: HTMLElement, dmg: HTMLElement, configBtn: HTMLButtonElement, deleteBtn: HTMLButtonElement, notesBtn: HTMLButtonElement, notesTr: HTMLTableRowElement, notesList: HTMLUListElement, notesOpen: boolean, notesSignature: string, detach: () => void }>} */
+    /** @type {Array<{ tr: HTMLTableRowElement, inputs: Object<string, HTMLInputElement>, atk: HTMLElement, dmg: HTMLElement, configBtn: HTMLButtonElement, deleteBtn: HTMLButtonElement, notesBtn: HTMLButtonElement, notesTr: HTMLTableRowElement, notesList: HTMLUListElement, notesOpen: boolean, notesSignature: string, masteryBtn: HTMLButtonElement, detach: () => void }>} */
     let rows = [];
     let buffsSignature = null;
     let undoTimer = null;
@@ -309,6 +315,12 @@ export function initWeapons(ctx) {
         const notesList = el('ul', { class: 'weapons-feat-notes' });
         const notesTr = el('tr', { class: 'weapons-feat-row', id: notesId, hidden: true },
             el('td', { colspan: String(COLUMN_COUNT) }, notesList));
+        // Règle de la botte d'arme : bouton posé sur le bord droit de la case (zone de toucher),
+        // pastille visible dans son coin bas droit ; affiché seulement pour une botte du manuel
+        const masteryBtn = el('button', {
+            type: 'button', class: 'weapons-mastery-btn', hidden: true, 'aria-haspopup': 'dialog',
+            on: { click: () => openMastery(index) }
+        }, el('span', { class: 'weapons-mastery-badge', 'aria-hidden': 'true' }, icon('book')));
         const configBtn = el('button', {
             type: 'button', class: 'btn-icon', title: "Configuration de l'arme",
             on: { click: () => openConfig(index) }
@@ -324,10 +336,12 @@ export function initWeapons(ctx) {
             // (une seule ligne, les dégâts en ont deux ou plus) sans rehausser la ligne de l'arme
             el('td', { class: 'weapons-atk' }, atk, notesBtn),
             el('td', {}, dmg),
-            TEXT_COLUMNS.map(c => el('td', {}, inputs[c.key])),
+            TEXT_COLUMNS.map(c => (c.key === 'prof'
+                ? el('td', { class: 'weapons-prof' }, inputs.prof, masteryBtn)
+                : el('td', {}, inputs[c.key]))),
             el('td', { class: 'weapons-actions edit-only' }, configBtn, deleteBtn));
 
-        const row = { tr, inputs, atk, dmg, configBtn, deleteBtn, notesBtn, notesTr, notesList, notesOpen: false, notesSignature: '', detach };
+        const row = { tr, inputs, atk, dmg, configBtn, deleteBtn, notesBtn, notesTr, notesList, notesOpen: false, notesSignature: '', masteryBtn, detach };
 
         // Ligne épinglée tant que le focus y reste ; le filtre est réappliqué à la sortie
         // (après la fin du changement de focus, pour qu'un passage d'une cellule à l'autre
@@ -377,6 +391,14 @@ export function initWeapons(ctx) {
         row.notesTr.hidden = !(has && row.notesOpen && shown);
         row.tr.classList.toggle('has-feat-notes', has && row.notesOpen && shown);
         if (has && row.dmg.title) row.dmg.title += `\nRappels des dons : ${names}`;
+    }
+
+    /** Pastille de la botte : visible seulement pour une botte reconnue (la saisie n'est pas touchée) */
+    function writeMasteryButton(row, mastery, label) {
+        row.masteryBtn.hidden = !mastery;
+        if (!mastery) return;
+        row.masteryBtn.setAttribute('aria-label', `Règle de la botte ${mastery.name}, arme ${label} : ouvrir la fenêtre`);
+        row.masteryBtn.title = `Règle de la botte : ${mastery.name}`;
     }
 
     function writeInput(input, value) {
@@ -452,6 +474,7 @@ export function initWeapons(ctx) {
             row.tr.hidden = !shown;
             row.tr.classList.toggle('is-entry', blank);
             writeFeatNotes(row, weaponFeatNotes(weapon, character, derived), label, shown);
+            writeMasteryButton(row, findMastery(weapon.prof), label);
             row.inputs.name.placeholder = blank ? 'Nouvelle arme…' : 'Nom…';
             if (shown) visible++;
         });
@@ -482,6 +505,56 @@ export function initWeapons(ctx) {
         for (const button of buffsBox.querySelectorAll('[data-buff]')) {
             button.setAttribute('aria-pressed', String(active[button.dataset.buff] === true));
         }
+    }
+
+    // ---------------------------------------------------------------------
+    // Règle d'une botte d'arme (lecture seule : ouverte même fiche verrouillée)
+    // ---------------------------------------------------------------------
+
+    function openMastery(index) {
+        const character = store.get();
+        const weapon = weapons()[index];
+        const derived = deriveCharacter(character);
+        // Bonus de combat actifs (Rage) : mêmes que ceux du tableau
+        const buffs = effectiveBuffs(derived.classSlug, character.combat_buffs, character);
+        const details = weapon ? masteryDetails(weapon, character, derived, buffs) : null;
+        if (!details) return;
+        const { mastery, values, note } = details;
+        const name = plain(weapon.name);
+        const feature = weaponMasteryFeature(derived);
+
+        // Valeurs pour cette arme ; sans calcul possible (arme hors manuel...), on dit pourquoi
+        let weaponBox = null;
+        if (values.length > 0) {
+            weaponBox = el('div', { class: 'weapons-mastery-calc' },
+                el('p', { class: 'weapons-mastery-calc-title' }, icon('swords'),
+                    el('span', { text: name ? `Avec l'arme « ${name} »` : 'Avec cette arme' })),
+                el('ul', {}, values.map(v => el('li', {},
+                    el('span', { text: `${v.label} : ` }),
+                    el('strong', { text: v.value }),
+                    v.detail ? el('small', { text: v.detail }) : null))));
+        } else if (note) {
+            weaponBox = el('div', { class: 'weapons-mastery-calc' },
+                el('p', { class: 'weapons-mastery-calc-none', text: note }));
+        }
+
+        const pages = [`p. ${mastery.page}`];
+        if (feature) pages.push(`capacité Maîtrise des armes (${feature.className}) : p. ${feature.page}`);
+
+        openModal({
+            title: mastery.name,
+            icon: 'book',
+            body: el('div', { class: 'weapons-mastery' },
+                el('p', { class: 'weapons-mastery-kind', text: `Botte d'arme (en anglais : ${mastery.en})` }),
+                el('div', { class: 'weapons-mastery-desc' },
+                    masteryParagraphs(mastery).map(text => el('p', { text }))),
+                weaponBox,
+                el('div', { class: 'weapons-mastery-access' },
+                    el('p', { class: 'weapons-mastery-access-title', text: 'Maîtrise des armes' }),
+                    el('p', { text: masteryAccessNote(character, derived) })),
+                el('p', { class: 'weapons-mastery-source', text: `Manuel des joueurs 2024, ${pages.join(' ; ')}.` })),
+            actions: [{ label: 'Fermer', primary: true }]
+        });
     }
 
     // ---------------------------------------------------------------------

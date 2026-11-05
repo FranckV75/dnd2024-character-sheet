@@ -2,6 +2,13 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.2.0] - 2026-11-05 (Bottes d'armes)
+### Added
+- Bottes d'armes : un petit livre dans la case « Botte d'arme » ouvre la règle (texte du Manuel des
+  joueurs 2024, p. 214), avec les valeurs calculées pour l'arme (DD de Renversement, dégâts
+  d'Écorchure et d'Enchaînement, Rage comprise) et la capacité Maîtrise des armes de la classe.
+- Galerie : fond d'écran « Hache du Phénix ».
+
 ## [4.1.0] - 2026-11-04 (Dons actifs, lots 0 et 1)
 ### Added
 - Dons pris à un niveau atteint : la fiche affiche leur effet sans jamais modifier une valeur saisie.
