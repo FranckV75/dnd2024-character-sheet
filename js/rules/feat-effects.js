@@ -64,7 +64,8 @@ export const FEAT_ZONES = Object.freeze([
 
 /** Dons dont la fiche tient compte (lot 1) */
 export const AUTOMATED_FEATS = Object.freeze([
-    'vigilant', 'robuste', 'mage_de_guerre', 'maitre_des_armures_lourdes', 'maitre_des_boucliers',
+    'vigilant', 'robuste', 'mage_de_guerre', 'maitre_des_armures_lourdes', 'maitre_des_armures_intermediaires',
+    'maitre_des_boucliers',
     'expert_de_la_charge', 'maitre_des_armes_lourdes_cogneur_lourd', 'sauvagerie_martiale',
     'sentinelle', 'trancheur', 'broyeur', 'empaleur_perforateur', 'musicien', 'guerisseur'
 ]);
@@ -123,6 +124,28 @@ const FEAT_RULES = {
         } else {
             add('armorClass', 'Réduction des dégâts : seulement en armure lourde (aucune équipée).', { inactive: true });
             add('featSlot', 'Sans effet pour le moment : aucune armure lourde équipée.', { inactive: true });
+        }
+    },
+
+    // Maître des armures intermédiaires — PHB 2024 « Medium Armor Master » (Porteur agile) :
+    // Dex jusqu'à +3 au lieu de +2 en armure intermédiaire si la valeur de Dextérité est de 16 ou plus
+    maitre_des_armures_intermediaires: ({ derived: { scores, wornArmor, armorClass }, add }) => {
+        // L'armure intermédiaire doit être celle qui compte dans la CA (pas une autre armure équipée)
+        const counted = armorClass?.rows
+            ? armorClass.rows.some(r => r.status === 'counted' && r.line.category === 'medium')
+            : wornArmor.medium;
+        if (counted && scores.dex >= 16) {
+            add('armorClass', "Porteur agile : Dex jusqu'à +3 au lieu de +2 en armure intermédiaire, déjà compté dans la CA.", { value: 3, applied: true });
+            add('featSlot', "Dex jusqu'à +3 en armure intermédiaire : déjà compté dans la CA.", { value: 3, applied: true });
+        } else if (counted) {
+            add('armorClass', 'Porteur agile : il faut une valeur de Dextérité de 16 ou plus.', { inactive: true });
+            add('featSlot', 'Sans effet pour le moment : Dextérité inférieure à 16.', { inactive: true });
+        } else if (wornArmor.medium) {
+            add('armorClass', "Porteur agile : l'armure intermédiaire équipée ne compte pas dans la CA (une autre armure donne plus).", { inactive: true });
+            add('featSlot', "Sans effet pour le moment : l'armure intermédiaire équipée ne compte pas dans la CA.", { inactive: true });
+        } else {
+            add('armorClass', 'Porteur agile : seulement en armure intermédiaire (aucune équipée).', { inactive: true });
+            add('featSlot', 'Sans effet pour le moment : aucune armure intermédiaire équipée.', { inactive: true });
         }
     },
 

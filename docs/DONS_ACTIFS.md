@@ -108,7 +108,7 @@ Dans la colonne « Pour qui », le mot entre parenthèses est l'intérêt du don
 | Combattant à deux armes | Iria, Cephalus (faible) | Rappel de l'attaque en plus, avec ses dégâts sans modificateur. | texte | S |
 | Empoigneur | faible pour tous ; Fafnir non | Rappels sur la Frappe à mains nues. | texte | S |
 | Formation aux armes de guerre | Hedera, Fafnir, Cephalus (faible) | Ajoute « Armes de guerre » aux maîtrises affichées. Rien d'autre ne change, car la fiche ajoute déjà toujours le bonus de maîtrise. | calcul | S |
-| Maître des armures intermédiaires | Korgul, Iria (faible) | Bonus de Dextérité jusqu'à +3 en armure intermédiaire, si la Dextérité vaut au moins 16. | calcul | S |
+| Maître des armures intermédiaires ✅ | Korgul, Iria (faible) | Bonus de Dextérité jusqu'à +3 en armure intermédiaire, si la Dextérité vaut au moins 16. Fait le 05/11/2026 avec la colonne CA calculée. | calcul | S |
 | Maître-arbalétrier | faible | Rappel ; propriété Chargement barrée sur les arbalètes. | texte | S |
 | Protection lourde | personne | Formation aux armures lourdes cochée « par don ». | calcul | S |
 | Tireur d'élite | faible ; Korgul non | Rappel sur les armes à distance. L'option −5 au toucher / +10 aux dégâts n'existe plus en 2024. | texte | S |

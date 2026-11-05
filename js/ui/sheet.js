@@ -365,6 +365,7 @@ const MENTION_LABELS = {
     armorClass: (note) => ({
         // C/P/T : seuls les dégâts contondants, perforants et tranchants d'une attaque sont réduits
         maitre_des_armures_lourdes: `Dégâts C/P/T\u00a0−${note.value}`,
+        maitre_des_armures_intermediaires: 'Dex max 3',
         maitre_des_boucliers: `Coup de bouclier DD\u00a0${note.value}`
     })[note.featId] ?? note.featName,
     saves: (note) => ({

@@ -12,7 +12,8 @@ import {
     strengthRequirement,
     armorWarnings,
     armorTraining,
-    isBlankArmor
+    isBlankArmor,
+    withArmorMagic
 } from '../js/rules/armors.js';
 import { EQUIPMENT_DATA } from '../js/data/equipment.js';
 import { EMPTY_ARMOR } from '../js/state/schema.js';
@@ -176,5 +177,25 @@ describe('armorWarnings', () => {
     test('entrées invalides', () => {
         assert.deepEqual(armorWarnings(undefined), []);
         assert.deepEqual(armorWarnings([null], ALL, 10), [[]]);
+    });
+});
+
+describe('Bonus magique d\'une ligne d\'armure', () => {
+    test('withArmorMagic écrit 1 à 3, retire la clé à 0, garde toutes les autres clés', () => {
+        const row = { name: 'Bouclier', type: 'Bouclier', ca: '+2', equipped: true, inconnue: 'x' };
+        assert.deepEqual(withArmorMagic(row, 1), { ...row, magic: 1 });
+        assert.deepEqual(withArmorMagic({ ...row, magic: 2 }, 0), row);
+        assert.deepEqual(withArmorMagic(row, 7), row);
+        assert.equal(row.magic, undefined); // la ligne d'origine n'est pas modifiée
+    });
+
+    test('Une ligne vide avec un bonus magique n\'est plus vide', () => {
+        assert.equal(isBlankArmor({ ...EMPTY_ARMOR, magic: 1 }), false);
+        assert.equal(isBlankArmor({ ...EMPTY_ARMOR, magic: 0 }), true);
+    });
+
+    test('Choisir une armure dans la liste garde son bonus magique', () => {
+        const entry = searchArmorCatalogue('Bouclier')[0];
+        assert.equal(armorRowFromCatalogue(entry, { magic: 2 }).magic, 2);
     });
 });

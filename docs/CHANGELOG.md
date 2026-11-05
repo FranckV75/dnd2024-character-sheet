@@ -2,6 +2,23 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.3.0] - 2026-11-05 (CA des armures calculée)
+### Added
+- Armures et boucliers magiques : un engrenage par ligne règle le bonus magique (+1 à +3), compté dans
+  la CA. Pour un objet hors manuel (cape, anneau, armure maison), il règle aussi le type et la valeur
+  de base.
+- Don Maître des armures intermédiaires : Dextérité jusqu'à +3 en armure intermédiaire (Dextérité 16+).
+### Changed
+- Colonne CA des armures : elle n'est plus saisie. Elle montre ce que la ligne apporte (« 18 » pour une
+  Demi-plate +1, « +3 » pour un Bouclier +1) ; toucher la valeur affiche le calcul (« 15 + 2 Dex
+  (max 2) + 1 magique = 18 ») et si la ligne compte. Le type se lit dans le tableau et se règle avec
+  l'engrenage ; une armure du manuel prend son type et sa valeur dans le manuel. Sauvegardes inchangées,
+  même CA qu'avant.
+- Explications de CA plus justes : Moine avec un bouclier (la Défense sans armure perdue est indiquée),
+  deux armures ou deux boucliers de même valeur (« retenue », plus « donne plus »).
+### Fixed
+- Une armure du manuel enregistrée sans valeur de CA (CA 0) reprend la valeur du manuel.
+
 ## [4.2.0] - 2026-11-05 (Bottes d'armes)
 ### Added
 - Bottes d'armes : un petit livre dans la case « Botte d'arme » ouvre la règle (texte du Manuel des
