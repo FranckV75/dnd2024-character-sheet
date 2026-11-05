@@ -6,7 +6,8 @@
 
 import { EQUIPMENT_DATA } from '../data/equipment.js';
 import { EMPTY_ARMOR } from '../state/schema.js';
-import { armorCategory, parseNumber } from './character.js';
+import { armorCategory, armorMagicBonus, parseNumber } from './character.js';
+export { armorMagicBonus, armorCanBeMagic, ARMOR_MAGIC_MAX, armorLine, armorBaseValue, catalogueArmor } from './character.js';
 
 /** Types proposés dans la liste (valeurs identiques à la v3) */
 export const ARMOR_TYPES = [
@@ -22,6 +23,20 @@ export const ARMOR_TYPES = [
 const BODY_CATEGORIES = new Set(['light', 'medium', 'heavy']);
 
 const fold = (text) => String(text ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+
+/**
+ * Ligne d'armure avec un nouveau bonus magique : 0 retire la clé « magic » (sauvegarde inchangée
+ * pour une armure normale), toutes les autres clés de la ligne sont conservées.
+ * @param {Object} row
+ * @param {number} magic - 0 à 3
+ * @returns {Object}
+ */
+export function withArmorMagic(row, magic) {
+    const rest = { ...(row && typeof row === 'object' ? row : {}) };
+    delete rest.magic;
+    const value = armorMagicBonus({ magic });
+    return value ? { ...rest, magic: value } : rest;
+}
 
 /**
  * Armures du catalogue dont le nom contient la recherche (sans tenir compte des accents ni de la casse).
@@ -40,7 +55,8 @@ export function isBlankArmor(armor) {
     const text = (value) => String(value ?? '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
     const typed = ['name', 'ca', 'str', 'weight', 'price', 'comment'].some(key => text(armor[key]) !== '');
     const type = text(armor.type);
-    return !typed && armor.stealth !== true && armor.equipped !== true && (type === '' || type === EMPTY_ARMOR.type);
+    return !typed && armor.stealth !== true && armor.equipped !== true && armorMagicBonus(armor) === 0
+        && (type === '' || type === EMPTY_ARMOR.type);
 }
 
 export function searchArmorCatalogue(query, catalogue = EQUIPMENT_DATA.armors) {

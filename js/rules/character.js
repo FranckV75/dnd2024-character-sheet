@@ -92,58 +92,241 @@ export function armorCategory(armor) {
     return known ? ARMOR_TYPE_ALIASES[known.type.toLowerCase()] || '' : '';
 }
 
+/** Bonus magique maximum d'une armure ou d'un bouclier (+3, DMG 2024) */
+export const ARMOR_MAGIC_MAX = 3;
+
+/** Catégories qui peuvent être magiques : armures portées et boucliers */
+const MAGIC_CATEGORIES = new Set(['light', 'medium', 'heavy', 'shield']);
+
+/**
+ * Bonus magique d'une ligne d'armure (clé facultative « magic ») : entier de 0 à 3.
+ * Accepte 1, « 1 », « +1 » ; toute autre valeur vaut 0.
+ * @param {{ magic?: number|string }} armor
+ * @returns {number}
+ */
+export function armorMagicBonus(armor) {
+    const raw = armor && typeof armor === 'object' ? armor.magic : undefined;
+    const text = String(raw ?? '').trim();
+    if (!/^\+?\d+$/.test(text)) return 0;
+    const value = parseInt(text, 10);
+    return value >= 1 && value <= ARMOR_MAGIC_MAX ? value : 0;
+}
+
+/** La ligne peut-elle recevoir un bonus magique (armure légère, intermédiaire, lourde, bouclier) ? */
+export function armorCanBeMagic(armor) {
+    return MAGIC_CATEGORIES.has(armorCategory(armor));
+}
+
+/** Entrée du manuel (EQUIPMENT_DATA.armors) dont le nom est exactement celui de la ligne, sinon null */
+export function catalogueArmor(armor) {
+    const name = (armor?.name ?? '').toString().replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().toLowerCase();
+    if (!name) return null;
+    return EQUIPMENT_DATA.armors.find(a => a.name.toLowerCase() === name) || null;
+}
+
+/**
+ * Valeur de base d'une ligne (« 15 » pour une Demi-plate, « 2 » pour un bouclier, « 1 » pour une cape) :
+ * le nombre enregistré dans la clé « ca » (anciennes fiches, objets hors manuel), sinon celui du
+ * manuel pour un nom connu, sinon 0.
+ * @param {{ ca?: string, name?: string }} armor
+ * @returns {number}
+ */
+export function armorBaseValue(armor) {
+    const stored = parseNumber(armor?.ca, Number.NaN);
+    if (Number.isFinite(stored)) return stored;
+    const known = catalogueArmor(armor);
+    return known ? parseNumber(known.ca, 0) : 0;
+}
+
+/** Don « Maître des armures intermédiaires » (PHB 2024 « Medium Armor Master ») */
+export const MEDIUM_ARMOR_MASTER_ID = 'maitre_des_armures_intermediaires';
+
+/**
+ * Dextérité maximale ajoutée par une armure intermédiaire : 2, ou 3 avec le don Maître des armures
+ * intermédiaires si la valeur de Dextérité est de 16 ou plus (PHB 2024, « Dexterous Wearer »).
+ * @param {string[]} feats - dons atteints
+ * @param {number} dexScore - valeur de Dextérité
+ * @returns {number}
+ */
+export function mediumArmorDexMax(feats = [], dexScore = 10) {
+    return feats.includes(MEDIUM_ARMOR_MASTER_ID) && dexScore >= 16 ? 3 : 2;
+}
+
+const MINUS = '−';
+const signedAC = (n) => (n < 0 ? `${MINUS}${-n}` : `+${n}`);
+/** « + 2 » ou « − 1 » (terme d'une addition) */
+const term = (n) => (n < 0 ? `${MINUS} ${-n}` : `+ ${n}`);
+const plainName = (armor) => (armor?.name || '').toString().replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+
+/**
+ * Ce qu'une ligne du tableau des armures apporte à la CA, et comment c'est calculé.
+ * - kind 'body' : armure portée, value = CA totale de l'armure (« 18 ») ;
+ * - kind 'shield' | 'bonus' | 'proficiency' : value = bonus ajouté (« +3 ») ;
+ * - kind 'none' : type « Standard / Aucun » ou inconnu, ne compte pas (value null).
+ * @param {Object} armor - ligne de dynamic_armors
+ * @param {{ mods: Object, pb: number, mediumDexMax?: number }} ctx
+ * @returns {{ category: string, kind: string, value: number|null, display: string, formula: string, magic: number }}
+ */
+export function armorLine(armor, { mods, pb, mediumDexMax = 2 }) {
+    const category = armorCategory(armor);
+    const base = armorBaseValue(armor);
+    const magic = MAGIC_CATEGORIES.has(category) ? armorMagicBonus(armor) : 0;
+    const magicText = magic ? ` + ${magic} magique` : '';
+
+    if (category === 'light' || category === 'medium' || category === 'heavy') {
+        let dex = 0;
+        let dexText = '';
+        if (category === 'light') {
+            dex = mods.dex;
+            dexText = ` ${term(dex)} Dex`;
+        } else if (category === 'medium') {
+            dex = Math.min(mediumDexMax, mods.dex);
+            dexText = ` ${term(dex)} Dex (max ${mediumDexMax})`;
+        }
+        const value = base + dex + magic;
+        const formula = category === 'heavy'
+            ? `${magic ? `${base}${magicText} = ${value}` : String(base)} (armure lourde : sans la Dex)`
+            : `${base}${dexText}${magicText} = ${value}`;
+        return { category, kind: 'body', value, display: String(value), formula, magic };
+    }
+    if (category === 'shield') {
+        // Un bouclier n'enlève jamais de CA (comme avant : une valeur négative est ramenée à 0)
+        const value = Math.max(0, base + magic);
+        const formula = magic ? `${signedAC(base)} bouclier${magicText} = ${signedAC(value)}` : `${signedAC(base)} bouclier`;
+        return { category, kind: 'shield', value, display: signedAC(value), formula, magic };
+    }
+    if (category === 'bonus') {
+        return { category, kind: 'bonus', value: base, display: signedAC(base), formula: `${signedAC(base)} à la CA (bonus fixe)`, magic: 0 };
+    }
+    if (category === 'proficiency') {
+        return { category, kind: 'proficiency', value: pb, display: signedAC(pb), formula: `${signedAC(pb)} à la CA (bonus de maîtrise)`, magic: 0 };
+    }
+    return {
+        category, kind: 'none', value: null, display: '—',
+        formula: "Ne compte pas dans la CA : choisissez son type avec l'engrenage (fiche déverrouillée).", magic: 0
+    };
+}
+
 /**
  * Classe d'Armure (D&D 2024) selon les armures équipées et la Défense sans armure.
- * - Légère : base + DEX ; Intermédiaire : base + DEX (max 2) ; Lourde : base seule
- * - Bouclier : un seul compte (le meilleur), et seulement si le personnage est formé
- *   aux boucliers (PHB 2024) ; « Bonus » : s'ajoute ; « Maîtrise » : ajoute le bonus de maîtrise
+ * - Légère : base + DEX ; Intermédiaire : base + DEX (max 2, ou 3 avec Maître des armures
+ *   intermédiaires et Dextérité 16+) ; Lourde : base seule
+ * - Base : nombre de la clé « ca », sinon valeur du manuel pour un nom connu (armorBaseValue)
+ * - Une seule armure portée compte (la meilleure) et un seul bouclier (le meilleur), seulement si le
+ *   personnage est formé aux boucliers (PHB 2024) ; « Bonus » : s'ajoute ; « Maîtrise » : ajoute le
+ *   bonus de maîtrise
  * - Sans armure : 10 + DEX, ou Barbare 10 + DEX + CON (bouclier autorisé),
  *   ou Moine 10 + DEX + SAG (uniquement sans bouclier)
- * @param {{ armors: Array, className: string, mods: Object, pb: number, shieldTrained?: boolean }} params
- * @returns {{ value: number, source: string }}
+ * - Armure ou bouclier magique (+1, +2, +3 : clé facultative « magic » de la ligne) : le bonus
+ *   s'ajoute à la CA de cette armure ou de ce bouclier (DMG 2024, « Armor, +1, +2, or +3 » et
+ *   « Shield, +1, +2, or +3 »)
+ * rows : pour chaque ligne du tableau (même index), son calcul (armorLine) et son état :
+ * 'counted' (comptée), 'unequipped' (non équipée), 'outdone' (une autre armure ou un autre bouclier
+ * compte davantage), 'untrained' (bouclier non maîtrisé), 'none' (ne compte pas), avec une note.
+ * @param {{ armors: Array, className: string, mods: Object, pb: number, shieldTrained?: boolean, mediumDexMax?: number }} params
+ * @returns {{ value: number, source: string, rows: Array<{ line: Object, status: string, note: string }> }}
  */
-export function computeArmorClass({ armors = [], className = '', mods, pb, shieldTrained = true }) {
-    let bodyAC = null;
-    let bodySource = '';
-    let bonus = 0;
+export function computeArmorClass({ armors = [], className = '', mods, pb, shieldTrained = true, mediumDexMax = 2 }) {
+    const list = Array.isArray(armors) ? armors : [];
+    const rows = list.map(armor => ({
+        line: armorLine(armor && typeof armor === 'object' ? armor : {}, { mods, pb, mediumDexMax }),
+        status: 'unequipped', note: ''
+    }));
+
+    let body = -1;
+    let shield = -1;
     let hasShield = false;
-    let shieldBonus = 0;
-
-    for (const armor of armors) {
-        if (!armor || !armor.equipped) continue;
-        const category = armorCategory(armor);
-        const value = parseNumber(armor.ca, 0);
-        let total = null;
-
-        if (category === 'shield') { hasShield = true; shieldBonus = Math.max(shieldBonus, value); }
-        else if (category === 'bonus') bonus += value;
-        else if (category === 'proficiency') bonus += pb;
-        else if (category === 'light') total = value + mods.dex;
-        else if (category === 'medium') total = value + Math.min(2, mods.dex);
-        else if (category === 'heavy') total = value;
-
-        if (total !== null && (bodyAC === null || total > bodyAC)) {
-            bodyAC = total;
-            bodySource = (armor.name || '').toString().replace(/<[^>]*>/g, '').trim() || 'Armure';
+    let bonus = 0;
+    rows.forEach((row, i) => {
+        const { kind, value } = row.line;
+        if (kind === 'none') {
+            row.status = 'none';
+            return;
         }
-    }
+        if (!list[i]?.equipped) {
+            row.note = kind === 'body' || kind === 'shield'
+                ? 'Non équipée : ne compte pas dans la CA.'
+                : 'Non active : ne compte pas dans la CA.';
+            return;
+        }
+        if (kind === 'body') {
+            if (body === -1 || value > rows[body].line.value) body = i;
+        } else if (kind === 'shield') {
+            hasShield = true;
+            if (shield === -1 || value > rows[shield].line.value) shield = i;
+        } else {
+            bonus += value;
+            row.status = 'counted';
+        }
+    });
+    rows.forEach((row, i) => {
+        if (!list[i]?.equipped) return;
+        const { kind } = row.line;
+        if (kind === 'body') {
+            row.status = i === body ? 'counted' : 'outdone';
+            if (i !== body) {
+                const other = plainName(list[body]) || "l'autre armure";
+                row.note = row.line.value === rows[body].line.value
+                    ? `Une seule armure compte : « ${other} » est retenue (même CA).`
+                    : `Une seule armure compte : « ${other} » donne plus.`;
+            }
+        } else if (kind === 'shield') {
+            if (!shieldTrained) {
+                row.status = 'untrained';
+                row.note = "Formation aux boucliers non cochée : le bouclier n'apporte aucun bonus.";
+            } else if (i !== shield) {
+                row.status = 'outdone';
+                const other = plainName(list[shield]) || "l'autre bouclier";
+                row.note = row.line.value === rows[shield].line.value
+                    ? `Un seul bouclier compte : « ${other} » est retenu (même bonus).`
+                    : `Un seul bouclier compte : « ${other} » donne plus.`;
+            } else {
+                row.status = 'counted';
+            }
+        }
+    });
 
-    if (bodyAC === null) {
+    let bodyAC;
+    let bodySource;
+    let monkLost = null;
+    if (body !== -1) {
+        bodyAC = rows[body].line.value;
+        const magic = rows[body].line.magic;
+        bodySource = (plainName(list[body]) || 'Armure') + (magic ? ` (+${magic} magique)` : '');
+    } else {
         const slug = classSlug(className);
         bodyAC = 10 + mods.dex;
         bodySource = 'Sans armure';
         if (slug === 'barbarian' && 10 + mods.dex + mods.con > bodyAC) {
             bodyAC = 10 + mods.dex + mods.con;
             bodySource = 'Défense sans armure (Barbare)';
-        } else if (slug === 'monk' && !hasShield && 10 + mods.dex + mods.wis > bodyAC) {
-            bodyAC = 10 + mods.dex + mods.wis;
-            bodySource = 'Défense sans armure (Moine)';
+        } else if (slug === 'monk' && 10 + mods.dex + mods.wis > bodyAC) {
+            if (hasShield) {
+                // PHB 2024 : la Défense sans armure du Moine ne marche ni en armure ni avec un bouclier
+                monkLost = 10 + mods.dex + mods.wis;
+                bodySource = 'Sans armure — Défense sans armure (Moine) perdue : bouclier en main';
+            } else {
+                bodyAC = 10 + mods.dex + mods.wis;
+                bodySource = 'Défense sans armure (Moine)';
+            }
         }
     }
+    if (monkLost !== null) {
+        const lost = `Défense sans armure (Moine) perdue avec un bouclier : ${monkLost} sans le bouclier.`;
+        rows.forEach((row, i) => {
+            if (row.line.kind === 'shield' && list[i]?.equipped) row.note = row.note ? `${row.note} ${lost}` : lost;
+        });
+    }
 
-    if (hasShield && shieldTrained) bonus += shieldBonus;
-    const source = hasShield && !shieldTrained ? `${bodySource} — bouclier non maîtrisé : sans effet` : bodySource;
-    return { value: bodyAC + bonus, source };
+    let source = bodySource;
+    if (hasShield && !shieldTrained) {
+        source = monkLost !== null ? `${bodySource}, bouclier non maîtrisé : aucun bonus` : `${bodySource} — bouclier non maîtrisé : sans effet`;
+    } else if (shield !== -1) {
+        bonus += rows[shield].line.value;
+        const magic = rows[shield].line.magic;
+        if (magic) source = `${bodySource}, bouclier +${magic} magique`;
+    }
+    return { value: bodyAC + bonus, source, rows };
 }
 
 /**
@@ -337,7 +520,8 @@ export function deriveCharacter(record = {}) {
         passivePerception: 10 + skills.perception.bonus,
         armorClass: computeArmorClass({
             armors, className, mods, pb,
-            shieldTrained: record.prof_armor_shield === true
+            shieldTrained: record.prof_armor_shield === true,
+            mediumDexMax: mediumArmorDexMax(feats, scores.dex)
         }),
         spellcasting: computeSpellcasting(record.spell_ability, mods, pb),
         spellSlots: spellSlotsFor(className, level),

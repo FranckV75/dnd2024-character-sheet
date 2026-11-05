@@ -16,8 +16,8 @@
 }
 
 .armors-table .col-name { width: 17%; }
-.armors-table .col-type { width: 14%; }
-.armors-table .col-ca { width: 6%; }
+.armors-table .col-type { width: 11%; }
+.armors-table .col-ca { width: 7%; }
 .armors-table .col-str { width: 6%; }
 .armors-table .col-check { width: 7%; }
 .armors-table .col-weight { width: 9%; }
@@ -26,11 +26,12 @@
 .armors-table .col-comment { width: auto; }
 .armors-table .col-del { width: 40px; }
 
-/* Tablettes : le nom et le type (qui pilote la CA) passent avant les colonnes numériques */
+/* Tablettes : le nom passe avant les colonnes numériques ; la CA calculée garde la place
+   de sa valeur (« 18 », « +3 ») et le commentaire celle de quelques mots */
 @media screen and (max-width: 1100px) {
-    .armors-table .col-name,
-    .armors-table .col-type { width: 19%; }
-    .armors-table .col-ca,
+    .armors-table .col-name { width: 18%; }
+    .armors-table .col-type { width: 11%; }
+    .armors-table .col-ca { width: 7%; }
     .armors-table .col-str { width: 5%; }
     .armors-table .col-weight,
     .armors-table .col-price { width: 8%; }
@@ -192,4 +193,130 @@
 
 .armors-table tr.is-entry .cell-input::placeholder {
     font-style: italic;
+}
+
+/* Type : lu, d'après le calcul de CA (réglé avec l'engrenage) */
+.armor-type {
+    display: block;
+    font-family: var(--font-text);
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+/* CA calculée : la valeur est un bouton ; la toucher (ou la survoler) affiche le calcul.
+   Souligné pointillé discret : « il y a une explication ». */
+.armor-ca-value {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.4em;
+    min-height: 32px;
+    padding: 0 4px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--number);
+    font-family: var(--font-text);
+    font-size: 1.05rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-decoration: underline dotted var(--gold-soft);
+    text-underline-offset: 4px;
+    cursor: help;
+}
+
+.armor-ca-value:hover,
+.armor-ca-value[aria-expanded="true"] {
+    background: var(--box);
+}
+
+.armor-ca-value:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+}
+
+.armor-ca-value[hidden] {
+    display: none;
+}
+
+/* Ligne qui ne compte pas (non équipée, surpassée, bouclier non maîtrisé, type sans effet) */
+.armor-ca-value:not([data-status="counted"]) {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.armors-table td.col-ca {
+    text-align: center;
+}
+
+/* Bulle du calcul (même cadre que l'infobulle des sorts) */
+.armor-ca-bubble {
+    max-width: min(320px, calc(100vw - 16px));
+}
+
+.armor-ca-formula {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--number);
+}
+
+.armor-ca-note {
+    margin: 6px 0 0;
+    font-size: 0.88rem;
+    font-style: italic;
+    color: var(--text-muted);
+}
+
+.armor-ca-note[data-counted="true"] {
+    color: var(--ok);
+    font-style: normal;
+}
+
+/* Aperçu du calcul dans la fenêtre de réglages */
+.armor-config-preview {
+    padding: 8px 10px;
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    background: var(--box);
+    font-family: var(--font-text);
+}
+
+/* Engrenage de réglage à côté de la corbeille */
+.armor-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+.armor-config[hidden] {
+    display: none;
+}
+
+.armors-table .col-del { width: 76px; }
+
+@media (pointer: coarse) {
+    .armors-table .col-del { width: 96px; }
+
+    /* Calques tactiles de 44 px (boutons de 36 px) : sans 8 px d'écart, ils se chevauchent */
+    .armor-actions { gap: 8px; }
+
+    .armor-ca-value { min-height: 44px; }
+}
+
+/* Fiche verrouillée : engrenage et corbeille masqués, la colonne reprend sa largeur d'avant */
+[data-locked="true"] .armors-table .col-del { width: 40px; }
+
+/* Les champs de la fenêtre de réglages sont en display: flex : sans cette règle, hidden ne masque rien */
+.weapons-config-field[hidden] {
+    display: none;
+}
+
+@media print {
+    .armor-ca-value {
+        min-height: 0;
+        padding: 0;
+        text-decoration: none;
+        color: inherit;
+    }
 }

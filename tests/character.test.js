@@ -11,6 +11,11 @@ import {
     spellSlotsFor,
     armorCategory,
     computeArmorClass,
+    armorMagicBonus,
+    armorCanBeMagic,
+    armorBaseValue,
+    armorLine,
+    mediumArmorDexMax,
     computeSpellcasting,
     exhaustionEffects,
     exhaustionSeverity,
@@ -328,5 +333,201 @@ describe('featSlotState : emplacements de dons selon le niveau', () => {
         assert.equal(featSlotState(19, 25, 'x'), 'active');
         assert.equal(featSlotState(8, 8, '   '), 'pending');
         assert.equal(featSlotState(8, 8, '<b></b>'), 'pending');
+    });
+});
+
+describe('Armures et boucliers magiques (clé facultative « magic »)', () => {
+    const magicArmor = (name, type, ca, magic, equipped = true) => ({ name, type, ca, equipped, magic });
+
+    test('Bonus magique lu : 1, « 1 », « +1 » ; le reste vaut 0 (max +3)', () => {
+        assert.equal(armorMagicBonus({ magic: 1 }), 1);
+        assert.equal(armorMagicBonus({ magic: '2' }), 2);
+        assert.equal(armorMagicBonus({ magic: '+3' }), 3);
+        for (const bad of [0, 4, -1, '', 'x', null, undefined, 1.5, '1d4', true]) {
+            assert.equal(armorMagicBonus({ magic: bad }), 0, String(bad));
+        }
+        assert.equal(armorMagicBonus(null), 0);
+        assert.equal(armorMagicBonus({}), 0);
+    });
+
+    test('Armure portée +1 : la CA de l\'armure gagne 1 (légère, intermédiaire, lourde)', () => {
+        const dex4 = { ...MODS, dex: 4 };
+        assert.equal(computeArmorClass({ armors: [magicArmor('Armure de cuir', 'Légère', '11', 1)], mods: dex4, pb: 2 }).value, 16);
+        assert.equal(computeArmorClass({ armors: [magicArmor('Cuirasse', 'Interméd.', '14', 2)], mods: dex4, pb: 2 }).value, 18);
+        const plate = computeArmorClass({ armors: [magicArmor('Harnois', 'Lourde', '18', 3)], mods: dex4, pb: 2 });
+        assert.equal(plate.value, 21);
+        assert.equal(plate.source, 'Harnois (+3 magique)');
+    });
+
+    test('Bouclier +1 : +3 au lieu de +2, et le meilleur bouclier compte avec sa magie', () => {
+        const res = computeArmorClass({ armors: [magicArmor('Bouclier', 'Bouclier', '+2', 1)], className: 'Guerrier', mods: MODS, pb: 2 });
+        assert.equal(res.value, 15); // 10 + DEX 2 + 2 + 1
+        assert.match(res.source, /bouclier \+1 magique/);
+        const two = computeArmorClass({
+            armors: [magicArmor('Bouclier', 'Bouclier', '+2', 2), magicArmor('Bouclier', 'Bouclier', '+3', undefined)],
+            className: 'Guerrier', mods: MODS, pb: 2
+        });
+        assert.equal(two.value, 16); // un seul bouclier : 2 + 2 magique bat 3
+    });
+
+    test('Bouclier magique non maîtrisé : toujours sans effet', () => {
+        const res = computeArmorClass({ armors: [magicArmor('Bouclier', 'Bouclier', '+2', 3)], className: 'Magicien', mods: MODS, pb: 2, shieldTrained: false });
+        assert.equal(res.value, 12);
+    });
+
+    test('Barbare sans armure avec bouclier +1 ; armure magique non équipée ignorée', () => {
+        assert.equal(computeArmorClass({ armors: [magicArmor('Bouclier', 'Bouclier', '+2', 1)], className: 'Barbare', mods: MODS, pb: 2 }).value, 18);
+        assert.equal(computeArmorClass({ armors: [magicArmor('Harnois', 'Lourde', '18', 2, false)], className: 'Guerrier', mods: MODS, pb: 2 }).value, 12);
+    });
+
+    test('Types Bonus, Maîtrise et Standard : la clé « magic » est sans effet', () => {
+        const res = computeArmorClass({
+            armors: [magicArmor('Anneau', 'Bonus', '+1', 2), magicArmor('Défense', 'Maîtrise', '', 2), magicArmor('Truc', 'none', '5', 2)],
+            className: 'Magicien', mods: MODS, pb: 2
+        });
+        assert.equal(res.value, 15); // 10 + 2 + 1 + 2
+        assert.equal(armorCanBeMagic({ type: 'Bonus' }), false);
+        assert.equal(armorCanBeMagic({ type: 'Bouclier' }), true);
+        assert.equal(armorCanBeMagic({ type: 'none', name: 'Cotte de mailles' }), false); // « Standard / Aucun » explicite
+        assert.equal(armorCanBeMagic({ name: 'Cotte de mailles' }), true); // ancienne sauvegarde sans type
+    });
+
+    test('Sans clé « magic », la CA est exactement celle d\'avant', () => {
+        const armors = [magicArmor('Cotte de mailles', 'Lourde', '16'), magicArmor('Bouclier', 'Bouclier', '+2')];
+        const res = computeArmorClass({ armors, className: 'Guerrier', mods: MODS, pb: 2 });
+        assert.equal(res.value, 18);
+        assert.equal(res.source, 'Cotte de mailles');
+    });
+});
+
+describe('Colonne CA calculée : ce que chaque ligne apporte, et pourquoi', () => {
+    const row = (name, type, ca, extra = {}) => ({ name, type, ca, equipped: true, ...extra });
+    const dex3 = { ...MODS, dex: 3 };
+    const ctx = { mods: dex3, pb: 2 };
+    const M = '−';
+
+    test('Base : nombre enregistré, sinon valeur du manuel pour un nom connu, sinon 0', () => {
+        assert.equal(armorBaseValue({ name: 'Demi-plate', ca: '15' }), 15);
+        assert.equal(armorBaseValue({ name: 'Demi-plate', ca: '' }), 15);
+        assert.equal(armorBaseValue({ name: 'demi-plate' }), 15);
+        assert.equal(armorBaseValue({ name: 'Bouclier', ca: '' }), 2);
+        assert.equal(armorBaseValue({ name: 'Demi-plate', ca: '16' }), 16); // valeur enregistrée gardée
+        assert.equal(armorBaseValue({ name: 'Cape de protection', ca: '+1' }), 1);
+        assert.equal(armorBaseValue({ name: 'Cape de protection', ca: '' }), 0);
+        assert.equal(armorBaseValue({ name: 'Harnois', ca: '<b>18</b>' }), 18);
+    });
+
+    test('Demi-plate +1 avec Dex +3 : 15 + 2 Dex (max 2) + 1 magique = 18', () => {
+        const line = armorLine(row('Demi-plate', 'Interméd.', '15', { magic: 1 }), ctx);
+        assert.equal(line.kind, 'body');
+        assert.equal(line.value, 18);
+        assert.equal(line.display, '18');
+        assert.equal(line.formula, '15 + 2 Dex (max 2) + 1 magique = 18');
+    });
+
+    test('Légère avec Dex négative, lourde sans Dex, lourde magique', () => {
+        assert.equal(armorLine(row('Armure de cuir', 'Légère', '11'), { mods: { ...MODS, dex: -1 }, pb: 2 }).formula, `11 ${M} 1 Dex = 10`);
+        const plate = armorLine(row('Harnois', 'Lourde', '18'), ctx);
+        assert.equal(plate.value, 18);
+        assert.equal(plate.formula, '18 (armure lourde : sans la Dex)');
+        assert.equal(armorLine(row('Harnois', 'Lourde', '18', { magic: 2 }), ctx).formula, '18 + 2 magique = 20 (armure lourde : sans la Dex)');
+    });
+
+    test('Bouclier +1 : « +3 », expliqué « +2 bouclier + 1 magique = +3 »', () => {
+        const line = armorLine(row('Bouclier', 'Bouclier', '+2', { magic: 1 }), ctx);
+        assert.equal(line.display, '+3');
+        assert.equal(line.formula, '+2 bouclier + 1 magique = +3');
+        assert.equal(armorLine(row('Bouclier', 'Bouclier', '+2'), ctx).formula, '+2 bouclier');
+    });
+
+    test('Bonus fixe, Maîtrise, Standard / Aucun', () => {
+        assert.equal(armorLine(row('Cape de protection', 'Bonus', '+1'), ctx).display, '+1');
+        assert.equal(armorLine(row('Défense', 'Maîtrise', ''), { mods: dex3, pb: 3 }).display, '+3');
+        const none = armorLine(row('Truc', 'none', '5'), ctx);
+        assert.equal(none.kind, 'none');
+        assert.equal(none.value, null);
+        assert.equal(none.display, '—');
+    });
+
+    test('Nom du manuel sans valeur enregistrée : la base du manuel compte dans la CA', () => {
+        const res = computeArmorClass({ armors: [{ name: 'Cotte de mailles', equipped: true }], className: 'Guerrier', mods: dex3, pb: 2 });
+        assert.equal(res.value, 16);
+    });
+
+    test('État de chaque ligne : comptée, non équipée, surpassée, bouclier non maîtrisé', () => {
+        const res = computeArmorClass({
+            armors: [
+                row('Demi-plate', 'Interméd.', '15', { magic: 1 }),
+                row('Cotte de mailles', 'Lourde', '16'),
+                row('Bouclier', 'Bouclier', '+2', { magic: 1 }),
+                row('Bouclier', 'Bouclier', '+2'),
+                row('Cape de protection', 'Bonus', '+1'),
+                row('Harnois', 'Lourde', '18', { equipped: false }),
+                row('Bibelot', 'none', '')
+            ],
+            className: 'Guerrier', mods: dex3, pb: 2
+        });
+        assert.equal(res.value, 22); // 18 demi-plate + 3 bouclier + 1 cape
+        assert.deepEqual(res.rows.map(r => r.status), ['counted', 'outdone', 'counted', 'outdone', 'counted', 'unequipped', 'none']);
+        assert.match(res.rows[1].note, /Une seule armure compte : « Demi-plate »/);
+        assert.match(res.rows[3].note, /Un seul bouclier compte/);
+        assert.match(res.rows[5].note, /Non équipée/);
+
+        const untrained = computeArmorClass({ armors: [row('Bouclier', 'Bouclier', '+2')], className: 'Magicien', mods: dex3, pb: 2, shieldTrained: false });
+        assert.equal(untrained.rows[0].status, 'untrained');
+        assert.equal(untrained.value, 13);
+    });
+
+    test('Maître des armures intermédiaires : Dex max 3 si Dextérité 16 ou plus (PHB 2024)', () => {
+        assert.equal(mediumArmorDexMax([], 18), 2);
+        assert.equal(mediumArmorDexMax(['maitre_des_armures_intermediaires'], 15), 2);
+        assert.equal(mediumArmorDexMax(['maitre_des_armures_intermediaires'], 16), 3);
+        const record = {
+            char_class: 'Guerrier', char_level: '4', dex_score: '16', feat_4: 'maitre_des_armures_intermediaires',
+            dynamic_armors: [row('Demi-plate', 'Interméd.', '15')]
+        };
+        const d = deriveCharacter(record);
+        assert.equal(d.armorClass.value, 18);
+        assert.equal(d.armorClass.rows[0].line.formula, '15 + 3 Dex (max 3) = 18');
+        assert.equal(deriveCharacter({ ...record, feat_4: '' }).armorClass.value, 17);
+        assert.equal(deriveCharacter({ ...record, char_level: '3' }).armorClass.value, 17); // don pas encore atteint
+    });
+
+    test('Relecture : un bouclier négatif est ramené à 0 (CA inchangée par rapport à avant)', () => {
+        const r = computeArmorClass({ armors: [row('Bouclier maudit', 'Bouclier', '-1')], className: 'Guerrier', mods: MODS, pb: 2 });
+        assert.equal(r.value, 12);
+        assert.equal(r.rows[0].line.display, '+0');
+    });
+
+    test('Relecture : deux armures ou deux boucliers de même valeur ne disent pas « donne plus »', () => {
+        const r = computeArmorClass({
+            armors: [row('Harnois', 'Lourde', '18'), row('Harnois du nain', 'Lourde', '18'),
+                row('Bouclier', 'Bouclier', '+2'), row('Écu', 'Bouclier', '+2'), row('Rondache', 'Bouclier', '+1')],
+            className: 'Guerrier', mods: MODS, pb: 2
+        });
+        assert.equal(r.value, 20);
+        assert.equal(r.rows[1].note, 'Une seule armure compte : « Harnois » est retenue (même CA).');
+        assert.equal(r.rows[3].note, 'Un seul bouclier compte : « Bouclier » est retenu (même bonus).');
+        assert.equal(r.rows[4].note, 'Un seul bouclier compte : « Bouclier » donne plus.');
+    });
+
+    test('Relecture : Moine avec bouclier, la perte de la Défense sans armure est expliquée', () => {
+        const mods = { ...MODS, dex: 3, wis: 3 };
+        const shield = [row('Bouclier', 'Bouclier', '+2')];
+        const sans = computeArmorClass({ armors: [], className: 'Moine', mods, pb: 2 });
+        assert.equal(sans.value, 16);
+        const trained = computeArmorClass({ armors: shield, className: 'Moine', mods, pb: 2 });
+        assert.equal(trained.value, 15);
+        assert.equal(trained.source, 'Sans armure — Défense sans armure (Moine) perdue : bouclier en main');
+        assert.match(trained.rows[0].note, /Défense sans armure \(Moine\) perdue avec un bouclier : 16 sans le bouclier\./);
+        const untrained = computeArmorClass({ armors: shield, className: 'Moine', mods, pb: 2, shieldTrained: false });
+        assert.equal(untrained.value, 13);
+        assert.doesNotMatch(untrained.source, /sans effet/);
+        assert.match(untrained.source, /bouclier non maîtrisé : aucun bonus/);
+        assert.match(untrained.rows[0].note, /^Formation aux boucliers non cochée.*16 sans le bouclier\.$/);
+        // Moine dont la Sagesse n'apporte rien : rien à expliquer
+        const plain = computeArmorClass({ armors: shield, className: 'Moine', mods: { ...mods, wis: 0 }, pb: 2 });
+        assert.equal(plain.source, 'Sans armure');
+        assert.equal(plain.rows[0].note, '');
     });
 });

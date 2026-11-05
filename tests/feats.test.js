@@ -149,6 +149,8 @@ describe('deriveCharacter : dons', () => {
         const NEW_FIELDS = ['feats', 'initiativeDetail', 'wornArmor'];
         // Aller-retour JSON, comme le relevé (-0 de l'Épuisement au niveau 0 devient 0)
         const kept = Object.fromEntries(Object.entries(now).filter(([key]) => !NEW_FIELDS.includes(key)));
+        // Détail par ligne du tableau des armures (ajouté avec la colonne CA calculée) : même valeur et même source
+        kept.armorClass = { value: now.armorClass.value, source: now.armorClass.source };
         assert.deepEqual(JSON.parse(JSON.stringify(kept)), before);
         assert.deepEqual(Object.keys(now).filter(key => !(key in before)).sort(), [...NEW_FIELDS].sort());
     });
@@ -431,4 +433,23 @@ describe('Vraies sauvegardes locales : dons', { skip: localFiles.length === 0 &&
             }
         });
     }
+});
+
+describe("Maître des armures intermédiaires : mention seulement si l'armure intermédiaire compte", () => {
+    const base = {
+        char_class: 'Guerrier', char_level: '4', dex_score: '16', feat_4: 'maitre_des_armures_intermediaires',
+        prof_armor_heavy: true, prof_armor_med: true
+    };
+    const armor = (name, type, ca) => ({ name, type, ca, equipped: true });
+    test('Demi-plate seule : appliqué', () => {
+        const notes = featEffects({ ...base, dynamic_armors: [armor('Demi-plate', 'Interméd.', '15')] }).armorClass;
+        assert.ok(notes.some(n => n.featId === 'maitre_des_armures_intermediaires' && n.applied));
+    });
+    test("Harnois et Cuirasse équipés : le Harnois compte, la mention n'est pas « appliquée »", () => {
+        const notes = featEffects({ ...base, dynamic_armors: [armor('Harnois', 'Lourde', '18'), armor('Cuirasse', 'Interméd.', '14')] }).armorClass
+            .filter(n => n.featId === 'maitre_des_armures_intermediaires');
+        assert.equal(notes.length, 1);
+        assert.ok(notes[0].inactive);
+        assert.ok(!notes[0].applied);
+    });
 });
