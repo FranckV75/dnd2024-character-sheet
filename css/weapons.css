@@ -329,9 +329,207 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .weapons-feat-toggle {
+    .weapons-feat-toggle,
+    .weapons-mastery-badge {
         transition: none;
     }
+}
+
+/* ---------- Botte d'arme : pastille de la règle (js/ui/weapons.js, openMastery) ---------- */
+
+/* La case garde la mise en page d'origine (le texte seul, centré dans la ligne) : le bouton est
+   posé par-dessus, en position absolue. Il n'occupe aucune place : la ligne ne grandit jamais. */
+.weapons-table td.weapons-prof {
+    position: relative;
+}
+
+/* À la souris, le bouton est la pastille seule, dans le coin bas droit de la case : sur le
+   soulignement du texte, là où il n'y a au plus que le bas des lettres à jambage (p, q). */
+.weapons-mastery-btn {
+    position: absolute;
+    right: 2px;
+    bottom: 1px;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--accent-ink);
+    cursor: pointer;
+}
+
+.weapons-mastery-btn[hidden] {
+    display: none;
+}
+
+/* Anneau de focus (clavier) sur la pastille visible, pas sur la zone de toucher */
+.weapons-mastery-btn:focus-visible {
+    outline: none;
+}
+
+.weapons-mastery-btn:focus-visible .weapons-mastery-badge {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+}
+
+/* Fond opaque : la pastille reste lisible si elle touche le bas d'un mot long */
+.weapons-mastery-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 22px;
+    height: 14px;
+    border: 1px solid var(--gold-soft);
+    border-radius: 7px;
+    background: var(--box-strong);
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.weapons-mastery-badge .icon {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    color: var(--gold);
+}
+
+.weapons-mastery-btn:hover .weapons-mastery-badge {
+    border-color: var(--gold);
+    background: linear-gradient(var(--feat-invite-bg), var(--feat-invite-bg)), var(--box-strong);
+}
+
+/* Tactile : le bouton est le bord droit de la case, 44 px de large sur toute la hauteur de la
+   ligne, pastille dans son coin bas droit. La zone reste dans la case : elle ne prend le toucher
+   d'aucune autre ligne. Une ligne de 44 px ou plus (toujours le cas fiche déverrouillée, à cause
+   des boutons de configuration et de suppression) donne 44 × 44 px au moins ; fiche verrouillée,
+   une ligne plus basse (arme hors manuel) est complétée à 44 px de haut, centrée : 5 px au plus
+   dans la marge des lignes voisines, dont les cases sont alors en lecture seule. Fiche
+   déverrouillée, toucher le texte à gauche de cette zone l'édite. */
+@media (pointer: coarse) {
+    .weapons-mastery-btn {
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 44px;
+        align-items: flex-end;
+        justify-content: flex-end;
+        padding: 0 2px 1px 0;
+    }
+
+    /* Zone de la case elle-même : au-dessus du prolongement des lignes voisines (deux lignes
+       basses qui se suivent : chacune garde le toucher sur toute sa hauteur) */
+    .weapons-mastery-btn::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+    }
+
+    /* Prolongement à 44 px de haut d'une ligne basse : sous la zone des cases voisines */
+    .weapons-mastery-btn::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        z-index: 1;
+        height: max(100%, 44px);
+        transform: translateY(-50%);
+    }
+}
+
+/* ---------- Fenêtre « Botte d'arme » ---------- */
+
+.weapons-mastery {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal-body .weapons-mastery p {
+    margin: 0;
+}
+
+.weapons-mastery-kind {
+    margin-top: -6px;
+    text-align: center;
+    font-size: 0.88rem;
+    font-style: italic;
+    color: var(--text-muted);
+}
+
+.weapons-mastery-desc {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Valeurs pour l'arme : même encadré doré que « Dans la fiche » des dons */
+.weapons-mastery-calc {
+    padding: 7px 10px 8px;
+    border-left: 3px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+    background: var(--feat-invite-bg);
+}
+
+.weapons-mastery-calc-title,
+.weapons-mastery-access-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-title);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+}
+
+.weapons-mastery-calc-title .icon {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    color: var(--gold);
+}
+
+.modal-body .weapons-mastery-calc ul {
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.weapons-mastery-calc li + li {
+    margin-top: 4px;
+}
+
+.weapons-mastery-calc strong {
+    color: var(--accent);
+}
+
+.modal-body .weapons-mastery-calc small {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.weapons-mastery-calc-none {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+}
+
+.weapons-mastery-access {
+    padding-top: 10px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 0.92rem;
+}
+
+.modal-body .weapons-mastery-access-title {
+    margin-bottom: 3px;
+}
+
+.weapons-mastery-source {
+    font-size: 0.82rem;
+    font-style: italic;
+    color: var(--text-muted);
 }
 
 /* ---------- Annulation de suppression ---------- */

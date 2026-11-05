@@ -670,6 +670,11 @@ h1, h2, h3, h4 {
     display: none;
 }
 
+/* Botte d'arme : seul le texte saisi est imprimé (la pastille de la règle est un bouton d'écran) */
+.weapons-mastery-btn {
+    display: none;
+}
+
 /* Jets de sauvegarde (« Avantage Concentration », « Interposition ») : déjà dans la liste des
    dons imprimée ; la colonne étroite des caractéristiques garde sa hauteur */
 .ability .feat-mention {
