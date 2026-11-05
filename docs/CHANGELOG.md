@@ -8,6 +8,8 @@ Toutes les modifications notables du projet sont documentées dans ce fichier. L
   la CA. Pour un objet hors manuel (cape, anneau, armure maison), il règle aussi le type et la valeur
   de base.
 - Don Maître des armures intermédiaires : Dextérité jusqu'à +3 en armure intermédiaire (Dextérité 16+).
+- Écusson CA en haut de la fiche : le toucher (ou le survoler) affiche l'addition complète (armure ou
+  Défense sans armure du Barbare / du Moine, bouclier, bonus, total) et les remarques utiles.
 ### Changed
 - Colonne CA des armures : elle n'est plus saisie. Elle montre ce que la ligne apporte (« 18 » pour une
   Demi-plate +1, « +3 » pour un Bouclier +1) ; toucher la valeur affiche le calcul (« 15 + 2 Dex
