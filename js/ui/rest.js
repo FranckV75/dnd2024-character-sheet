@@ -19,6 +19,9 @@ const rollDie = (faces) => Math.floor(Math.random() * faces) + 1;
 const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
 const agree = (n, word) => `${word}${n > 1 ? 's' : ''}`;
 
+/** « a, b et c » */
+const listText = (items) => (items.length > 1 ? `${items.slice(0, -1).join(', ')} et ${items.at(-1)}` : items.join(''));
+
 /** Ligne de liste précédée d'une icône dorée (sans icône : un losange, posé par rest.css) */
 const iconLine = (text, name, className) => el('li', { class: [name ? 'has-icon' : '', className].filter(Boolean).join(' ') || null },
     name ? icon(name) : null, el('span', { text }));
@@ -50,6 +53,10 @@ function recoveryLines(summary, done) {
     }
     if (summary.pactSlotsRestored > 0) {
         lines.push(`Magie de pacte : ${plural(summary.pactSlotsRestored, 'emplacement')} de sort ${agree(summary.pactSlotsRestored, done ? 'récupéré' : 'récupérable')}`);
+    }
+    // Dons à usages limités qui reviennent au repos court (Tueur de mages : Esprit préservé)
+    for (const use of summary.featUsesRestored ?? []) {
+        lines.push(`${use.label} (${use.featName}) : de nouveau ${use.count > 1 ? `disponibles (${use.count})` : 'disponible'}`);
     }
     return lines;
 }
@@ -224,7 +231,8 @@ function longRestMessage(summary) {
             ? `${plural(summary.hitDiceRecovered, 'dé')} de vie ${agree(summary.hitDiceRecovered, 'récupéré')} (tous)`
             : 'dés de vie déjà au complet',
         summary.exhaustionBefore > 0 ? `épuisement ${summary.exhaustionBefore} → ${summary.exhaustionAfter}` : null,
-        'emplacements de sorts et ressources de classe récupérés',
+        `${listText(['emplacements de sorts', 'ressources de classe',
+            ...(summary.featUsesRestored ?? []).map(use => `${use.inText ?? use.label} (${use.featName})`)])} récupérés`,
         'jets contre la mort et bonus de combat remis à zéro'
     ].filter(Boolean);
     let message = `8 heures de repos, dont au moins 6 de sommeil. Effets : ${effects.join(', ')}.`;

@@ -18,6 +18,7 @@
 
 import { deriveCharacter, parseNumber } from './character.js';
 import { restFeatNotes } from './feat-effects.js';
+import { restFeatUses } from './feat-uses.js';
 
 export const DEATH_SAVE_KEYS = ['ds_s1', 'ds_s2', 'ds_s3', 'ds_f1', 'ds_f2', 'ds_f3'];
 
@@ -207,6 +208,10 @@ export function planShortRest(character, { diceSpent = 0, healing = 0, sorcerous
     }
     for (const i of toRestore) patch[`class_res_${i}`] = false;
 
+    // --- Dons à usages limités qui reviennent aussi au repos court (Tueur de mages) ---
+    const featUses = restFeatUses(character, d, 'short');
+    Object.assign(patch, featUses.patch);
+
     // --- Magie de pacte (Sorcier) : seuls les emplacements de pacte reviennent ---
     // Les niveaux de pacte sont ceux que donne la table du Sorcier (niveau 1 à 5) ; un
     // emplacement ajouté à la main sur un autre niveau (Arcanum mystique niv. 6-9,
@@ -234,6 +239,7 @@ export function planShortRest(character, { diceSpent = 0, healing = 0, sorcerous
             resourcesRestored: toRestore.length,
             pactSlotsRestored,
             slotRecovery: slotRecoveryFeature(character, d),
+            featUsesRestored: featUses.restored,
             featNotes: restFeatNotes(character, d),
             canStart: canStartRest(character)
         }
@@ -288,6 +294,10 @@ export function planLongRest(character) {
     for (const key of DEATH_SAVE_KEYS) patch[key] = false;
     patch.combat_buffs = {};
 
+    // Dons à usages limités : tous reviennent (Chanceux, Tueur de mages)
+    const featUses = restFeatUses(character, d, 'long');
+    Object.assign(patch, featUses.patch);
+
     return {
         patch,
         summary: {
@@ -300,6 +310,7 @@ export function planLongRest(character) {
             resourceLabel: d.classResource.label,
             resourcesRestored,
             heroicInspiration: /^(humain|human)$/i.test(String(character.char_species ?? '').replace(/<[^>]*>/g, '').trim()),
+            featUsesRestored: featUses.restored,
             featNotes: restFeatNotes(character, d),
             canStart: canStartRest(character)
         }

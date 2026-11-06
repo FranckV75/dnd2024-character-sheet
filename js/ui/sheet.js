@@ -16,6 +16,7 @@ import { FEAT_LEVELS } from '../state/schema.js';
 import { stripHTML } from '../state/migrate.js';
 import { deriveCharacter, featSlotState, hitDieForClass, exhaustionSeverity } from '../rules/character.js';
 import { featEffects, AUTOMATED_FEATS } from '../rules/feat-effects.js';
+import { featCounters, setFeatUsesPatch } from '../rules/feat-uses.js';
 import { sanitizeRich, sanitizeRulesText } from './sanitize.js';
 import { el, fillSelect, icon, signed } from './dom.js';
 import { applyLock, isLocked } from './lock.js';
@@ -371,7 +372,7 @@ const FEAT_WHEN = {
     planned: (level) => `Actif au niveau ${level}`
 };
 
-function renderFeats(root, character, d, effects) {
+function renderFeats(root, character, d, effects, counters) {
     for (const level of FEAT_LEVELS) {
         const slot = root.querySelector(`[data-feat-slot="${level}"]`);
         const state = featSlotState(level, d.level, character[`feat_${level}`]);
@@ -391,8 +392,70 @@ function renderFeats(root, character, d, effects) {
         if (feat) {
             box.innerHTML = sanitizeRulesText(`<strong>Prérequis :</strong> ${feat.prereq}<br>${feat.desc || '<em>Description à compléter.</em>'}`);
         }
-        renderFeatSheet(root.querySelector(`[data-feat-sheet="${level}"]`), state === 'active' && feat ? featId : '', level, effects);
+        const activeId = state === 'active' && feat ? featId : '';
+        renderFeatSheet(root.querySelector(`[data-feat-sheet="${level}"]`), activeId, level, effects,
+            // Don pris dans deux emplacements : ses cases (partagées) apparaissent dans les deux encadrés
+            counters.find(counter => counter.featId === activeId));
     }
+}
+
+// ---------------------------------------------------------------------------
+// Dons à usages limités : cases cochées = usages dépensés (js/rules/feat-uses.js)
+// Mêmes cases dans l'onglet Combat et dans l'encadré du don ; elles restent utilisables fiche
+// verrouillée (état de jeu, comme la ressource de classe) et se vident au repos.
+// ---------------------------------------------------------------------------
+
+/** Groupe de cases d'un don ; `where` distingue les deux endroits pour les identifiants */
+function counterGroup(counter, where) {
+    const id = `feat-counter-${where}-${counter.featId}`;
+    return el('div', { class: 'feat-counter', 'data-feat-counter': counter.featId, 'data-max': String(counter.max) },
+        el('span', { class: 'feat-counter-name', id: `${id}-name` },
+            el('span', { class: 'label accent', text: counter.label }),
+            el('small', { class: 'feat-counter-meta', text: `${counter.featName} · ${counter.resetText}` })),
+        el('div', { class: 'resource-slots', role: 'group', 'aria-labelledby': `${id}-name` },
+            Array.from({ length: counter.max }, (_, i) => el('input', {
+                type: 'checkbox', class: 'round-check', 'data-feat-use': counter.featId,
+                'aria-label': `${counter.label} : ${i + 1} sur ${counter.max} (cochée = dépensé)`
+            }))),
+        el('small', { class: 'feat-counter-use', text: counter.use }));
+}
+
+/** Coche les `used` premières cases de chaque compteur (sans reconstruire : le focus reste) */
+function syncCounterChecks(root, counters) {
+    for (const counter of counters) {
+        for (const group of root.querySelectorAll(`[data-feat-counter="${counter.featId}"]`)) {
+            group.querySelectorAll('input[data-feat-use]').forEach((box, i) => {
+                const checked = i < counter.used;
+                if (box.checked !== checked) box.checked = checked;
+            });
+        }
+    }
+}
+
+/** Bande « dons » de l'onglet Combat, masquée si aucun don atteint n'a de cases */
+function renderFeatCounters(root, counters) {
+    const box = root.querySelector('#feat-counters');
+    const signature = JSON.stringify(counters.map(({ featId, max, label }) => [featId, max, label]));
+    if (renderedSignatures.get(box) !== signature) {
+        renderedSignatures.set(box, signature);
+        box.replaceChildren(...counters.map(counter => counterGroup(counter, 'combat')));
+    }
+    box.hidden = counters.length === 0;
+}
+
+/** Une case touchée : nombre de cases cochées du groupe → feat_uses */
+function bindFeatCounters(root, store) {
+    root.addEventListener('change', (event) => {
+        const box = event.target.closest('input[data-feat-use]');
+        if (!box || !root.contains(box)) return;
+        const group = box.closest('[data-feat-counter]');
+        // Comme les emplacements de sorts : toucher la 3e case coche les 3 premières, décocher la 1re
+        // les vide toutes (les cases cochées sont toujours les premières)
+        const boxes = [...group.querySelectorAll('input[data-feat-use]')];
+        const index = boxes.indexOf(box);
+        const used = box.checked ? index + 1 : index;
+        store.update(setFeatUsesPatch(store.get(), box.dataset.featUse, used, Number(group.dataset.max)));
+    });
 }
 
 // ---------------------------------------------------------------------------
@@ -525,11 +588,12 @@ const FEAT_SHEET_ZONES = { guerisseur: ['healing'], mage_de_guerre: ['featSlot',
  * @param {number} level - niveau de l'emplacement
  * @param {Object} effects - featEffects()
  */
-function renderFeatSheet(box, featId, level, effects) {
+function renderFeatSheet(box, featId, level, effects, counter) {
     box.hidden = !featId;
     const zones = (FEAT_SHEET_ZONES[featId] ?? ['featSlot']).map(zone => (zone === 'featSlot' ? `featSlot:${level}` : zone));
     const notes = featId ? zones.flatMap(zone => effects[zone] ?? []).filter(note => note.featId === featId) : [];
-    const signature = JSON.stringify([featId, notes]);
+    // Les cases cochées ne reconstruisent pas l'encadré (syncCounterChecks) : seul leur nombre compte ici
+    const signature = JSON.stringify([featId, notes, counter ? [counter.max, counter.label] : null]);
     if (renderedSignatures.get(box) === signature) return;
     renderedSignatures.set(box, signature);
     if (!featId) {
@@ -537,7 +601,8 @@ function renderFeatSheet(box, featId, level, effects) {
         return;
     }
     const automated = AUTOMATED_FEATS.includes(featId) && notes.length > 0;
-    box.replaceChildren(
+    // replaceChildren écrirait « null » en toutes lettres : on ne lui passe que des nœuds
+    box.replaceChildren(...[
         el('span', { class: 'feat-sheet-title' }, icon('gear'), el('span', { text: 'Dans la fiche' })),
         automated
             ? el('ul', { class: 'feat-sheet-list' }, notes.map(note => {
@@ -545,7 +610,9 @@ function renderFeatSheet(box, featId, level, effects) {
                 return el('li', { 'data-kind': kind },
                     el('span', { class: 'feat-tag', text: tag }), el('span', { text: note.text }));
             }))
-            : el('p', { class: 'feat-sheet-none', text: 'Rappel seulement : la fiche ne calcule rien pour ce don, sa description ci-dessus fait foi.' }));
+            : el('p', { class: 'feat-sheet-none', text: 'Rappel seulement : la fiche ne calcule rien pour ce don, sa description ci-dessus fait foi.' }),
+        counter ? counterGroup(counter, `slot${level}`) : null
+    ].filter(Boolean));
 }
 
 /** Compétences maîtrisées (et expertes) mises en avant : la règle vient de deriveCharacter */
@@ -565,8 +632,11 @@ function render(root, character, replaced = false) {
         writeField(field, character[field.dataset.field], replaced);
     }
     const effects = featEffects(character, d);
+    const counters = featCounters(character, d);
     renderOutputs(root, character, d);
-    renderFeats(root, character, d, effects);
+    renderFeats(root, character, d, effects, counters);
+    renderFeatCounters(root, counters);
+    syncCounterChecks(root, counters);
     renderFeatMentions(root, effects);
     renderSkillRanks(root, d);
     applyLock(root);
@@ -589,6 +659,7 @@ export function createSheet(root, store) {
         rich.setAttribute('aria-keyshortcuts', 'Alt+F10');
     }
     bindFields(root, store);
+    bindFeatCounters(root, store);
     bindArmorClassBubble(root);
     // Mention d'un don (Initiative, PV max, CA, sauvegardes) : détail dans une fenêtre,
     // même fiche verrouillée (lecture seule)

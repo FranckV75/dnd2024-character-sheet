@@ -2,6 +2,16 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.4.0] - 2026-11-06 (Dons à usages limités)
+### Added
+- Dons à usages limités : des cases à cocher (cochée = usage dépensé) dans l'encadré du don et dans une
+  bande de l'onglet Combat, utilisables fiche verrouillée, vidées automatiquement au repos.
+  - Chanceux : points de Chance (autant que le bonus de maîtrise), récupérés au repos long.
+  - Tueur de mages : Esprit préservé (une fois), de nouveau disponible au repos court ou long ; rappel
+    « Briseur de concentration » dans le tableau des armes.
+- Les fenêtres de repos indiquent ce qui revient (« Esprit préservé : de nouveau disponible »).
+- Sauvegarde : nouvelle clé facultative « feat_uses » (anciennes fiches inchangées).
+
 ## [4.3.0] - 2026-11-05 (CA des armures calculée)
 ### Added
 - Armures et boucliers magiques : un engrenage par ligne règle le bonus magique (+1 à +3), compté dans
