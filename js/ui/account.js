@@ -80,7 +80,7 @@ const QUESTIONS = {
     conflict: ({ name, cloudUpdatedAt, localSavedAt, legacy }) => choose(legacy ? '⚠️ Modifié par l\'ancienne version de la fiche' : '⚔️ Deux versions différentes', [
         el('p', {
             text: legacy
-                ? `« ${name} » vient d'être enregistré en ligne par l'ancienne version de la fiche (un onglet ou un appareil resté ouvert depuis la mise à jour). Elle ne connaît pas les bonus de combat actifs ni les emplacements de sorts utilisés, et a pu remettre des valeurs plus anciennes.`
+                ? `« ${name} » vient d'être enregistré en ligne par l'ancienne version de la fiche (un onglet ou un appareil resté ouvert depuis la mise à jour). Elle ne connaît pas les bonus de combat actifs, les emplacements de sorts utilisés, ni les usages et les choix des dons, et a pu remettre des valeurs plus anciennes.`
                 : `« ${name} » a été modifié sur un autre appareil (ou dans un autre onglet), et aussi dans ce navigateur.`
         }),
         versionsList(cloudUpdatedAt, localSavedAt),

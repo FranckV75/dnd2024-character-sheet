@@ -30,8 +30,10 @@ import {
     spellLevelLabel, effectiveSpellClass, searchSpells, findSpellByName, spellToRow, rowLevel,
     isSpellRowEmpty, hasSpellContent, spellRowsView, nextSort, spellCounts,
     formatSpellCount, newSpellRow, slotView, toggleSlotUsed, adjustSlotMax, slotLevels,
-    nextFreeSlotLevel, spellcastingStatus, grimoireView
+    nextFreeSlotLevel, spellcastingStatus, grimoireView, spellDamageTypes
 } from '../rules/spells.js';
+import { adeptElements, elementWord } from '../rules/feat-choices.js';
+import { FEAT_LEVELS } from '../state/schema.js';
 import { loadSpells } from '../data/spells.js';
 import { el, icon, setIconLabel } from './dom.js';
 import { cellText as createCellText } from './cell-text.js';
@@ -42,7 +44,20 @@ import { isLocked } from './lock.js';
 const TOOLTIP_STORAGE_KEY = 'dd2024_spell_tooltips';
 /** Grimoire ouvert à la demande (personnage sans magie) : réglage du navigateur, pas de la fiche */
 const GRIMOIRE_STORAGE_KEY = 'dd2024_grimoire_open';
-const RELEVANT_KEYS = new Set(['dynamic_spells', 'spell_slots_state', 'spell_class_filter', 'char_class', 'char_subclass', 'char_level']);
+// Dons et leurs choix : repère « Adepte » (Adepte élémentaire) sur les sorts du type choisi
+const RELEVANT_KEYS = new Set(['dynamic_spells', 'spell_slots_state', 'spell_class_filter', 'char_class', 'char_subclass', 'char_level',
+    'feat_choices', ...FEAT_LEVELS.map(level => `feat_${level}`)]);
+
+/** « Adepte (feu) » : types d'Adepte élémentaire infligés par ce sort */
+function adeptTypes(spell, elements) {
+    return spell && elements.length ? spellDamageTypes(spell).filter(type => elements.includes(type)) : [];
+}
+
+/** Règle d'Adepte élémentaire pour ces types (infobulle et repère) */
+function adeptRule(types) {
+    const words = types.map(elementWord).join(', ');
+    return `Adepte élémentaire (${words}) : quand ce sort inflige des dégâts de ce type, il ignore la Résistance à ces dégâts et un 1 sur un dé de dégâts compte comme un 2.`;
+}
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const SORT_COLUMNS = {
     lvl: { label: 'Niv.', title: 'niveau' },
@@ -403,6 +418,8 @@ export function initSpells(ctx) {
 
         r.name = textInput('name');
         r.name.placeholder = 'Nom…';
+        // Repère « Adepte (feu) » : sort du type choisi avec Adepte élémentaire (writeRow)
+        r.adept = el('span', { class: 'spell-adept', hidden: true });
         r.texts = {};
         for (const [key] of TEXT_COLUMNS) r.texts[key] = textInput(key);
         r.note = textInput('note');
@@ -450,7 +467,7 @@ export function initSpells(ctx) {
         r.tr = el('tr', {},
             el('td', { class: 'col-prep' }, r.prep),
             el('td', { class: 'col-lvl' }, r.lvl),
-            el('td', { class: 'col-name' }, r.name),
+            el('td', { class: 'col-name' }, r.name, r.adept),
             el('td', { class: 'col-school' }, r.texts.school),
             el('td', { class: 'col-time' }, r.texts.time),
             el('td', { class: 'col-range' }, r.texts.range),
@@ -540,8 +557,13 @@ export function initSpells(ctx) {
      * @param {{ force: boolean, locked: boolean, entry: boolean, line: number }} options
      *        entry : ligne de saisie ; line : rang de la ligne dans le tableau affiché
      */
-    function writeRow(r, row, { force, locked, entry, line }) {
+    function writeRow(r, row, { force, locked, entry, line, elements = [] }) {
         const name = plainText(row.name);
+        const types = entry ? [] : adeptTypes(elements.length ? findSpellByName(spellsDb, row.name) : null, elements);
+        r.adept.hidden = types.length === 0;
+        const adeptText = types.length ? `Adepte (${types.map(elementWord).join(', ')})` : '';
+        if (r.adept.textContent !== adeptText) r.adept.textContent = adeptText;
+        if (types.length) r.adept.title = adeptRule(types);
         const level = rowLevel(row);
         const what = entry ? 'nouveau sort' : name ? `« ${name} »` : `ligne ${line}`;
         const prepared = row.prep === true;
@@ -631,11 +653,12 @@ export function initSpells(ctx) {
         const pinned = rowEls.filter(r => r !== entry && r.tr.contains(active)).map(r => r.index);
         const { order, shown, hasDraft } = spellRowsView(rows, { level: view.level, sort: view.sort, pinned });
         const lines = new Map(order.filter(i => shown.has(i)).map((i, rank) => [i, rank + 1]));
+        const elements = adeptElements(character);
 
         rowEls.forEach((r, i) => {
             const isEntry = r === entry;
             writeRow(r, isEntry ? newSpellRow(EMPTY_SPELL, entryLevel ?? view.level) : rows[i], {
-                force, locked, entry: isEntry, line: isEntry ? lines.size + 1 : lines.get(i) ?? i + 1
+                force, locked, entry: isEntry, line: isEntry ? lines.size + 1 : lines.get(i) ?? i + 1, elements
             });
             if (!isEntry) r.tr.hidden = !shown.has(i);
         });
@@ -816,7 +839,14 @@ export function initSpells(ctx) {
                 tags.length ? el('span', { class: 'spell-tooltip-tags', text: tags.join(' · ') }) : null),
             el('dl', { class: 'spell-tooltip-meta' }, meta.map(([label, value]) => el('div', {},
                 el('dt', { text: label }), el('dd', { text: String(value) })))),
-            el('p', { class: 'spell-tooltip-desc', text: descToPlainText(spell.desc) || 'Description non disponible.' }));
+            el('p', { class: 'spell-tooltip-desc', text: descToPlainText(spell.desc) || 'Description non disponible.' }),
+            ...adeptLine(spell));
+    }
+
+    /** Ligne Adepte élémentaire de l'infobulle (sort du type choisi) */
+    function adeptLine(spell) {
+        const types = adeptTypes(spell, adeptElements(store.get()));
+        return types.length ? [el('p', { class: 'spell-tooltip-adept', text: adeptRule(types) })] : [];
     }
 
     /**
@@ -943,5 +973,7 @@ export function initSpells(ctx) {
     loadSpells().then((list) => {
         spellsDb = Array.isArray(list) ? list : [];
         if (spellsDb.length === 0) setStatus('⚠️ Base de sorts indisponible : pas de suggestions ni d\'infobulles');
+        // Base chargée : les repères « Adepte » peuvent maintenant s'afficher
+        else if (adeptElements(store.get()).length) render(store.get(), ['dynamic_spells']);
     });
 }

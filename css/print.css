@@ -681,6 +681,11 @@ h1, h2, h3, h4 {
     display: none;
 }
 
+/* Compétences : les maîtrises dues aux dons sont déjà cochées sur la feuille ; la ligne garde sa hauteur */
+.skill-row .feat-mention {
+    display: none;
+}
+
 /* CA : quand une mention l'accompagne, le bouclier se resserre et la case garde ses 100 px */
 .ac-cell {
     gap: 1px;

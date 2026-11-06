@@ -116,8 +116,8 @@ export function isLegacyRowName(legacyName, name) {
     return Boolean(a) && Boolean(b) && a !== b && a.replace(/\s+/g, '') === b.replace(/\s+/g, '');
 }
 
-/** État de jeu propre à la v4 (bonus de combat, emplacements de sorts, usages des dons) : la v3 l'efface en enregistrant */
-export const V4_ONLY_KEYS = Object.freeze(['combat_buffs', 'spell_slots_state', 'feat_uses']);
+/** Clés propres à la v4 (bonus de combat, emplacements de sorts, usages et choix des dons) : la v3 les efface en enregistrant */
+export const V4_ONLY_KEYS = Object.freeze(['combat_buffs', 'spell_slots_state', 'feat_uses', 'feat_choices']);
 
 /**
  * Fiche sans l'état de jeu propre à la v4, pour comparer avec une version écrite par la v3.

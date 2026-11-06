@@ -628,6 +628,30 @@
     white-space: pre-line;
 }
 
+/* Adepte élémentaire (lot 3 des dons) : sort du type de dégâts choisi */
+.spell-tooltip-adept {
+    margin: 8px 0 0;
+    padding: 4px 8px;
+    border-left: 3px solid var(--gold);
+    background: var(--feat-invite-bg);
+    font-style: italic;
+}
+
+/* Repère « Adepte (feu) » sous le nom du sort : petit texte doré, la ligne reste basse */
+.spell-adept {
+    display: block;
+    padding: 0 4px 2px;
+    color: var(--accent-ink);
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.spell-adept[hidden] {
+    display: none;
+}
+
 /* Écrans tactiles : cibles d'au moins 44 px (zone de toucher agrandie, components.css) */
 @media (pointer: coarse) {
     .spell-tooltip-toggle {

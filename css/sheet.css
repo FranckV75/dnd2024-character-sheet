@@ -1332,6 +1332,83 @@ fieldset.inline-checks {
     color: var(--quiet-ink);
 }
 
+/* Choix d'un don (lot 3) : un libellé au-dessus de chaque menu, côte à côte quand il y a la place */
+.feat-choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 6px 12px;
+    margin: 6px 0 4px;
+}
+
+.feat-choice {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.feat-choice-label {
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--accent-ink);
+}
+
+.feat-choice select {
+    width: 100%;
+}
+
+/* « Force +1, Constitution +1 » : le menu prend toute la largeur pour être lu en entier */
+.feat-choice.is-wide {
+    grid-column: 1 / -1;
+    max-width: 420px;
+}
+
+/* Choix pas encore fait : liseré en pointillés, comme les notes « En attente » */
+.feat-choice select:has(option[value=""]:checked) {
+    border-style: dashed;
+}
+
+/* « À vérifier » : case due au don pas cochée, valeur au-delà de 20… (la fiche ne corrige rien) */
+.feat-sheet-list li[data-kind="check"] .feat-tag,
+.feat-notes .feat-tag[data-kind="check"] {
+    border-color: var(--warn);
+    color: var(--warn);
+}
+
+/* « Coché » : la case due au don est bien cochée */
+.feat-sheet-list li[data-kind="done"] .feat-tag,
+.feat-notes .feat-tag[data-kind="done"] {
+    color: var(--quiet-ink);
+}
+
+.feat-mention[data-check] {
+    border-color: var(--warn);
+}
+
+.feat-mention-check,
+.feat-mention-check .icon {
+    color: var(--warn);
+}
+
+/* Compétence : mention sur la même ligne que le nom, petite pour ne pas rehausser la ligne */
+.skill-row .feat-mention {
+    flex: 0 1 auto;
+    min-width: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0 6px;
+    margin: 0 4px;
+    padding: 0 6px;
+    font-size: 0.72rem;
+}
+
+/* Deux rangs si la ligne est étroite (tablette), sans couper un mot */
+.skill-row .feat-mention-line {
+    white-space: nowrap;
+}
+
 /* ---------- Dons : fenêtre de détail (toucher d'une mention) ---------- */
 
 .feat-notes-intro {
