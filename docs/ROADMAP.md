@@ -102,7 +102,7 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
   dégâts avec une arme Lourde), proposé seulement si le don est choisi à un niveau atteint.
 - Puis étape 6 (bascule).
 - Projet « dons actifs » (idée de Franck), classement et lots dans `docs/DONS_ACTIFS.md` ; lots 0 (données)
-  et 1 (gains rapides) ✅ faits le 04/11/2026. Point de départ : chaque don pertinent choisi dans Aptitudes & Traits,
+  et 1 (gains rapides) ✅ faits le 04/11/2026 ; lot 2 (compteurs : Chanceux, Tueur de mages) ✅ le 06/11/2026. Point de départ : chaque don pertinent choisi dans Aptitudes & Traits,
   à un niveau atteint, ajoute son effet de jeu, comme la Rage pour le Barbare. Cogneur lourd sert de modèle :
   le mécanisme est déjà générique (`FEAT_BUFFS` et `featBuffs` dans `js/rules/weapons.js`, bouton décrit
   dans `BUFF_DEFS` de `js/ui/weapons.js`, effet calculé dans `computeWeapon`).

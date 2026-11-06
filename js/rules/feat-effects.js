@@ -67,7 +67,9 @@ export const AUTOMATED_FEATS = Object.freeze([
     'vigilant', 'robuste', 'mage_de_guerre', 'maitre_des_armures_lourdes', 'maitre_des_armures_intermediaires',
     'maitre_des_boucliers',
     'expert_de_la_charge', 'maitre_des_armes_lourdes_cogneur_lourd', 'sauvagerie_martiale',
-    'sentinelle', 'trancheur', 'broyeur', 'empaleur_perforateur', 'musicien', 'guerisseur'
+    'sentinelle', 'trancheur', 'broyeur', 'empaleur_perforateur', 'musicien', 'guerisseur',
+    // Lot 2 : dons à usages limités (cases vidées au repos, js/rules/feat-uses.js)
+    'chanceux', 'tueur_de_mages'
 ]);
 
 const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
@@ -218,6 +220,18 @@ const FEAT_RULES = {
         add('rest', `Chant d'encouragement : à la fin du repos, jouez d'un instrument que vous maîtrisez pour donner l'Inspiration héroïque à au plus ${pb} alliés qui vous entendent.`,
             { value: pb });
         add('featSlot', `Rappel à la fin des repos : Inspiration héroïque pour au plus ${pb} alliés.`, { value: pb });
+    },
+
+    // Chanceux — PHB 2024 « Lucky », p. 201 : points de Chance = bonus de maîtrise, repos long
+    chanceux: ({ derived: { pb }, add }) => {
+        add('featSlot', `${pb} points de Chance à cocher (onglet Combat et ci-dessous), récupérés au repos long.`, { value: pb });
+    },
+
+    // Tueur de mages — PHB 2024 « Mage Slayer », p. 205 (l'augmentation de caractéristique reste saisie à la main)
+    tueur_de_mages: ({ add }) => {
+        add('featSlot', 'Esprit préservé : 1 case à cocher (onglet Combat et ci-dessous), de nouveau disponible au repos court ou long.', { value: 1 });
+        // Vaut pour tous les dégâts (armes et sorts) : rappel ici, pas sur une ligne d'arme
+        add('featSlot', 'Briseur de concentration : une créature en concentration à qui vous infligez des dégâts (arme ou sort) a le Désavantage à sa sauvegarde pour maintenir sa Concentration.');
     },
 
     // Guérisseur — PHB 2024 « Healer », p. 201 (« Battle Medic » : Médecin de combat)

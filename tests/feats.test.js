@@ -191,7 +191,7 @@ describe('featEffects : structure', () => {
     });
 
     test('don sans effet automatisé ou inconnu : aucune note', () => {
-        const effects = featEffects(fighter({ feat_1: 'chanceux', feat_4: 'texte libre' }));
+        const effects = featEffects(fighter({ feat_1: 'chef_cuisinier', feat_4: 'texte libre' }));
         assert.equal(Object.values(effects).flat().length, 0);
     });
 

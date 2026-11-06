@@ -115,9 +115,10 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   ils seront toujours affichés à travers DOMPurify.
 - Les clés inconnues sont conservées par la v4 : une fiche enregistrée par la v4 reste lisible par
   la v3, et inversement. Attention : la v3, elle, reconstruit la fiche à partir de sa page et perd en
-  enregistrant les clés qu'elle ne connaît pas (`combat_buffs`, `spell_slots_state`).
-- Clés propres à la v4 : `combat_buffs` (bonus de combat actifs) et `spell_slots_state` (emplacements
-  de sorts). En v3, cet état était gardé à part dans le navigateur (`combat_buffs`, `spell_slots`) :
+  enregistrant les clés qu'elle ne connaît pas (`combat_buffs`, `spell_slots_state`, `feat_uses`).
+- Clés propres à la v4 : `combat_buffs` (bonus de combat actifs), `spell_slots_state` (emplacements
+  de sorts) et `feat_uses` (usages dépensés des dons à cases, `{ idDuDon: nombre }`, facultative :
+  absente = rien de dépensé ; `js/rules/feat-uses.js`). En v3, cet état était gardé à part dans le navigateur (`combat_buffs`, `spell_slots`) :
   la v4 le reprend une fois, dans la fiche v3 du navigateur (`importV3DeviceState`).
 - Une fiche sans la clé `spell_slots_state` n'a jamais été enregistrée par la v4 (`isV3Save`) : la
   synchronisation ne charge jamais en silence une version en ligne écrite par la v3 (onglet resté

@@ -43,11 +43,11 @@ Dans la colonne « Pour qui », le mot entre parenthèses est l'intérêt du don
 
 | Don | Pour qui | Ce que la fiche ferait | Famille | Effort |
 |---|---|---|---|---|
-| Chanceux | Les 5 (fort) | Cases « Points de chance », autant que le bonus de maîtrise, vidées au repos long. | compteur | M |
+| Chanceux | Les 5 (fort) | Cases « Points de chance », autant que le bonus de maîtrise, vidées au repos long. ✅ lot 2 | compteur | M |
 | Amélioration de caractéristique | Les 5 (fort) | Affiche la répartition choisie (+2, ou +1/+1) sous le don et un repère près de la valeur, avec une alerte au-delà de 20. Les valeurs saisies ne sont pas modifiées. | choix | M |
 | Résilient | Korgul, Hedera, Fafnir (fort) ; Iria, Cephalus (moyen) | Ajoute la maîtrise du jet de sauvegarde choisi, et le bonus se recalcule. | choix | M |
 | Mobile | Korgul (fort) ; les 4 autres (moyen) | Version simple (S) : mention « +3 m (Mobile) » à côté de la Vitesse. Version complète (M) : la fiche calcule la vitesse. | calcul | M |
-| Tueur de mages | Korgul (fort) ; Iria (moyen) | Case « Esprit préservé » près des sauvegardes Int/Sag/Cha, vidée aux repos court et long. | compteur | M |
+| Tueur de mages | Korgul (fort) ; Iria (moyen) | Case « Esprit préservé » (bande Combat et encadré du don), vidée aux repos court et long. ✅ lot 2 | compteur | M |
 | Figure de proue | Hedera, Iria, Cephalus (fort) | Affiche les PV temporaires donnés (niveau + modificateur) et une case dans la fenêtre de repos pour se les appliquer. Un seul porteur suffit au groupe. | calcul | M |
 | Observateur | Hedera (fort) ; Fafnir (moyen) | Maîtrise (ou Expertise) d'Intuition, Investigation ou Perception. La perception passive se recalcule. | choix | M |
 | Défense (style) | Iria (fort, si elle a pris un style) | +1 à la CA en armure. Pose aussi le socle des styles : une liste « Style de combat » sur la fiche. | calcul | M |
@@ -230,7 +230,7 @@ et `js/rules/feat-effects.js` ; la fiche ne modifie jamais une valeur saisie («
 |---|---|---|
 | 0 — Données ✅ | Corriger les champs « asi », les textes, la Coutille, et rédiger les descriptions des faveurs. | Rapide, visible tout de suite, sans risque pour les sauvegardes. |
 | 1 — Gains rapides ✅ | Socle « dons atteints », puis Vigilant, Mage de guerre (avec une note sur les jets de sauvegarde), Robuste, Maître des armures lourdes, Maître des boucliers, Expert de la charge, Cogneur lourd (Abattage), et les rappels (Sauvagerie martiale, Sentinelle, Trancheur, Broyeur, Perforateur, Musicien, Guérisseur). | Le plus de bénéfice pour le moins d'effort. |
-| 2 — Compteurs | Socle « cases vidées au repos », puis Chanceux, Tueur de mages. | Chanceux est fort pour les 5. |
+| 2 — Compteurs ✅ | Socle « cases vidées au repos », puis Chanceux, Tueur de mages. | Chanceux est fort pour les 5. |
 | 3 — Choix | Socle « choix mémorisés », puis Amélioration de caractéristique, Résilient, Observateur, Expert, Esprit affûté, Doué, Adepte élémentaire. | Les dons les plus souvent pris aux niveaux 4 et 8. |
 | 4 — Styles de combat | Socle « Style de combat », puis Défense, Duel et les rappels de styles. | Dépend de la réponse sur Iria ; à avancer si elle a un style. |
 | 5 — Vitesse, PV temporaires, armures | Mobile, Figure de proue, Chef cuisinier, Gaillard, Duelliste défensif, Protection légère et intermédiaire, Maître d'hast, Télékinésiste, Incantateur d'élite, Empoisonneur. | Effort M, intérêt moyen à fort. |

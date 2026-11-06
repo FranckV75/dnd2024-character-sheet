@@ -841,6 +841,66 @@ fieldset.inline-checks {
     gap: 4px;
 }
 
+/* ---------- Dons à usages limités (Chanceux, Tueur de mages) : js/ui/sheet.js ---------- */
+.vitals-2 > .feat-counters {
+    grid-column: 1 / -1;
+}
+
+.feat-counters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 32px;
+    padding: 10px 16px;
+    border: 2px solid var(--accent);
+}
+
+.feat-counters[hidden] {
+    display: none;
+}
+
+.feat-counter {
+    flex: 1 1 260px;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-areas:
+        "name slots"
+        "use use";
+    align-items: center;
+    justify-content: start;
+    gap: 2px 14px;
+    min-width: 0;
+}
+
+.feat-counter-name {
+    grid-area: name;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.feat-counter .resource-slots {
+    grid-area: slots;
+    justify-content: flex-start;
+}
+
+.feat-counter-meta,
+.feat-counter-use {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.feat-counter-use {
+    grid-area: use;
+    font-style: italic;
+}
+
+/* Dans l'encadré « Dans la fiche » du don */
+.feat-sheet .feat-counter {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border-soft);
+}
+
 .inline-checks {
     display: flex;
     flex-wrap: wrap;
