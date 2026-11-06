@@ -9,7 +9,7 @@
 // gérés par leurs propres modules (js/ui/weapons.js, armors.js, spells.js...).
 // =============================================================================
 
-import { ABILITIES, SKILLS_BY_STAT } from '../data/constants.js';
+import { ABILITIES, SKILLS, SKILLS_BY_STAT } from '../data/constants.js';
 import { DD_RULES } from '../data/dd-rules.js';
 import { FEATS_DATA } from '../data/feats.js';
 import { FEAT_LEVELS } from '../state/schema.js';
@@ -17,6 +17,8 @@ import { stripHTML } from '../state/migrate.js';
 import { deriveCharacter, featSlotState, hitDieForClass, exhaustionSeverity } from '../rules/character.js';
 import { featEffects, AUTOMATED_FEATS } from '../rules/feat-effects.js';
 import { featCounters, setFeatUsesPatch } from '../rules/feat-uses.js';
+import { FEAT_CHOICE_RULES, slotChoice, setFeatChoicePatch } from '../rules/feat-choices.js';
+import { featName } from '../rules/feats.js';
 import { sanitizeRich, sanitizeRulesText } from './sanitize.js';
 import { el, fillSelect, icon, signed } from './dom.js';
 import { applyLock, isLocked } from './lock.js';
@@ -41,6 +43,9 @@ function buildAbilities(root) {
             inputmode: 'numeric', autocomplete: 'off'
         }),
         el('output', { class: 'mod', 'data-out': `mod:${a.id}` }),
+        // Augmentation due à un don à choix (Amélioration de caractéristique, Résilient…) : repère
+        // seulement, la valeur saisie n'est jamais modifiée (renderFeatMentions)
+        el('button', { type: 'button', class: 'feat-mention', 'data-feat-zone': `scores.${a.id}`, hidden: true }),
         el('div', { class: 'save' },
             el('input', {
                 type: 'checkbox', class: 'round-check', 'data-field': `${a.id}_save_prof`,
@@ -74,6 +79,8 @@ function buildSkills(root) {
                     'aria-label': `Expertise : ${skill.name}`
                 }),
                 el('span', { class: 'skill-name', text: skill.name }),
+                // Maîtrise ou Expertise due à un don (Observateur, Expert, Doué…) : renderFeatMentions
+                el('button', { type: 'button', class: 'feat-mention skill-mention', 'data-feat-zone': `skills.${skill.id}`, hidden: true }),
                 el('output', { class: 'skill-bonus', 'data-out': `skill:${skill.id}` })))
         ), extra);
     }
@@ -395,7 +402,7 @@ function renderFeats(root, character, d, effects, counters) {
         const activeId = state === 'active' && feat ? featId : '';
         renderFeatSheet(root.querySelector(`[data-feat-sheet="${level}"]`), activeId, level, effects,
             // Don pris dans deux emplacements : ses cases (partagées) apparaissent dans les deux encadrés
-            counters.find(counter => counter.featId === activeId));
+            counters.find(counter => counter.featId === activeId), character);
     }
 }
 
@@ -479,7 +486,10 @@ const MENTION_LABELS = {
     saves: (note) => ({
         mage_de_guerre: 'Avantage Concentration',
         maitre_des_boucliers: 'Interposition'
-    })[note.featId] ?? note.featName
+    })[note.featId] ?? note.featName,
+    // Augmentation d'un don à choix : « +2 don niv. 4 » (la valeur saisie n'est pas modifiée)
+    scores: (note) => `+${note.value}\u00a0don niv.\u00a0${note.slot}`,
+    skills: (note) => note.featName
 };
 
 /** Titre de la fenêtre de détail d'une zone */
@@ -487,7 +497,10 @@ function zoneTitle(zone) {
     if (zone === 'initiative') return 'Initiative';
     if (zone === 'hpMax') return 'Points de vie maximum';
     if (zone === 'armorClass') return "Classe d'armure";
-    const name = ABILITIES.find(a => `saves.${a.id}` === zone)?.name ?? '';
+    const [family, id] = zone.split('.');
+    if (family === 'skills') return `Compétence : ${SKILLS.find(skill => skill.id === id)?.name ?? id}`;
+    const name = ABILITIES.find(a => a.id === id)?.name ?? '';
+    if (family === 'scores') return name;
     return `Jet de sauvegarde ${/^[AEIOUÉ]/.test(name) ? "d'" : 'de '}${name}`;
 }
 
@@ -504,9 +517,11 @@ function zoneMentions(zone, notes) {
     const byFeat = new Map();
     for (const note of notes) {
         if (note.inactive) continue;
+        // Un don répétable pris deux fois (Amélioration de caractéristique) : une mention par emplacement
+        const key = `${note.featId}:${note.slot ?? ''}`;
         // La note chiffrée de chaque don donne la mention (« dont +8 », « DD 13 »)
-        const kept = byFeat.get(note.featId);
-        if (!kept || (kept.value === undefined && note.value !== undefined)) byFeat.set(note.featId, note);
+        const kept = byFeat.get(key);
+        if (!kept || (kept.value === undefined && note.value !== undefined)) byFeat.set(key, note);
     }
     return [...byFeat.values()].map(note => label(note));
 }
@@ -514,10 +529,12 @@ function zoneMentions(zone, notes) {
 /** Liste des notes de dons (fenêtre de détail) */
 function featNotesList(notes) {
     return el('ul', { class: 'feat-notes' }, notes.map(note => el('li', { class: note.inactive ? 'is-inactive' : null },
-        el('strong', { class: 'feat-notes-name', text: note.featName }),
+        el('strong', { class: 'feat-notes-name', text: note.slot ? `${note.featName} (niv. ${note.slot})` : note.featName }),
         el('span', { text: note.text }),
         note.applied ? el('span', { class: 'feat-tag', text: 'Déjà compté' }) : null,
-        note.manual ? el('span', { class: 'feat-tag', 'data-kind': 'manual', text: 'À reporter' }) : null)));
+        note.manual ? el('span', { class: 'feat-tag', 'data-kind': 'manual', text: 'À reporter' }) : null,
+        note.check ? el('span', { class: 'feat-tag', 'data-kind': 'check', text: 'À vérifier' }) : null,
+        note.ticked ? el('span', { class: 'feat-tag', 'data-kind': 'done', text: 'Coché' }) : null)));
 }
 
 /** Notes affichées par chaque bouton de mention (lues au toucher) */
@@ -547,17 +564,21 @@ function renderFeatMentions(root, effects) {
         const zone = button.dataset.featZone;
         const notes = zoneNotes(effects, zone);
         const labels = zoneMentions(zone, notes);
-        const signature = JSON.stringify([labels, notes.map(note => note.text)]);
+        // Case due à un don pas cochée, valeur au-delà de 20… : la mention le signale (« À vérifier »)
+        const check = notes.some(note => note.check && !note.inactive);
+        const signature = JSON.stringify([labels, check, notes.map(note => note.text)]);
         if (renderedSignatures.get(button) === signature) continue;
         renderedSignatures.set(button, signature);
         mentionNotes.set(button, notes);
 
         button.hidden = labels.length === 0;
+        button.toggleAttribute('data-check', check);
         button.replaceChildren(...labels.map(label => el('span', { class: 'feat-mention-line' },
-            icon('star'), el('span', { text: label }))));
+            icon('star'), el('span', { text: label }))),
+        ...(check ? [el('span', { class: 'feat-mention-line feat-mention-check' }, icon('warning'), el('span', { text: 'À vérifier' }))] : []));
         button.title = notes.map(note => `${note.featName} : ${note.text}`).join('\n');
         button.setAttribute('aria-haspopup', 'dialog');
-        button.setAttribute('aria-label', `${labels.join(', ')} : détail des dons (${zoneTitle(zone)})`);
+        button.setAttribute('aria-label', `${labels.join(', ')}${check ? ', à vérifier' : ''} : détail des dons (${zoneTitle(zone)})`);
     }
 }
 
@@ -568,7 +589,9 @@ function renderFeatMentions(root, effects) {
  */
 function noteKind(note) {
     if (note.inactive) return ['waiting', 'En attente'];
+    if (note.check) return ['check', 'À vérifier'];
     if (note.manual) return ['manual', 'À reporter'];
+    if (note.ticked) return ['done', 'Coché'];
     if (note.applied || note.value !== undefined) return ['calc', 'Calculé'];
     return ['reminder', 'Rappel'];
 }
@@ -581,38 +604,102 @@ function noteKind(note) {
 const FEAT_SHEET_ZONES = { guerisseur: ['healing'], mage_de_guerre: ['featSlot', 'spells'] };
 
 /**
- * Encadré « Dans la fiche » sous la description d'un don actif : ce que la fiche calcule
- * ou rappelle pour ce don, ou « rappel seulement » si elle ne l'applique pas.
+ * Menus des choix d'un don (lot 3, js/rules/feat-choices.js) : caractéristique, compétence, type
+ * de dégâts… Ils ne cochent rien et ne changent aucune valeur saisie ; fiche verrouillée, ils
+ * restent lisibles mais ne se modifient plus (data-build-control, lock.js).
+ * @returns {HTMLElement|null} null si le don n'a rien à choisir
+ */
+function choiceControls(featId, level) {
+    const rule = Object.hasOwn(FEAT_CHOICE_RULES, featId) ? FEAT_CHOICE_RULES[featId] : null;
+    if (!rule) return null;
+    const option = ([value, text]) => el('option', { value, text });
+    return el('div', {
+        class: 'feat-choices', role: 'group', 'aria-label': `Choix du don ${featName(featId)} (niveau ${level})`,
+        'data-feat-choice-slot': String(level), 'data-feat-choice-feat': featId
+    },
+        rule.fields.map(field => {
+            const id = `feat-choice-${level}-${field.key}`;
+            const options = field.groups
+                ? field.groups.map(([label, from, to]) => el('optgroup', { label }, field.options.slice(from, to).map(option)))
+                : field.options.map(option);
+            return el('div', { class: field.wide ? 'feat-choice is-wide' : 'feat-choice' },
+                el('label', { class: 'feat-choice-label', for: id, text: field.label }),
+                el('select', { id, class: 'input', 'data-feat-choice': field.key, 'data-build-control': 'true' },
+                    el('option', { value: '', text: '— Choisir —' }), options));
+        }));
+}
+
+/** Menus remis sur les choix enregistrés (sans reconstruire : le focus reste) */
+function syncChoices(container, choice) {
+    for (const select of container.querySelectorAll('select[data-feat-choice]')) {
+        const value = choice[select.dataset.featChoice] ?? '';
+        if (select.value !== value) select.value = value;
+    }
+}
+
+/** Un choix modifié : enregistré dans feat_choices (rien d'autre ne change) */
+function bindFeatChoices(root, store) {
+    root.addEventListener('change', (event) => {
+        const select = event.target.closest('select[data-feat-choice]');
+        if (!select || !root.contains(select) || isLocked()) return;
+        const group = select.closest('[data-feat-choice-slot]');
+        const patch = setFeatChoicePatch(store.get(), group.dataset.featChoiceSlot, group.dataset.featChoiceFeat,
+            select.dataset.featChoice, select.value);
+        if (Object.keys(patch).length) store.update(patch);
+    });
+}
+
+/** Parties de l'encadré déjà construites : { structure, choices, list, notesSignature } */
+const featSheetParts = new WeakMap();
+
+/**
+ * Encadré « Dans la fiche » sous la description d'un don actif : les choix du don (lot 3), puis ce
+ * que la fiche calcule ou rappelle pour ce don, ou « rappel seulement » si elle ne l'applique pas.
+ * Les menus de choix et les cases du don ne sont reconstruits que si le don change (le focus reste).
  * @param {HTMLElement} box
  * @param {string} featId - don actif de l'emplacement ('' : encadré masqué)
  * @param {number} level - niveau de l'emplacement
  * @param {Object} effects - featEffects()
+ * @param {Object} [counter] - compteur du don (featCounters)
+ * @param {Object} character
  */
-function renderFeatSheet(box, featId, level, effects, counter) {
+function renderFeatSheet(box, featId, level, effects, counter, character) {
     box.hidden = !featId;
     const zones = (FEAT_SHEET_ZONES[featId] ?? ['featSlot']).map(zone => (zone === 'featSlot' ? `featSlot:${level}` : zone));
     const notes = featId ? zones.flatMap(zone => effects[zone] ?? []).filter(note => note.featId === featId) : [];
     // Les cases cochées ne reconstruisent pas l'encadré (syncCounterChecks) : seul leur nombre compte ici
-    const signature = JSON.stringify([featId, notes, counter ? [counter.max, counter.label] : null]);
-    if (renderedSignatures.get(box) === signature) return;
-    renderedSignatures.set(box, signature);
-    if (!featId) {
-        box.replaceChildren();
-        return;
+    const structure = JSON.stringify([featId, counter ? [counter.max, counter.label] : null]);
+    let parts = featSheetParts.get(box);
+    if (!parts || parts.structure !== structure) {
+        parts = { structure, choices: null, list: null, notesSignature: null };
+        featSheetParts.set(box, parts);
+        if (!featId) {
+            box.replaceChildren();
+            return;
+        }
+        parts.choices = choiceControls(featId, level);
+        parts.list = el('div', { class: 'feat-sheet-body' });
+        // replaceChildren écrirait « null » en toutes lettres : on ne lui passe que des nœuds
+        box.replaceChildren(...[
+            el('span', { class: 'feat-sheet-title' }, icon('gear'), el('span', { text: 'Dans la fiche' })),
+            parts.choices,
+            parts.list,
+            counter ? counterGroup(counter, `slot${level}`) : null
+        ].filter(Boolean));
     }
+    if (!featId) return;
+    if (parts.choices) syncChoices(parts.choices, slotChoice(character, level, featId));
+    const notesSignature = JSON.stringify(notes);
+    if (parts.notesSignature === notesSignature) return;
+    parts.notesSignature = notesSignature;
     const automated = AUTOMATED_FEATS.includes(featId) && notes.length > 0;
-    // replaceChildren écrirait « null » en toutes lettres : on ne lui passe que des nœuds
-    box.replaceChildren(...[
-        el('span', { class: 'feat-sheet-title' }, icon('gear'), el('span', { text: 'Dans la fiche' })),
-        automated
-            ? el('ul', { class: 'feat-sheet-list' }, notes.map(note => {
-                const [kind, tag] = noteKind(note);
-                return el('li', { 'data-kind': kind },
-                    el('span', { class: 'feat-tag', text: tag }), el('span', { text: note.text }));
-            }))
-            : el('p', { class: 'feat-sheet-none', text: 'Rappel seulement : la fiche ne calcule rien pour ce don, sa description ci-dessus fait foi.' }),
-        counter ? counterGroup(counter, `slot${level}`) : null
-    ].filter(Boolean));
+    parts.list.replaceChildren(automated
+        ? el('ul', { class: 'feat-sheet-list' }, notes.map(note => {
+            const [kind, tag] = noteKind(note);
+            return el('li', { 'data-kind': kind },
+                el('span', { class: 'feat-tag', text: tag }), el('span', { text: note.text }));
+        }))
+        : el('p', { class: 'feat-sheet-none', text: 'Rappel seulement : la fiche ne calcule rien pour ce don, sa description ci-dessus fait foi.' }));
 }
 
 /** Compétences maîtrisées (et expertes) mises en avant : la règle vient de deriveCharacter */
@@ -660,6 +747,7 @@ export function createSheet(root, store) {
     }
     bindFields(root, store);
     bindFeatCounters(root, store);
+    bindFeatChoices(root, store);
     bindArmorClassBubble(root);
     // Mention d'un don (Initiative, PV max, CA, sauvegardes) : détail dans une fenêtre,
     // même fiche verrouillée (lecture seule)

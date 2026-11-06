@@ -2,6 +2,23 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.5.0] - 2026-11-06 (Dons à choix mémorisés)
+### Added
+- Dons à choix : sous le don, des menus retiennent ce que vous avez choisi. La fiche ne change jamais
+  une valeur saisie ni une case cochée : elle affiche des repères et signale ce qui reste à faire
+  (« À vérifier »).
+  - Amélioration de caractéristique (+2 à une, ou +1 à deux), Résilient, Observateur, Expert, Esprit
+    affûté, Doué, Adepte élémentaire.
+  - Repère « +2 don niv. 4 » près de la valeur de caractéristique, alerte au-delà de 20.
+  - Repère près du jet de sauvegarde (Résilient) et des compétences (Observateur, Expert, Esprit
+    affûté, Doué) ; « À vérifier » si la case due au don n'est pas cochée.
+  - Adepte élémentaire : repère « Adepte (feu) » sur les sorts de ce type dans le grimoire, et la règle
+    dans l'infobulle du sort.
+- Sauvegarde : nouvelle clé facultative « feat_choices » (anciennes fiches inchangées).
+### Changed
+- Fenêtre « Modifié par l'ancienne version » : elle cite aussi les usages et les choix des dons, que
+  l'ancienne version ne connaît pas.
+
 ## [4.4.0] - 2026-11-06 (Dons à usages limités)
 ### Added
 - Dons à usages limités : des cases à cocher (cochée = usage dépensé) dans l'encadré du don et dans une

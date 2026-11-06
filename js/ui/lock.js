@@ -57,6 +57,8 @@ export function applyLock(root = document) {
         } else if (field.tagName === 'SELECT' || field.type === 'checkbox' || field.type === 'radio') field.disabled = frozen;
         else field.readOnly = frozen;
     }
+    // Menus de construction sans clé directe dans la sauvegarde (choix des dons, js/ui/sheet.js)
+    for (const control of root.querySelectorAll('[data-build-control]')) control.disabled = locked;
 }
 
 /**
