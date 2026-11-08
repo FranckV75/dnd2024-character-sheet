@@ -19,6 +19,7 @@
 import { deriveCharacter, parseNumber } from './character.js';
 import { restFeatNotes } from './feat-effects.js';
 import { restFeatUses } from './feat-uses.js';
+import { restFeatSpellUses } from './feat-spells.js';
 
 export const DEATH_SAVE_KEYS = ['ds_s1', 'ds_s2', 'ds_s3', 'ds_f1', 'ds_f2', 'ds_f3'];
 
@@ -294,8 +295,11 @@ export function planLongRest(character) {
     for (const key of DEATH_SAVE_KEYS) patch[key] = false;
     patch.combat_buffs = {};
 
-    // Dons à usages limités : tous reviennent (Chanceux, Tueur de mages)
-    const featUses = restFeatUses(character, d, 'long');
+    // Dons à usages limités : tous reviennent (Chanceux, Tueur de mages, Rituel rapide), puis les
+    // lancers gratuits des sorts de dons (lus sur la fiche déjà mise à jour : même clé feat_uses)
+    const counters = restFeatUses(character, d, 'long');
+    const spellUses = restFeatSpellUses({ ...character, ...counters.patch }, d);
+    const featUses = { patch: { ...counters.patch, ...spellUses.patch }, restored: [...counters.restored, ...spellUses.restored] };
     Object.assign(patch, featUses.patch);
 
     return {

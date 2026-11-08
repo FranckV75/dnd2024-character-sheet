@@ -2,6 +2,24 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.7.0] - 2026-11-08 (Sorts de dons)
+### Added
+- Six dons qui donnent des sorts, avec leurs choix sous le don (onglet Aptitudes & Traits) : Initié à la
+  magie (liste Clerc, Druide ou Magicien, puis 2 sorts mineurs et 1 sort de niveau 1 de cette liste ;
+  répétable), Affinité féerique, Affinité ombreuse, Magie rituelle (un sort rituel de plus aux niveaux
+  5, 9, 13 et 17), Télépathe, Télékinésiste.
+- Onglet Magie : bloc « Sorts de dons » au-dessus du grimoire. Chaque don donne sa caractéristique, son
+  DD et son bonus d'attaque ; un rond « Lancer gratuit » se coche quand le sort est utilisé (même feuille
+  verrouillée) et se vide au repos long. Toucher le nom d'un sort ouvre sa fiche. Ces sorts ne sont
+  jamais ajoutés à la liste du joueur.
+- Magie rituelle : compteur « Rituel rapide » (1 fois par repos long).
+- Avertissements : même liste prise deux fois avec Initié à la magie, sort mineur ou rituel en double.
+### Fixed
+- Le bandeau doré de la 4.6.1 mettait aussi en gras doré les menus de choix sous les dons : seul le
+  titre du don est doré.
+### Changed
+- Format de sauvegarde inchangé : les choix vont dans feat_choices, les lancers gratuits dans feat_uses.
+
 ## [4.6.1] - 2026-11-08 (Titres des dons)
 ### Changed
 - Aptitudes & Traits : chaque don actif (choisi, niveau atteint) ressort comme un en-tête de chapitre :

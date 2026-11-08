@@ -798,3 +798,198 @@
         display: none;
     }
 }
+
+/* ---------- Sorts de dons (lot 6, js/rules/feat-spells.js) ----------
+   Bloc calculé au-dessus du tableau : un groupe par don (nom, emplacement, DD et attaque de la
+   caractéristique du don), ses sorts (nom qui ouvre l'infobulle, niveau, case « lancer gratuit »)
+   et ses capacités (poussée télékinésique, parole télépathique, Rituel rapide). */
+
+.feat-spells {
+    margin-bottom: 10px;
+    padding: 8px 10px;
+    border: 1px solid var(--gold-soft);
+    border-left: 3px solid var(--gold);
+    border-radius: 6px;
+    background: var(--input-bg);
+}
+
+.feat-spells[hidden] {
+    display: none;
+}
+
+/* .box .feat-spells-title : plus fort que le titre h4 des encadrés (.box h4, sheet.css), sans
+   son losange (l'étoile en tient lieu) */
+.box .feat-spells-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-family: var(--font-title);
+    font-size: 0.85rem;
+    color: var(--accent-ink);
+}
+
+.box .feat-spells-title::before {
+    content: none;
+}
+
+.feat-spells-title .icon {
+    width: 14px;
+    height: 14px;
+    color: var(--gold);
+}
+
+.feat-spells-intro {
+    margin: 2px 0 6px;
+    font-size: 0.85rem;
+    font-style: italic;
+    color: var(--quiet-ink);
+}
+
+.feat-spells-group + .feat-spells-group {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border-soft);
+}
+
+.feat-spells-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 10px;
+}
+
+.feat-spells-name {
+    font-family: var(--font-title);
+    font-size: 0.95rem;
+    color: var(--feat-title-ink);
+}
+
+.feat-spells-slot {
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--quiet-ink);
+}
+
+.feat-spells-stats {
+    font-weight: 700;
+    color: var(--accent-ink);
+}
+
+.feat-spells-stats.is-missing {
+    font-weight: 400;
+    font-style: italic;
+    color: var(--quiet-ink);
+}
+
+.feat-spells-list {
+    display: grid;
+    gap: 4px;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.feat-spell {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 14px;
+}
+
+.feat-spell-head {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 8px;
+}
+
+/* Nom : bouton (infobulle au survol, au focus et au toucher) qui se lit comme un nom de sort */
+.feat-spell-name {
+    min-height: 32px;
+    padding: 2px 0;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    font-weight: 700;
+    text-align: left;
+    text-decoration: underline dotted var(--gold-soft);
+    text-underline-offset: 3px;
+    cursor: help;
+}
+
+.feat-spell-level,
+.feat-spell-tag {
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--quiet-ink);
+}
+
+.feat-spell-tag {
+    padding: 0 5px;
+    border: 1px solid var(--gold-soft);
+    border-radius: 8px;
+}
+
+.feat-spell-free {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    /* Texte courant, pas l'étiquette en capitales des champs (label, sheet.css) */
+    font-family: var(--font-text);
+    font-size: 0.88rem;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--accent-ink);
+    cursor: pointer;
+}
+
+.feat-spell-note {
+    flex-basis: 100%;
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--quiet-ink);
+}
+
+.feat-spells-extra,
+.feat-spells-missing,
+.feat-spells-warning {
+    margin: 4px 0 0;
+    font-size: 0.88rem;
+}
+
+.feat-spells-missing {
+    font-style: italic;
+    color: var(--quiet-ink);
+}
+
+.feat-spells-warning {
+    color: var(--ko);
+}
+
+@media (pointer: coarse) {
+    .feat-spell-name,
+    .feat-spell-free {
+        min-height: 44px;
+    }
+}
+
+@media print {
+    .feat-spells {
+        border: 0;
+        padding: 0;
+        background: none;
+    }
+
+    .feat-spell-name {
+        min-height: 0;
+        text-decoration: none;
+    }
+}

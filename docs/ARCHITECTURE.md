@@ -29,6 +29,7 @@ js/
 │   │                   destins héroïques, emplacements de sorts, armes
 │   ├── equipment.js    Armures
 │   ├── feats.js        Dons (Origine, Général, Style de combat, Épique)
+│   ├── feat-spells.js  Sorts permis par les dons à sorts (tirés de data/spells.json, testés)
 │   └── spells.js       Chargement à la demande de data/spells.json
 ├── rules/              Règles D&D 2024 : fonctions pures, testées
 │   ├── logic.js        Calculs élémentaires (modificateurs, maîtrise, armes, ressources)
@@ -36,6 +37,9 @@ js/
 │   ├── weapons.js      Tableau des armes (filtres, bonus de combat, configuration)
 │   ├── armors.js       Armures (CA, bouclier, armure équipée)
 │   ├── spells.js       Grimoire (recherche, tri, filtres, emplacements de sorts)
+│   ├── feats.js · feat-effects.js · feat-uses.js · feat-choices.js
+│   │                   Dons : emplacements atteints, effets, usages dépensés, choix mémorisés
+│   ├── feat-spells.js  Sorts donnés par un don (lot 6) : DD du don, lancers gratuits
 │   ├── rest.js         Repos court et repos long
 │   └── gallery.js      Réglages d'apparence (validation des fonds, _visual_prefs)
 ├── cloud/              Sauvegarde en ligne (Supabase, même table que la v3)
@@ -126,7 +130,10 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
 - Clés propres à la v4 : `combat_buffs` (bonus de combat actifs), `spell_slots_state` (emplacements
   de sorts) et `feat_uses` (usages dépensés des dons à cases, `{ idDuDon: nombre }`, facultative :
   absente = rien de dépensé ; `js/rules/feat-uses.js`) et `feat_choices` (choix des dons : caractéristique,
-  compétence, type de dégâts, `{ "niveau": { idDuDon: { champ: valeur } } }`, facultative ; `js/rules/feat-choices.js`). En v3, cet état était gardé à part dans le navigateur (`combat_buffs`, `spell_slots`) :
+  compétence, type de dégâts, sorts choisis par leur nom anglais, `{ "niveau": { idDuDon: { champ: valeur } } }`,
+  facultative ; `js/rules/feat-choices.js`). Les lancers gratuits des sorts de dons sont dans `feat_uses`, sous
+  des clés `"idDuDon@niveau:partie"` (0 ou 1 ; `js/rules/feat-spells.js`) ; la fiche n'écrit jamais ces sorts
+  dans `dynamic_spells`. En v3, cet état était gardé à part dans le navigateur (`combat_buffs`, `spell_slots`) :
   la v4 le reprend une fois, dans la fiche v3 du navigateur (`importV3DeviceState`).
 - Une fiche sans la clé `spell_slots_state` n'a jamais été enregistrée par la v4 (`isV3Save`) : la
   synchronisation ne charge jamais en silence une version en ligne écrite par la v3 (onglet resté

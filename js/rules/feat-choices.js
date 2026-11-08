@@ -26,11 +26,28 @@
 //  - Adepte élémentaire (« Elemental Adept », p. 203) : +1 Int, Sag ou Cha ; Acide, Froid, Feu,
 //    Foudre ou Tonnerre : les sorts ignorent la Résistance à ce type, et les 1 des dés de dégâts
 //    comptent comme des 2 ; répétable avec un autre type de dégâts.
+// Lot 6, dons à sorts (ce qu'ils donnent : js/rules/feat-spells.js). Les sorts choisis sont
+// enregistrés par leur nom anglais (clé stable, listes de js/data/feat-spells.js) :
+//  - Initié à la magie (« Magic Initiate », p. 201) : liste Clerc, Druide ou Magicien, caractéristique
+//    des sorts (Int, Sag ou Cha, sans +1 : champ castAbility), 2 sorts mineurs et 1 sort de niveau 1
+//    de cette liste ; répétable avec une autre liste ;
+//  - Affinité féerique (« Fey-Touched », p. 204) et Affinité ombreuse (« Shadow-Touched », p. 207) :
+//    +1 Int, Sag ou Cha (c'est aussi la caractéristique des sorts) et 1 sort de niveau 1 de
+//    Divination ou d'Enchantement (féerique), d'Illusion ou de Nécromancie (ombreuse) ;
+//  - Magie rituelle (« Ritual Caster », p. 206) : +1 Int, Sag ou Cha ; autant de sorts rituels de
+//    niveau 1 que le bonus de maîtrise (un menu de plus aux niveaux 5, 9, 13 et 17) ;
+//  - Télépathe (« Telepathic », p. 207-208) et Télékinésiste (« Telekinetic », p. 207) : +1 Int, Sag
+//    ou Cha, caractéristique de leur sort.
+// Champs facultatifs d'un menu : dependsOn + optionsBy (options selon un autre choix : sorts de la
+// liste choisie), fromLevel (menu utile à partir de ce niveau de personnage).
 // Fonctions pures : le personnage reçu n'est jamais modifié.
 // =============================================================================
 
 import { ABILITIES, ABILITY_IDS, SKILLS } from '../data/constants.js';
-import { featSlots, featName } from './feats.js';
+import { featSlots, featName, characterLevel } from './feats.js';
+import {
+    MAGIC_INITIATE_LISTS, FEY_TOUCHED_SPELLS, SHADOW_TOUCHED_SPELLS, RITUAL_SPELLS
+} from '../data/feat-spells.js';
 
 export const FEAT_CHOICES_KEY = 'feat_choices';
 
@@ -64,6 +81,22 @@ export const ASI_OPTIONS = Object.freeze([
 
 const abilityOptions = (ids) => ids.map(id => [id, ABILITY_NAMES[id]]);
 const skillOptions = (ids) => ids.map(id => [id, SKILL_NAMES[id]]);
+/** Sorts d'une liste de js/data/feat-spells.js : [nom anglais (valeur), nom français] */
+const spellOptions = (list) => list.map(([vo, name]) => [vo, name]);
+const CASTING_ABILITIES = abilityOptions(['int', 'wis', 'cha']);
+
+/** Listes d'Initié à la magie : [id, nom] */
+export const MAGIC_INITIATE_CLASSES = Object.freeze([['cleric', 'Clerc'], ['druid', 'Druide'], ['wizard', 'Magicien']]);
+
+/** Menu d'un sort d'Initié à la magie : les sorts de la liste choisie (part : cantrips ou level1) */
+function initiateSpellField(key, label, part) {
+    const optionsBy = Object.fromEntries(MAGIC_INITIATE_CLASSES.map(([id]) => [id, spellOptions(MAGIC_INITIATE_LISTS[id][part])]));
+    const union = new Map(Object.values(optionsBy).flat());
+    return { key, label, spell: true, wide: true, dependsOn: 'list', optionsBy, options: [...union] };
+}
+
+/** Sorts rituels de Magie rituelle : autant que le bonus de maîtrise (2, puis +1 aux niveaux 5, 9, 13, 17) */
+const RITUAL_FROM_LEVEL = [0, 0, 5, 9, 13, 17];
 
 /**
  * Champs à choisir pour chaque don.
@@ -113,8 +146,68 @@ export const FEAT_CHOICE_RULES = Object.freeze({
             { key: 'ability', label: 'Caractéristique +1', options: abilityOptions(['int', 'wis', 'cha']) },
             { key: 'element', label: 'Type de dégâts', options: ELEMENTS.map(([id, name]) => [id, name]) }
         ]
+    },
+    // Lot 6 : dons à sorts
+    initie_a_la_magie: {
+        repeatable: true,
+        fields: [
+            { key: 'list', label: 'Liste de sorts', options: MAGIC_INITIATE_CLASSES },
+            { key: 'castAbility', label: 'Caractéristique des sorts', options: CASTING_ABILITIES },
+            initiateSpellField('cantrip1', 'Sort mineur 1', 'cantrips'),
+            initiateSpellField('cantrip2', 'Sort mineur 2', 'cantrips'),
+            initiateSpellField('spell', 'Sort de niveau 1', 'level1')
+        ]
+    },
+    affinite_feerique: {
+        fields: [
+            { key: 'ability', label: 'Caractéristique +1', options: CASTING_ABILITIES },
+            { key: 'spell', label: 'Sort de niveau 1', spell: true, wide: true, options: spellOptions(FEY_TOUCHED_SPELLS) }
+        ]
+    },
+    affinite_ombreuse: {
+        fields: [
+            { key: 'ability', label: 'Caractéristique +1', options: CASTING_ABILITIES },
+            { key: 'spell', label: 'Sort de niveau 1', spell: true, wide: true, options: spellOptions(SHADOW_TOUCHED_SPELLS) }
+        ]
+    },
+    magie_rituelle: {
+        fields: [
+            { key: 'ability', label: 'Caractéristique +1', options: CASTING_ABILITIES },
+            ...RITUAL_FROM_LEVEL.map((fromLevel, i) => ({
+                key: `ritual${i + 1}`, label: `Sort rituel ${i + 1}`, spell: true, wide: true,
+                options: spellOptions(RITUAL_SPELLS), ...(fromLevel ? { fromLevel } : {})
+            }))
+        ]
+    },
+    telepathe: {
+        fields: [{ key: 'ability', label: 'Caractéristique +1', options: CASTING_ABILITIES }]
+    },
+    telekinesiste: {
+        fields: [{ key: 'ability', label: 'Caractéristique +1', options: CASTING_ABILITIES }]
     }
 });
+
+/**
+ * Options d'un menu, compte tenu des autres choix du don (sorts de la liste choisie pour Initié
+ * à la magie ; aucune tant que la liste n'est pas choisie).
+ * @param {Object} field - champ de FEAT_CHOICE_RULES
+ * @param {Object<string, string>} [choice] - autres choix du même don
+ * @returns {Array<[string, string]>}
+ */
+export function fieldOptions(field, choice = {}) {
+    if (!field.optionsBy) return field.options;
+    return Object.hasOwn(field.optionsBy, choice[field.dependsOn] ?? '') ? field.optionsBy[choice[field.dependsOn]] : [];
+}
+
+/**
+ * Menu utile au niveau du personnage (Magie rituelle : un sort rituel de plus aux niveaux 5, 9…)
+ * @param {Object} field
+ * @param {Object} character
+ * @returns {boolean}
+ */
+export function fieldActive(field, character) {
+    return !field.fromLevel || characterLevel(character?.char_level) >= field.fromLevel;
+}
 
 /** Dons dont on garde un choix par emplacement (pris plusieurs fois, chacun avec son choix) */
 export const REPEATABLE_CHOICE_FEATS = Object.freeze(
@@ -142,9 +235,10 @@ export function slotChoice(character, level, featId) {
     const slot = featChoicesState(character)[String(level)];
     const stored = isPlainObject(slot) && isPlainObject(slot[featId]) ? slot[featId] : {};
     const choice = {};
+    // Dans l'ordre des champs : la liste d'Initié à la magie est lue avant ses sorts
     for (const field of rule?.fields ?? []) {
         const value = stored[field.key];
-        if (typeof value === 'string' && field.options.some(([option]) => option === value)) choice[field.key] = value;
+        if (typeof value === 'string' && fieldOptions(field, choice).some(([option]) => option === value)) choice[field.key] = value;
     }
     return choice;
 }
@@ -224,7 +318,7 @@ export function featChoiceGrants(character) {
             skills,
             tools,
             element: choice.element ?? '',
-            missing: rule.fields.filter(field => !choice[field.key]).map(field => field.label)
+            missing: rule.fields.filter(field => fieldActive(field, character) && !choice[field.key]).map(field => field.label)
         });
     }
     return grants;

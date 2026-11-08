@@ -9,7 +9,11 @@
 //  - Chanceux (« Lucky », p. 201) : points de Chance = bonus de maîtrise, tous récupérés à la fin
 //    d'un Repos long ;
 //  - Tueur de mages (« Mage Slayer », p. 205) : Esprit préservé (« Guarded Mind »), une fois, de
-//    nouveau disponible à la fin d'un Repos court ou long.
+//    nouveau disponible à la fin d'un Repos court ou long ;
+//  - Magie rituelle (« Ritual Caster », p. 206) : Rituel rapide (« Quick Ritual »), une fois par
+//    Repos long.
+// Les lancers gratuits des sorts de dons (lot 6) sont rangés dans la même clé, sous des clés
+// « <don>@<niveau>:<partie> » : voir js/rules/feat-spells.js (ils n'ont pas de compteur ici).
 // Fonctions pures : le personnage reçu n'est jamais modifié, elles renvoient un patch.
 // =============================================================================
 
@@ -36,6 +40,13 @@ export const FEAT_COUNTERS = Object.freeze({
         max: () => 1,
         reset: 'short',
         use: "Une sauvegarde d'Intelligence, de Sagesse ou de Charisme ratée devient un succès."
+    },
+    magie_rituelle: {
+        label: 'Rituel rapide',
+        inText: 'Rituel rapide',
+        max: () => 1,
+        reset: 'long',
+        use: 'Lancer un sort rituel préparé en temps normal, sans emplacement de sort.'
     }
 });
 

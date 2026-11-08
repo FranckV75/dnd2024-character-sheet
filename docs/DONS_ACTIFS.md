@@ -234,6 +234,6 @@ et `js/rules/feat-effects.js` ; la fiche ne modifie jamais une valeur saisie («
 | 3 — Choix ✅ | Socle « choix mémorisés », puis Amélioration de caractéristique, Résilient, Observateur, Expert, Esprit affûté, Doué, Adepte élémentaire. | Les dons les plus souvent pris aux niveaux 4 et 8. |
 | 4 — Styles de combat | Socle « Style de combat », puis Défense, Duel et les rappels de styles. | Dépend de la réponse sur Iria ; à avancer si elle a un style. |
 | 5 — Vitesse, PV temporaires, armures | Mobile, Figure de proue, Chef cuisinier, Gaillard, Duelliste défensif, Protection légère et intermédiaire, Maître d'hast, Télékinésiste, Incantateur d'élite, Empoisonneur. | Effort M, intérêt moyen à fort. |
-| 6 — Sorts donnés par un don | Socle « sorts de don et second DD », puis Initié à la magie, Affinité féerique, Affinité ombreuse, Magie rituelle, Télépathe. | Le plus gros chantier, mais fort pour Iria, Hedera et Cephalus. |
+| 6 — Sorts donnés par un don ✅ | Socle « sorts de don et second DD », puis Initié à la magie, Affinité féerique, Affinité ombreuse, Magie rituelle, Télépathe. | Le plus gros chantier, mais fort pour Iria, Hedera et Cephalus. |
 | 7 — Reste | Dons sans intérêt actuel, dont Bagarreur et Combat à mains nues, qui demandent de créer la Frappe à mains nues. | Pour tout couvrir à terme. |
 | 8 — Faveurs épiques | Les 12 faveurs. | Le groupe n'atteindra le niveau 19 que bien plus tard. |

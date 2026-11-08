@@ -17,7 +17,7 @@ import { stripHTML } from '../state/migrate.js';
 import { deriveCharacter, featSlotState, hitDieForClass, exhaustionSeverity } from '../rules/character.js';
 import { featEffects, AUTOMATED_FEATS } from '../rules/feat-effects.js';
 import { featCounters, setFeatUsesPatch } from '../rules/feat-uses.js';
-import { FEAT_CHOICE_RULES, slotChoice, setFeatChoicePatch } from '../rules/feat-choices.js';
+import { FEAT_CHOICE_RULES, slotChoice, setFeatChoicePatch, fieldOptions, fieldActive } from '../rules/feat-choices.js';
 import { featName } from '../rules/feats.js';
 import { sanitizeRich, sanitizeRulesText } from './sanitize.js';
 import { el, fillSelect, icon, signed } from './dom.js';
@@ -604,9 +604,11 @@ function noteKind(note) {
 const FEAT_SHEET_ZONES = { guerisseur: ['healing'], mage_de_guerre: ['featSlot', 'spells'] };
 
 /**
- * Menus des choix d'un don (lot 3, js/rules/feat-choices.js) : caractéristique, compétence, type
- * de dégâts… Ils ne cochent rien et ne changent aucune valeur saisie ; fiche verrouillée, ils
- * restent lisibles mais ne se modifient plus (data-build-control, lock.js).
+ * Menus des choix d'un don (lots 3 et 6, js/rules/feat-choices.js) : caractéristique, compétence,
+ * type de dégâts, sorts… Ils ne cochent rien et ne changent aucune valeur saisie ; fiche
+ * verrouillée, ils restent lisibles mais ne se modifient plus (data-build-control, lock.js).
+ * Les menus de sorts d'Initié à la magie suivent la liste choisie, et ceux de Magie rituelle
+ * n'apparaissent qu'au niveau où le don en donne un de plus : voir syncChoices.
  * @returns {HTMLElement|null} null si le don n'a rien à choisir
  */
 function choiceControls(featId, level) {
@@ -622,17 +624,40 @@ function choiceControls(featId, level) {
             const options = field.groups
                 ? field.groups.map(([label, from, to]) => el('optgroup', { label }, field.options.slice(from, to).map(option)))
                 : field.options.map(option);
+            // Options d'un menu dépendant (sorts de la liste choisie) : posées par syncChoices
             return el('div', { class: field.wide ? 'feat-choice is-wide' : 'feat-choice' },
                 el('label', { class: 'feat-choice-label', for: id, text: field.label }),
                 el('select', { id, class: 'input', 'data-feat-choice': field.key, 'data-build-control': 'true' },
-                    el('option', { value: '', text: '— Choisir —' }), options));
+                    el('option', { value: '', text: '— Choisir —' }), field.optionsBy ? [] : options));
         }));
 }
 
-/** Menus remis sur les choix enregistrés (sans reconstruire : le focus reste) */
-function syncChoices(container, choice) {
+/**
+ * Menus remis sur les choix enregistrés (sans reconstruire : le focus reste). Un menu dépendant
+ * reçoit les options de l'autre choix (« Choisissez d'abord la liste » sinon) ; un menu pas encore
+ * utile au niveau du personnage est masqué.
+ * @param {HTMLElement} container
+ * @param {string} featId
+ * @param {Object<string, string>} choice - slotChoice()
+ * @param {Object} character
+ */
+function syncChoices(container, featId, choice, character) {
+    const rule = FEAT_CHOICE_RULES[featId];
     for (const select of container.querySelectorAll('select[data-feat-choice]')) {
-        const value = choice[select.dataset.featChoice] ?? '';
+        const field = rule?.fields.find(f => f.key === select.dataset.featChoice);
+        if (!field) continue;
+        select.closest('.feat-choice').hidden = !fieldActive(field, character);
+        if (field.optionsBy) {
+            const source = choice[field.dependsOn] ?? '';
+            if (select.dataset.optionsFor !== source) {
+                select.dataset.optionsFor = source;
+                const options = fieldOptions(field, choice);
+                select.replaceChildren(
+                    el('option', { value: '', text: source ? '— Choisir —' : "— Choisissez d'abord la liste —" }),
+                    ...options.map(([value, text]) => el('option', { value, text })));
+            }
+        }
+        const value = choice[field.key] ?? '';
         if (select.value !== value) select.value = value;
     }
 }
@@ -688,7 +713,7 @@ function renderFeatSheet(box, featId, level, effects, counter, character) {
         ].filter(Boolean));
     }
     if (!featId) return;
-    if (parts.choices) syncChoices(parts.choices, slotChoice(character, level, featId));
+    if (parts.choices) syncChoices(parts.choices, featId, slotChoice(character, level, featId), character);
     const notesSignature = JSON.stringify(notes);
     if (parts.notesSignature === notesSignature) return;
     parts.notesSignature = notesSignature;

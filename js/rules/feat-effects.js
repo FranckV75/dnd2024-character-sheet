@@ -24,6 +24,7 @@ import { ABILITY_IDS, SKILLS } from '../data/constants.js';
 import {
     featChoiceGrants, REPEATABLE_CHOICE_FEATS, abilityName, skillName, elementWord
 } from './feat-choices.js';
+import { FEAT_SPELL_FEATS, featSpellGroups, featSpellSummary } from './feat-spells.js';
 
 /**
  * Note de don affichée dans une zone de la fiche.
@@ -87,7 +88,9 @@ export const AUTOMATED_FEATS = Object.freeze([
     'chanceux', 'tueur_de_mages',
     // Lot 3 : choix mémorisés (js/rules/feat-choices.js)
     'amelioration_de_caracteristique', 'resilient', 'observateur', 'expert', 'esprit_affute', 'doue',
-    'adepte_elementaire'
+    'adepte_elementaire',
+    // Lot 6 : dons à sorts (js/rules/feat-spells.js)
+    'initie_a_la_magie', 'affinite_feerique', 'affinite_ombreuse', 'magie_rituelle', 'telepathe', 'telekinesiste'
 ]);
 
 const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
@@ -315,6 +318,15 @@ function choiceNotes(grant, { derived, grants, record, add }) {
 
     if (grant.missing.length) {
         add('featSlot', `Choix à faire ci-dessus : ${grant.missing.join(', ')}.`, { inactive: true });
+    }
+
+    // Dons à sorts (lot 6) : où sont les sorts, avec quel DD ; ce qui est à corriger
+    if (FEAT_SPELL_FEATS.includes(featId)) {
+        const group = featSpellGroups(record, derived).find(g => g.featId === featId && g.level === grant.level);
+        if (group) {
+            add('featSlot', featSpellSummary(group), { applied: group.dc !== null });
+            for (const warning of group.warnings) add('featSlot', warning, { check: true });
+        }
     }
 
     // Augmentations de caractéristique : repère près de la valeur saisie, jamais ajoutées

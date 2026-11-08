@@ -1115,8 +1115,9 @@ fieldset.inline-checks {
         text-shadow: none;
     }
 
-    /* Plus fort que la couleur d'une liste figée (fiche verrouillée, components.css) */
-    .feat[data-feat-state="active"] select.input {
+    /* Titre seulement (pas les menus de choix de l'encadré « Dans la fiche ») ; plus fort que la
+       couleur d'une liste figée (fiche verrouillée, components.css) */
+    .feat[data-feat-state="active"] .feat-head > select.input {
         border-bottom: 2px solid var(--gold);
         color: var(--feat-title-ink);
         font-size: 1.05rem;
@@ -1387,6 +1388,11 @@ fieldset.inline-checks {
 
 .feat-choice select {
     width: 100%;
+}
+
+/* Menu pas encore utile au niveau du personnage (Magie rituelle : un sort de plus au niveau 5...) */
+.feat-choice[hidden] {
+    display: none;
 }
 
 /* « Force +1, Constitution +1 » : le menu prend toute la largeur pour être lu en entier */

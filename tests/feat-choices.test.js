@@ -71,7 +71,7 @@ describe('Choix enregistrés', () => {
             for (const field of rule.fields) assert.ok(field.label && field.options.length > 1, `${id}.${field.key}`);
             assert.ok(AUTOMATED_FEATS.includes(id), id);
         }
-        assert.deepEqual(REPEATABLE_CHOICE_FEATS, ['amelioration_de_caracteristique', 'doue', 'adepte_elementaire']);
+        assert.deepEqual(REPEATABLE_CHOICE_FEATS, ['amelioration_de_caracteristique', 'doue', 'adepte_elementaire', 'initie_a_la_magie']);
     });
 });
 
