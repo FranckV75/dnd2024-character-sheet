@@ -76,7 +76,8 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
 - Rage activée : lueur de braise autour des PV, des Rages et des armes, bouton Rage incandescent.
 - Jauge de PV sous « PV actuels » (laiton → cuivre → braise, PV temporaires en argent).
 - Les valeurs calculées pulsent brièvement en doré quand elles changent.
-- Toutes les animations sont coupées si l'appareil demande moins d'animations ; rien n'est animé à l'impression.
+- Toutes les animations sont coupées si l'appareil demande moins d'animations, ou avec le bouton
+  « Sans animation » de la barre Gestion (retenu sur l'appareil) ; rien n'est animé à l'impression.
 - À ressentir en vrai par Franck (rythme des animations, surtout la Rage) et à ajuster si besoin.
 
 ### Lot 3 : lisibilité et confort — ✅ fait (commit `4ea9505`)
@@ -121,10 +122,11 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
   - ✅ (05/11/2026) Configuration des armures : la colonne CA n'est plus saisie, elle est calculée et
     expliquée (bulle au toucher). Un engrenage par ligne règle le bonus magique (+1 à +3), et pour un
     objet hors manuel son type et sa valeur de base. Don Maître des armures intermédiaires compté.
-  - Aspect particulier des objets magiques (à préciser par Franck) : toute arme ou armure avec un bonus
-    magique (+1, +2…) se distingue, par exemple un léger miroitement doré sur la ligne ou le nom, dans
-    l'esprit des boutons Rage et Cogneur lourd ; sobre, chic, coupé si l'appareil demande moins
-    d'animations.
+  - ✅ (08/11/2026) Aspect des objets magiques, en crescendo : +1 éveillée (filet et nom en or,
+    pastille), +2 enchantée (cadre doré, halo, paillettes), +3 légendaire (cadre parcouru de lumière,
+    runes, inscription runique qui défile, braises). Toucher la pastille joue l'enchantement et dit
+    l'effet. Bouton « Sans animation » dans la barre Gestion. À vérifier sur l'iPad de Catherine
+    (Safari).
 
 ## Corrections de règles apportées (vérifiées dans le Manuel du joueur 2024)
 

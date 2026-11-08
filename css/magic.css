@@ -1,0 +1,648 @@
+/* =============================================================================
+   MAGIC.CSS - Armes et armures magiques (js/ui/magic.js) : crescendo +1, +2, +3
+   +1 éveillée : filet d'or, voile doré, nom en or, pastille, reflet rare.
+   +2 enchantée : + cadre doré, halo qui respire, nom qui brille, paillettes, étoile.
+   +3 légendaire : + cadre épais et trait de lumière qui en fait le tour, runes qui
+   s'allument, inscription runique qui défile en haut et en bas, braises, rayons.
+   Les décors sont des calques (position absolue, z-index négatif) posés sous le contenu de
+   la ligne : ils ne changent pas la mise en page (seule la ligne +3 est plus haute, pour
+   loger l'inscription). Ils partent de la case du nom (position: relative ; Safari ne fait pas
+   d'une ligne <tr> le repère des calques) et magic.js leur donne la largeur de la ligne. Les runes sont dessinées (SVG ci-dessous, futhark ancien) :
+   aucune police à installer sur la tablette.
+   Mouvements : transform, translate, rotate et opacity (fluides sur tablette), coupés sous
+   prefers-reduced-motion et par le bouton « Animations » (motion.css) ; il reste les ors,
+   les cadres et les runes, immobiles. Impression : css/print.css retire tout.
+   ============================================================================= */
+
+:root {
+    /* Encre du nom (or lisible sur le parchemin) et éclat qui la traverse */
+    --magic-ink: #6f4a06;
+    --magic-shine: #8a5d0c;
+    /* Or : ombre, cœur et lumière */
+    --magic-g1: #8a6a0f;
+    --magic-g2: #d4af37;
+    --magic-g3: #fbe9a6;
+    --magic-wash: rgba(212, 175, 55, 0.18);
+    --magic-glint: rgba(212, 160, 40, 0.42);
+    --magic-mote: #b07810;
+    --magic-star: #c8901a;
+    --magic-halo: rgba(212, 160, 40, 0.45);
+    --magic-glow: rgba(212, 175, 55, 0.45);
+    --magic-rune: rgba(154, 106, 18, 0.16);
+    --magic-rune-hi: rgba(150, 95, 5, 0.34);
+    --magic-frieze: rgba(130, 88, 12, 0.55);
+    /* 24 runes du futhark ancien en traits (tuile 384 × 20) */
+    --magic-runes: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 384 20'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath transform='translate(2 0)' d='M3 2V18M3 7L9 3M3 11L9 7'/%3E%3Cpath transform='translate(18 0)' d='M3 18V2L9 7V18'/%3E%3Cpath transform='translate(34 0)' d='M3 2V18M3 6L8 10L3 14'/%3E%3Cpath transform='translate(50 0)' d='M3 2V18M3 2L9 6M3 7L9 11'/%3E%3Cpath transform='translate(66 0)' d='M3 18V2L8 6L3 10L9 18'/%3E%3Cpath transform='translate(82 0)' d='M8 4L3 9L8 14'/%3E%3Cpath transform='translate(98 0)' d='M2 3L10 17M10 3L2 17'/%3E%3Cpath transform='translate(114 0)' d='M3 2V18M3 2L8 6L3 10'/%3E%3Cpath transform='translate(130 0)' d='M2 2V18M10 2V18M2 7L10 12'/%3E%3Cpath transform='translate(146 0)' d='M6 2V18M3 7L9 12'/%3E%3Cpath transform='translate(162 0)' d='M6 2V18'/%3E%3Cpath transform='translate(178 0)' d='M5 4L2 8L5 12M7 8L10 12L7 16'/%3E%3Cpath transform='translate(194 0)' d='M6 2V18M6 2L9 5M6 18L3 15'/%3E%3Cpath transform='translate(210 0)' d='M2 2V6L6 10L2 14V18M10 2V6L6 10L10 14V18'/%3E%3Cpath transform='translate(226 0)' d='M6 18V2M6 9L2 3M6 9L10 3'/%3E%3Cpath transform='translate(242 0)' d='M8 2L3 8L8 12L3 18'/%3E%3Cpath transform='translate(258 0)' d='M6 18V2M2 7L6 2L10 7'/%3E%3Cpath transform='translate(274 0)' d='M3 2V18M3 2L8 6L3 10L8 14L3 18'/%3E%3Cpath transform='translate(290 0)' d='M2 18V2L6 8L10 2V18'/%3E%3Cpath transform='translate(306 0)' d='M2 18V2L10 10M10 18V2L2 10'/%3E%3Cpath transform='translate(322 0)' d='M3 18V2L8 7'/%3E%3Cpath transform='translate(338 0)' d='M6 4L10 10L6 16L2 10Z'/%3E%3Cpath transform='translate(354 0)' d='M2 2V18L10 2V18L2 2'/%3E%3Cpath transform='translate(370 0)' d='M2 18L9 10L6 5L3 10L10 18'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+:root[data-theme="dark"] {
+    --magic-ink: #f3c56f;
+    --magic-shine: #fff6dc;
+    --magic-g1: #c9962e;
+    --magic-g2: #f3cf8f;
+    --magic-g3: #fff6dc;
+    --magic-wash: rgba(243, 207, 143, 0.13);
+    --magic-glint: rgba(255, 226, 160, 0.3);
+    --magic-mote: #ffe3a3;
+    --magic-star: #ffd970;
+    --magic-halo: rgba(255, 200, 90, 0.45);
+    --magic-glow: rgba(212, 175, 55, 0.45);
+    --magic-rune: rgba(243, 207, 143, 0.2);
+    --magic-rune-hi: rgba(255, 230, 160, 0.38);
+    --magic-frieze: rgba(243, 207, 143, 0.6);
+}
+
+/* ---------- Ligne magique : support des calques ---------- */
+
+.data-table tr[data-magic] {
+    /* Plan propre à la ligne : les calques (z-index négatif) passent sous son contenu */
+    isolation: isolate;
+    /* Cadence du reflet et du nom qui brille : de plus en plus vive */
+    --magic-pace: 9s;
+}
+
+.data-table tr[data-magic="2"] { --magic-pace: 6.5s; }
+.data-table tr[data-magic="3"] { --magic-pace: 4.5s; }
+
+/* Repère des calques : la case du nom, première de la ligne */
+.data-table tr[data-magic] > td.magic-cell {
+    position: relative;
+}
+
+/* +3 : place pour l'inscription runique en haut et en bas */
+.data-table tr[data-magic="3"] > td {
+    padding-top: 18px;
+    padding-bottom: 18px;
+}
+
+.magic-fx[hidden],
+.magic-gem[hidden] {
+    display: none;
+}
+
+/* ---------- Case du nom : champ puis pastille ---------- */
+
+.magic-name {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    min-width: 0;
+}
+
+.magic-name > .cell-input {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+tr[data-magic] .magic-name > .cell-input {
+    color: var(--magic-ink);
+}
+
+/* +2 et +3 : le nom brille comme du métal poli (un éclat le traverse à chaque reflet) ;
+   immobile, il garde l'encre d'or (bout droit du dégradé) */
+tr:is([data-magic="2"], [data-magic="3"]) .magic-name > .cell-input {
+    background-image: linear-gradient(100deg, var(--magic-ink) 0 36%, var(--magic-shine) 50%, var(--magic-ink) 64% 100%);
+    background-size: 260% 100%;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    caret-color: var(--text);
+}
+
+tr[data-magic="3"] .magic-name > .cell-input {
+    font-size: 1rem;
+}
+
+/* Bonus d'attaque, dégâts et CA du +3 : en or (halo lumineux en thème sombre seulement : sur
+   le parchemin, il ferait baisser le contraste) */
+.weapons-table tr[data-magic="3"] .weapons-calc,
+.armors-table tr[data-magic="3"] .armor-ca-value {
+    color: var(--magic-ink);
+}
+
+:root[data-theme="dark"] .weapons-table tr[data-magic="3"] .weapons-calc,
+:root[data-theme="dark"] .armors-table tr[data-magic="3"] .armor-ca-value {
+    text-shadow: 0 0 10px var(--magic-glint);
+}
+
+/* +3 : la pastille de la botte d'arme (coin bas droit de sa case) reste au-dessus de
+   l'inscription runique du bas */
+.weapons-table tr[data-magic="3"] .weapons-mastery-btn {
+    bottom: 17px;
+}
+
+@media (pointer: coarse) {
+    .weapons-table tr[data-magic="3"] .weapons-mastery-btn {
+        top: 17px;
+        bottom: 17px;
+    }
+}
+
+/* ---------- Pastille « +1 / +2 / +3 » (métal identique dans les deux thèmes) ---------- */
+
+.magic-gem {
+    position: relative;
+    isolation: isolate;
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    min-height: 28px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
+    background: none;
+    cursor: pointer;
+}
+
+.magic-gem:focus-visible {
+    outline: 2px solid var(--magic-ink);
+    outline-offset: 1px;
+}
+
+/* Tactile : 28 + 2 × 8 = 44 px de haut sous le doigt ; à gauche, la zone n'empiète presque
+   pas sur le nom (écart de 6 px) */
+@media (pointer: coarse) {
+    .magic-name {
+        gap: 6px;
+    }
+
+    .magic-gem::after {
+        content: "";
+        position: absolute;
+        inset: -8px -6px -8px -3px;
+    }
+}
+
+.magic-gem-face {
+    position: relative;
+    display: inline-block;
+    padding: 4px 6px 3px;
+    border: 1px solid #7a5a0c;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #fff2c4, #e6c05a 50%, #a97d1a);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 1px 3px rgba(0, 0, 0, 0.35);
+    font-family: var(--font-title);
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #2e1d00;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+tr[data-magic="2"] .magic-gem-face {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 8px rgba(230, 180, 60, 0.7);
+}
+
+/* +2 : petite étoile à quatre branches au coin de la pastille */
+tr[data-magic="2"] .magic-gem-face::after {
+    content: "";
+    position: absolute;
+    top: -6px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    background: var(--magic-star);
+    clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+    pointer-events: none;
+}
+
+tr[data-magic="3"] .magic-gem-face {
+    padding: 5px 7px 4px;
+    background: linear-gradient(135deg, #fff6d6, #f0c84e 35%, #b8861a 65%, #ffeaa0);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 0 14px rgba(240, 190, 60, 0.9);
+    font-size: 0.78rem;
+}
+
+/* +3 : rayons dorés derrière la pastille */
+tr[data-magic="3"] .magic-gem::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: -1;
+    width: 54px;
+    height: 54px;
+    margin: -27px 0 0 -27px;
+    border-radius: 50%;
+    background: repeating-conic-gradient(rgba(245, 200, 90, 0.75) 0 7deg, transparent 7deg 30deg);
+    -webkit-mask: radial-gradient(circle, #000 28%, transparent 70%);
+    mask: radial-gradient(circle, #000 28%, transparent 70%);
+    pointer-events: none;
+}
+
+/* ---------- Calques de la ligne ---------- */
+
+.magic-fx {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    /* Largeur de toute la ligne (posée par magic.js ; à défaut, la case du nom) */
+    width: var(--magic-row-width, 100%);
+    z-index: -1;
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+.magic-fx > *,
+.magic-bg > * {
+    position: absolute;
+    pointer-events: none;
+}
+
+/* Voile doré, venu du bord gauche */
+.magic-bg {
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--magic-wash), transparent 65%);
+}
+
+/* Reflet qui traverse la ligne (bande inclinée) */
+.magic-glint {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 45%;
+    background: linear-gradient(112deg, transparent 20%, var(--magic-glint) 50%, transparent 80%);
+    opacity: 0;
+    translate: -100% 0;
+}
+
+/* Filet d'or au bord gauche, de plus en plus large et lumineux */
+.magic-fil {
+    left: 0;
+    top: 6px;
+    bottom: 6px;
+    width: 4px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, transparent, var(--magic-g2) 18%, var(--magic-g3) 50%, var(--magic-g2) 82%, transparent);
+}
+
+tr[data-magic="2"] .magic-fil {
+    width: 5px;
+    box-shadow: 0 0 9px var(--magic-g2);
+}
+
+tr[data-magic="3"] .magic-fil {
+    top: 4px;
+    bottom: 4px;
+    width: 6px;
+    box-shadow: 0 0 12px var(--magic-g2), 0 0 3px var(--magic-g3);
+}
+
+/* Armure à vérifier : le liseré rouge (armors.css) passe avant le filet d'or */
+.armors-table tr.armor-warning .magic-fil {
+    display: none;
+}
+
+/* Calques des paliers supérieurs : absents au +1 */
+.magic-halo,
+.magic-glow,
+.magic-frame,
+.magic-mote,
+.magic-runes,
+.magic-beam,
+.magic-frieze {
+    display: none;
+}
+
+/* +2 : halo, lueur intérieure, cadre et cinq paillettes (les trois premiers calques de
+   .magic-bg sont la lueur, les runes et le reflet : les paillettes commencent au 4e) */
+tr:is([data-magic="2"], [data-magic="3"]) :is(.magic-halo, .magic-glow, .magic-frame),
+tr[data-magic="2"] .magic-mote:nth-child(-n+8) {
+    display: block;
+}
+
+/* +3 : runes, trait de lumière, inscription et toutes les braises */
+tr[data-magic="3"] :is(.magic-mote, .magic-runes, .magic-beam, .magic-frieze) {
+    display: block;
+}
+
+.magic-halo {
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    box-shadow: 0 0 14px 2px var(--magic-halo);
+}
+
+tr[data-magic="3"] .magic-halo {
+    box-shadow: 0 0 22px 5px var(--magic-halo), 0 0 6px 1px var(--magic-g2);
+}
+
+.magic-glow {
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 20px var(--magic-glow);
+}
+
+tr[data-magic="3"] .magic-glow {
+    box-shadow: inset 0 0 28px var(--magic-glow);
+}
+
+/* Cadre doré (bordure seule : le centre est découpé par le masque) */
+.magic-frame {
+    inset: 0;
+    padding: 1.5px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, var(--magic-g1), var(--magic-g3) 30%, var(--magic-g2) 55%, var(--magic-g1) 80%, var(--magic-g3));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+tr[data-magic="3"] .magic-frame {
+    padding: 2.5px;
+}
+
+/* +3 : trait de lumière qui fait le tour du cadre (un disque de lumière tourne sous un
+   masque qui ne laisse voir que la bordure) */
+.magic-beam {
+    inset: 0;
+    padding: 3px;
+    overflow: hidden;
+    border-radius: 8px;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+.magic-beam-light {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    /* Un peu plus large que la ligne : couvre ses coins dans toutes les positions */
+    width: calc(100% + 24px);
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    background: conic-gradient(transparent 0deg 230deg, var(--magic-g2) 285deg, #fff 322deg, var(--magic-g3) 335deg, var(--magic-g2) 350deg, transparent 360deg);
+}
+
+/* +3 : grandes runes en filigrane sur toute la ligne, qu'une vague de lumière allume */
+.magic-runes {
+    inset: 0;
+    overflow: hidden;
+    background: var(--magic-rune);
+    -webkit-mask: var(--magic-runes) repeat-x 8px 50% / auto 26px;
+    mask: var(--magic-runes) repeat-x 8px 50% / auto 26px;
+}
+
+.magic-runes-light {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, var(--magic-rune-hi), transparent);
+    translate: -100% 0;
+}
+
+/* +3 : inscription runique qui court en haut et en bas du cadre */
+.magic-frieze {
+    left: 14px;
+    right: 14px;
+    height: 12px;
+    overflow: hidden;
+    -webkit-mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.magic-frieze.is-top { top: 3px; }
+.magic-frieze.is-bottom { bottom: 3px; }
+
+/* Une tuile de runes de plus que la largeur : elle glisse d'une tuile (230,4 px à 12 px de
+   haut) et revient sans à-coup */
+.magic-frieze-text {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: calc(100% + 231px);
+    background: var(--magic-frieze);
+    -webkit-mask: var(--magic-runes) repeat-x 0 50% / auto 12px;
+    mask: var(--magic-runes) repeat-x 0 50% / auto 12px;
+}
+
+/* En bas, l'inscription est décalée d'une demi-tuile : les deux lignes ne se répètent pas */
+.magic-frieze.is-bottom .magic-frieze-text {
+    -webkit-mask-position: 115px 50%;
+    mask-position: 115px 50%;
+}
+
+/* Paillettes (+2) et braises (+3) qui montent */
+.magic-mote {
+    bottom: -3px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--magic-mote);
+    box-shadow: 0 0 7px var(--magic-mote), 0 0 2px var(--magic-g3);
+    opacity: 0;
+}
+
+tr[data-magic="3"] .magic-mote {
+    width: 6px;
+    height: 6px;
+}
+
+/* ---------- Enchantement (pastille touchée, nouveau bonus réglé) ---------- */
+
+/* Étincelles gardées dans la ligne : elles ne font pas apparaître de barre de défilement */
+.magic-sparks {
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+}
+
+.magic-burst {
+    position: absolute;
+    width: 0;
+    height: 0;
+}
+
+.magic-ring {
+    position: absolute;
+    left: -6px;
+    top: -6px;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--magic-g2);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--magic-g2);
+    opacity: 0;
+}
+
+.magic-spark {
+    position: absolute;
+    left: -3px;
+    top: -3px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff, var(--magic-g2) 50%, transparent 72%);
+    box-shadow: 0 0 8px var(--magic-g2);
+    opacity: 0;
+}
+
+/* Éclat de la ligne, centré sur la pastille (un calque, et non un filtre sur les cases : un
+   filtre ferait de chaque case le repère des calques, qui se réduiraient à la case du nom) */
+.magic-flash {
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(ellipse 60% 140% at var(--magic-flash-x, 20%) 50%, var(--magic-glint), transparent 70%);
+    opacity: 0;
+}
+
+/* ---------- Mouvements ---------- */
+
+@media screen and (prefers-reduced-motion: no-preference) {
+    .magic-glint {
+        animation: magic-glint var(--magic-pace) ease-in-out infinite;
+    }
+
+    tr:is([data-magic="2"], [data-magic="3"]) .magic-name > .cell-input {
+        animation: magic-shine var(--magic-pace) ease-in-out infinite;
+    }
+
+    .magic-halo {
+        animation: magic-breathe 3.2s ease-in-out infinite alternate;
+    }
+
+    tr[data-magic="3"] .magic-halo {
+        animation-duration: 2.6s;
+    }
+
+    .magic-glow {
+        animation: magic-breathe 4s ease-in-out infinite alternate;
+    }
+
+    tr[data-magic="3"] .magic-glow {
+        animation-duration: 3s;
+    }
+
+    tr[data-magic="2"] .magic-gem-face::after {
+        animation: magic-twinkle 2.8s ease-in-out infinite;
+    }
+
+    .magic-beam-light {
+        animation: magic-turn 3.6s linear infinite;
+    }
+
+    tr[data-magic="3"] .magic-gem::before {
+        animation: magic-turn 12s linear infinite;
+    }
+
+    .magic-runes-light {
+        animation: magic-wave 5.5s linear infinite;
+    }
+
+    .magic-frieze-text {
+        animation: magic-scroll 16s linear infinite;
+    }
+
+    .magic-frieze.is-bottom .magic-frieze-text {
+        animation-direction: reverse;
+    }
+
+    .magic-mote {
+        animation: magic-rise var(--magic-mote-time, 4.5s) ease-in var(--magic-mote-delay, 0s) infinite;
+    }
+
+    .magic-ring {
+        animation: magic-ring 0.85s ease-out forwards;
+    }
+
+    .magic-spark {
+        animation: magic-fly 0.95s cubic-bezier(0.15, 0.7, 0.3, 1) forwards;
+    }
+
+    .magic-flash {
+        animation: magic-flash 0.9s ease-out forwards;
+    }
+}
+
+/* Immobile (appareil ou bouton « Animations ») : ni reflet, ni paillettes, ni trait de
+   lumière (il resterait figé à un endroit du cadre) ; ors, cadres et runes demeurent */
+/* Sélecteurs plus forts que ceux qui affichent les calques par palier */
+@media (prefers-reduced-motion: reduce) {
+    .data-table tr[data-magic] :is(.magic-glint, .magic-mote, .magic-beam, .magic-sparks) {
+        display: none;
+    }
+}
+
+:root[data-animations="off"] .data-table tr[data-magic] :is(.magic-glint, .magic-mote, .magic-beam, .magic-sparks) {
+    display: none;
+}
+
+/* Écran tactile : les zones de toucher élargies des boutons d'une ligne passent au-dessus de
+   la ligne magique voisine (qui forme son propre plan) ; l'en-tête collant reste au-dessus */
+@media (pointer: coarse) {
+    .data-table td :is(.btn-icon, .weapons-feat-toggle) {
+        z-index: 1;
+    }
+
+    .data-table th {
+        z-index: 2;
+    }
+}
+
+@keyframes magic-glint {
+    0%, 50% { translate: -100% 0; opacity: 0; }
+    56% { opacity: 1; }
+    84% { opacity: 1; }
+    90%, 100% { translate: 230% 0; opacity: 0; }
+}
+
+@keyframes magic-shine {
+    0%, 50% { background-position: 100% 0; }
+    88%, 100% { background-position: 0 0; }
+}
+
+@keyframes magic-breathe {
+    from { opacity: 0.45; }
+    to { opacity: 1; }
+}
+
+@keyframes magic-twinkle {
+    0%, 100% { opacity: 0.35; transform: scale(0.7) rotate(0deg); }
+    50% { opacity: 1; transform: scale(1.2) rotate(20deg); }
+}
+
+@keyframes magic-turn {
+    to { rotate: 1turn; }
+}
+
+@keyframes magic-wave {
+    from { translate: -100% 0; }
+    to { translate: 260% 0; }
+}
+
+@keyframes magic-scroll {
+    to { translate: -230.4px 0; }
+}
+
+@keyframes magic-rise {
+    0% { transform: translateY(0) scale(0.5); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translateY(-40px) scale(1); opacity: 0; }
+}
+
+@keyframes magic-ring {
+    from { transform: scale(0.2); opacity: 1; }
+    to { transform: scale(var(--magic-ring-size, 8)); opacity: 0; }
+}
+
+@keyframes magic-fly {
+    0% { transform: translate(0, 0) scale(1.3); opacity: 1; }
+    100% { transform: translate(var(--magic-dx), var(--magic-dy)) scale(0.2); opacity: 0; }
+}
+
+@keyframes magic-flash {
+    0% { opacity: 0; }
+    18% { opacity: 1; }
+    100% { opacity: 0; }
+}

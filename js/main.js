@@ -5,6 +5,7 @@
 // =============================================================================
 
 import { initTheme } from './ui/theme.js';
+import { initAnimations } from './ui/motion-pref.js';
 import { initTabs } from './ui/tabs.js';
 import { decorateIcons } from './ui/ornaments.js';
 import { icon } from './ui/dom.js';
@@ -67,6 +68,7 @@ const setAutosaveStatus = (message) => {
 };
 
 initTheme();
+initAnimations();
 
 const saved = loadLocal();
 const store = createStore(saved ? saved.character : createDefaultCharacter());

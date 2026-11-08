@@ -19,7 +19,7 @@ import { DD_RULES } from '../data/dd-rules.js';
 import { EMPTY_WEAPON } from '../state/schema.js';
 import { stripHTML, findRulebookWeapon } from '../state/migrate.js';
 import { deriveCharacter, computeWeapon, sneakAttackDice } from '../rules/character.js';
-import { getRageBonus } from '../rules/logic.js';
+import { getRageBonus, parseWeaponConfig } from '../rules/logic.js';
 import { weaponFeatNotes } from '../rules/feat-effects.js';
 import { findMastery, masteryDetails, masteryParagraphs, masteryAccessNote, weaponMasteryFeature } from '../rules/weapon-masteries.js';
 import {
@@ -33,6 +33,7 @@ import { cellText } from './cell-text.js';
 import { openModal, confirmModal } from './modal.js';
 import { attachAutocomplete } from './autocomplete.js';
 import { isLocked } from './lock.js';
+import { createMagicParts, setMagic, enchant, magicLevel, ENCHANT_DELAY_MS } from './magic.js';
 
 const FILTERS = [
     ['all', 'Toutes'],
@@ -117,7 +118,7 @@ export function initWeapons(ctx) {
     if (!container) return;
 
     let filter = 'all';
-    /** @type {Array<{ tr: HTMLTableRowElement, inputs: Object<string, HTMLInputElement>, atk: HTMLElement, dmg: HTMLElement, configBtn: HTMLButtonElement, deleteBtn: HTMLButtonElement, notesBtn: HTMLButtonElement, notesTr: HTMLTableRowElement, notesList: HTMLUListElement, notesOpen: boolean, notesSignature: string, masteryBtn: HTMLButtonElement, detach: () => void }>} */
+    /** @type {Array<{ tr: HTMLTableRowElement, inputs: Object<string, HTMLInputElement>, atk: HTMLElement, dmg: HTMLElement, configBtn: HTMLButtonElement, deleteBtn: HTMLButtonElement, notesBtn: HTMLButtonElement, notesTr: HTMLTableRowElement, notesList: HTMLUListElement, notesOpen: boolean, notesSignature: string, masteryBtn: HTMLButtonElement, magic: ReturnType<typeof createMagicParts>, detach: () => void }>} */
     let rows = [];
     let buffsSignature = null;
     let undoTimer = null;
@@ -319,6 +320,13 @@ export function initWeapons(ctx) {
             }
         });
 
+        // Arme magique (réglage « Bonus magique ») : pastille après le nom et décors de la ligne ;
+        // la toucher joue l'enchantement et dit l'effet du bonus dans la barre d'état
+        const magic = createMagicParts(inputs.name, (parts) => {
+            enchant(parts, tr);
+            setStatus(parts.message);
+        });
+
         const atk = el('span', { class: 'weapons-calc' });
         const dmg = el('span', { class: 'weapons-calc' });
         // Rappels des dons pour cette arme : une ligne repliable sous l'arme (ouverte au toucher,
@@ -348,7 +356,7 @@ export function initWeapons(ctx) {
         }, icon('trash'));
 
         const tr = el('tr', {},
-            el('td', {}, inputs.name),
+            el('td', { class: 'magic-cell' }, magic.name, magic.fx),
             // Bouton des rappels à côté du bonus d'attaque : sur tablette, il loge sous « FOR : +7 »
             // (une seule ligne, les dégâts en ont deux ou plus) sans rehausser la ligne de l'arme
             el('td', { class: 'weapons-atk' }, atk, notesBtn),
@@ -358,7 +366,7 @@ export function initWeapons(ctx) {
                 : el('td', {}, inputs[c.key]))),
             el('td', { class: 'weapons-actions edit-only' }, configBtn, deleteBtn));
 
-        const row = { tr, inputs, atk, dmg, configBtn, deleteBtn, notesBtn, notesTr, notesList, notesOpen: false, notesSignature: '', masteryBtn, detach };
+        const row = { tr, inputs, magic, atk, dmg, configBtn, deleteBtn, notesBtn, notesTr, notesList, notesOpen: false, notesSignature: '', masteryBtn, detach };
 
         // Ligne épinglée tant que le focus y reste ; le filtre est réappliqué à la sortie
         // (après la fin du changement de focus, pour qu'un passage d'une cellule à l'autre
@@ -480,6 +488,15 @@ export function initWeapons(ctx) {
             const computed = computeWeapon(weapon, derived, buffs);
             writeCalc(row.atk, computed?.attack, weapon.atk);
             writeCalc(row.dmg, computed?.damage, weapon.dmg);
+
+            // Aspect : palier 1 à 3 ; texte : le bonus que le calcul ajoute vraiment (une ancienne
+            // fiche peut en garder un autre)
+            const bonus = Number.parseInt(parseWeaponConfig(weapon.weaponConfig).magicBonus, 10) || 0;
+            setMagic(row.magic, row.tr, bonus, {
+                label: `Arme ${label}`,
+                effect: `+${bonus} aux jets d'attaque et de dégâts`
+                    + (computed ? " (déjà compté dans l'attaque et les dégâts affichés)" : ' (arme hors manuel : à ajouter vous-même)')
+            });
 
             row.configBtn.setAttribute('aria-label', `Configurer l'arme ${label}`);
             row.deleteBtn.setAttribute('aria-label', `Supprimer l'arme ${label}`);
@@ -650,6 +667,13 @@ export function initWeapons(ctx) {
                             return false;
                         }
                         updateRow(index, (w) => ({ ...w, weaponConfig: result.value }));
+                        // Nouveau bonus magique : l'arme s'enchante sous les yeux, fenêtre refermée
+                        if (magicLevel(readWeaponConfig(result.value).magicBonus) > config.magicBonus) {
+                            setTimeout(() => {
+                                const row = rows[index];
+                                if (row) enchant(row.magic, row.tr);
+                            }, ENCHANT_DELAY_MS);
+                        }
                         return true;
                     }
                 }

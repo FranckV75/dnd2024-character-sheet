@@ -17,13 +17,16 @@
 //    jusqu'à la fin de la saisie. Rien ne bouge pendant un glisser ni pendant la frappe.
 //  - Thème clair / sombre : dévoilement circulaire (theme.js) ; mode cinéma : css/motion.css.
 //
-// Tout est coupé si l'utilisateur limite les animations (prefers-reduced-motion).
+// Tout est coupé si l'appareil demande moins d'animations (prefers-reduced-motion) ou si le
+// joueur les a coupées (bouton « Sans animation » de la barre Gestion) : voir motion-pref.js.
 // Les mouvements passent par l'API Web Animations (element.animate) : ils s'ajoutent aux
 // styles sans toucher aux propriétés transition / animation des feuilles de style. La
 // carte soulevée utilise la propriété translate (et non transform, laissée libre) et une
 // ombre ajoutée à la sienne (composite 'add').
 // Jamais de transform sur .sheet ni sur ses ancêtres (voir motion.css).
 // =============================================================================
+
+import { motionOff, onMotionChange } from './motion-pref.js';
 
 /** Départ vif, arrivée tout en douceur */
 const EASE_OUT = 'cubic-bezier(0.16, 1, 0.3, 1)';
@@ -53,7 +56,6 @@ const BULKY = 'table, textarea, [contenteditable]';
  *  cocher ni les listes, qui gardent le focus après un simple clic) */
 const EDITABLE = 'input:not([type="checkbox"], [type="radio"], [type="button"], [type="range"], [type="file"]), textarea, [contenteditable="true"]';
 
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
 
 /** Survol actif seulement après l'ouverture */
@@ -96,7 +98,7 @@ function pageHeld() {
  * @param {HTMLElement} root
  */
 async function playIntro(root) {
-    if (reducedMotion.matches || document.visibilityState !== 'visible' || !pageHeld()) {
+    if (motionOff() || document.visibilityState !== 'visible' || !pageHeld()) {
         // Une image plus tard : le thème mémorisé (appliqué juste avant) s'affiche d'un coup,
         // sans la transition de couleur du fond (coupée tant que data-motion est absent).
         // Onglet en arrière-plan : pas d'image dessinée, la minuterie prend le relais.
@@ -242,7 +244,7 @@ const panelMoves = new WeakMap();
  * @param {{ panel: HTMLElement, direction: number }} detail
  */
 function slidePanel({ panel, direction } = {}) {
-    if (!panel || reducedMotion.matches) return;
+    if (!panel || motionOff()) return;
     panelMoves.get(panel)?.cancel();
     const shift = (direction || 1) * TAB.shift;
     panelMoves.set(panel, panel.animate(
@@ -271,7 +273,7 @@ function initHover(root) {
     const raised = new Set();           // cartes soulevées
     const lifts = new WeakMap();        // carte → animation en cours ou maintenue
 
-    const enabled = () => hoverReady && !printing && finePointer.matches && !reducedMotion.matches;
+    const enabled = () => hoverReady && !printing && finePointer.matches && !motionOff();
     const busy = () => pressed || performance.now() - lastKey < HOVER.typingPause;
     const locked = () => document.body.dataset.locked === 'true';
 
@@ -313,7 +315,7 @@ function initHover(root) {
         const level = previous ? liftLevel(card) : 0;
         previous?.cancel();
         lifts.delete(card);
-        if (!up && (level === 0 || reducedMotion.matches)) return;
+        if (!up && (level === 0 || motionOff())) return;
         const shadow = getComputedStyle(document.documentElement).getPropertyValue('--motion-lift-shadow').trim() || 'transparent';
         const animation = card.animate([pose(level, shadow), pose(up ? 1 : 0, shadow)], {
             duration: up ? HOVER.up : HOVER.down,
@@ -471,7 +473,7 @@ function initHover(root) {
         clearTimeout(sheenTimer);
         sync();
     };
-    reducedMotion.addEventListener?.('change', reset);
+    onMotionChange(reset);
     finePointer.addEventListener?.('change', reset);
     root.addEventListener('dd:tabchange', () => {
         // Nouvel onglet : chaque carte peut de nouveau briller une fois

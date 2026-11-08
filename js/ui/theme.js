@@ -2,6 +2,8 @@
 // THEME.JS - Thème clair / sombre (attribut data-theme sur <html>)
 // =============================================================================
 
+import { motionOff } from './motion-pref.js';
+
 const STORAGE_KEY = 'dd2024_theme';
 
 /** Dévoilement du nouveau thème : durée (ms) et courbe (départ vif, arrivée douce) */
@@ -84,7 +86,7 @@ function revealCircle() {
 function canAnimate() {
     return typeof document.startViewTransition === 'function'
         && document.visibilityState === 'visible'
-        && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        && !motionOff();
 }
 
 function readStoredTheme() {

@@ -214,7 +214,9 @@
 [data-locked="true"] .weapons-table .cell-input[readonly]:hover,
 [data-locked="true"] .weapons-table .cell-input[readonly]:focus {
     border-bottom-color: transparent;
-    background: transparent;
+    /* background-color seul : le nom en or des armes magiques (dégradé découpé sur le texte,
+       magic.css) reste visible */
+    background-color: transparent;
     cursor: default;
 }
 

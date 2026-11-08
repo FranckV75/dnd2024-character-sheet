@@ -2,6 +2,24 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.6.0] - 2026-11-08 (Objets magiques)
+### Added
+- Armes et armures magiques (bonus réglé avec l'engrenage de la ligne) : un aspect de plus en plus
+  marqué selon le bonus.
+  - +1, éveillée : filet d'or à gauche, voile doré, nom en or, pastille « +1 », reflet rare.
+  - +2, enchantée : en plus, cadre doré, halo qui respire, nom qui brille, paillettes, étoile sur la
+    pastille.
+  - +3, légendaire : en plus, cadre épais parcouru d'un trait de lumière, runes qui s'allument,
+    inscription runique qui défile en haut et en bas, braises, rayons derrière la pastille, bonus en or.
+- Toucher la pastille joue l'enchantement (éclat, onde d'or, étincelles) et la barre d'état dit l'effet
+  du bonus (déjà compté ou non dans l'attaque, les dégâts ou la CA). L'enchantement se joue aussi quand
+  on règle un bonus plus élevé.
+- Bouton « Sans animation » dans la barre Gestion : coupe tout ce qui bouge sur la fiche (reflets,
+  objets magiques, Rage, ouverture...). Le choix est retenu sur l'appareil, jamais dans la sauvegarde.
+### Changed
+- Impression : les objets magiques restent sobres (nom en noir, simple « +N »).
+- Format de sauvegarde inchangé.
+
 ## [4.5.0] - 2026-11-06 (Dons à choix mémorisés)
 ### Added
 - Dons à choix : sous le don, des menus retiennent ce que vous avez choisi. La fiche ne change jamais

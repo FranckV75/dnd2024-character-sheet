@@ -14,11 +14,14 @@ css/                    Une feuille par fonctionnalité ; toute couleur vient de
 ├── account.css         Compte en ligne, « Mes personnages », questions de synchronisation
 ├── gallery.css         Fond d'écran, opacité de la fiche, galerie
 ├── weapons.css · armors.css · spells.css · rest.css · style-editor.css
-├── motion.css          Mouvements (ouverture en cascade, onglets, survol, thème, cinéma)
+├── magic.css           Armes et armures magiques (+1 à +3 de plus en plus marqués, enchantement)
+├── motion.css          Mouvements (ouverture en cascade, onglets, survol, thème, cinéma) ;
+│                       seule règle autorisée à utiliser !important : « Sans animation »
 ├── feedback.css        Réactions au jeu (Rage, jauge de PV, valeurs qui changent)
 └── print.css           Impression A4 (media="print")
 js/
-├── boot-theme.js       Thème mémorisé posé avant le premier affichage (pas de flash clair)
+├── boot-theme.js       Thème et choix « Sans animation » mémorisés, posés avant le premier
+│                       affichage (pas de flash clair)
 ├── main.js             Démarrage de l'application, sauvegarde automatique dans le navigateur
 ├── data/               Données du jeu (objets exportés, aucun accès au navigateur)
 │   ├── constants.js    Caractéristiques, compétences, fonds par défaut
@@ -52,6 +55,9 @@ js/
     ├── tabs.js · theme.js · lock.js · toolbar.js · account.js · gallery.js
     ├── weapons.js · armors.js · spells.js · rest.js · style-editor.js
     ├── motion.js · feedback.js · ornaments.js
+    ├── motion-pref.js  Animations en marche ou coupées (appareil ou bouton « Sans animation »,
+    │                   retenu sur l'appareil, jamais dans la sauvegarde)
+    ├── magic.js        Aspect des armes et armures magiques (pastille, décors, enchantement)
     ├── modal.js · autocomplete.js · cell-text.js · dom.js   (briques partagées)
     └── sanitize.js     Nettoyage du texte riche via DOMPurify
 data/spells.json        Base de sorts (chargée à la demande)

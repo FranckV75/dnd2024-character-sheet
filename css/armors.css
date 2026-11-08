@@ -83,7 +83,8 @@
 [data-locked="true"] .armors-table .cell-input[readonly]:hover,
 [data-locked="true"] .armors-table .cell-input[readonly]:focus {
     border-bottom-color: transparent;
-    background: transparent;
+    /* background-color seul : le nom en or des armures magiques reste visible (magic.css) */
+    background-color: transparent;
 }
 
 [data-locked="true"] .armors-table .round-check:disabled {

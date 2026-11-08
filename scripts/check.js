@@ -3,7 +3,8 @@
 //  1. Syntaxe de chaque fichier JS (node --check)
 //  2. Chaque import relatif pointe vers un fichier qui existe
 //  3. Aucun gestionnaire inline (onclick=, onchange=...) dans les pages HTML,
-//     aucun !important dans les feuilles de style
+//     aucun !important dans les feuilles de style (seule exception : la règle « Animations
+//     coupées » de css/motion.css, qui doit l'emporter sur toutes les animations)
 //  4. Aucun caractère mal encodé (mojibake : un « é » devenu deux caractères)
 // =============================================================================
 
@@ -57,8 +58,12 @@ for (const file of htmlFiles) {
     if (inline) errors.push(`Gestionnaire inline interdit dans ${rel(file)} : ${inline.join(', ')}`);
 }
 
+/** Seule règle autorisée à utiliser !important (sélecteur exact, dans css/motion.css) */
+const IMPORTANT_ALLOWED = /:root\[data-animations="off"\] \*,\s*:root\[data-animations="off"\] \*::before,\s*:root\[data-animations="off"\] \*::after\s*\{\s*animation:\s*none !important;\s*transition:\s*none !important;\s*\}/;
+
 for (const file of listFiles(ROOT, '.css')) {
-    const withoutComments = readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    let withoutComments = readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    if (rel(file).replace(/\\/g, '/') === 'css/motion.css') withoutComments = withoutComments.replace(IMPORTANT_ALLOWED, '');
     if (withoutComments.includes('!important')) errors.push(`!important interdit dans ${rel(file)}`);
 }
 

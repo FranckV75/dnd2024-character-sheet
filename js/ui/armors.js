@@ -24,6 +24,7 @@ import { attachAutocomplete } from './autocomplete.js';
 import { openModal, confirmModal } from './modal.js';
 import { isLocked } from './lock.js';
 import { createCalcBubble } from './calc-bubble.js';
+import { createMagicParts, setMagic, enchant, magicLevel, ENCHANT_DELAY_MS } from './magic.js';
 
 /** Colonnes de texte libre : clé de la sauvegarde → libellé accessible */
 const TEXT_COLUMNS = {
@@ -290,6 +291,14 @@ export function initArmors({ root, store, setStatus }) {
                         if (at === -1) return;
                         const next = draft();
                         replaceRow(at, () => next);
+                        // Nouveau bonus magique : la ligne s'enchante sous les yeux, fenêtre refermée
+                        const before = armorCanBeMagic(original) ? armorMagicBonus(original) : 0;
+                        if (armorCanBeMagic(next) && armorMagicBonus(next) > before) {
+                            setTimeout(() => {
+                                const target = rows[at];
+                                if (target) enchant(target.magic, target.tr);
+                            }, ENCHANT_DELAY_MS);
+                        }
                         const line = armorLine(next, ctx);
                         setStatus(`${name || 'Armure'} : ${line.kind === 'none' ? 'ne compte pas dans la CA' : `CA ${line.display}`}`);
                     }
@@ -391,8 +400,14 @@ export function initArmors({ root, store, setStatus }) {
             }
         }));
 
+        // Armure ou bouclier magique : pastille après le nom et décors de la ligne (magic.js)
+        const magic = createMagicParts(controls.name, (parts) => {
+            enchant(parts, tr);
+            setStatus(parts.message);
+        });
+
         const tr = el('tr', {},
-            el('td', { class: 'col-name' }, controls.name),
+            el('td', { class: 'col-name magic-cell' }, magic.name, magic.fx),
             el('td', { class: 'col-type' }, controls.type),
             el('td', { class: 'col-ca' }, controls.ca),
             el('td', { class: 'col-str' }, controls.str),
@@ -402,7 +417,7 @@ export function initArmors({ root, store, setStatus }) {
             el('td', { class: 'col-comment' }, controls.comment),
             el('td', { class: 'col-equip' }, el('span', { class: 'armor-equip' }, controls.equipped, controls.warn)),
             el('td', { class: 'col-del' }, el('span', { class: 'armor-actions' }, controls.config, del)));
-        return { tr, controls };
+        return { tr, controls, magic };
     }
 
     function rebuild(count) {
@@ -438,7 +453,7 @@ export function initArmors({ root, store, setStatus }) {
         const locked = isLocked();
         let entryShown = false;
         details = [];
-        rows.forEach(({ tr, controls }, i) => {
+        rows.forEach(({ tr, controls, magic: magicParts }, i) => {
             const row = asObject(list[i]);
             const blank = isBlankArmor(row);
             const shown = !blank || tr.contains(document.activeElement) || (!locked && !entryShown);
@@ -471,9 +486,19 @@ export function initArmors({ root, store, setStatus }) {
                 `CA de ${label ? `« ${label} »` : `la ligne ${i + 1}`} : ${line.kind === 'none' ? 'ne compte pas' : line.display}`);
 
             controls.config.hidden = blank;
-            const magic = armorMagicBonus(row);
+            const magic = armorCanBeMagic(row) ? magicLevel(armorMagicBonus(row)) : 0;
             controls.config.setAttribute('aria-label',
-                `Réglages de ${label ? `« ${label} »` : `l'armure (ligne ${i + 1})`}${magic && armorCanBeMagic(row) ? `, bonus magique +${magic}` : ''}`);
+                `Réglages de ${label ? `« ${label} »` : `l'armure (ligne ${i + 1})`}${magic ? `, bonus magique +${magic}` : ''}`);
+            const shield = line.category === 'shield';
+            // Équipée mais pas comptée (autre armure retenue, bouclier non maîtrisé) : la note le dit
+            let where;
+            if (status === 'counted') where = ' (déjà compté dans la CA de la fiche)';
+            else if (row.equipped === true && result.note) where = ` (${result.note.replace(/\.$/, '')})`;
+            else where = shield ? ' quand il est équipé' : ' quand elle est équipée';
+            setMagic(magicParts, tr, blank ? 0 : magic, {
+                label: `${shield ? 'Bouclier' : 'Armure'} ${label ? `« ${label} »` : `ligne ${i + 1}`}`,
+                effect: `+${magic} à la CA${where}`
+            });
 
             const messages = warnings[i] || [];
             controls.warn.hidden = messages.length === 0;

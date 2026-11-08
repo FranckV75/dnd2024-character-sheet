@@ -418,6 +418,11 @@
     .modal[open]::backdrop {
         animation: modal-veil-in 0.22s ease-out;
     }
+
+    /* Bouton « Sans animation » : le voile n'est pas atteint par la règle de css/motion.css */
+    :root[data-animations="off"] .modal[open]::backdrop {
+        animation: none;
+    }
 }
 
 @keyframes modal-in {

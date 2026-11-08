@@ -2,7 +2,8 @@
    MOTION.CSS - Mouvements de la fiche (js/ui/motion.js) : ouverture en cascade,
    changement d'onglet, survol des cartes, passage clair / sombre, mode cinéma.
    Tout mouvement est coupé sous prefers-reduced-motion.
-   Règles : couleurs par variables (jetons --motion-* de base.css), aucun !important.
+   Règles : couleurs par variables (jetons --motion-* de base.css), aucun !important, sauf la
+   règle « Animations coupées » ci-dessous, qui doit l'emporter sur toutes les feuilles.
    Les mouvements des cadres eux-mêmes (cascade d'ouverture, panneau qui glisse, carte
    soulevée au survol) sont joués par motion.js avec l'API Web Animations : ils ne touchent
    ni aux propriétés transition / animation ni aux ombres (box-shadow) des cadres.
@@ -10,6 +11,18 @@
    ses ancêtres : la barre de mise en forme du texte, en position: fixed dans la fiche,
    doit rester calée sur l'écran (le fondu d'ouverture de <body> ne joue que sur l'opacité).
    ============================================================================= */
+
+/* Animations coupées par le joueur (bouton « Animations » de la barre Gestion,
+   js/ui/motion-pref.js) : comme sous prefers-reduced-motion, plus rien ne bouge ni ne glisse,
+   dans toutes les feuilles (reflets, Rage, objets magiques, ouverture...). Les états finaux
+   restent : couleurs, cadres et lueurs fixes. Les mouvements joués en JavaScript lisent
+   motionOff() avant de partir. */
+:root[data-animations="off"] *,
+:root[data-animations="off"] *::before,
+:root[data-animations="off"] *::after {
+    animation: none !important;
+    transition: none !important;
+}
 
 /* Avant que motion.js ait pris la main (chargement) : le thème mémorisé, appliqué par le
    script, remplace d'un coup le fond par défaut, sans fondu de couleur (pas de passage par

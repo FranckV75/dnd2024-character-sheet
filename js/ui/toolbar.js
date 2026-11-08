@@ -4,7 +4,9 @@
 //  - Repli : sur tablette (≤ 1100 px, ou écran tactile ≤ 1400 px en paysage), la barre démarre repliée sur un seul bouton
 //    « Gestion » qui déplie les commandes (affichage et compte compris).
 //  - Groupe « Fiche » : verrou (lock.js), puis nouvelle fiche, import, export, impression.
-//  - Groupe « Affichage » (#view-controls) : thème et mode cinéma, avant « Fonds » (gallery.js).
+//  - Groupe « Affichage » (#view-controls) : thème, mode cinéma et animations, avant « Fonds »
+//    (gallery.js). « Animations » coupe tout ce qui bouge dans la fiche (motion-pref.js) : choix
+//    retenu sur l'appareil, jamais dans la sauvegarde.
 //  - Boutons à icônes dessinées (dom.js) plutôt qu'à emojis : même style dans les deux thèmes.
 //  - Verrou (lock.js), mode cinéma (masque la fiche pour voir le fond),
 //    import (fichier ou texte collé), export (fichier ou presse-papiers),
@@ -15,6 +17,7 @@
 
 import { el, icon, setIconLabel } from './dom.js';
 import { toggleTheme } from './theme.js';
+import { motionOff, deviceReducesMotion, animationsOffByChoice, setAnimations, onMotionChange } from './motion-pref.js';
 import { isLocked, toggleLocked } from './lock.js';
 import { openModal, confirmModal } from './modal.js';
 import { createDefaultCharacter } from '../state/schema.js';
@@ -50,6 +53,12 @@ export function initToolbar({ store, setStatus }) {
     const cinemaButton = el('button', {
         type: 'button', class: 'btn', id: 'btn-cinema', 'aria-pressed': 'false',
         on: { click: () => setCinema(!document.body.classList.contains(CINEMA_CLASS)) }
+    });
+
+    const motionButton = el('button', {
+        // Libellé fixe, état dans aria-pressed (enfoncé = animations coupées)
+        type: 'button', class: 'btn', id: 'btn-motion', 'aria-pressed': 'false',
+        on: { click: () => toggleAnimations() }
     });
 
     const importButton = el('button', {
@@ -97,7 +106,7 @@ export function initToolbar({ store, setStatus }) {
     );
 
     // Affichage : thème et cinéma ouvrent le groupe (gallery.js y ajoute « Fonds »)
-    (document.getElementById('view-controls') || panel).append(themeButton, cinemaButton);
+    (document.getElementById('view-controls') || panel).append(themeButton, cinemaButton, motionButton);
 
     // ---------------------------------------------------------------- Verrou
     const renderLock = () => {
@@ -142,6 +151,30 @@ export function initToolbar({ store, setStatus }) {
         setCinema(false);
     });
     setCinema(false);
+
+    // ---------------------------------------------------------------- Animations
+    // Bouton enfoncé = animations coupées (par le joueur ou par l'appareil)
+    const renderMotion = () => {
+        const off = motionOff();
+        motionButton.setAttribute('aria-pressed', String(off));
+        setIconLabel(motionButton, 'sparkle', 'Sans animation');
+        motionButton.title = deviceReducesMotion()
+            ? "Votre appareil demande moins d'animations (réglage d'accessibilité) : elles restent coupées"
+            : off
+                ? 'Animations coupées sur cet appareil. Cliquer pour les rallumer.'
+                : 'Couper les animations (reflets, objets magiques, Rage...) sur cet appareil';
+    };
+    function toggleAnimations() {
+        // Réglage de l'appareil : le bouton ne peut pas rallumer, il l'explique (choix inchangé)
+        if (deviceReducesMotion()) {
+            setStatus("Votre appareil demande moins d'animations : elles restent coupées.");
+            return;
+        }
+        setAnimations(animationsOffByChoice());
+        setStatus(animationsOffByChoice() ? 'Animations coupées sur cet appareil.' : 'Animations rallumées.');
+    }
+    onMotionChange(renderMotion);
+    renderMotion();
 
     // ---------------------------------------------------------------- Repli (tablette)
     function setCollapsed(collapsed) {

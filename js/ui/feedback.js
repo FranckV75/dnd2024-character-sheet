@@ -8,14 +8,15 @@
 //  2. Jauge des points de vie sous « PV actuels » : décorative, les nombres font foi.
 //  3. Valeur calculée qui change après une saisie (modificateur, bonus d'attaque, CA...) :
 //     brève pulsation dorée. Jamais au chargement ni après un import (fiche remplacée).
-// Les mouvements lancés ici respectent prefers-reduced-motion (relu à chaque usage).
+// Les mouvements lancés ici s'abstiennent si l'appareil demande moins d'animations ou si le
+// joueur les a coupées (motionOff() de motion-pref.js, relu à chaque usage).
 // =============================================================================
 
 import { classSlug, parseNumber } from '../rules/character.js';
 import { effectiveBuffs } from '../rules/weapons.js';
 import { el } from './dom.js';
+import { motionOff } from './motion-pref.js';
 
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 const HP_FIELDS = ['hp_current', 'hp_max', 'hp_temp'];
 
@@ -83,7 +84,7 @@ function initRage(root, store) {
     };
     const ignite = () => {
         settle();
-        if (reducedMotion.matches || document.visibilityState !== 'visible') return;
+        if (motionOff() || document.visibilityState !== 'visible') return;
         html.dataset.rageLit = 'ignite';
         timers.push(setTimeout(() => { html.dataset.rageLit = 'breathe'; }, RAGE_IGNITE_MS));
         timers.push(setTimeout(settle, RAGE_LIT_MS));
@@ -207,7 +208,7 @@ function initValuePulse(root, store) {
     // Regroupement par image : une seule passe même si une saisie change trente valeurs
     const flush = () => {
         frame = 0;
-        const quiet = replaced || reducedMotion.matches;
+        const quiet = replaced || motionOff();
         replaced = false;
         for (const node of pending) {
             const text = node.textContent;

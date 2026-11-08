@@ -40,6 +40,7 @@ import { cellText as createCellText } from './cell-text.js';
 import { attachAutocomplete } from './autocomplete.js';
 import { confirmModal } from './modal.js';
 import { isLocked } from './lock.js';
+import { motionOff } from './motion-pref.js';
 
 const TOOLTIP_STORAGE_KEY = 'dd2024_spell_tooltips';
 /** Grimoire ouvert à la demande (personnage sans magie) : réglage du navigateur, pas de la fiche */
@@ -58,7 +59,6 @@ function adeptRule(types) {
     const words = types.map(elementWord).join(', ');
     return `Adepte élémentaire (${words}) : quand ce sort inflige des dégâts de ce type, il ignore la Résistance à ces dégâts et un 1 sur un dé de dégâts compte comme un 2.`;
 }
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const SORT_COLUMNS = {
     lvl: { label: 'Niv.', title: 'niveau' },
     name: { label: 'Nom', title: 'nom' },
@@ -109,7 +109,7 @@ function saveGrimoireOpen(open) {
 
 /** Bref éclat doré (ligne de saisie appelée, grimoire ouvert) ; rien si les animations sont limitées */
 function flash(node, className) {
-    if (!node || reducedMotion.matches) return;
+    if (!node || motionOff()) return;
     node.classList.remove(className);
     void node.offsetWidth; // relance l'animation si elle est déjà en cours
     node.classList.add(className);
