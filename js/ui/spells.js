@@ -40,7 +40,7 @@ import {
 } from '../rules/spells.js';
 import { adeptElements, elementWord } from '../rules/feat-choices.js';
 import { featSpellGroups, setFeatSpellUsePatch } from '../rules/feat-spells.js';
-import { FEAT_LEVELS } from '../state/schema.js';
+import { FEAT_SLOT_ORDER, HUMAN_FEAT_SLOT } from '../state/schema.js';
 import { ABILITY_IDS } from '../data/constants.js';
 import { loadSpells } from '../data/spells.js';
 import { el, icon, setIconLabel } from './dom.js';
@@ -56,7 +56,7 @@ const GRIMOIRE_STORAGE_KEY = 'dd2024_grimoire_open';
 // Dons et leurs choix : repère « Adepte » (Adepte élémentaire) sur les sorts du type choisi
 // Sorts de dons : leurs choix, leurs lancers gratuits (feat_uses) et la caractéristique du DD
 const RELEVANT_KEYS = new Set(['dynamic_spells', 'spell_slots_state', 'spell_class_filter', 'char_class', 'char_subclass', 'char_level',
-    'feat_choices', 'feat_uses', ...FEAT_LEVELS.map(level => `feat_${level}`), ...ABILITY_IDS.map(id => `${id}_score`)]);
+    'feat_choices', 'feat_uses', 'char_species', ...FEAT_SLOT_ORDER.map(level => `feat_${level}`), ...ABILITY_IDS.map(id => `${id}_score`)]);
 
 /** « Adepte (feu) » : types d'Adepte élémentaire infligés par ce sort */
 function adeptTypes(spell, elements) {
@@ -866,7 +866,7 @@ export function initSpells(ctx) {
         return el('div', { class: 'feat-spells-group', 'data-feat': group.featId },
             el('div', { class: 'feat-spells-head' },
                 el('strong', { class: 'feat-spells-name', text: group.featName }),
-                el('span', { class: 'feat-spells-slot', text: `Don niv. ${group.level}` }),
+                el('span', { class: 'feat-spells-slot', text: group.level === HUMAN_FEAT_SLOT ? 'Don niv. 1 · Humain' : `Don niv. ${group.level}` }),
                 stats),
             group.spells.length ? el('ul', { class: 'feat-spells-list' }, group.spells.map(featSpellLine)) : null,
             ...group.extras.map(extra => el('p', { class: 'feat-spells-extra' },

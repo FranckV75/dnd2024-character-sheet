@@ -34,6 +34,26 @@ export const BOOLEAN_FIELDS = [
 /** Paliers de dons (niveau d'acquisition D&D 2024) */
 export const FEAT_LEVELS = [1, 4, 8, 12, 16, 19];
 
+/**
+ * Second don d'origine de l'Humain (trait Polyvalent, PHB 2024) : clé feat_0, acquise au niveau 1,
+ * en plus du don de l'historique (feat_1). Clé ajoutée par la v4 seulement quand on la remplit
+ * (absente de la fiche vierge) ; elle ne compte que pour un personnage d'espèce Humain.
+ */
+export const HUMAN_FEAT_SLOT = 0;
+
+/** Emplacements de dons dans l'ordre de la fiche : celui de l'Humain juste après le niveau 1 */
+export const FEAT_SLOT_ORDER = [1, HUMAN_FEAT_SLOT, 4, 8, 12, 16, 19];
+
+/**
+ * Niveau auquel un emplacement est acquis (feat_0 : niveau 1)
+ * @param {number|string} slot - numéro de l'emplacement (feat_<numéro>)
+ * @returns {number}
+ */
+export function featSlotLevel(slot) {
+    const n = Number(slot);
+    return n === HUMAN_FEAT_SLOT ? 1 : n;
+}
+
 /** Valeurs par défaut des lignes des tableaux dynamiques */
 export const EMPTY_WEAPON = {
     name: '', prop: '', prof: '', ammo: '', note: '',

@@ -126,7 +126,7 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
 - Les clés inconnues sont conservées par la v4 : une fiche enregistrée par la v4 reste lisible par
   la v3, et inversement. Attention : la v3, elle, reconstruit la fiche à partir de sa page et perd en
   enregistrant les clés qu'elle ne connaît pas (`combat_buffs`, `spell_slots_state`, `feat_uses`,
-  `feat_choices`).
+  `feat_choices`, `feat_0`) : `V4_ONLY_KEYS`, `js/cloud/sync.js`.
 - Clés propres à la v4 : `combat_buffs` (bonus de combat actifs), `spell_slots_state` (emplacements
   de sorts) et `feat_uses` (usages dépensés des dons à cases, `{ idDuDon: nombre }`, facultative :
   absente = rien de dépensé ; `js/rules/feat-uses.js`) et `feat_choices` (choix des dons : caractéristique,
@@ -135,6 +135,13 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   des clés `"idDuDon@niveau:partie"` (0 ou 1 ; `js/rules/feat-spells.js`) ; la fiche n'écrit jamais ces sorts
   dans `dynamic_spells`. En v3, cet état était gardé à part dans le navigateur (`combat_buffs`, `spell_slots`) :
   la v4 le reprend une fois, dans la fiche v3 du navigateur (`importV3DeviceState`).
+- `feat_0` : second don d'origine de l'Humain (trait Polyvalent), acquis au niveau 1, en plus de `feat_1`
+  (historique). Absente d'une fiche vierge, ajoutée quand on la remplit ; elle ne compte que si l'espèce
+  est Humain (`isHuman`, `js/rules/feats.js`) et n'est jamais effacée si l'espèce change. Son numéro 0
+  sert aussi de clé dans `feat_choices` (`"0"`) et `feat_uses` (`"idDuDon@0:partie"`) ; ordre de la fiche
+  et niveau d'acquisition : `FEAT_SLOT_ORDER` et `featSlotLevel` (`js/state/schema.js`).
+- Dons repliés (pastille du niveau, onglet Aptitudes & Traits) : retenus sur l'appareil seulement
+  (`localStorage` `dd2024_feats_folded`, liste « emplacement:don »), jamais dans la fiche.
 - Une fiche sans la clé `spell_slots_state` n'a jamais été enregistrée par la v4 (`isV3Save`) : la
   synchronisation ne charge jamais en silence une version en ligne écrite par la v3 (onglet resté
   ouvert après la bascule), elle pose la question.

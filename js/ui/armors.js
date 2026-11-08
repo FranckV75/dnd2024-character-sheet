@@ -37,10 +37,10 @@ const TEXT_COLUMNS = {
 
 /** Clés de la fiche dont dépendent le tableau, ses avertissements et ses CA calculées */
 const WATCHED_KEYS = new Set([
-    'dynamic_armors', 'str_score', 'dex_score', 'char_level', 'char_class',
+    'dynamic_armors', 'str_score', 'dex_score', 'char_level', 'char_class', 'char_species',
     'prof_armor_light', 'prof_armor_med', 'prof_armor_heavy', 'prof_armor_shield'
 ]);
-/** Les dons atteints (feat_<N>) changent la Dex max des armures intermédiaires */
+/** Les dons atteints (feat_<N> ; feat_0 selon l'espèce) changent la Dex max des armures intermédiaires */
 const isWatched = (key) => WATCHED_KEYS.has(key) || key.startsWith('feat_');
 
 const COLUMN_COUNT = 10;

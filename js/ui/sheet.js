@@ -12,13 +12,13 @@
 import { ABILITIES, SKILLS, SKILLS_BY_STAT } from '../data/constants.js';
 import { DD_RULES } from '../data/dd-rules.js';
 import { FEATS_DATA } from '../data/feats.js';
-import { FEAT_LEVELS } from '../state/schema.js';
+import { FEAT_SLOT_ORDER, HUMAN_FEAT_SLOT, featSlotLevel } from '../state/schema.js';
 import { stripHTML } from '../state/migrate.js';
 import { deriveCharacter, featSlotState, hitDieForClass, exhaustionSeverity } from '../rules/character.js';
 import { featEffects, AUTOMATED_FEATS } from '../rules/feat-effects.js';
 import { featCounters, setFeatUsesPatch } from '../rules/feat-uses.js';
 import { FEAT_CHOICE_RULES, slotChoice, setFeatChoicePatch, fieldOptions, fieldActive } from '../rules/feat-choices.js';
-import { featName } from '../rules/feats.js';
+import { featName, featSlotName, isHuman } from '../rules/feats.js';
 import { sanitizeRich, sanitizeRulesText } from './sanitize.js';
 import { el, fillSelect, icon, signed } from './dom.js';
 import { applyLock, isLocked } from './lock.js';
@@ -86,9 +86,10 @@ function buildSkills(root) {
     }
 }
 
-function featOptions() {
+/** @param {string[]} types - familles de dons proposées (toutes, ou « Origine » pour l'Humain) */
+function featOptions(types = FEAT_TYPE_ORDER) {
     const feats = Object.entries(FEATS_DATA).map(([id, f]) => ({ id, ...f }));
-    return FEAT_TYPE_ORDER.map(type => {
+    return types.map(type => {
         const group = el('optgroup', { label: type === 'Épique' ? 'Faveurs épiques' : `Dons : ${type}` });
         feats.filter(f => f.type === type)
             .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
@@ -100,25 +101,110 @@ function featOptions() {
     });
 }
 
+// ---------------------------------------------------------------------------
+// Dons repliés : toucher la pastille du niveau ne laisse que le titre du don (description et
+// encadré « Dans la fiche » masqués). Choix retenu sur l'appareil (comme le thème), jamais dans
+// la sauvegarde, sous la forme « emplacement:don » : un autre don choisi dans l'emplacement
+// s'affiche déplié. Impression : tout est imprimé, replié ou non.
+// ---------------------------------------------------------------------------
+
+const FOLD_KEY = 'dd2024_feats_folded';
+
+/** Dons repliés sur cet appareil : « numéro de l'emplacement:identifiant du don » */
+function readFolded() {
+    try {
+        const list = JSON.parse(localStorage.getItem(FOLD_KEY) || '[]');
+        return new Set(Array.isArray(list) ? list.map(String).filter(entry => entry.includes(':')) : []);
+    } catch {
+        return new Set();
+    }
+}
+
+let foldedSlots = readFolded();
+
+function saveFolded() {
+    try {
+        if (foldedSlots.size) localStorage.setItem(FOLD_KEY, JSON.stringify([...foldedSlots]));
+        else localStorage.removeItem(FOLD_KEY);
+    } catch {
+        // Stockage indisponible (navigation privée) : le repli vaut pour la session
+    }
+}
+
+/** Clé de repli de l'emplacement (son don décrit, posé par renderFeats) ; '' sans don */
+const foldKey = (slot) => (slot.dataset.foldFeat ? `${slot.dataset.featSlot}:${slot.dataset.foldFeat}` : '');
+
+/** Repli d'un emplacement posé sur la fiche. Sans don, la pastille n'est qu'un texte (« Niv. 8 ») */
+function applyFold(slot) {
+    const id = slot.dataset.featSlot;
+    const button = slot.querySelector('.feat-badge');
+    const key = foldKey(slot);
+    const folded = key !== '' && foldedSlots.has(key);
+    if ((slot.dataset.folded === 'true') !== folded) {
+        if (folded) slot.dataset.folded = 'true';
+        else delete slot.dataset.folded;
+    }
+    if (!key) {
+        for (const name of ['aria-expanded', 'aria-controls', 'aria-label', 'title']) button.removeAttribute(name);
+        return;
+    }
+    // Nom accessible qui commence par le texte visible (« Niv. 4 : replier… »)
+    const visible = id === String(HUMAN_FEAT_SLOT) ? 'Niv. 1 (Humain)' : `Niv. ${id}`;
+    button.setAttribute('aria-expanded', String(!folded));
+    button.setAttribute('aria-controls', `feat-desc-${id} feat-sheet-${id}`);
+    button.setAttribute('aria-label', `${visible} : ${folded ? 'déplier' : 'replier'} la description du don`);
+    button.title = folded ? 'Afficher la description' : 'Ne garder que le titre';
+}
+
+function bindFeatFolding(root) {
+    root.querySelector('#feats').addEventListener('click', (event) => {
+        const button = event.target.closest('.feat-badge');
+        if (!button || button.disabled) return;
+        const slot = button.closest('[data-feat-slot]');
+        const key = foldKey(slot);
+        if (!key) return;
+        if (foldedSlots.has(key)) foldedSlots.delete(key);
+        else {
+            // Un seul don retenu par emplacement : l'ancien (don remplacé depuis) est oublié
+            for (const entry of [...foldedSlots]) if (entry.startsWith(`${slot.dataset.featSlot}:`)) foldedSlots.delete(entry);
+            foldedSlots.add(key);
+        }
+        saveFolded();
+        applyFold(slot);
+    });
+    // Autre onglet du navigateur : même appareil, même choix
+    window.addEventListener('storage', (event) => {
+        if (event.key !== FOLD_KEY) return;
+        foldedSlots = readFolded();
+        for (const slot of root.querySelectorAll('#feats [data-feat-slot]')) applyFold(slot);
+    });
+}
+
 function buildFeats(root) {
-    root.querySelector('#feats').replaceChildren(...FEAT_LEVELS.map(level => {
+    root.querySelector('#feats').replaceChildren(...FEAT_SLOT_ORDER.map(level => {
+        const human = level === HUMAN_FEAT_SLOT;
+        // Second don de l'Humain (trait Polyvalent) : un don d'origine seulement
         const select = el('select', {
             id: `f-feat_${level}`, class: 'input', 'data-field': `feat_${level}`,
-            'aria-label': `Don du niveau ${level}`,
+            'aria-label': human ? "Second don d'origine (Humain, trait Polyvalent)" : `Don du niveau ${level}`,
             'aria-describedby': `feat-when-${level}`
-        }, el('option', { value: '', text: '— Choisir un don —' }), featOptions());
+        }, el('option', { value: '', text: human ? "— Choisir un don d'origine —" : '— Choisir un don —' }),
+        featOptions(human ? ['Origine'] : FEAT_TYPE_ORDER));
         // data-feat-state (posé au rendu, voir featSlotState) : actif, à choisir, prévu ou à venir ;
-        // la légende (« À venir », « Actif au niveau 12 ») ne s'affiche que pour les niveaux pas encore atteints
-        return el('div', { class: 'feat', 'data-feat-slot': String(level) },
+        // la légende (« À venir », « Actif au niveau 12 ») ne s'affiche que pour les niveaux pas encore atteints ;
+        // celle de l'emplacement de l'Humain dit d'où il vient (« Humain : Polyvalent »)
+        // La pastille replie le don (bindFeatFolding) ; sans don choisi, rien à replier
+        return el('div', { class: 'feat', 'data-feat-slot': String(level), hidden: human },
             el('div', { class: 'feat-head' },
-                el('span', { class: 'feat-badge', text: `Niv. ${level}` }),
+                el('button', { type: 'button', class: 'feat-badge', disabled: true },
+                    el('span', { text: `Niv. ${featSlotLevel(level)}` }), icon('chevron')),
                 select,
                 el('output', { class: 'feat-asi', 'data-out': `featAsi:${level}` }),
                 el('span', { class: 'feat-when', id: `feat-when-${level}`, hidden: true },
-                    icon('hourglass'), el('span', { class: 'feat-when-text' }))),
-            el('div', { class: 'feat-desc', 'data-feat-desc': String(level), hidden: true }),
+                    icon(human ? 'user' : 'hourglass'), el('span', { class: 'feat-when-text' }))),
+            el('div', { class: 'feat-desc', id: `feat-desc-${level}`, 'data-feat-desc': String(level), hidden: true }),
             // Ce que la fiche fait de ce don (calculs, rappels) : renderFeatSheet
-            el('div', { class: 'feat-sheet', 'data-feat-sheet': String(level), hidden: true }));
+            el('div', { class: 'feat-sheet', id: `feat-sheet-${level}`, 'data-feat-sheet': String(level), hidden: true }));
     }));
 }
 
@@ -380,12 +466,21 @@ const FEAT_WHEN = {
 };
 
 function renderFeats(root, character, d, effects, counters) {
-    for (const level of FEAT_LEVELS) {
+    const human = isHuman(character);
+    for (const level of FEAT_SLOT_ORDER) {
         const slot = root.querySelector(`[data-feat-slot="${level}"]`);
-        const state = featSlotState(level, d.level, character[`feat_${level}`]);
+        const humanSlot = level === HUMAN_FEAT_SLOT;
+        const chosen = stripHTML(String(character[`feat_${level}`] ?? '')) !== '';
+        // Emplacement de l'Humain : affiché pour un Humain, ou s'il garde un don (espèce changée
+        // ensuite : le don est montré, ne compte pas, et la valeur saisie n'est pas effacée)
+        if (humanSlot) slot.hidden = !human && !chosen;
+        let state = featSlotState(featSlotLevel(level), d.level, character[`feat_${level}`]);
+        if (humanSlot && !human && chosen) state = 'planned';
         if (slot.dataset.featState !== state) slot.dataset.featState = state;
         const when = slot.querySelector('.feat-when');
-        const caption = FEAT_WHEN[state]?.(level) ?? '';
+        const caption = humanSlot
+            ? (human ? 'Humain : Polyvalent' : 'Réservé aux Humains')
+            : FEAT_WHEN[state]?.(level) ?? '';
         const text = when.querySelector('.feat-when-text');
         if (text.textContent !== caption) text.textContent = caption;
         when.hidden = !caption;
@@ -399,10 +494,15 @@ function renderFeats(root, character, d, effects, counters) {
         if (feat) {
             box.innerHTML = sanitizeRulesText(`<strong>Prérequis :</strong> ${feat.prereq}<br>${feat.desc || '<em>Description à compléter.</em>'}`);
         }
+        const badge = slot.querySelector('.feat-badge');
+        if (badge.disabled !== !feat) badge.disabled = !feat;
+        const foldFeat = feat ? featId : '';
+        if (slot.dataset.foldFeat !== foldFeat) slot.dataset.foldFeat = foldFeat;
+        applyFold(slot);
         const activeId = state === 'active' && feat ? featId : '';
         renderFeatSheet(root.querySelector(`[data-feat-sheet="${level}"]`), activeId, level, effects,
-            // Don pris dans deux emplacements : ses cases (partagées) apparaissent dans les deux encadrés
-            counters.find(counter => counter.featId === activeId), character);
+            // Don pris dans deux emplacements : ses cases restent sous le premier (le second a une alerte)
+            counters.find(counter => counter.featId === activeId && counter.level === level), character);
     }
 }
 
@@ -529,7 +629,10 @@ function zoneMentions(zone, notes) {
 /** Liste des notes de dons (fenêtre de détail) */
 function featNotesList(notes) {
     return el('ul', { class: 'feat-notes' }, notes.map(note => el('li', { class: note.inactive ? 'is-inactive' : null },
-        el('strong', { class: 'feat-notes-name', text: note.slot ? `${note.featName} (niv. ${note.slot})` : note.featName }),
+        el('strong', {
+            class: 'feat-notes-name',
+            text: note.slot !== undefined ? `${note.featName} (${featSlotName(note.slot).replace('niveau', 'niv.')})` : note.featName
+        }),
         el('span', { text: note.text }),
         note.applied ? el('span', { class: 'feat-tag', text: 'Déjà compté' }) : null,
         note.manual ? el('span', { class: 'feat-tag', 'data-kind': 'manual', text: 'À reporter' }) : null,
@@ -616,7 +719,7 @@ function choiceControls(featId, level) {
     if (!rule) return null;
     const option = ([value, text]) => el('option', { value, text });
     return el('div', {
-        class: 'feat-choices', role: 'group', 'aria-label': `Choix du don ${featName(featId)} (niveau ${level})`,
+        class: 'feat-choices', role: 'group', 'aria-label': `Choix du don ${featName(featId)} (${featSlotName(level)})`,
         'data-feat-choice-slot': String(level), 'data-feat-choice-feat': featId
     },
         rule.fields.map(field => {
@@ -717,7 +820,8 @@ function renderFeatSheet(box, featId, level, effects, counter, character) {
     const notesSignature = JSON.stringify(notes);
     if (parts.notesSignature === notesSignature) return;
     parts.notesSignature = notesSignature;
-    const automated = AUTOMATED_FEATS.includes(featId) && notes.length > 0;
+    // Une alerte (même don pris deux fois...) s'affiche aussi pour un don que la fiche ne calcule pas
+    const automated = notes.length > 0 && (AUTOMATED_FEATS.includes(featId) || notes.some(note => note.check));
     parts.list.replaceChildren(automated
         ? el('ul', { class: 'feat-sheet-list' }, notes.map(note => {
             const [kind, tag] = noteKind(note);
@@ -773,6 +877,7 @@ export function createSheet(root, store) {
     bindFields(root, store);
     bindFeatCounters(root, store);
     bindFeatChoices(root, store);
+    bindFeatFolding(root);
     bindArmorClassBubble(root);
     // Mention d'un don (Initiative, PV max, CA, sauvegardes) : détail dans une fenêtre,
     // même fiche verrouillée (lecture seule)

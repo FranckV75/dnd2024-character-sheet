@@ -1029,9 +1029,17 @@ fieldset.inline-checks {
 }
 
 /* Pastille gravée, cerclée d'or (l'or plein reste réservé aux états actifs : filtre choisi,
-   Rage, bouton enfoncé) ; elle remplit sa colonne, de largeur fixe */
+   Rage, bouton enfoncé) ; elle remplit sa colonne, de largeur fixe. C'est un bouton : la toucher
+   replie le don (seul le titre reste) ; sans don choisi, rien à replier (désactivée, sans chevron). */
 .feat-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 0;
     padding: 3px 8px;
+    cursor: pointer;
+    line-height: 1.3;
     border: 1px solid var(--gold-soft);
     border-radius: 4px;
     background: linear-gradient(var(--btn-top), var(--btn-bottom));
@@ -1042,6 +1050,37 @@ fieldset.inline-checks {
     font-weight: 700;
     text-align: center;
     text-shadow: var(--engrave);
+}
+
+.feat-badge:disabled {
+    cursor: default;
+}
+
+.feat-badge .icon {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    stroke-width: 2;
+    transition: transform 0.2s ease;
+}
+
+.feat-badge:disabled .icon {
+    display: none;
+}
+
+.feat-badge:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+/* Don replié : chevron tourné vers la droite (« il y a une suite ») */
+.feat[data-folded="true"] .feat-badge .icon {
+    transform: rotate(-90deg);
+}
+
+/* Second don d'origine de l'Humain : masqué pour les autres espèces (sauf s'il garde un don) */
+.feat[hidden] {
+    display: none;
 }
 
 .feat-asi {
@@ -1098,6 +1137,12 @@ fieldset.inline-checks {
 }
 
 @media screen {
+    /* Don replié (pastille touchée) : seul le titre reste ; imprimé en entier */
+    .feat[data-folded="true"] > .feat-desc,
+    .feat[data-folded="true"] > .feat-sheet {
+        display: none;
+    }
+
     /* Don actif (choisi, niveau atteint) : un en-tête de chapitre, repérable en faisant
        défiler. Bandeau doré qui s'estompe vers la droite, pastille du niveau en or plein,
        titre en or et en gras souligné d'un trait d'or. Imprimé sobre (rien de tout cela). */
@@ -1855,6 +1900,11 @@ fieldset.inline-checks {
    ::after : Safari (iPad) n'en dessine pas sur une case à cocher. À l'écran seulement :
    imprimée depuis un iPad, la feuille garde ses cases de papier (print.css). */
 @media screen and (pointer: coarse) {
+    /* Pastille des dons (bouton de repli) : plus haute sous le doigt */
+    .feat-badge {
+        min-height: 34px;
+    }
+
     .round-check,
     .round-check:hover:not(:disabled):not(.demo) {
         width: 44px;

@@ -2,6 +2,23 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.8.0] - 2026-11-09 (Don de l'Humain, dons repliables)
+### Added
+- Humain : second don d'origine (trait Polyvalent, PHB 2024), juste sous celui de l'historique, avec la
+  mention « Humain : Polyvalent ». Sa liste ne propose que les dons d'origine ; il compte dès le niveau 1
+  (calculs, cases, sorts de dons, repos). Autre espèce : la ligne disparaît, ou, si un don y est noté,
+  il reste affiché « Réservé aux Humains » sans compter (rien n'est effacé).
+- Aptitudes & Traits : toucher la pastille « Niv. X » replie le don (seul son titre reste), un second
+  toucher le rouvre. Retenu sur l'appareil, jamais dans la sauvegarde ; un autre don choisi s'affiche
+  déplié ; tout est imprimé, replié ou non.
+### Fixed
+- Même don pris dans deux emplacements (hors dons répétables) : le second affiche une alerte « déjà
+  pris » au lieu de répéter les calculs et les rappels (plus de « +2 PV max à reporter » en double).
+### Changed
+- Format de sauvegarde : nouvelle clé facultative `feat_0` (second don de l'Humain), absente tant qu'on
+  ne la remplit pas ; aucune clé renommée ni supprimée. La synchronisation la traite comme les autres
+  clés propres à la v4 (une ancienne fiche v3 qui l'efface est réparée sans question).
+
 ## [4.7.0] - 2026-11-08 (Sorts de dons)
 ### Added
 - Six dons qui donnent des sorts, avec leurs choix sous le don (onglet Aptitudes & Traits) : Initié à la

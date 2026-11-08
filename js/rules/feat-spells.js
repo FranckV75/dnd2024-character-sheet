@@ -29,7 +29,7 @@
 // Fonctions pures : le personnage reçu n'est jamais modifié.
 // =============================================================================
 
-import { featSlots, featName } from './feats.js';
+import { featSlots, featName, featSlotName } from './feats.js';
 import { FEAT_CHOICE_RULES, slotChoice, fieldActive, abilityName, MAGIC_INITIATE_CLASSES } from './feat-choices.js';
 import { FEAT_USES_KEY, featUsesState } from './feat-uses.js';
 import { computeSpellcasting } from './character.js';
@@ -123,7 +123,7 @@ export function featSpellGroups(character, derived) {
 
         if (featId === 'initie_a_la_magie') {
             if (choice.list && initiateLists.has(choice.list)) {
-                warnings.push(`Initié à la magie est déjà pris avec la liste ${CLASS_NAMES[choice.list]} au niveau ${initiateLists.get(choice.list)} : chaque exemplaire du don demande une autre liste.`);
+                warnings.push(`Initié à la magie est déjà pris avec la liste ${CLASS_NAMES[choice.list]} au ${featSlotName(initiateLists.get(choice.list))} : chaque exemplaire du don demande une autre liste.`);
             } else if (choice.list) initiateLists.set(choice.list, level);
             if (choice.cantrip1 && choice.cantrip1 === choice.cantrip2) {
                 warnings.push('Le même sort mineur est choisi deux fois : choisissez-en deux différents.');

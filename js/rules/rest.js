@@ -20,6 +20,7 @@ import { deriveCharacter, parseNumber } from './character.js';
 import { restFeatNotes } from './feat-effects.js';
 import { restFeatUses } from './feat-uses.js';
 import { restFeatSpellUses } from './feat-spells.js';
+import { isHuman } from './feats.js';
 
 export const DEATH_SAVE_KEYS = ['ds_s1', 'ds_s2', 'ds_s3', 'ds_f1', 'ds_f2', 'ds_f3'];
 
@@ -313,7 +314,7 @@ export function planLongRest(character) {
             spellSlotsRestored: slotsUsed,
             resourceLabel: d.classResource.label,
             resourcesRestored,
-            heroicInspiration: /^(humain|human)$/i.test(String(character.char_species ?? '').replace(/<[^>]*>/g, '').trim()),
+            heroicInspiration: isHuman(character),
             featUsesRestored: featUses.restored,
             featNotes: restFeatNotes(character, d),
             canStart: canStartRest(character)

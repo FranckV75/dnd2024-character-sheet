@@ -150,6 +150,11 @@ dialog,
     width: 0;
 }
 
+/* Pastille des dons : pas de chevron de repli sur papier */
+.feat-badge .icon {
+    display: none;
+}
+
 /* Dons non choisis (« — Choisir un don — ») : rien à imprimer */
 .feat:has(> .feat-desc[hidden]) {
     display: none;

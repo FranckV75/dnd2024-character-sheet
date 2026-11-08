@@ -15,14 +15,14 @@
 // feats.js ← weapons.js ← character.js ← feat-effects.js ← rest.js
 // =============================================================================
 
-import { featSlots, featName, reachedFeatIds } from './feats.js';
+import { featSlots, featName, featSlotName, reachedFeatIds } from './feats.js';
 import { FEATS_DATA } from '../data/feats.js';
 import { deriveCharacter } from './character.js';
 import { weaponReach, weaponDamageType, isBlankWeapon } from './weapons.js';
 import { DD_RULES } from '../data/dd-rules.js';
 import { ABILITY_IDS, SKILLS } from '../data/constants.js';
 import {
-    featChoiceGrants, REPEATABLE_CHOICE_FEATS, abilityName, skillName, elementWord
+    FEAT_CHOICE_RULES, featChoiceGrants, REPEATABLE_CHOICE_FEATS, abilityName, skillName, elementWord
 } from './feat-choices.js';
 import { FEAT_SPELL_FEATS, featSpellGroups, featSpellSummary } from './feat-spells.js';
 
@@ -400,7 +400,7 @@ function choiceNotes(grant, { derived, grants, record, add }) {
         add('featSlot', `Vos sorts ignorent la Résistance aux dégâts ${ofWord(word)} ; pour un sort qui inflige des dégâts ${ofWord(word)}, un 1 sur un dé de dégâts compte comme un 2. Repère « Adepte » sur ces sorts dans le grimoire.`);
         const twin = grants.find(other => other !== grant && other.featId === featId && other.element === grant.element);
         if (twin) {
-            add('featSlot', `Même type de dégâts qu'au niveau ${twin.level} : chaque Adepte élémentaire doit porter sur un type différent.`, { check: true });
+            add('featSlot', `Même type de dégâts qu'au ${featSlotName(twin.level)} : chaque Adepte élémentaire doit porter sur un type différent.`, { check: true });
         }
     }
 }
@@ -483,14 +483,23 @@ export function featEffects(character, derived = deriveCharacter(character || {}
     const record = character && typeof character === 'object' ? character : {};
 
     // Effets généraux, dans l'ordre des emplacements ; 'featSlot' est rangé sous le niveau de l'emplacement.
-    // Un don choisi deux fois (ancienne sauvegarde) ne donne ses rappels qu'une fois.
-    const seen = new Set();
+    // Un don choisi deux fois (Humain qui reprend le don de son historique, ancienne sauvegarde) : un don
+    // se prend une fois (PHB 2024, sauf « Répétable ») ; le second emplacement n'a qu'une alerte. Les dons
+    // à choix ont la leur plus bas (répétables compris : Doué, Initié à la magie…).
+    const firstSlot = new Map();
     for (const slot of featSlots(record)) {
-        if (!slot.reached || !Object.hasOwn(FEAT_RULES, slot.featId)) continue;
+        if (!slot.reached) continue;
+        const first = !firstSlot.has(slot.featId);
+        if (first) firstSlot.set(slot.featId, slot.level);
+        else if (Object.hasOwn(FEATS_DATA, slot.featId) && !Object.hasOwn(FEAT_CHOICE_RULES, slot.featId)) {
+            (effects[`featSlot:${slot.level}`] ??= []).push(note(slot.featId,
+                `${featName(slot.featId)} est déjà pris au ${featSlotName(firstSlot.get(slot.featId))} : ce don ne se prend qu'une fois. Choisissez un autre don ici.`,
+                { check: true, slot: slot.level }));
+            continue;
+        }
+        if (!Object.hasOwn(FEAT_RULES, slot.featId)) continue;
         const rule = FEAT_RULES[slot.featId];
         const slotZone = `featSlot:${slot.level}`;
-        const first = !seen.has(slot.featId);
-        seen.add(slot.featId);
         rule({
             derived,
             add: (zone, text, extra) => {
@@ -509,7 +518,7 @@ export function featEffects(character, derived = deriveCharacter(character || {}
         // Don non répétable déjà pris plus bas (ancienne sauvegarde) : ce second choix ne compte pas
         if (firstLevel.has(grant.featId) && !REPEATABLE_CHOICE_FEATS.includes(grant.featId)) {
             (effects[`featSlot:${grant.level}`] ??= []).push(note(grant.featId,
-                `${grant.featName} est déjà pris au niveau ${firstLevel.get(grant.featId)} : ce don ne se prend qu'une fois. Choisissez un autre don ici.`,
+                `${grant.featName} est déjà pris au ${featSlotName(firstLevel.get(grant.featId))} : ce don ne se prend qu'une fois. Choisissez un autre don ici.`,
                 { check: true, slot: grant.level }));
             continue;
         }
