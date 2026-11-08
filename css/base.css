@@ -132,6 +132,15 @@
     --skill-prof-tint: rgba(168, 116, 26, 0.09);
     --skill-exp-tint: rgba(168, 116, 26, 0.16);
     --feat-invite-bg: rgba(168, 116, 26, 0.07);
+    /* Don actif : titre en or (foncé sur le parchemin : 6:1 sur son bandeau), bandeau doré
+       qui s'estompe vers la droite, pastille du niveau en or plein (mêmes ors dans les deux
+       thèmes) */
+    --feat-title-ink: #7a5208;
+    --feat-band: rgba(196, 140, 40, 0.16);
+    --feat-band-fade: rgba(196, 140, 40, 0.04);
+    --feat-badge-top: #f3d58c;
+    --feat-badge-bottom: #d9a948;
+    --feat-badge-ink: #3b2504;
     /* Taille minimale des petits libellés (Cinzel, capitales) : rien de plus petit sur la fiche */
     --label-min: 0.64rem;
 }
@@ -219,6 +228,9 @@
     --skill-prof-tint: rgba(232, 184, 109, 0.08);
     --skill-exp-tint: rgba(232, 184, 109, 0.14);
     --feat-invite-bg: rgba(232, 184, 109, 0.06);
+    --feat-title-ink: #e8b86d;
+    --feat-band: rgba(232, 184, 109, 0.16);
+    --feat-band-fade: rgba(232, 184, 109, 0.04);
 }
 
 /* Voile des fenêtres : avant Chrome 122 et Safari 17.4, ::backdrop n'hérite pas des variables

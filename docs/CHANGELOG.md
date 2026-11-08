@@ -2,6 +2,12 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.6.1] - 2026-11-08 (Titres des dons)
+### Changed
+- Aptitudes & Traits : chaque don actif (choisi, niveau atteint) ressort comme un en-tête de chapitre :
+  bandeau doré, pastille du niveau en or plein, titre en or et en gras souligné d'or. Les dons prévus
+  plus tard et les emplacements à choisir restent discrets ; impression sobre.
+
 ## [4.6.0] - 2026-11-08 (Objets magiques)
 ### Added
 - Armes et armures magiques (bonus réglé avec l'engrenage de la ligne) : un aspect de plus en plus

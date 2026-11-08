@@ -124,6 +124,11 @@ select.input optgroup {
     color: var(--text);
 }
 
+/* Liste ouverte (ordinateur) : texte ordinaire, même sous un titre en gras (don actif) */
+select.input option {
+    font-weight: 400;
+}
+
 .input-title {
     font-size: 1.15rem;
     font-weight: 700;
@@ -1093,6 +1098,31 @@ fieldset.inline-checks {
 }
 
 @media screen {
+    /* Don actif (choisi, niveau atteint) : un en-tête de chapitre, repérable en faisant
+       défiler. Bandeau doré qui s'estompe vers la droite, pastille du niveau en or plein,
+       titre en or et en gras souligné d'un trait d'or. Imprimé sobre (rien de tout cela). */
+    .feat[data-feat-state="active"] .feat-head {
+        margin: 0 -6px;
+        padding: 4px 6px;
+        border-radius: 6px;
+        background: linear-gradient(90deg, var(--feat-band), var(--feat-band-fade) 70%, transparent);
+    }
+
+    .feat[data-feat-state="active"] .feat-badge {
+        border-color: var(--gold);
+        background: linear-gradient(var(--feat-badge-top), var(--feat-badge-bottom));
+        color: var(--feat-badge-ink);
+        text-shadow: none;
+    }
+
+    /* Plus fort que la couleur d'une liste figée (fiche verrouillée, components.css) */
+    .feat[data-feat-state="active"] select.input {
+        border-bottom: 2px solid var(--gold);
+        color: var(--feat-title-ink);
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
     /* Niveau atteint, don à choisir : invitation dorée discrète (cadre en pointillés,
        « — Choisir un don — » à l'encre d'accent, pastille cerclée d'or plein) */
     .feat[data-feat-state="pending"] .feat-badge {
