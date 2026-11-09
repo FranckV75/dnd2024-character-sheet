@@ -41,7 +41,8 @@ const ids = (notes) => notes.map(n => n.featId);
 
 describe('feats.js : dons atteints', () => {
     test('identifiants des lots connus dans js/data/feats.js', () => {
-        for (const id of AUTOMATED_FEATS) assert.ok(FEATS_DATA[id], id);
+        // Guerrier béni / druidique : options à la place du style de combat, pas des dons
+        for (const id of AUTOMATED_FEATS) assert.ok(FEATS_DATA[id] || ['guerrier_beni', 'guerrier_druidique'].includes(id), id);
     });
 
     test('niveau lu comme la fiche (premier entier, entre 1 et 20)', () => {
@@ -56,13 +57,13 @@ describe('feats.js : dons atteints', () => {
     });
 
     test('seuls les emplacements de la fiche comptent (1, 4, 8, 12, 16, 19)', () => {
-        // feat_0 ou feat_2 : clés retouchées à la main, jamais affichées par la fiche
-        const c = { char_level: '12', feat_0: 'musicien', feat_2: 'vigilant', feat_4: 'robuste', feat_20: 'chanceux' };
+        // feat_0 (pas Humain), feat_2 (pas de style de combat sans classe) ou feat_3 : jamais comptées
+        const c = { char_level: '12', feat_0: 'musicien', feat_2: 'vigilant', feat_3: 'vigilant', feat_4: 'robuste', feat_20: 'chanceux' };
         assert.deepEqual(featSlots(c).map(slot => slot.level), [4]);
         assert.deepEqual(reachedFeatIds(c), ['robuste']);
         assert.deepEqual(featEffects(c).initiative, []);
         assert.deepEqual(featEffects(c).rest, []);
-        assert.equal(deriveCharacter(c).initiative, deriveCharacter({ ...c, feat_2: '' }).initiative);
+        assert.equal(deriveCharacter(c).initiative, deriveCharacter({ ...c, feat_2: '', feat_3: '' }).initiative);
     });
 
     test('seuls les emplacements atteints comptent, dans l\'ordre des niveaux, sans doublon', () => {

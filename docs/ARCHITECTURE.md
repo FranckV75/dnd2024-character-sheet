@@ -126,7 +126,7 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
 - Les clés inconnues sont conservées par la v4 : une fiche enregistrée par la v4 reste lisible par
   la v3, et inversement. Attention : la v3, elle, reconstruit la fiche à partir de sa page et perd en
   enregistrant les clés qu'elle ne connaît pas (`combat_buffs`, `spell_slots_state`, `feat_uses`,
-  `feat_choices`, `feat_0`, `feat_6`, `feat_10`, `feat_14`) : `V4_ONLY_KEYS`, `js/cloud/sync.js`.
+  `feat_choices`, `feat_0`, `feat_2`, `feat_6`, `feat_7`, `feat_10`, `feat_14`) : `V4_ONLY_KEYS`, `js/cloud/sync.js`.
 - Clés propres à la v4 : `combat_buffs` (bonus de combat actifs), `spell_slots_state` (emplacements
   de sorts) et `feat_uses` (usages dépensés des dons à cases, `{ idDuDon: nombre }`, facultative :
   absente = rien de dépensé ; `js/rules/feat-uses.js`) et `feat_choices` (choix des dons : caractéristique,
@@ -144,6 +144,12 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   de caractéristique répétée). Absentes d'une fiche vierge, ajoutées quand on les remplit ; elles ne comptent
   que pour leur classe (`CLASS_FEAT_SLOTS`, `js/state/schema.js` ; `featSlotCounts`, `js/rules/feats.js`) et
   ne sont jamais effacées si la classe change (la fiche montre « Réservé aux Guerriers »).
+- `feat_2` : style de combat (PHB 2024, capacité Fighting Style) du Guerrier (acquis au niveau 1), du Paladin
+  et du Rôdeur (niveau 2) ; un don de la catégorie Style de combat, ou `guerrier_beni` / `guerrier_druidique`
+  (à la place du style, `STYLE_ALTERNATIVES`, `js/rules/feats.js`). `feat_7` : second style du Champion.
+  Niveau d'acquisition selon la classe : `featSlotLevelFor`. Défense est comptée dans la CA calculée
+  (`computeArmorClass`), Archerie dans l'attaque (`computeWeapon`), Duel par un bouton de combat
+  (`combat_buffs.dueling`).
 - Dons repliés (pastille du niveau, onglet Aptitudes & Traits) : retenus sur l'appareil seulement
   (`localStorage` `dd2024_feats_folded`, liste « emplacement:don »), jamais dans la fiche.
 - Effets des dons (`featEffects`, `js/rules/feat-effects.js`) : des notes rangées par zone de la fiche

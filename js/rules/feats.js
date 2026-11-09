@@ -5,8 +5,9 @@
 //  - les valeurs enregistrées sont nettoyées du HTML des anciennes sauvegardes.
 //  - seuls les emplacements de la fiche comptent (FEAT_SLOT_ORDER : 1, 4, 8, 12, 16, 19, plus
 //    feat_0, second don d'origine de l'Humain, qui ne compte que si l'espèce est Humain, et les
-//    dons de classe en plus, feat_6 et feat_14 pour le Guerrier, feat_10 pour le Roublard) ; une
-//    clé feat_2 (sauvegarde retouchée à la main) n'est jamais affichée, donc ignorée.
+//    dons de classe en plus, feat_6 et feat_14 pour le Guerrier, feat_10 pour le Roublard, et le
+//    style de combat, feat_2 pour le Guerrier, le Paladin et le Rôdeur, feat_7 pour le Champion) ;
+//    une autre clé feat_<N> (sauvegarde retouchée à la main) n'est jamais affichée, donc ignorée.
 //  - « level » d'un emplacement = son numéro (clé feat_<N>, feat_choices, feat_uses) ; le niveau
 //    où il est acquis est featSlotLevel(N) (feat_0 : niveau 1) ; featSlotName le nomme.
 // Ce module ne dépend d'aucune autre règle : character.js et weapons.js l'importent.
@@ -15,7 +16,7 @@
 
 import { FEATS_DATA } from '../data/feats.js';
 import { DD_RULES } from '../data/dd-rules.js';
-import { FEAT_SLOT_ORDER, HUMAN_FEAT_SLOT, CLASS_FEAT_SLOTS, featSlotLevel } from '../state/schema.js';
+import { FEAT_SLOT_ORDER, HUMAN_FEAT_SLOT, STYLE_FEAT_SLOT, CLASS_FEAT_SLOTS, featSlotLevel } from '../state/schema.js';
 
 const FEAT_KEY = /^feat_(\d+)$/;
 
@@ -54,10 +55,31 @@ export function isHuman(character) {
     return /^(humain|human)$/i.test(plain(character?.char_species));
 }
 
-/** Noms des classes qui ont des dons en plus (légende de l'emplacement) */
-const CLASS_SLOT_NAMES = Object.freeze({
-    fighter: { name: 'Guerrier', plural: 'Guerriers' },
-    rogue: { name: 'Roublard', plural: 'Roublards' }
+/** Légendes des emplacements réservés : quand il compte, et quand il garde un don sans compter */
+const CLASS_SLOT_CAPTIONS = Object.freeze({
+    2: { caption: 'Style de combat', reserved: 'Réservé aux Guerriers, Paladins et Rôdeurs' },
+    6: { caption: 'Guerrier : don en plus', reserved: 'Réservé aux Guerriers' },
+    7: { caption: 'Champion : style en plus', reserved: 'Réservé aux Champions' },
+    10: { caption: 'Roublard : don en plus', reserved: 'Réservé aux Roublards' },
+    14: { caption: 'Guerrier : don en plus', reserved: 'Réservé aux Guerriers' }
+});
+
+/** Classes qui ont la capacité Style de combat (prérequis des dons de cette catégorie) */
+const FIGHTING_STYLE_CLASSES = Object.freeze(['fighter', 'paladin', 'ranger']);
+
+/**
+ * À la place d'un style de combat (PHB 2024) : Guerrier béni (Paladin) ou Guerrier druidique
+ * (Rôdeur), deux sorts mineurs. Valeurs possibles de feat_2 seulement ; ce ne sont pas des dons.
+ */
+export const STYLE_ALTERNATIVES = Object.freeze({
+    guerrier_beni: Object.freeze({
+        name: 'Guerrier béni', classId: 'paladin', className: 'Paladin',
+        desc: "<strong>Guerrier béni.</strong> À la place d'un style de combat, vous apprenez deux sorts mineurs de Clerc de votre choix (Assistance et Flamme sacrée sont conseillés). Ils comptent comme des sorts de Paladin pour vous, et le Charisme est votre caractéristique d'incantation pour eux. Quand vous gagnez un niveau de Paladin, vous pouvez remplacer l'un d'eux par un autre sort mineur de Clerc."
+    }),
+    guerrier_druidique: Object.freeze({
+        name: 'Guerrier druidique', classId: 'ranger', className: 'Rôdeur',
+        desc: "<strong>Guerrier druidique.</strong> À la place d'un style de combat, vous apprenez deux sorts mineurs de Druide de votre choix (Assistance et Poussière d'étoile sont conseillés). Ils comptent comme des sorts de Rôdeur pour vous, et la Sagesse est votre caractéristique d'incantation pour eux. Quand vous gagnez un niveau de Rôdeur, vous pouvez remplacer l'un d'eux par un autre sort mineur de Druide."
+    })
 });
 
 /**
@@ -66,7 +88,7 @@ const CLASS_SLOT_NAMES = Object.freeze({
  * @param {Object} character
  * @returns {string} ex. 'fighter' ; '' si inconnue
  */
-function classOf(character) {
+export function classOf(character) {
     const clean = plain(character?.char_class).toLowerCase();
     if (!clean) return '';
     for (const [slug, cls] of Object.entries(DD_RULES.classes)) {
@@ -75,21 +97,33 @@ function classOf(character) {
     return '';
 }
 
-/**
- * Emplacement réservé à une classe (don en plus du Guerrier ou du Roublard) ?
- * @param {number|string} slot - numéro de l'emplacement
- * @returns {{ classId: string, name: string, plural: string } | null}
- */
-export function classFeatSlot(slot) {
-    const key = String(Number(slot));
-    const classId = Object.hasOwn(CLASS_FEAT_SLOTS, key) ? CLASS_FEAT_SLOTS[key] : '';
-    return classId ? { classId, ...CLASS_SLOT_NAMES[classId] } : null;
+/** Sous-classe du personnage (identifiant de DD_RULES.subclasses, ex. 'champion') ; '' si inconnue */
+function subclassOf(character) {
+    const clean = plain(character?.char_subclass).toLowerCase();
+    if (!clean) return '';
+    for (const [slug, sub] of Object.entries(DD_RULES.subclasses)) {
+        if (slug === clean || sub.name.toLowerCase() === clean || sub.nameFr.toLowerCase() === clean) return slug;
+    }
+    return '';
 }
 
 /**
- * L'emplacement compte-t-il pour ce personnage ? feat_0 : Humain seulement ; feat_6 et feat_14 :
- * Guerrier ; feat_10 : Roublard ; les autres : tout le monde. Un don noté dans un emplacement qui
- * ne compte pas n'est jamais effacé (la fiche le montre « réservé »).
+ * Emplacement réservé à une classe (don en plus du Guerrier ou du Roublard, style de combat) ?
+ * @param {number|string} slot - numéro de l'emplacement
+ * @returns {{ classes: string[], subclass?: string, style: boolean, caption: string, reserved: string } | null}
+ */
+export function classFeatSlot(slot) {
+    const key = String(Number(slot));
+    if (!Object.hasOwn(CLASS_FEAT_SLOTS, key)) return null;
+    const rule = CLASS_FEAT_SLOTS[key];
+    return { classes: [...rule.classes], subclass: rule.subclass, style: Boolean(rule.style), ...CLASS_SLOT_CAPTIONS[key] };
+}
+
+/**
+ * L'emplacement compte-t-il pour ce personnage ? feat_0 : Humain seulement ; feat_2 : Guerrier,
+ * Paladin, Rôdeur ; feat_6 et feat_14 : Guerrier ; feat_7 : Guerrier Champion ; feat_10 : Roublard ;
+ * les autres : tout le monde. Un don noté dans un emplacement qui ne compte pas n'est jamais effacé
+ * (la fiche le montre « réservé »).
  * @param {number|string} slot
  * @param {Object} character
  * @returns {boolean}
@@ -97,7 +131,32 @@ export function classFeatSlot(slot) {
 export function featSlotCounts(slot, character) {
     if (Number(slot) === HUMAN_FEAT_SLOT) return isHuman(character);
     const reserved = classFeatSlot(slot);
-    return reserved ? classOf(character) === reserved.classId : true;
+    if (!reserved) return true;
+    return reserved.classes.includes(classOf(character)) && (!reserved.subclass || subclassOf(character) === reserved.subclass);
+}
+
+/**
+ * Niveau où l'emplacement est acquis pour ce personnage : comme featSlotLevel, sauf le style de
+ * combat, acquis au niveau 1 par le Guerrier (niveau 2 pour le Paladin et le Rôdeur).
+ * @param {number|string} slot
+ * @param {Object} character
+ * @returns {number}
+ */
+export function featSlotLevelFor(slot, character) {
+    if (Number(slot) === STYLE_FEAT_SLOT && classOf(character) === 'fighter') return 1;
+    return featSlotLevel(slot);
+}
+
+/**
+ * Le personnage a-t-il la capacité Style de combat (prérequis des dons de cette catégorie) ?
+ * Guerrier dès le niveau 1, Paladin et Rôdeur dès le niveau 2.
+ * @param {Object} character
+ * @returns {boolean}
+ */
+export function hasFightingStyle(character) {
+    const classId = classOf(character);
+    if (!FIGHTING_STYLE_CLASSES.includes(classId)) return false;
+    return classId === 'fighter' || characterLevel(character?.char_level) >= 2;
 }
 
 /**
@@ -106,7 +165,11 @@ export function featSlotCounts(slot, character) {
  * @returns {string}
  */
 export function featSlotName(slot) {
-    return Number(slot) === HUMAN_FEAT_SLOT ? 'niveau 1 (Humain)' : `niveau ${slot}`;
+    const n = Number(slot);
+    if (n === HUMAN_FEAT_SLOT) return 'niveau 1 (Humain)';
+    if (n === STYLE_FEAT_SLOT) return 'style de combat';
+    if (n === 7) return 'niveau 7 (Champion)';
+    return `niveau ${slot}`;
 }
 
 /**
@@ -129,7 +192,7 @@ export function featSlots(character) {
         const slotLevel = Number(match[1]);
         if (!FEAT_SLOT_ORDER.includes(slotLevel)) continue;
         if (!featSlotCounts(slotLevel, character)) continue;
-        slots.push({ level: slotLevel, featId, reached: featSlotLevel(slotLevel) <= level });
+        slots.push({ level: slotLevel, featId, reached: featSlotLevelFor(slotLevel, character) <= level });
     }
     return slots.sort((a, b) => FEAT_SLOT_ORDER.indexOf(a.level) - FEAT_SLOT_ORDER.indexOf(b.level));
 }
@@ -160,5 +223,6 @@ export function hasFeat(character, featId) {
  * @returns {string}
  */
 export function featName(featId) {
-    return (Object.hasOwn(FEATS_DATA, featId) && FEATS_DATA[featId]?.name) || featId;
+    return (Object.hasOwn(FEATS_DATA, featId) && FEATS_DATA[featId]?.name)
+        || (Object.hasOwn(STYLE_ALTERNATIVES, featId) && STYLE_ALTERNATIVES[featId].name) || featId;
 }

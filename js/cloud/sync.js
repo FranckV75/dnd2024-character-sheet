@@ -121,7 +121,7 @@ export function isLegacyRowName(legacyName, name) {
  * d'origine de l'Humain feat_0) : la v3 les efface en enregistrant (sa page n'a pas ces champs)
  */
 export const V4_ONLY_KEYS = Object.freeze(['combat_buffs', 'spell_slots_state', 'feat_uses', 'feat_choices', 'feat_0',
-    'feat_6', 'feat_10', 'feat_14']);
+    'feat_2', 'feat_6', 'feat_7', 'feat_10', 'feat_14']);
 
 /**
  * Fiche sans l'état de jeu propre à la v4, pour comparer avec une version écrite par la v3.

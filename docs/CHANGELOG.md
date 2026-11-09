@@ -2,6 +2,19 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.11.0] - 2026-11-09 (Styles de combat)
+### Added
+- Emplacement « Style de combat » dans Aptitudes & Traits : Guerrier dès le niveau 1, Paladin et Rôdeur au
+  niveau 2 (Guerrier béni ou Guerrier druidique possibles à la place), second style du Champion au niveau 7.
+  Alerte de prérequis hors de ces classes ; rien n'est effacé.
+- Défense comptée dans la CA calculée, Archerie dans l'attaque des armes à distance, bouton de combat
+  « Duel (+2) », dégâts des armes de lancer et de l'arme Légère (Combat à deux armes) calculés, rappels des
+  autres styles sous les armes.
+### Changed
+- Format de sauvegarde : nouvelles clés facultatives `feat_2` (style de combat) et `feat_7` (second style du
+  Champion), absentes tant qu'on ne les remplit pas ; aucune clé renommée ni supprimée. La synchronisation
+  les traite comme les autres clés propres à la v4.
+
 ## [4.10.0] - 2026-11-09 (Dons en plus du Guerrier et du Roublard)
 ### Added
 - Guerrier : emplacements de don en plus aux niveaux 6 et 14 ; Roublard : au niveau 10 (PHB 2024,

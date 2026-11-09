@@ -226,7 +226,7 @@ export function armorLine(armor, { mods, pb, mediumDexMax = 2 }) {
  * @param {{ armors: Array, className: string, mods: Object, pb: number, shieldTrained?: boolean, mediumDexMax?: number }} params
  * @returns {{ value: number, source: string, rows: Array<{ line: Object, status: string, note: string }> }}
  */
-export function computeArmorClass({ armors = [], className = '', mods, pb, shieldTrained = true, mediumDexMax = 2 }) {
+export function computeArmorClass({ armors = [], className = '', mods, pb, shieldTrained = true, mediumDexMax = 2, defense = false }) {
     const list = Array.isArray(armors) ? armors : [];
     const rows = list.map(armor => ({
         line: armorLine(armor && typeof armor === 'object' ? armor : {}, { mods, pb, mediumDexMax }),
@@ -352,6 +352,11 @@ export function computeArmorClass({ armors = [], className = '', mods, pb, shiel
             parts.push({ label: plainName(list[i]) || (kind === 'bonus' ? 'Bonus' : 'Maîtrise'), value: row.line.display, formula: row.line.formula });
         }
     });
+    // Style de combat Défense (PHB 2024 p. 209) : +1 en armure légère, intermédiaire ou lourde
+    if (defense && body !== -1) {
+        bonus += 1;
+        parts.push({ label: 'Défense (style de combat)', value: '+1', formula: 'en armure' });
+    }
     return { value: bodyAC + bonus, source, rows, parts, notes };
 }
 
@@ -437,7 +442,8 @@ export function featSlotState(slotLevel, characterLevel, choice) {
  * Attaque et dégâts d'une arme du tableau, avec les bonus de combat actifs.
  * @param {Object} weapon - Ligne de `dynamic_weapons`
  * @param {{ mods: Object, pb: number, level: number, classSlug: string }} stats - issu de deriveCharacter()
- * @param {{ rage?: boolean, sneakAttack?: boolean, hunterMark?: boolean, heavyWeaponMaster?: boolean, charger?: boolean }} [buffs]
+ * @param {{ rage?: boolean, sneakAttack?: boolean, hunterMark?: boolean, heavyWeaponMaster?: boolean, charger?: boolean, dueling?: boolean, thrownWeapon?: boolean }} [buffs]
+ *        thrownWeapon : pas un bouton ; attaque lancée avec le style Arme de lancer (+2, rappel sous l'arme)
  * @returns {{ attack: {text: string, tooltip: string}, damage: {text: string, tooltip: string} } | null}
  *          null si l'arme n'est pas rattachée au manuel (pas de calcul possible)
  */
@@ -464,6 +470,17 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     if (buffs.sneakAttack && (prop.toLowerCase().includes('finesse') || isRanged)) {
         extraDmg.push({ die: `${sneakAttackDice(level)}d6`, type: 'Sournoise' });
     }
+    // Style Duel (PHB 2024 p. 209) : +2 aux dégâts, arme de corps à corps tenue à une main sans autre
+    // arme ; bouton allumé par le joueur (la fiche ne sait pas ce qu'il tient en main)
+    const reach = weaponReach(weapon);
+    if (buffs.dueling && reach.melee && !prop.toLowerCase().includes('deux mains')) extraDmg.push({ die: '2', type: 'Duel' });
+    // Style Arme de lancer (PHB 2024 p. 210) : +2 aux dégâts d'une attaque à distance avec une arme de
+    // Lancer (rappel sous l'arme, featEffects)
+    if (buffs.thrownWeapon) extraDmg.push({ die: '2', type: 'Arme de lancer' });
+    // Style Archerie (PHB 2024 p. 209) : +2 aux jets d'attaque avec les armes à distance (pas les
+    // armes de corps à corps lancées)
+    const attackBonuses = (stats.feats ?? []).includes('archerie') && !reach.melee && reach.ranged
+        ? [{ value: 2, label: 'Archerie' }] : [];
 
     let dieOverride = config.dmgDieOverride || '';
     if (slug === 'monk' && isMartialArtsWeapon(weapon.category || '', isRanged, prop)) {
@@ -471,7 +488,7 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     }
 
     return {
-        attack: calcWeaponAttack(weapon.atkKey, prop, mods, pb, config.magicBonus || 0, config.statOverride || ''),
+        attack: calcWeaponAttack(weapon.atkKey, prop, mods, pb, config.magicBonus || 0, config.statOverride || '', attackBonuses),
         damage: calcWeaponDamage(weapon.baseDmg || '', prop, mods, config.magicBonus || 0, config.statOverride || '',
             dieOverride, config.dmgTypeOverride || '', weapon.atkKey, extraDmg)
     };
@@ -547,7 +564,8 @@ export function deriveCharacter(record = {}) {
         armorClass: computeArmorClass({
             armors, className, mods, pb,
             shieldTrained: record.prof_armor_shield === true,
-            mediumDexMax: mediumArmorDexMax(feats, scores.dex)
+            mediumDexMax: mediumArmorDexMax(feats, scores.dex),
+            defense: feats.includes('defense')
         }),
         spellcasting: computeSpellcasting(record.spell_ability, mods, pb),
         spellSlots: spellSlotsFor(className, level),

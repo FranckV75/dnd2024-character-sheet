@@ -12,13 +12,15 @@
 import { ABILITIES, SKILLS, SKILLS_BY_STAT } from '../data/constants.js';
 import { DD_RULES } from '../data/dd-rules.js';
 import { FEATS_DATA } from '../data/feats.js';
-import { FEAT_SLOT_ORDER, HUMAN_FEAT_SLOT, featSlotLevel } from '../state/schema.js';
+import { FEAT_SLOT_ORDER, HUMAN_FEAT_SLOT, STYLE_FEAT_SLOT, featSlotLevel } from '../state/schema.js';
 import { stripHTML } from '../state/migrate.js';
 import { deriveCharacter, featSlotState, hitDieForClass, exhaustionSeverity } from '../rules/character.js';
 import { featEffects, AUTOMATED_FEATS } from '../rules/feat-effects.js';
 import { featCounters, setFeatUsesPatch } from '../rules/feat-uses.js';
 import { FEAT_CHOICE_RULES, slotChoice, setFeatChoicePatch, fieldOptions, fieldActive } from '../rules/feat-choices.js';
-import { featName, featSlotName, isHuman, classFeatSlot, featSlotCounts } from '../rules/feats.js';
+import {
+    featName, featSlotName, isHuman, classFeatSlot, featSlotCounts, featSlotLevelFor, STYLE_ALTERNATIVES
+} from '../rules/feats.js';
 import { sanitizeRich, sanitizeRulesText } from './sanitize.js';
 import { el, fillSelect, icon, signed } from './dom.js';
 import { applyLock, isLocked } from './lock.js';
@@ -149,7 +151,8 @@ function applyFold(slot) {
         return;
     }
     // Nom accessible qui commence par le texte visible (« Niv. 4 : replier… »)
-    const visible = id === String(HUMAN_FEAT_SLOT) ? 'Niv. 1 (Humain)' : `Niv. ${id}`;
+    // Style de combat : « Niv. 1 » pour un Guerrier, « Niv. 2 » sinon (texte de la pastille, renderFeats)
+    const visible = id === String(HUMAN_FEAT_SLOT) ? 'Niv. 1 (Humain)' : (button.firstElementChild?.textContent || `Niv. ${id}`);
     button.setAttribute('aria-expanded', String(!folded));
     button.setAttribute('aria-controls', `feat-desc-${id} feat-sheet-${id}`);
     button.setAttribute('aria-label', `${visible} : ${folded ? 'déplier' : 'replier'} la description du don`);
@@ -184,14 +187,24 @@ function buildFeats(root) {
     root.querySelector('#feats').replaceChildren(...FEAT_SLOT_ORDER.map(level => {
         const human = level === HUMAN_FEAT_SLOT;
         const reserved = classFeatSlot(level);
-        // Second don de l'Humain (trait Polyvalent) : un don d'origine seulement
+        const style = Boolean(reserved?.style);
+        // Second don de l'Humain (trait Polyvalent) : un don d'origine seulement ; style de combat :
+        // un don de cette catégorie (ou, au niveau 2, Guerrier béni / druidique à la place)
         const select = el('select', {
             id: `f-feat_${level}`, class: 'input', 'data-field': `feat_${level}`,
             'aria-label': human ? "Second don d'origine (Humain, trait Polyvalent)"
-                : reserved ? `Don en plus du niveau ${level} (${reserved.name})` : `Don du niveau ${level}`,
+                : style ? `${reserved.caption} (${featSlotName(level)})`
+                : reserved ? `Don en plus du niveau ${level} (${reserved.caption})` : `Don du niveau ${level}`,
             'aria-describedby': `feat-when-${level}`
-        }, el('option', { value: '', text: human ? "— Choisir un don d'origine —" : '— Choisir un don —' }),
-        featOptions(human ? ['Origine'] : FEAT_TYPE_ORDER));
+        }, el('option', {
+            value: '',
+            text: human ? "— Choisir un don d'origine —" : style ? '— Choisir un style de combat —' : '— Choisir un don —'
+        }),
+        featOptions(human ? ['Origine'] : style ? ['Style de combat'] : FEAT_TYPE_ORDER),
+        level === STYLE_FEAT_SLOT
+            ? el('optgroup', { label: 'À la place du style' }, Object.entries(STYLE_ALTERNATIVES).map(([id, alt]) =>
+                el('option', { value: id, text: `${alt.name} (${alt.className})` })))
+            : null);
         // data-feat-state (posé au rendu, voir featSlotState) : actif, à choisir, prévu ou à venir ;
         // la légende (« À venir », « Actif au niveau 12 ») ne s'affiche que pour les niveaux pas encore atteints ;
         // celle de l'emplacement de l'Humain dit d'où il vient (« Humain : Polyvalent »)
@@ -479,15 +492,19 @@ function renderFeats(root, character, d, effects, counters) {
         // Emplacement de l'Humain ou d'une classe : affiché s'il compte, ou s'il garde un don (espèce
         // ou classe changée ensuite : le don est montré, ne compte pas, la valeur saisie n'est pas effacée)
         if (humanSlot || reserved) slot.hidden = !counts && !chosen;
-        let state = featSlotState(featSlotLevel(level), d.level, character[`feat_${level}`]);
+        // Niveau d'acquisition : le style de combat du Guerrier est au niveau 1
+        const slotLevel = featSlotLevelFor(level, character);
+        const badgeText = slot.querySelector('.feat-badge > span');
+        if (badgeText.textContent !== `Niv. ${slotLevel}`) badgeText.textContent = `Niv. ${slotLevel}`;
+        let state = featSlotState(slotLevel, d.level, character[`feat_${level}`]);
         if (!counts && chosen) state = 'planned';
         if (slot.dataset.featState !== state) slot.dataset.featState = state;
         const when = slot.querySelector('.feat-when');
         // Don de classe : « À venir » / « Actif au niveau 14 » tant qu'il n'est pas atteint
         const caption = humanSlot
             ? (human ? 'Humain : Polyvalent' : 'Réservé aux Humains')
-            : reserved && !counts ? `Réservé aux ${reserved.plural}`
-            : FEAT_WHEN[state]?.(level) ?? (reserved ? `${reserved.name} : don en plus` : '');
+            : reserved && !counts ? reserved.reserved
+            : FEAT_WHEN[state]?.(slotLevel) ?? (reserved ? reserved.caption : '');
         const text = when.querySelector('.feat-when-text');
         if (text.textContent !== caption) text.textContent = caption;
         when.hidden = !caption;
@@ -496,7 +513,10 @@ function renderFeats(root, character, d, effects, counters) {
         // Même lecture que les règles (featSlots, js/rules/feats.js) : valeur nettoyée du HTML
         // des anciennes sauvegardes, pour que le don qui compte soit aussi celui qui est décrit
         const featId = stripHTML(String(character[`feat_${level}`] ?? ''));
-        const feat = Object.hasOwn(FEATS_DATA, featId) ? FEATS_DATA[featId] : undefined;
+        // Guerrier béni / druidique (à la place du style de combat) : pas un don, mais décrit pareil
+        const alternative = level === STYLE_FEAT_SLOT && Object.hasOwn(STYLE_ALTERNATIVES, featId) ? STYLE_ALTERNATIVES[featId] : null;
+        const feat = Object.hasOwn(FEATS_DATA, featId) ? FEATS_DATA[featId]
+            : alternative ? { prereq: `${alternative.className} niveau 2`, desc: alternative.desc } : undefined;
         box.hidden = !feat;
         if (feat) {
             box.innerHTML = sanitizeRulesText(`<strong>Prérequis :</strong> ${feat.prereq}<br>${feat.desc || '<em>Description à compléter.</em>'}`);
@@ -589,7 +609,8 @@ const MENTION_LABELS = {
         maitre_des_armures_lourdes: `Dégâts C/P/T\u00a0−${note.value}`,
         maitre_des_armures_intermediaires: 'Dex max 3',
         maitre_des_boucliers: `Coup de bouclier DD\u00a0${note.value}`,
-        duelliste_defensif: `Parade\u00a0+${note.value}`
+        duelliste_defensif: `Parade\u00a0+${note.value}`,
+        defense: 'Défense\u00a0+1'
     })[note.featId] ?? note.featName,
     speed: (note) => `dont\u00a0+${note.value}\u00a0m grâce à ${note.featName}`,
     deathSaves: (note) => `Avantage (${note.featName})`,

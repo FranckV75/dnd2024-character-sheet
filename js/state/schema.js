@@ -46,11 +46,25 @@ export const HUMAN_FEAT_SLOT = 0;
  * et 14, Roublard au niveau 10. Clés feat_6, feat_14, feat_10 ajoutées par la v4 seulement quand
  * on les remplit (absentes de la fiche vierge) ; elles ne comptent que pour cette classe.
  */
-export const CLASS_FEAT_SLOTS = Object.freeze({ 6: 'fighter', 10: 'rogue', 14: 'fighter' });
+export const CLASS_FEAT_SLOTS = Object.freeze({
+    2: Object.freeze({ classes: Object.freeze(['fighter', 'paladin', 'ranger']), style: true }),
+    6: Object.freeze({ classes: Object.freeze(['fighter']) }),
+    7: Object.freeze({ classes: Object.freeze(['fighter']), subclass: 'champion', style: true }),
+    10: Object.freeze({ classes: Object.freeze(['rogue']) }),
+    14: Object.freeze({ classes: Object.freeze(['fighter']) })
+});
+
+/**
+ * Style de combat (PHB 2024, capacité « Fighting Style ») : clé feat_2, un don de la catégorie
+ * Style de combat, acquis au niveau 1 pour le Guerrier et au niveau 2 pour le Paladin et le Rôdeur
+ * (featSlotLevelFor, js/rules/feats.js). Le Champion en reçoit un second au niveau 7 (feat_7).
+ * Le Paladin et le Rôdeur peuvent prendre à la place Guerrier béni ou Guerrier druidique.
+ */
+export const STYLE_FEAT_SLOT = 2;
 
 /** Emplacements de dons dans l'ordre de la fiche : celui de l'Humain juste après le niveau 1,
- *  ceux de classe à leur niveau */
-export const FEAT_SLOT_ORDER = [1, HUMAN_FEAT_SLOT, 4, 6, 8, 10, 12, 14, 16, 19];
+ *  le style de combat ensuite, ceux de classe à leur niveau */
+export const FEAT_SLOT_ORDER = [1, HUMAN_FEAT_SLOT, STYLE_FEAT_SLOT, 4, 6, 7, 8, 10, 12, 14, 16, 19];
 
 /**
  * Niveau auquel un emplacement est acquis (feat_0 : niveau 1)

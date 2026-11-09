@@ -97,6 +97,12 @@ const BUFF_DEFS = {
         icon: 'swords',
         text: 'Charge (+1d8)',
         title: "Expert de la charge : +1d8 aux dégâts d'une attaque au corps à corps après 3 m en ligne droite vers la cible (une fois par tour). Foncer : +3 m de vitesse pour cette action."
+    }),
+    // Style Duel (PHB 2024 p. 209)
+    dueling: () => ({
+        icon: 'swords',
+        text: 'Duel (+2)',
+        title: "Duel (style de combat) : +2 aux dégâts avec une arme de corps à corps tenue à une main, sans autre arme. Allumé, le +2 est ajouté aux armes de corps à corps qui ne sont pas à Deux mains."
     })
 };
 

@@ -180,13 +180,16 @@ export function resolveWeaponAttackStat(atkKey, prop, mods, statOverride) {
  * @param {string} statOverride
  * @returns {{ text: string, tooltip: string }}
  */
-export function calcWeaponAttack(atkKey, prop, mods, pb, magicBonus, statOverride) {
+export function calcWeaponAttack(atkKey, prop, mods, pb, magicBonus, statOverride, bonuses = []) {
     const { stat, mod } = resolveWeaponAttackStat(atkKey, prop, mods, statOverride);
     const magic = parseInt(magicBonus) || 0;
-    const total = mod + pb + magic;
+    // Bonus nommés (Archerie : +2), ajoutés au total et détaillés dans l'infobulle
+    const extra = (bonuses || []).reduce((sum, b) => sum + (Number(b.value) || 0), 0);
+    const total = mod + pb + magic + extra;
     const sign = total >= 0 ? '+' : '';
     let tooltip = stat + ' (' + (mod >= 0 ? '+' : '') + mod + ') + Maitrise (+' + pb + ')';
     if (magic > 0) tooltip += ' + Magie (+' + magic + ')';
+    for (const b of bonuses || []) tooltip += ' + ' + b.label + ' (+' + b.value + ')';
     return { text: stat + ' : ' + sign + total, tooltip };
 }
 

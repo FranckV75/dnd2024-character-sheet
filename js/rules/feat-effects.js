@@ -15,7 +15,7 @@
 // feats.js ← weapons.js ← character.js ← feat-effects.js ← rest.js
 // =============================================================================
 
-import { featSlots, featName, featSlotName, reachedFeatIds } from './feats.js';
+import { featSlots, featName, featSlotName, reachedFeatIds, hasFightingStyle, classOf, STYLE_ALTERNATIVES } from './feats.js';
 import { FEATS_DATA } from '../data/feats.js';
 import { deriveCharacter, computeWeapon, hitDieForClass, parseNumber } from './character.js';
 import { parseWeaponConfig } from './logic.js';
@@ -97,7 +97,10 @@ export const AUTOMATED_FEATS = Object.freeze([
     'initie_a_la_magie', 'affinite_feerique', 'affinite_ombreuse', 'magie_rituelle', 'telepathe', 'telekinesiste',
     // Lot 5 : vitesse, PV temporaires, armures, armes d'hast, poison
     'mobile', 'figure_de_proue', 'incantateur_d_elite', 'protection_legere', 'protection_intermediaire',
-    'protection_lourde', 'duelliste_defensif', 'gaillard', 'chef_cuisinier', 'empoisonneur', 'maitre_d_hast'
+    'protection_lourde', 'duelliste_defensif', 'gaillard', 'chef_cuisinier', 'empoisonneur', 'maitre_d_hast',
+    // Lot 4 : styles de combat (et ce qui peut les remplacer au niveau 2)
+    'defense', 'archerie', 'duel', 'arme_a_deux_mains', 'arme_de_lancer', 'combat_a_deux_armes',
+    'combat_a_mains_nues', 'combat_en_aveugle', 'interception', 'protection', 'guerrier_beni', 'guerrier_druidique'
 ]);
 
 const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
@@ -408,8 +411,82 @@ const FEAT_RULES = {
         add('featSlot', "Armes : Bâton, Lance, et les armes Lourdes à Allonge (Coutille, Hallebarde, Lance d'arçon, Pique). Frappe double et Frappe réactive calculées sur ces armes, dans le tableau des armes.");
         const weapons = Array.isArray(record.dynamic_weapons) ? record.dynamic_weapons : [];
         if (!weapons.some(isPolearm)) add('featSlot', "Aucune de ces armes dans le tableau des armes.", { inactive: true });
-    }
+    },
+
+    // ----- Lot 4 : styles de combat — PHB 2024 p. 209-210 (« Fighting Style Feats ») -----
+
+    // Défense : +1 à la CA en armure légère, intermédiaire ou lourde (compté dans la CA calculée)
+    defense: ({ derived: { armorClass }, add }) => {
+        const worn = armorClass?.rows?.some(row => row.status === 'counted' && row.line.kind === 'body');
+        if (worn) {
+            add('armorClass', 'Défense : +1 en armure, déjà compté dans la CA.', { value: 1, applied: true });
+            add('featSlot', "+1 à la CA en armure : déjà compté dans la CA (le détail s'affiche en touchant l'écusson).", { value: 1, applied: true });
+        } else {
+            add('armorClass', 'Défense : seulement en armure (aucune équipée).', { inactive: true });
+            add('featSlot', 'Sans effet pour le moment : aucune armure légère, intermédiaire ou lourde équipée.', { inactive: true });
+        }
+    },
+
+    // Archerie : +2 aux jets d'attaque avec les armes à distance (compté dans le tableau des armes)
+    archerie: ({ add }) => {
+        add('featSlot', "+2 aux jets d'attaque avec les armes à distance (arcs, arbalètes, frondes, fléchettes) : déjà compté dans le tableau des armes. Pas avec une arme de corps à corps lancée.", { value: 2, applied: true });
+    },
+
+    // Duel : +2 aux dégâts, arme de corps à corps à une main et aucune autre arme (bouton Duel)
+    duel: ({ add }) => {
+        add('featSlot', "+2 aux dégâts avec une arme de corps à corps tenue à une main, sans autre arme. Bouton « Duel (+2) » au-dessus du tableau des armes : allumé, le +2 s'ajoute aux armes de corps à corps qui ne sont pas à Deux mains.");
+    },
+
+    // Arme à deux mains : 1 ou 2 sur un dé de dégâts = 3 (arme Deux mains ou Polyvalente, tenue à deux mains)
+    arme_a_deux_mains: ({ add }) => {
+        add('featSlot', 'Arme de corps à corps Deux mains ou Polyvalente tenue à deux mains : chaque 1 ou 2 sur un dé de dégâts compte comme un 3 (rappel sous ces armes).');
+    },
+
+    // Arme de lancer : +2 aux dégâts d'une attaque à distance avec une arme de Lancer (calculé sous l'arme)
+    arme_de_lancer: ({ add }) => {
+        add('featSlot', "+2 aux dégâts quand vous touchez avec une attaque à distance d'une arme de Lancer : dégâts calculés sous chaque arme de Lancer du tableau.");
+    },
+
+    // Combat à deux armes : l'attaque en plus d'une arme Légère garde le modificateur aux dégâts
+    combat_a_deux_armes: ({ add }) => {
+        add('featSlot', "L'attaque en plus (action Bonus) avec une arme Légère ajoute votre modificateur aux dégâts : dégâts calculés sous chaque arme Légère du tableau.");
+    },
+
+    // Combat à mains nues : Frappe à mains nues 1d6 + For (1d8 sans arme ni bouclier), 1d4 à l'agrippé
+    combat_a_mains_nues: ({ derived: { mods }, add }) => {
+        const str = signed(mods.str);
+        add('featSlot', `Frappe à mains nues : 1d6 ${str} contondants, ou 1d8 ${str} si vous ne tenez ni arme ni bouclier (au lieu de 1 ${str}). Au début de chacun de vos tours : 1d4 contondants à une créature que vous Agrippez.`, { value: mods.str });
+    },
+
+    // Combat en aveugle : Vision aveugle à 3 m
+    combat_en_aveugle: ({ add }) => {
+        add('featSlot', 'Vision aveugle à 3 m : à noter vous-même avec vos sens (vous voyez ce qui est à 3 m même dans le noir ou invisible).');
+    },
+
+    // Interception : Réaction, réduire de 1d10 + bonus de maîtrise les dégâts d'un allié à 1,50 m
+    interception: ({ derived: { pb }, add }) => {
+        add('featSlot', `Réaction quand une créature que vous voyez touche une autre créature à 1,50 m de vous : les dégâts sont réduits de 1d10 +${pb}. Il faut tenir un bouclier ou une arme courante ou de guerre.`, { value: pb });
+    },
+
+    // Protection : Réaction, bouclier en main, Désavantage aux attaques contre un allié à 1,50 m
+    protection: ({ derived: { wornArmor }, add }) => {
+        add('featSlot', "Réaction (bouclier en main) quand une créature que vous voyez attaque une autre cible à 1,50 m de vous : Désavantage à ce jet et aux attaques contre cette cible jusqu'au début de votre prochain tour, si vous restez à 1,50 m d'elle.");
+        if (!wornArmor.shield) add('featSlot', 'Aucun bouclier équipé (tableau des armures) : ce style demande de tenir un bouclier.', { inactive: true });
+    },
+
+    // À la place du style de combat (niveau 2) : deux sorts mineurs (PHB 2024, Paladin et Rôdeur)
+    guerrier_beni: ({ record, add }) => alternativeNotes('guerrier_beni', 'Clerc', 'Assistance et Flamme sacrée', 'le Charisme', record, add),
+    guerrier_druidique: ({ record, add }) => alternativeNotes('guerrier_druidique', 'Druide', "Assistance et Poussière d'étoile", 'la Sagesse', record, add)
 };
+
+/** Notes de Guerrier béni / druidique : sorts à noter soi-même, et classe qui y a droit */
+function alternativeNotes(id, list, advised, ability, record, add) {
+    const alt = STYLE_ALTERNATIVES[id];
+    add('featSlot', `Deux sorts mineurs de ${list} à ajouter vous-même au grimoire (${advised} sont conseillés), lancés avec ${ability}. Ils remplacent le style de combat.`);
+    if (classOf(record) !== alt.classId) {
+        add('featSlot', `${alt.name} est une option du ${alt.className} (niveau 2), à la place de son style de combat.`, { check: true });
+    }
+}
 
 // -----------------------------------------------------------------------------
 // Dons à choix (lot 3, js/rules/feat-choices.js) : la fiche ne coche rien et ne change aucune
@@ -625,8 +702,36 @@ const WEAPON_RULES = [
         } },
     { featId: 'empoisonneur', applies: ({ record, derived }) => poisonerDC(record, derived) !== null,
         value: ({ record, derived }) => poisonerDC(record, derived),
-        text: ({ record, derived }) => `Poison (action Bonus, 1 dose) : jet de sauvegarde de Constitution DD ${poisonerDC(record, derived)}, sinon 2d8 dégâts de poison et Empoisonné.` }
+        text: ({ record, derived }) => `Poison (action Bonus, 1 dose) : jet de sauvegarde de Constitution DD ${poisonerDC(record, derived)}, sinon 2d8 dégâts de poison et Empoisonné.` },
+    // Lot 4 : styles de combat
+    { featId: 'archerie', applies: ({ weapon }) => { const reach = weaponReach(weapon); return reach.ranged && !reach.melee; },
+        value: 2,
+        text: () => "Archerie : +2 à l'attaque, déjà compté." },
+    { featId: 'duel', applies: ({ melee, weapon }) => melee && !hasProperty(weapon, 'deux mains'),
+        text: ({ buffs }) => buffs.dueling
+            ? 'Duel : +2 aux dégâts compté (bouton « Duel » allumé) : à une main, sans autre arme.'
+            : 'Duel : +2 aux dégâts si vous la tenez à une main sans autre arme ; allumez le bouton « Duel (+2) » au-dessus du tableau.' },
+    { featId: 'arme_a_deux_mains', applies: ({ melee, weapon }) => melee && (hasProperty(weapon, 'deux mains') || hasProperty(weapon, 'polyvalente')),
+        text: ({ weapon }) => {
+            const versatile = fold(weapon.prop).match(/polyvalente\s*\(([^)]+)\)/);
+            return `Arme à deux mains : tenue à deux mains, chaque 1 ou 2 sur un dé de dégâts compte comme un 3${versatile ? ` (avec le dé à deux mains, ${versatile[1].trim()})` : ''}.`;
+        } },
+    { featId: 'arme_de_lancer', applies: ({ weapon }) => hasProperty(weapon, 'lancer'),
+        text: ({ weapon, derived, buffs }) => {
+            // Lancée : attaque à distance (ni Duel, ni Charge, réservés au corps à corps) ; le +2 est
+            // un bonus nommé de computeWeapon (un ancien dé libre, « 2d4 + 1 », reste juste)
+            const strike = computeWeapon(weapon, derived, { ...buffs, dueling: false, charger: false, thrownWeapon: true });
+            return `Arme de lancer : lancée (attaque à distance), dégâts ${strike ? strike.damage.text : '+2'}.`;
+        } },
+    { featId: 'combat_a_deux_armes', applies: ({ weapon }) => hasProperty(weapon, 'legere'),
+        text: ({ weapon, derived, buffs }) => {
+            // Attaque en plus en action Bonus avec une seconde arme : ni Duel (aucune autre arme), ni
+            // Charge (action Attaque seulement)
+            const strike = computeWeapon(weapon, derived, { ...buffs, dueling: false, charger: false });
+            return `Combat à deux armes : l'attaque en plus (action Bonus) avec cette arme Légère garde le modificateur aux dégâts${strike ? ` : ${strike.damage.text}` : ''}.`;
+        } }
 ];
+
 
 /**
  * Rappels de dons pour une ligne du tableau des armes, selon sa portée (corps à corps) et son type
@@ -698,6 +803,12 @@ export function featEffects(character, derived = deriveCharacter(character || {}
                     { check: true, slot: slot.level }));
             }
             continue;
+        }
+        // Style de combat (PHB 2024) : prérequis « capacité Style de combat » (Guerrier ; Paladin et Rôdeur au niveau 2)
+        if (Object.hasOwn(FEATS_DATA, slot.featId) && FEATS_DATA[slot.featId].type === 'Style de combat' && !hasFightingStyle(record)) {
+            (effects[`featSlot:${slot.level}`] ??= []).push(note(slot.featId,
+                'Prérequis : la capacité Style de combat (Guerrier dès le niveau 1, Paladin ou Rôdeur dès le niveau 2).',
+                { check: true }));
         }
         if (!Object.hasOwn(FEAT_RULES, slot.featId)) continue;
         const rule = FEAT_RULES[slot.featId];

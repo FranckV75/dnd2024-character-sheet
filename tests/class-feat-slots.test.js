@@ -25,11 +25,13 @@ const hero = (extra = {}) => ({
 
 describe('Dons de classe en plus (Guerrier 6 et 14, Roublard 10)', () => {
     test('emplacements rangés à leur niveau, acquis à ce niveau', () => {
-        assert.deepEqual(FEAT_SLOT_ORDER, [1, 0, 4, 6, 8, 10, 12, 14, 16, 19]);
-        assert.deepEqual({ ...CLASS_FEAT_SLOTS }, { 6: 'fighter', 10: 'rogue', 14: 'fighter' });
+        assert.deepEqual(FEAT_SLOT_ORDER, [1, 0, 2, 4, 6, 7, 8, 10, 12, 14, 16, 19]);
+        assert.deepEqual(CLASS_FEAT_SLOTS[6].classes, ['fighter']);
+        assert.deepEqual(CLASS_FEAT_SLOTS[10].classes, ['rogue']);
+        assert.deepEqual(CLASS_FEAT_SLOTS[14].classes, ['fighter']);
         for (const slot of [6, 10, 14]) assert.equal(featSlotLevel(slot), slot);
-        assert.equal(classFeatSlot(6).name, 'Guerrier');
-        assert.equal(classFeatSlot('10').plural, 'Roublards');
+        assert.equal(classFeatSlot(6).caption, 'Guerrier : don en plus');
+        assert.equal(classFeatSlot('10').reserved, 'Réservé aux Roublards');
         assert.equal(classFeatSlot(4), null);
         assert.equal(classFeatSlot(0), null);
         assert.equal(featSlotName(14), 'niveau 14');

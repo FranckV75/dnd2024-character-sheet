@@ -37,7 +37,9 @@ const CLASS_BUFFS = {
 const FEAT_BUFFS = {
     heavyWeaponMaster: 'maitre_des_armes_lourdes_cogneur_lourd',
     // Expert de la charge (PHB 2024 « Charger », p. 202) : +1d8 aux dégâts d'une attaque au corps à corps
-    charger: 'expert_de_la_charge'
+    charger: 'expert_de_la_charge',
+    // Style Duel (PHB 2024 p. 209) : +2 aux dégâts à une main, sans autre arme
+    dueling: 'duel'
 };
 
 /** Début du type de dégâts écrit dans le manuel (« 1d8 tran. ») → abréviation v3 (WEAPON_DAMAGE_TYPES) */
@@ -263,7 +265,7 @@ export function effectiveBuffs(slug, buffs, character) {
     const on = (key) => allowed.includes(key) && buffs?.[key] === true;
     return {
         rage: on('rage'), sneakAttack: on('sneakAttack'), hunterMark: on('hunterMark'),
-        heavyWeaponMaster: on('heavyWeaponMaster'), charger: on('charger')
+        heavyWeaponMaster: on('heavyWeaponMaster'), charger: on('charger'), dueling: on('dueling')
     };
 }
 

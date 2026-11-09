@@ -33,7 +33,7 @@ describe("Humain : second don d'origine (feat_0)", () => {
         assert.equal(HUMAN_FEAT_SLOT, 0);
         assert.equal(featSlotLevel(0), 1);
         assert.equal(featSlotLevel('4'), 4);
-        assert.deepEqual(FEAT_SLOT_ORDER.slice(0, 3), [1, 0, 4]);
+        assert.deepEqual(FEAT_SLOT_ORDER.slice(0, 3), [1, 0, 2]);
         assert.equal(featSlotName(0), 'niveau 1 (Humain)');
         assert.equal(featSlotName(8), 'niveau 8');
     });
