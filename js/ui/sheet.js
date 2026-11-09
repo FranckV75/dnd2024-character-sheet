@@ -612,7 +612,7 @@ const MENTION_LABELS = {
         duelliste_defensif: `Parade\u00a0+${note.value}`,
         defense: 'Défense\u00a0+1'
     })[note.featId] ?? note.featName,
-    speed: (note) => `dont\u00a0+${note.value}\u00a0m grâce à ${note.featName}`,
+    speed: (note) => note.featId === 'athlete' ? 'Escalade\u00a0= Vitesse' : `dont\u00a0+${note.value}\u00a0m grâce à ${note.featName}`,
     deathSaves: (note) => `Avantage (${note.featName})`,
     saves: (note) => ({
         mage_de_guerre: 'Avantage Concentration',

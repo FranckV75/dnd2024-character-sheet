@@ -84,6 +84,25 @@ export function weaponReach(weapon) {
 }
 
 /**
+ * Ligne « Frappe à mains nues » (catalogue DD_RULES.weapons, PHB 2024 « Unarmed Strike ») ? Par sa
+ * catégorie « Mains nues » (nom au pluriel ou retouché, rattaché au manuel) ou par son nom.
+ * @param {{ name?: string, category?: string }} weapon
+ * @returns {boolean}
+ */
+export function isUnarmedStrike(weapon) {
+    return fold(weapon?.category) === 'mains nues' || fold(weapon?.name).startsWith('frappe a mains nues');
+}
+
+/**
+ * Arbalète (PHB 2024 « Crossbow Expert » : arbalète de poing, légère, lourde) ?
+ * @param {{ name?: string }} weapon
+ * @returns {boolean}
+ */
+export function isCrossbow(weapon) {
+    return fold(weapon?.name).startsWith('arbalete');
+}
+
+/**
  * Type de dégâts d'une arme : celui imposé dans sa configuration, sinon celui du manuel
  * écrit après le dé (« 1d12 tran. » → 'TRAN'), comme calcWeaponDamage (logic.js).
  * @param {{ baseDmg?: string, weaponConfig?: string|Object }} weapon

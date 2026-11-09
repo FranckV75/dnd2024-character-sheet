@@ -10,7 +10,7 @@ import {
     WEAPON_MASTERIES, WEAPON_MASTERY_CLASSES, TACTICAL_MASTER, WEAPON_MASTER_FEAT_ID
 } from '../data/weapon-masteries.js';
 import { DD_RULES } from '../data/dd-rules.js';
-import { deriveCharacter, computeWeapon } from './character.js';
+import { deriveCharacter, computeWeapon, weaponStatOverride } from './character.js';
 import { parseWeaponConfig, resolveWeaponAttackStat, getRageBonus } from './logic.js';
 import { weaponDamageType } from './weapons.js';
 import { hasFeat } from './feats.js';
@@ -99,8 +99,8 @@ export function masteryParagraphs(mastery) {
  *  - Renversement : DD 8 + modificateur de la caractéristique d'attaque + bonus de maîtrise ;
  *  - Enchaînement : dés de l'arme, + bonus magique, + Rage si elle est active et que l'attaque
  *    utilise la Force (PHB 2024 p. 51), sans le modificateur sauf s'il est négatif.
- * La caractéristique d'attaque est celle de computeWeapon (resolveWeaponAttackStat avec la
- * configuration de l'arme). Sans arme rattachée au manuel (computeWeapon null), aucune valeur.
+ * La caractéristique d'attaque est celle de computeWeapon (weaponStatOverride, character.js :
+ * configuration de l'arme, Dextérité du Moine). Sans arme rattachée au manuel (computeWeapon null), aucune valeur.
  * @param {Object} weapon - ligne de dynamic_weapons
  * @param {Object} character - personnage (format de sauvegarde), jamais modifié
  * @param {Object} [derived] - deriveCharacter(character)
@@ -123,7 +123,8 @@ export function masteryDetails(weapon, character, derived = deriveCharacter(char
 
     const config = parseWeaponConfig(weapon.weaponConfig);
     const prop = plain(weapon.prop);
-    const { stat, mod } = resolveWeaponAttackStat(weapon.atkKey, prop, derived.mods, config.statOverride || '');
+    // Même caractéristique que le tableau (Dextérité d'un Moine avec une arme de Moine)
+    const { stat, mod } = resolveWeaponAttackStat(weapon.atkKey, prop, derived.mods, weaponStatOverride(weapon, derived));
     const statText = `${STAT_NAMES[stat] || stat} ${signed(mod)}`;
     const typeWord = DAMAGE_TYPE_WORDS[weaponDamageType(weapon)] || '';
     // « 1 dégât tranchant », « 5 dégâts tranchants » (« de feu » ne change pas)

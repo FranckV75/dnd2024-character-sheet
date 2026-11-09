@@ -169,7 +169,8 @@ describe('Armes et armures', () => {
         for (const w of DD_RULES.weapons) {
             assert.ok(['FOR', 'DEX'].includes(w.atk), w.name);
             assert.match(w.dmg, DICE, w.name);
-            assert.ok(['Courante', 'Guerre'].includes(w.category), w.name);
+            // « Frappe à mains nues » : pas une arme du Manuel, mais une attaque du tableau (lot 7)
+            assert.ok(['Courante', 'Guerre'].includes(w.category) || (w.name === 'Frappe à mains nues' && w.category === 'Mains nues'), w.name);
         }
     });
 
@@ -222,10 +223,16 @@ describe('Armes et armures', () => {
     };
 
     test('Chaque arme correspond à la table du Manuel (dégâts, propriétés, botte, catégorie)', () => {
-        assert.deepEqual(DD_RULES.weapons.map(w => w.name).sort(), Object.keys(PHB_WEAPONS).sort());
-        for (const w of DD_RULES.weapons) {
+        const weapons = DD_RULES.weapons.filter(w => w.category !== 'Mains nues');
+        assert.deepEqual(weapons.map(w => w.name).sort(), Object.keys(PHB_WEAPONS).sort());
+        for (const w of weapons) {
             assert.equal([w.dmg, w.prop, w.prof, w.category].join(' | '), PHB_WEAPONS[w.name], w.name);
         }
+    });
+
+    test('Frappe à mains nues (PHB 2024 p. 377) : seule entrée hors table, 1 contondant, Force', () => {
+        const extra = DD_RULES.weapons.filter(w => w.category === 'Mains nues');
+        assert.deepEqual(extra, [{ name: 'Frappe à mains nues', atk: 'FOR', dmg: '1 cont.', prop: '-', prof: '-', ammo: '-', category: 'Mains nues' }]);
     });
 
     test('Coutille : arme de guerre lourde à allonge, reconnue par les filtres, Cogneur lourd et le manuel', () => {

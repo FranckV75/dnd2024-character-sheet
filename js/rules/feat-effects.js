@@ -19,7 +19,7 @@ import { featSlots, featName, featSlotName, reachedFeatIds, hasFightingStyle, cl
 import { FEATS_DATA } from '../data/feats.js';
 import { deriveCharacter, computeWeapon, hitDieForClass, parseNumber } from './character.js';
 import { parseWeaponConfig } from './logic.js';
-import { weaponReach, weaponDamageType, isBlankWeapon } from './weapons.js';
+import { weaponReach, weaponDamageType, isBlankWeapon, isUnarmedStrike, isCrossbow } from './weapons.js';
 import { DD_RULES } from '../data/dd-rules.js';
 import { ABILITY_IDS, SKILLS } from '../data/constants.js';
 import {
@@ -47,7 +47,7 @@ import { FEAT_SPELL_FEATS, featSpellGroups, featSpellSummary } from './feat-spel
  * @property {boolean} [ticked] - la case due au don est cochée sur la fiche (lot 3)
  * @property {number} [slot] - niveau de l'emplacement du don (dons à choix : un même don peut être
  *   pris dans deux emplacements, chacun avec son choix)
- * @property {'short'} [restKind] - rappel de fin de repos court seulement (zone 'rest')
+ * @property {'short'|'long'} [restKind] - rappel de fin de repos court seulement, ou long seulement (zone 'rest')
  */
 
 /**
@@ -100,7 +100,10 @@ export const AUTOMATED_FEATS = Object.freeze([
     'protection_lourde', 'duelliste_defensif', 'gaillard', 'chef_cuisinier', 'empoisonneur', 'maitre_d_hast',
     // Lot 4 : styles de combat (et ce qui peut les remplacer au niveau 2)
     'defense', 'archerie', 'duel', 'arme_a_deux_mains', 'arme_de_lancer', 'combat_a_deux_armes',
-    'combat_a_mains_nues', 'combat_en_aveugle', 'interception', 'protection', 'guerrier_beni', 'guerrier_druidique'
+    'combat_a_mains_nues', 'combat_en_aveugle', 'interception', 'protection', 'guerrier_beni', 'guerrier_druidique',
+    // Lot 7 : Frappe à mains nues, armes et rappels
+    'athlete', 'bagarreur_de_tavernes', 'combattant_a_deux_armes', 'combattant_monte', 'comedien', 'discret',
+    'empoigneur', 'faconneur', 'formation_aux_armes_de_guerre', 'maitre_d_armes', 'maitre_arbaletrier', 'tireur_d_elite'
 ]);
 
 const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
@@ -413,6 +416,89 @@ const FEAT_RULES = {
         if (!weapons.some(isPolearm)) add('featSlot', "Aucune de ces armes dans le tableau des armes.", { inactive: true });
     },
 
+    // ----- Lot 7 — règles vérifiées dans le PHB 2024 anglais (le +1 : js/rules/feat-choices.js) -----
+
+    // Athlète — PHB 2024 « Athlete », p. 202 : Vitesse d'escalade = Vitesse (la Vitesse saisie n'est pas lue)
+    athlete: ({ add }) => {
+        add('speed', "Vitesse d'escalade égale à votre Vitesse.");
+        add('featSlot', "Vitesse d'escalade égale à votre Vitesse (repère à côté de la Vitesse).");
+        add('featSlot', 'À terre : vous vous relevez avec seulement 1,50 m de mouvement. Saut en longueur ou en hauteur avec élan après 1,50 m seulement.');
+    },
+
+    // Bagarreur de tavernes — PHB 2024 « Tavern Brawler », p. 202 : Frappe à mains nues 1d4 + For
+    bagarreur_de_tavernes: ({ record, add }) => {
+        add('featSlot', 'Frappe à mains nues : 1d4 + mod. de Force contondants au lieu de 1 + Force, et vous relancez les 1 sur ses dés de dégâts. Une fois par tour, touchée pendant l\'action Attaque : vous pouvez aussi repousser la cible de 1,50 m.');
+        add('featSlot', 'Vous maîtrisez les armes improvisées.');
+        unarmedRowHint(record, add);
+    },
+
+    // Combattant à deux armes — PHB 2024 « Dual Wielder », p. 203
+    combattant_a_deux_armes: ({ add }) => {
+        add('featSlot', "Après une attaque avec une arme Légère (action Attaque), l'attaque en plus (action Bonus) peut se faire avec une autre arme de corps à corps qui n'est pas à Deux mains, même sans Légère (sans modificateur aux dégâts, sauf s'il est négatif).");
+        add('featSlot', 'Vous dégainez ou rangez deux armes (pas à Deux mains) au lieu d\'une.');
+    },
+
+    // Combattant monté — PHB 2024 « Mounted Combatant », p. 205
+    combattant_monte: ({ add }) => {
+        add('featSlot', 'Monté : Avantage aux attaques contre une créature non montée à 1,50 m de votre monture et plus petite qu\'elle d\'au moins une taille.');
+        add('featSlot', 'Esquive de la monture : sauvegarde de Dextérité pour moitié des dégâts, elle ne subit rien si elle réussit et la moitié si elle rate (vous la montez, aucun de vous deux Neutralisé).');
+        add('featSlot', 'Une attaque qui touche votre monture peut vous toucher à la place (si vous n\'êtes pas Neutralisé).');
+    },
+
+    // Comédien — PHB 2024 « Actor », p. 202 : DD de l'Imitation = 8 + mod. Cha + bonus de maîtrise
+    comedien: ({ derived, add }) => {
+        const dc = actorDC(derived);
+        for (const skill of ['deception', 'performance']) {
+            add(`skills.${skill}`, 'Avantage pour vous faire passer pour la personne dont vous avez pris le déguisement.');
+        }
+        add('featSlot', 'Déguisé en une personne, réelle ou inventée : Avantage aux jets de Tromperie ou de Représentation pour passer pour elle (repère à côté de ces compétences).');
+        add('featSlot', `Imitation de sons et de voix : une créature qui l'entend doit réussir un jet d'Intuition (Sagesse) DD ${dc} pour la reconnaître comme fausse.`, { value: dc });
+    },
+
+    // Discret — PHB 2024 « Skulker », p. 208
+    discret: ({ add }) => {
+        add('skills.stealth', "Avantage pour l'action Se cacher pendant un combat.");
+        add('featSlot', 'Vision aveugle à 3 m : à noter vous-même avec vos sens.');
+        add('featSlot', "Avantage en Discrétion pour l'action Se cacher pendant un combat (repère à côté de Discrétion). Caché, une attaque ratée ne révèle pas votre position.");
+    },
+
+    // Empoigneur — PHB 2024 « Grappler », p. 204 : DD de Lutte = 8 + mod. For + bonus de maîtrise
+    empoigneur: ({ derived, record, add }) => {
+        const dc = grappleDC(derived);
+        add('featSlot', `Frappe à mains nues pendant l'action Attaque, une fois par tour : dégâts et Lutte en même temps (sauvegarde de Force ou de Dextérité DD ${dc}, au choix de la cible).`, { value: dc });
+        add('featSlot', "Avantage aux attaques contre une créature que vous agrippez. La déplacer (votre taille ou plus petite) ne divise pas votre Vitesse.");
+        unarmedRowHint(record, add);
+    },
+
+    // Façonneur — PHB 2024 « Crafter », p. 200
+    faconneur: ({ add }) => {
+        add('featSlot', "Trois outils d'artisan au choix de la table Fabrication rapide : à noter vous-même dans Outils.");
+        add('featSlot', '−20 % sur le prix des objets non magiques que vous achetez.');
+        add('featSlot', "Fin d'un repos long : vous fabriquez un objet de la table Fabrication rapide (outil maîtrisé en main) ; il tombe en morceaux à la fin du repos long suivant.");
+        add('rest', "Fabrication rapide : un objet de la table (outil d'artisan maîtrisé), qui dure jusqu'à la fin du prochain repos long.", { restKind: 'long' });
+    },
+
+    // Formation aux armes de guerre — PHB 2024 « Martial Weapon Training », p. 205
+    formation_aux_armes_de_guerre: ({ add }) => {
+        add('featSlot', "Maîtrise des armes de guerre : la fiche compte déjà le bonus de maîtrise dans l'attaque de toutes les armes du tableau.", { applied: true });
+    },
+
+    // Maître d'armes : botte d'un type d'arme en plus (bottes d'armes, js/rules/weapon-masteries.js)
+    maitre_d_armes: ({ add }) => {
+        add('featSlot', "Botte d'arme d'un type d'arme courante ou de guerre que vous maîtrisez, à changer après un repos long : rappelée dans la description de chaque botte (pastille en forme de livre sous la botte, dans le tableau des armes).");
+    },
+
+    // Maître arbalétrier — PHB 2024 « Crossbow Expert », p. 203
+    maitre_arbaletrier: ({ add }) => {
+        add('featSlot', "Arbalètes : vous ignorez la propriété Chargement, et être à 1,50 m d'un ennemi ne donne pas le Désavantage à vos attaques (rappel sous chaque arbalète).");
+        add('featSlot', "L'attaque en plus de la propriété Légère avec une arbalète Légère (arbalète de poing) ajoute votre modificateur aux dégâts.");
+    },
+
+    // Tireur d'élite — PHB 2024 « Sharpshooter », p. 207
+    tireur_d_elite: ({ add }) => {
+        add('featSlot', "Attaques à distance avec une arme : elles ignorent les abris partiels (1/2) et importants (3/4) ; ni la longue portée ni un ennemi à 1,50 m ne donnent le Désavantage (rappel sous ces armes).");
+    },
+
     // ----- Lot 4 : styles de combat — PHB 2024 p. 209-210 (« Fighting Style Feats ») -----
 
     // Défense : +1 à la CA en armure légère, intermédiaire ou lourde (compté dans la CA calculée)
@@ -478,6 +564,31 @@ const FEAT_RULES = {
     guerrier_beni: ({ record, add }) => alternativeNotes('guerrier_beni', 'Clerc', 'Assistance et Flamme sacrée', 'le Charisme', record, add),
     guerrier_druidique: ({ record, add }) => alternativeNotes('guerrier_druidique', 'Druide', "Assistance et Poussière d'étoile", 'la Sagesse', record, add)
 };
+
+/** DD de l'Imitation du Comédien (PHB 2024 « Actor », p. 202) : 8 + mod. Charisme + bonus de maîtrise */
+export function actorDC(derived) {
+    return 8 + derived.mods.cha + derived.pb;
+}
+
+/**
+ * DD de la Lutte à mains nues (PHB 2024 p. 377) : 8 + mod. Force + bonus de maîtrise ; le Moine
+ * sans armure ni bouclier peut prendre la Dextérité (Arts martiaux, p. 102).
+ */
+export function grappleDC(derived) {
+    const { str, dex } = derived.mods;
+    const worn = derived.wornArmor ?? {};
+    const martialArts = derived.classSlug === 'monk' && !(worn.light || worn.medium || worn.heavy || worn.shield);
+    return 8 + (martialArts ? Math.max(str, dex) : str) + derived.pb;
+}
+
+/** Rappel : pas de ligne « Frappe à mains nues » dans le tableau des armes (ses dégâts n'y sont pas calculés) */
+function unarmedRowHint(record, add) {
+    const weapons = Array.isArray(record.dynamic_weapons) ? record.dynamic_weapons : [];
+    // Ligne rattachée au manuel seulement (sinon ses dégâts ne sont pas calculés)
+    if (!weapons.some(weapon => isUnarmedStrike(weapon) && weapon.atkKey)) {
+        add('featSlot', '« Frappe à mains nues » peut être ajoutée au tableau des armes (liste du manuel) : ses dégâts y sont alors calculés.', { inactive: true });
+    }
+}
 
 /** Notes de Guerrier béni / druidique : sorts à noter soi-même, et classe qui y a droit */
 function alternativeNotes(id, list, advised, ability, record, add) {
@@ -665,7 +776,24 @@ function choiceNotes(grant, { derived, grants, record, add }) {
 // -----------------------------------------------------------------------------
 
 /** Rappel court d'un don sur une arme : condition (arme de corps à corps, type de dégâts…) et texte */
+/**
+ * Dons dont le rappel ne vaut qu'avec une arme, pas avec la Frappe à mains nues (PHB 2024 :
+ * Sauvagerie martiale « with a weapon », Abattage « with a Melee weapon », Coup de bouclier « with a
+ * Melee weapon », Poison « weapon or ammunition », Duel « a Melee weapon »).
+ */
+const WEAPON_ONLY_FEATS = new Set([
+    'sauvagerie_martiale', 'maitre_des_armes_lourdes_cogneur_lourd', 'maitre_des_boucliers', 'empoisonneur', 'duel'
+]);
+
 const WEAPON_RULES = [
+    // Lot 7 : Frappe à mains nues (PHB 2024 p. 377)
+    { featId: 'bagarreur_de_tavernes', applies: ({ weapon }) => isUnarmedStrike(weapon),
+        text: () => '1d4 au lieu de 1 (le plus gros dé est compté), relancez les 1 ; une fois par tour (action Attaque), vous pouvez aussi repousser la cible de 1,50 m.' },
+    { featId: 'empoigneur', applies: ({ weapon }) => isUnarmedStrike(weapon),
+        value: ({ derived }) => grappleDC(derived),
+        text: ({ derived }) => `Frappe et empoignade : une fois par tour (action Attaque), dégâts et Lutte en même temps (DD ${grappleDC(derived)}) ; Avantage contre la créature que vous agrippez.` },
+    { featId: 'combat_a_mains_nues', applies: ({ weapon }) => isUnarmedStrike(weapon),
+        text: () => "1d6, ou 1d8 si vous ne tenez ni arme ni bouclier (le tableau compte 1d6 : réglez le dé dans la configuration de la ligne si besoin). Au début de votre tour, 1d4 contondants à la créature que vous agrippez." },
     { featId: 'sauvagerie_martiale', applies: () => true,
         text: () => 'Une fois par tour, lancer deux fois les dés de dégâts de l\'arme et garder un des résultats.' },
     { featId: 'maitre_des_armes_lourdes_cogneur_lourd', applies: ({ melee }) => melee,
@@ -706,32 +834,47 @@ const WEAPON_RULES = [
     // Lot 4 : styles de combat
     { featId: 'archerie', applies: ({ weapon }) => { const reach = weaponReach(weapon); return reach.ranged && !reach.melee; },
         value: 2,
-        text: () => "Archerie : +2 à l'attaque, déjà compté." },
+        text: () => "+2 à l'attaque, déjà compté." },
     { featId: 'duel', applies: ({ melee, weapon }) => melee && !hasProperty(weapon, 'deux mains'),
         text: ({ buffs }) => buffs.dueling
-            ? 'Duel : +2 aux dégâts compté (bouton « Duel » allumé) : à une main, sans autre arme.'
-            : 'Duel : +2 aux dégâts si vous la tenez à une main sans autre arme ; allumez le bouton « Duel (+2) » au-dessus du tableau.' },
+            ? '+2 aux dégâts compté (bouton « Duel » allumé) : à une main, sans autre arme.'
+            : '+2 aux dégâts si vous la tenez à une main sans autre arme ; allumez le bouton « Duel (+2) » au-dessus du tableau.' },
     { featId: 'arme_a_deux_mains', applies: ({ melee, weapon }) => melee && (hasProperty(weapon, 'deux mains') || hasProperty(weapon, 'polyvalente')),
         text: ({ weapon }) => {
             const versatile = fold(weapon.prop).match(/polyvalente\s*\(([^)]+)\)/);
-            return `Arme à deux mains : tenue à deux mains, chaque 1 ou 2 sur un dé de dégâts compte comme un 3${versatile ? ` (avec le dé à deux mains, ${versatile[1].trim()})` : ''}.`;
+            return `Tenue à deux mains, chaque 1 ou 2 sur un dé de dégâts compte comme un 3${versatile ? ` (avec le dé à deux mains, ${versatile[1].trim()})` : ''}.`;
         } },
     { featId: 'arme_de_lancer', applies: ({ weapon }) => hasProperty(weapon, 'lancer'),
         text: ({ weapon, derived, buffs }) => {
             // Lancée : attaque à distance (ni Duel, ni Charge, réservés au corps à corps) ; le +2 est
             // un bonus nommé de computeWeapon (un ancien dé libre, « 2d4 + 1 », reste juste)
             const strike = computeWeapon(weapon, derived, { ...buffs, dueling: false, charger: false, thrownWeapon: true });
-            return `Arme de lancer : lancée (attaque à distance), dégâts ${strike ? strike.damage.text : '+2'}.`;
+            return `Lancée (attaque à distance), dégâts ${strike ? strike.damage.text : '+2'}.`;
         } },
     { featId: 'combat_a_deux_armes', applies: ({ weapon }) => hasProperty(weapon, 'legere'),
         text: ({ weapon, derived, buffs }) => {
             // Attaque en plus en action Bonus avec une seconde arme : ni Duel (aucune autre arme), ni
             // Charge (action Attaque seulement)
             const strike = computeWeapon(weapon, derived, { ...buffs, dueling: false, charger: false });
-            return `Combat à deux armes : l'attaque en plus (action Bonus) avec cette arme Légère garde le modificateur aux dégâts${strike ? ` : ${strike.damage.text}` : ''}.`;
-        } }
+            return `L'attaque en plus (action Bonus) avec cette arme Légère garde le modificateur aux dégâts${strike ? ` : ${strike.damage.text}` : ''}.`;
+        } },
+    // Lot 7 : armes à distance, arbalètes, deux armes
+    { featId: 'tireur_d_elite', applies: ({ weapon }) => weaponReach(weapon).ranged,
+        // Une arme de corps à corps lancée n'est pas une arme à distance : seul le contournement d'abri vaut
+        text: ({ weapon }) => (weaponReach(weapon).melee
+            ? 'Lancée, elle ignore les abris 1/2 et 3/4.'
+            : 'Ignore les abris 1/2 et 3/4 ; ni la longue portée ni un ennemi à 1,50 m ne donnent le Désavantage.') },
+    { featId: 'maitre_arbaletrier', applies: ({ weapon }) => isCrossbow(weapon),
+        text: ({ weapon, derived, buffs }) => {
+            const light = hasProperty(weapon, 'legere');
+            const strike = light ? computeWeapon(weapon, derived, buffs) : null;
+            return "Chargement ignoré ; pas de Désavantage à 1,50 m d'un ennemi"
+                + (light ? ` ; l'attaque en plus (Légère) garde le modificateur aux dégâts${strike ? ` : ${strike.damage.text}` : ''}` : '') + '.';
+        } },
+    { featId: 'combattant_a_deux_armes',
+        applies: ({ melee, weapon }) => melee && !isUnarmedStrike(weapon) && !hasProperty(weapon, 'deux mains') && !hasProperty(weapon, 'legere'),
+        text: () => "Utilisable pour l'attaque en plus (action Bonus) après une attaque avec une arme Légère, même sans être Légère (sans modificateur aux dégâts)." }
 ];
-
 
 /**
  * Rappels de dons pour une ligne du tableau des armes, selon sa portée (corps à corps) et son type
@@ -747,8 +890,10 @@ export function weaponFeatNotes(weapon, character, derived = deriveCharacter(cha
     if (isBlankWeapon(weapon) || !weapon.atkKey || !String(weapon.name ?? '').replace(/<[^>]*>/g, '').trim()) return [];
     const feats = new Set(derived.feats ?? reachedFeatIds(character));
     const ctx = { derived, record: character || {}, weapon, buffs: buffs || {}, melee: weaponReach(weapon).melee, type: weaponDamageType(weapon) };
+    // La Frappe à mains nues n'est pas une arme : pas les rappels réservés aux armes
+    const unarmed = isUnarmedStrike(weapon);
     return WEAPON_RULES
-        .filter(rule => feats.has(rule.featId) && rule.applies(ctx))
+        .filter(rule => feats.has(rule.featId) && !(unarmed && WEAPON_ONLY_FEATS.has(rule.featId)) && rule.applies(ctx))
         .map(rule => {
             const value = typeof rule.value === 'function' ? rule.value(ctx) : rule.value;
             return note(rule.featId, rule.text(ctx), value === undefined ? {} : { value });

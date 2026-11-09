@@ -156,7 +156,15 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   (`FEAT_ZONES` : caractéristiques, CA, initiative, vitesse, jets contre la mort, PV max, sauvegardes,
   compétences…) et par emplacement (`featSlot:<niveau>`). Une zone affiche un repère « dont +X grâce à… »
   (bouton `data-feat-zone` d'`index.html`) ; la valeur saisie n'est jamais modifiée. Une note marquée
-  `restKind: 'short'` n'apparaît que dans la fenêtre du repos court (Repas reconstituant du Chef cuisinier).
+  `restKind: 'short'` n'apparaît que dans la fenêtre du repos court (Repas reconstituant du Chef cuisinier),
+  une note `restKind: 'long'` que dans celle du repos long (Fabrication rapide du Façonneur).
+- Frappe à mains nues : une entrée du catalogue `DD_RULES.weapons` (catégorie « Mains nues », hors table
+  des armes du Manuel), reconnue par `isUnarmedStrike` (`js/rules/weapons.js` : sa catégorie, ou son nom).
+  `computeWeapon` choisit son dé (Arts martiaux du Moine, Bagarreur de tavernes 1d4, style Combat à mains
+  nues 1d6) ; les rappels réservés aux armes n'y sont pas (`WEAPON_ONLY_FEATS`, `feat-effects.js`). Arts
+  martiaux (Moine sans armure ni bouclier, armes de Moine de corps à corps et mains nues) : dé seulement
+  s'il est plus gros que celui de l'arme, Dextérité par `weaponStatOverride` (`js/rules/character.js`),
+  partagée avec les bottes d'armes.
 - Le +1 des dons généraux sans autre choix vient du champ « asi » de `js/data/feats.js`
   (`GENERAL_ASI_RULES`, `js/rules/feat-choices.js`) : un menu « Caractéristique +1 » s'il y a un choix,
   sinon une caractéristique fixe sans menu (Gaillard : Constitution). Rien n'est ajouté à la valeur saisie.

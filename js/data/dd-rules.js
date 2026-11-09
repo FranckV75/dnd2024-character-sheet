@@ -730,6 +730,10 @@ const DD_RULES = {
     // ARMES (D&D 2024)
     // =========================================================================
     weapons: [
+        // FRAPPE À MAINS NUES (PHB 2024, glossaire « Unarmed Strike ») : pas une arme, mais une attaque
+        // au corps à corps (Force + bonus de maîtrise, 1 + mod. de Force contondants) ; dé calculé
+        // par computeWeapon (Arts martiaux du Moine, Bagarreur de tavernes, Combat à mains nues)
+        { name: "Frappe à mains nues", atk: "FOR", dmg: "1 cont.", prop: "-", prof: "-", ammo: "-", category: "Mains nues" },
         // ARMES COURANTES DE CORPS À CORPS
         { name: "Bâton", atk: "FOR", dmg: "1d6 cont.", prop: "Polyvalente (1d8)", prof: "Renversement", ammo: "-", category: "Courante" },
         { name: "Dague", atk: "DEX", dmg: "1d4 perf.", prop: "Finesse, Légère, Lancer (6/18 m)", prof: "Coup double", ammo: "-", category: "Courante" },

@@ -14,7 +14,7 @@ import {
     getRageBonus, isMartialArtsWeapon, getMartialArtsDie
 } from './logic.js';
 import { reachedFeatIds } from './feats.js';
-import { weaponReach } from './weapons.js';
+import { weaponReach, isUnarmedStrike } from './weapons.js';
 
 /**
  * Extrait le premier entier d'une valeur saisie librement ("19", "+3", "<b>19</b>", "3?").
@@ -455,7 +455,10 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     const config = parseWeaponConfig(weapon.weaponConfig);
     const prop = (weapon.prop || '').toString().replace(/<[^>]*>/g, '');
     const isRanged = prop.toLowerCase().includes('munitions');
-    const { stat } = resolveWeaponAttackStat(weapon.atkKey, prop, mods, config.statOverride || '');
+    const unarmed = isUnarmedStrike(weapon);
+    const monkWeapon = isMonkWeapon(weapon, stats);
+    const statOverride = weaponStatOverride(weapon, stats);
+    const { stat } = resolveWeaponAttackStat(weapon.atkKey, prop, mods, statOverride);
 
     const extraDmg = [];
     if (buffs.rage && stat === 'FOR') extraDmg.push({ die: String(getRageBonus(level)), type: 'Rage' });
@@ -473,7 +476,8 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     // Style Duel (PHB 2024 p. 209) : +2 aux dégâts, arme de corps à corps tenue à une main sans autre
     // arme ; bouton allumé par le joueur (la fiche ne sait pas ce qu'il tient en main)
     const reach = weaponReach(weapon);
-    if (buffs.dueling && reach.melee && !prop.toLowerCase().includes('deux mains')) extraDmg.push({ die: '2', type: 'Duel' });
+    // (la Frappe à mains nues n'est pas une arme : pas de Duel)
+    if (buffs.dueling && reach.melee && !unarmed && !prop.toLowerCase().includes('deux mains')) extraDmg.push({ die: '2', type: 'Duel' });
     // Style Arme de lancer (PHB 2024 p. 210) : +2 aux dégâts d'une attaque à distance avec une arme de
     // Lancer (rappel sous l'arme, featEffects)
     if (buffs.thrownWeapon) extraDmg.push({ die: '2', type: 'Arme de lancer' });
@@ -483,15 +487,68 @@ export function computeWeapon(weapon, stats, buffs = {}) {
         ? [{ value: 2, label: 'Archerie' }] : [];
 
     let dieOverride = config.dmgDieOverride || '';
-    if (slug === 'monk' && isMartialArtsWeapon(weapon.category || '', isRanged, prop)) {
-        dieOverride = dieOverride || getMartialArtsDie(level);
-    }
+    // Arts martiaux : le dé « à la place » de celui de l'arme, donc seulement s'il est plus gros
+    if (monkWeapon && !dieOverride) dieOverride = biggerDie(getMartialArtsDie(level), (weapon.baseDmg || '').toString());
+    // Frappe à mains nues : le plus gros dé parmi Arts martiaux, Bagarreur de tavernes (1d4) et
+    // le style Combat à mains nues (1d6 ; 1d8 sans arme ni bouclier, rappel sous la ligne)
+    if (unarmed && !config.dmgDieOverride) dieOverride = unarmedDie(dieOverride, stats.feats ?? []);
 
     return {
-        attack: calcWeaponAttack(weapon.atkKey, prop, mods, pb, config.magicBonus || 0, config.statOverride || '', attackBonuses),
-        damage: calcWeaponDamage(weapon.baseDmg || '', prop, mods, config.magicBonus || 0, config.statOverride || '',
+        attack: calcWeaponAttack(weapon.atkKey, prop, mods, pb, config.magicBonus || 0, statOverride, attackBonuses),
+        damage: calcWeaponDamage(weapon.baseDmg || '', prop, mods, config.magicBonus || 0, statOverride,
             dieOverride, config.dmgTypeOverride || '', weapon.atkKey, extraDmg)
     };
+}
+
+/**
+ * Frappe à mains nues ou arme de Moine, pour un Moine qui profite des Arts martiaux (PHB 2024
+ * p. 101-102) : sans armure ni bouclier équipés ; armes de Moine = armes courantes de corps à corps
+ * et armes de guerre de corps à corps Légères (pas la Fléchette, arme à distance).
+ */
+function isMonkWeapon(weapon, stats) {
+    if (stats.classSlug !== 'monk') return false;
+    const worn = stats.wornArmor ?? {};
+    if (worn.light || worn.medium || worn.heavy || worn.shield) return false;
+    const prop = (weapon?.prop || '').toString().replace(/<[^>]*>/g, '');
+    return isUnarmedStrike(weapon) || isMartialArtsWeapon(weapon?.category || '', !weaponReach(weapon).melee, prop);
+}
+
+/** Nombre de faces d'un dé (« 1d8 » → 8 ; dégâts fixes ou illisibles → 0) */
+const dieFaces = (die) => Number(String(die).match(/^\s*\d*d(\d+)/i)?.[1] ?? 0);
+
+/** Dé d'Arts martiaux s'il est plus gros que celui de l'arme (« 1d6 cont. »), sinon '' (dé de l'arme) */
+function biggerDie(martialDie, baseDmg) {
+    return dieFaces(martialDie) > dieFaces(baseDmg) ? martialDie : '';
+}
+
+/**
+ * Caractéristique d'attaque imposée à une arme du tableau : celle de sa configuration, sinon la
+ * Dextérité pour un Moine avec une arme de Moine ou à mains nues, si elle est meilleure que la Force
+ * (PHB 2024 p. 102, Arts martiaux « Dexterous Attacks »). '' : règle normale de l'arme.
+ * Partagée avec les bottes d'armes (weapon-masteries.js) : mêmes chiffres que le tableau.
+ * @param {Object} weapon - ligne de dynamic_weapons
+ * @param {{ mods: Object, classSlug: string, wornArmor?: Object }} stats - issu de deriveCharacter()
+ * @returns {string} 'str' | 'dex' | … | ''
+ */
+export function weaponStatOverride(weapon, stats) {
+    const forced = parseWeaponConfig(weapon?.weaponConfig).statOverride;
+    if (forced) return forced;
+    return isMonkWeapon(weapon, stats) && stats.mods.dex > stats.mods.str ? 'dex' : '';
+}
+
+/**
+ * Dé de la Frappe à mains nues : le plus gros parmi celui des Arts martiaux (déjà choisi, ou ''),
+ * Bagarreur de tavernes (PHB 2024 p. 202 : 1d4) et Combat à mains nues (p. 210 : 1d6).
+ * '' si aucun : la frappe fait alors 1 + mod. de Force.
+ * @param {string} current - '' ou dé déjà retenu (« 1d8 »)
+ * @param {string[]} feats - dons atteints
+ * @returns {string}
+ */
+function unarmedDie(current, feats) {
+    const dice = [current];
+    if (feats.includes('bagarreur_de_tavernes')) dice.push('1d4');
+    if (feats.includes('combat_a_mains_nues')) dice.push('1d6');
+    return dice.reduce((best, die) => (dieFaces(die) > dieFaces(best) ? die : best), '');
 }
 
 /**

@@ -2,6 +2,20 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.12.0] - 2026-11-09 (Frappe à mains nues et derniers dons)
+### Added
+- « Frappe à mains nues » dans la liste des armes du manuel : attaque et dégâts calculés (1 + Force), dé du
+  Moine, de Bagarreur (1d4) ou du style Combat à mains nues (1d6, 1d8 les mains vides en rappel).
+- Rappels sous les armes : Tireur d'élite, Maître arbalétrier, Combattant à deux armes, Empoigneur (avec
+  le DD de Lutte), Bagarreur.
+- Repères : Athlète (« Escalade = Vitesse »), Comédien (Tromperie, Représentation, DD de l'Imitation),
+  Discret (Discrétion) ; Fabrication rapide du Façonneur rappelée au repos long seulement ; rappels de
+  Combattant monté, Formation aux armes de guerre et Maître d'armes.
+### Fixed
+- Moine : la Dextérité n'est prise que sans armure ni bouclier, et aussi pour ses armes de Moine ; le dé
+  d'arts martiaux ne remplace plus un dé d'arme plus gros, ni celui d'une arme à distance.
+- Arme de lancer : les +2 dégâts sont affichés « +2 (Arme de lancer) ».
+
 ## [4.11.0] - 2026-11-09 (Styles de combat)
 ### Added
 - Emplacement « Style de combat » dans Aptitudes & Traits : Guerrier dès le niveau 1, Paladin et Rôdeur au

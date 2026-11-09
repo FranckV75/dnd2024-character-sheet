@@ -110,12 +110,13 @@ describe('Données : les huit bottes du manuel', () => {
 
 describe('findMastery : botte écrite dans la colonne « Botte d\'arme »', () => {
     test('chaque botte du tableau des armes du manuel est retrouvée', () => {
-        for (const weapon of DD_RULES.weapons) {
+        // (la Frappe à mains nues n'a pas de botte)
+        for (const weapon of DD_RULES.weapons.filter(w => w.category !== 'Mains nues')) {
             const mastery = findMastery(weapon.prof);
             assert.ok(mastery, `${weapon.name} : ${weapon.prof}`);
             assert.equal(mastery.name, weapon.prof);
         }
-        const used = new Set(DD_RULES.weapons.map(w => findMastery(w.prof).id));
+        const used = new Set(DD_RULES.weapons.filter(w => w.category !== 'Mains nues').map(w => findMastery(w.prof).id));
         assert.equal(used.size, 8);
     });
 

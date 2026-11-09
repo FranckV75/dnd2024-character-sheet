@@ -193,7 +193,7 @@ describe('featEffects : structure', () => {
     });
 
     test('don sans effet automatisé ou inconnu : aucune note', () => {
-        const effects = featEffects(fighter({ feat_1: 'bagarreur_de_tavernes', feat_4: 'texte libre' }));
+        const effects = featEffects(fighter({ feat_1: 'faveur_du_destin', feat_4: 'texte libre' }));
         assert.equal(Object.values(effects).flat().length, 0);
     });
 

@@ -242,7 +242,8 @@ export function planShortRest(character, { diceSpent = 0, healing = 0, sorcerous
             pactSlotsRestored,
             slotRecovery: slotRecoveryFeature(character, d),
             featUsesRestored: featUses.restored,
-            featNotes: restFeatNotes(character, d),
+            // Rappels propres au repos long (Fabrication rapide du Façonneur) : pas ici
+            featNotes: restFeatNotes(character, d).filter(note => note.restKind !== 'long'),
             canStart: canStartRest(character)
         }
     };

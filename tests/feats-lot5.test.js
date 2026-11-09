@@ -257,6 +257,6 @@ describe('Encadré du don : notes des dons non calculés', () => {
     test('un don qui ne donne que son +1 a des notes (le reste est un rappel)', () => {
         const grants = featChoiceGrants(hero({ feat_4: 'athlete', feat_choices: { 4: { athlete: { ability: 'dex' } } } }));
         assert.deepEqual(grants.map(g => g.abilities), [[{ ability: 'dex', amount: 1 }]]);
-        assert.ok(!AUTOMATED_FEATS.includes('athlete'));
+        assert.ok(AUTOMATED_FEATS.includes('athlete')); // ses rappels : lot 7
     });
 });
