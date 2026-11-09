@@ -624,7 +624,7 @@ function bindFeatCounters(root, store) {
 
 /** Libellé court d'une mention, par famille de zone ; le détail s'ouvre au toucher */
 const MENTION_LABELS = {
-    initiative: (note) => note.featName,
+    initiative: (note) => ['athlete_remarquable', 'assassinat'].includes(note.featId) ? `Avantage (${note.featName})` : note.featName,
     // espaces insécables : le chiffre ne reste jamais seul en bout de ligne
     hpMax: (note) => `dont\u00a0+${note.value} grâce à ${note.featName}`,
     armorClass: (note) => ({
@@ -636,7 +636,11 @@ const MENTION_LABELS = {
         defense: 'Défense\u00a0+1',
         faveur_de_l_esprit_nocturne: 'Résistance (ombre)'
     })[note.featId] ?? note.featName,
-    speed: (note) => note.featId === 'athlete' ? 'Escalade\u00a0= Vitesse' : `dont\u00a0+${note.value}\u00a0m grâce à ${note.featName}`,
+    speed: (note) => ({
+        athlete: 'Escalade\u00a0= Vitesse',
+        monte_en_l_air: 'Escalade\u00a0= Vitesse',
+        affinite_aquatique: 'Nage\u00a0= Vitesse'
+    })[note.featId] ?? `dont\u00a0+${note.value}\u00a0m grâce à ${note.featName}`,
     deathSaves: (note) => `Avantage (${note.featName})`,
     saves: (note) => ({
         mage_de_guerre: 'Avantage Concentration',
@@ -684,7 +688,8 @@ function zoneMentions(zone, notes) {
         const kept = byFeat.get(key);
         if (!kept || (kept.value === undefined && note.value !== undefined)) byFeat.set(key, note);
     }
-    return [...byFeat.values()].map(note => label(note));
+    // Deux sources du même effet (Athlète et Monte-en-l'air : « Escalade = Vitesse ») : une seule pastille
+    return [...new Set([...byFeat.values()].map(note => label(note)))];
 }
 
 /** Liste des notes de dons (fenêtre de détail) */

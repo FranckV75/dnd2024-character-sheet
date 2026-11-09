@@ -30,6 +30,7 @@ import {
 } from './feat-choices.js';
 import { FEAT_SPELL_FEATS, featSpellGroups, featSpellSummary } from './feat-spells.js';
 import { classFeatureNotes, weaponProficiency, weaponProficiencyNote, shieldKeepsMartialArts } from './class-features.js';
+import { subclassWeaponNotes } from './subclass-calcs.js';
 import { findMastery } from './weapon-masteries.js';
 
 /**
@@ -214,11 +215,11 @@ export function poisonerDC(record, derived) {
 // -----------------------------------------------------------------------------
 const FEAT_RULES = {
     // Vigilant — PHB 2024 « Alert », p. 200
-    vigilant: ({ derived: { pb, mods }, add }) => {
-        add('initiative', `Bonus de maîtrise ${signed(pb)} déjà compté dans l'Initiative (Dex ${signed(mods.dex)}, Vigilant ${signed(pb)}).`,
+    vigilant: ({ derived: { pb, initiative, initiativeDetail }, add }) => {
+        add('initiative', `Bonus de maîtrise ${signed(pb)} déjà compté dans l'Initiative (${initiativeDetail}).`,
             { value: pb, applied: true });
         add('initiative', "Échange d'Initiative : juste après le jet, vous pouvez échanger votre Initiative avec celle d'un allié consentant (impossible si l'un de vous est Incapable d'agir).");
-        add('featSlot', `Initiative calculée : Dex ${signed(mods.dex)}, Vigilant ${signed(pb)} = ${signed(mods.dex + pb)}.`,
+        add('featSlot', `Initiative calculée : ${initiativeDetail} = ${signed(initiative)}.`,
             { value: pb, applied: true });
     },
 
@@ -1069,7 +1070,9 @@ export function weaponFeatNotes(weapon, character, derived = deriveCharacter(cha
         .map(rule => {
             const value = typeof rule.value === 'function' ? rule.value(ctx) : rule.value;
             return note(rule.featId, rule.text(ctx), value === undefined ? {} : { value });
-        })];
+        }),
+        // Coup critique élargi (Champion, L'Hoplite) : capacité de sous-classe
+        ...subclassWeaponNotes(weapon, derived)];
 }
 
 /**

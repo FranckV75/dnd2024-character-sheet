@@ -16,6 +16,7 @@ import {
 import { reachedFeatIds } from './feats.js';
 import { weaponReach, isUnarmedStrike } from './weapons.js';
 import { divineFuryDie } from './subclass-features.js';
+import { subclassInitiativeBonuses, subclassSkillBonus, subclassWeaponStat, danceUnarmedDie } from './subclass-calcs.js';
 import {
     subclassId, auraOfProtectionBonus, jackOfAllTradesBonus, unarmoredDefenseOptions, weaponProficiency,
     shieldKeepsMartialArts, subclassFinesse
@@ -523,6 +524,9 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     // Frappe à mains nues : le plus gros dé parmi Arts martiaux, Bagarreur de tavernes (1d4) et
     // le style Combat à mains nues (1d6 ; 1d8 sans arme ni bouclier, rappel sous la ligne)
     if (unarmed && !config.dmgDieOverride) dieOverride = unarmedDie(dieOverride, stats.feats ?? []);
+    // Collège de la Danse (Dégâts bardiques) : dé d'Inspiration bardique, s'il est plus gros
+    const danceDie = config.dmgDieOverride ? '' : danceUnarmedDie(weapon, stats);
+    if (danceDie) dieOverride = biggerDie(danceDie, dieOverride) || dieOverride;
 
     return {
         attack: calcWeaponAttack(weapon.atkKey, prop, mods, pb, config.magicBonus || 0, statOverride, attackBonuses, proficiency.proficient),
@@ -571,6 +575,9 @@ export function weaponStatOverride(weapon, stats) {
     const forced = parseWeaponConfig(weapon?.weaponConfig).statOverride;
     if (forced) return forced;
     if (isMonkWeapon(weapon, stats) && stats.mods.dex > stats.mods.str) return 'dex';
+    // Collège de la Danse, Ascendance divine, Voie herculéenne (subclass-calcs.js)
+    const bySubclass = subclassWeaponStat(weapon, stats);
+    if (bySubclass) return bySubclass;
     return subclassFinesse(weapon, stats) && stats.mods.dex >= stats.mods.str ? 'dex' : '';
 }
 
@@ -629,12 +636,14 @@ export function deriveCharacter(record = {}) {
         // Règle D&D : l'Expertise implique la maîtrise
         const proficient = expertise || record[`skill_prof_${skill.id}`] === true;
         const jackBonus = proficient ? 0 : jack;
+        // Errant féerique : Sagesse (minimum +1) aux tests de Charisme (subclass-calcs.js)
+        const subclassBonus = subclassSkillBonus({ classSlug: slug, subclass, level, mods }, skill.stat);
         skills[skill.id] = {
             stat: skill.stat,
             proficient,
             expertise,
             jack: jackBonus,
-            bonus: calculateSkillBonus(mods[skill.stat], proficient, expertise, pb) + jackBonus
+            bonus: calculateSkillBonus(mods[skill.stat], proficient, expertise, pb) + jackBonus + subclassBonus
         };
     }
 
@@ -644,6 +653,8 @@ export function deriveCharacter(record = {}) {
     // Vigilant (PHB 2024 « Alert », p. 200) : bonus de maîtrise ajouté au jet d'Initiative
     const alert = feats.includes('vigilant') ? pb : 0;
     const signedText = (n) => `${n >= 0 ? '+' : ''}${n}`;
+    // Traqueur d'ombre (Sagesse), L'Odysséen niveau 13 (Charisme) : subclass-calcs.js
+    const initiativeBonuses = subclassInitiativeBonuses({ classSlug: slug, subclass, level, mods });
 
     const armors = record.dynamic_armors || [];
     const worn = new Set((Array.isArray(armors) ? armors : [])
@@ -662,8 +673,9 @@ export function deriveCharacter(record = {}) {
         saves,
         skills,
         feats,
-        initiative: mods.dex + alert,
-        initiativeDetail: `Dex ${signedText(mods.dex)}` + (alert ? `, Vigilant ${signedText(alert)}` : ''),
+        initiative: mods.dex + alert + initiativeBonuses.reduce((sum, bonus) => sum + bonus.value, 0),
+        initiativeDetail: `Dex ${signedText(mods.dex)}` + (alert ? `, Vigilant ${signedText(alert)}` : '')
+            + initiativeBonuses.map(bonus => `, ${bonus.label} ${signedText(bonus.value)}`).join(''),
         wornArmor: {
             light: worn.has('light'), medium: worn.has('medium'), heavy: worn.has('heavy'), shield: worn.has('shield'),
             shieldTrained: record.prof_armor_shield === true

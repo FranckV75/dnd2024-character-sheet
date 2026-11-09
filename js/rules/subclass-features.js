@@ -13,6 +13,7 @@ import { DD_RULES } from '../data/dd-rules.js';
 import { SUBCLASS_SPELLS } from '../data/subclass-spells.js';
 import { getRageBonus } from './logic.js';
 import { normalizeText } from './spells.js';
+import { bardicInspirationDie, monkFocusDC, martialArtsDieText, abilityDC } from './subclass-calcs.js';
 
 /** Signe devant un nombre : « +3 », « -1 » */
 const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
@@ -25,6 +26,14 @@ const chaMod = (derived) => Number(derived?.mods?.cha) || 0;
 const paladinDC = (derived) => 8 + (Number(derived?.pb) || 2) + chaMod(derived);
 const SPELLS_TEXT = 'Bloc « Sorts de sous-classe » de l\'onglet Magie : toujours préparés, hors du nombre de sorts préparés.';
 const COMBAT_BOXES = 'Case dans l\'onglet Combat, vidée au repos long.';
+const mod = (derived, id) => Number(derived?.mods?.[id]) || 0;
+// `where` contient la préposition (« de la sauvegarde de Force », « d'Athlétisme ») ; plural : deux cases
+const CHECK_TEXT = (where, plural = false) =>
+    `Rappel « À vérifier » près ${where} tant que ${plural ? 'les cases ne sont pas cochées' : 'la case n\'est pas cochée'}.`;
+/** Modificateur compté dans l'Initiative calculée seulement s'il est positif (subclass-calcs.js) */
+const initiativeText = (d, id, name) => mod(d, id) > 0
+    ? `${name} ${signed(mod(d, id))} compté dans l'Initiative calculée`
+    : `${name} ${signed(mod(d, id))} : rien d'ajouté à l'Initiative tant qu'il n'est pas positif`;
 
 /**
  * Ce que la fiche fait de chaque capacité qu'elle gère, par sous-classe puis identifiant :
@@ -33,27 +42,8 @@ const COMBAT_BOXES = 'Case dans l\'onglet Combat, vidée au repos long.';
  * Les capacités qui donnent des sorts (SPELL_FEATURES) sont ajoutées à la suite.
  */
 const MANUAL_AUTOMATION = {
-    draconic_sorcery: {
-        resilience_draconique: { text: 'CA sans armure calculée (10 + Dex + Cha) ; « dont +X PV » sous les PV maximum, à reporter vous-même.' }
-    },
-    college_of_dance: {
-        jeu_de_jambes_eblouissant_defense_sans_armure: { text: 'CA sans armure calculée (10 + Dex + Cha, sans bouclier).' }
-    },
-    college_of_valor: {
-        formation_martiale_armes: { text: 'Les armes de guerre comptent comme maîtrisées.' },
-        formation_martiale_armures_et_focaliseur: { text: 'Rappel « À vérifier » près de la CA tant que les cases Intermédiaires et Boucliers ne sont pas cochées.', partial: true }
-    },
     college_of_epic_muse: {
         egide_du_poete: { text: 'Rappel « À vérifier » près de la CA tant que la case Intermédiaires n\'est pas cochée.', partial: true }
-    },
-    the_odyssean: {
-        soldat_vagabond: { text: 'Lance et Trident : maîtrise, attaque à la Dextérité et Attaque sournoise calculées.', partial: true }
-    },
-    way_of_the_shield_dancer: {
-        technique_aresienne_bouclier_compatible: { text: 'Avec un bouclier : CA sans armure, Arts martiaux et DD de Lutte calculés.' }
-    },
-    champion: {
-        style_de_combat_supplementaire: { text: 'Second emplacement « Style de combat » dans les dons (onglet Aptitudes & Traits).' }
     },
     // Lot 2 : Voie du Zélote (Korgul)
     path_of_the_zealot: {
@@ -71,7 +61,8 @@ const MANUAL_AUTOMATION = {
     oath_of_glory: {
         chatiment_inspirant: { text: (d) => `PV temporaires à répartir : 2d8 + ${d.level}.`, partial: true },
         defense_glorieuse: { text: (d) => `Bonus à la CA : ${signed(Math.max(1, chaMod(d)))} ; ${Math.max(1, chaMod(d))} case${Math.max(1, chaMod(d)) > 1 ? 's' : ''} dans l'onglet Combat, vidée${Math.max(1, chaMod(d)) > 1 ? 's' : ''} au repos long.`, partial: true },
-        legende_vivante: { text: COMBAT_BOXES, partial: true }
+        legende_vivante: { text: COMBAT_BOXES, partial: true },
+        aura_d_alacrite: { text: 'Rappel « dont +3 m » près de la Vitesse (onglet Combat) : la Vitesse saisie n\'est pas modifiée, à reporter vous-même.', partial: true }
     },
     oath_of_the_ancients: {
         courroux_de_la_nature: { text: (d) => `Sauvegarde de Force DD ${paladinDC(d)} (DD de vos sorts de Paladin).`, partial: true },
@@ -86,6 +77,106 @@ const MANUAL_AUTOMATION = {
         fureur_du_dragon: { text: (d) => `Sauvegarde de Sagesse DD ${paladinDC(d)} (DD de vos sorts de Paladin, règle 2024 ; le livre de l'Odyssée dit 14).`, partial: true },
         mepris_des_laches: { text: (d) => `Sauvegarde de Charisme DD ${paladinDC(d)} (DD de vos sorts de Paladin, règle 2024 ; le livre de l'Odyssée dit 14).`, partial: true },
         lien_indestructible: { text: COMBAT_BOXES, partial: true }
+    },
+    // Lot 4 : petits calculs (js/rules/subclass-calcs.js)
+    champion: {
+        style_de_combat_supplementaire: { text: 'Second emplacement « Style de combat » dans les dons (onglet Aptitudes & Traits).' },
+        critique_ameliore: { text: 'Sous chaque arme (onglet Combat) : « Coup critique sur 19 ou 20 ».' },
+        critique_superieur: { text: 'Sous chaque arme (onglet Combat) : « Coup critique sur 18 à 20 ».' },
+        athlete_remarquable: { text: 'Avantage rappelé près de l\'Initiative.', partial: true },
+        survivant: { text: (d) => `Avantage rappelé près des jets contre la mort ; PV regagnés par tour : ${5 + mod(d, 'con')} (5 + Constitution).`, partial: true }
+    },
+    odyssean_champion: {
+        briseur_de_bouclier: { text: 'Sous chaque arme (onglet Combat) : « Coup critique sur 19 ou 20 », avec la perte du bouclier.' }
+    },
+    gloom_stalker: {
+        embusqueur_redoutable_bonus_d_initiative: { text: (d) => `${initiativeText(d, 'wis', 'Modificateur de Sagesse')}.` },
+        esprit_d_acier: { text: CHECK_TEXT('de la sauvegarde de Sagesse') }
+    },
+    fey_wanderer: {
+        charme_surnaturel: { text: (d) => `${signed(Math.max(1, mod(d, 'wis')))} compté dans Intimidation, Persuasion, Représentation et Supercherie ; la compétence au choix est à cocher vous-même.`, partial: true }
+    },
+    the_odyssean: {
+        soldat_vagabond: { text: `Lance et Trident : maîtrise, attaque à la Dextérité et Attaque sournoise calculées. ${CHECK_TEXT('de la CA (case Boucliers)')}`, partial: true },
+        a_toute_epreuve: { text: (d) => `${initiativeText(d, 'cha', 'Modificateur de Charisme')} ; PV regagnés au premier tour : ${d.level}.`, partial: true }
+    },
+    assassin: {
+        assassinat: { text: 'Avantage rappelé près de l\'Initiative.', partial: true },
+        frappe_mortelle: { text: (d) => `Sauvegarde de Constitution DD ${abilityDC(d, 'dex')} (8 + Dextérité + maîtrise).`, partial: true }
+    },
+    thief: {
+        monte_en_l_air: { text: 'Rappel « Escalade = Vitesse » près de la Vitesse (onglet Combat).' }
+    },
+    abjurer: {
+        protection_arcanique: { text: (d) => `PV maximum de la protection : ${2 * d.level + mod(d, 'int')} (2 × niveau + Intelligence).`, partial: true }
+    },
+    warrior_of_the_open_hand: {
+        technique_de_la_main_ouverte: { text: (d) => `DD des sauvegardes : ${monkFocusDC(d)} (8 + Sagesse + maîtrise).`, partial: true },
+        plenitude_physique: { text: (d) => `PV regagnés : 1${martialArtsDieText(d.level)} ${signed(mod(d, 'wis'))} (minimum 1), ${Math.max(1, mod(d, 'wis'))} fois par repos long.`, partial: true }
+    },
+    warrior_of_the_elements: {
+        explosion_elementaire: { text: (d) => `Dégâts : 3${martialArtsDieText(d.level)}, sauvegarde de Dextérité DD ${monkFocusDC(d)}.`, partial: true }
+    },
+    warrior_of_mercy: {
+        main_qui_blesse: { text: (d) => `Dégâts nécrotiques : 1${martialArtsDieText(d.level)} ${signed(mod(d, 'wis'))}.`, partial: true },
+        main_qui_soigne: { text: (d) => `PV rendus : 1${martialArtsDieText(d.level)} ${signed(mod(d, 'wis'))}.`, partial: true },
+        instruments_de_la_misericorde: { text: `${CHECK_TEXT('de Perspicacité et de Médecine', true)} Matériel d'herboriste : à noter vous-même.`, partial: true }
+    },
+    psi_warrior: {
+        adepte_telekinesique_poussee_telekinesique: { text: (d) => `Sauvegarde de Force DD ${abilityDC(d, 'int')} (8 + Intelligence + maîtrise).`, partial: true }
+    },
+    soulknife: {
+        dechirure_mentale: { text: (d) => `Sauvegarde de Sagesse DD ${abilityDC(d, 'dex')} (8 + Dextérité + maîtrise).`, partial: true }
+    },
+    college_of_dance: {
+        jeu_de_jambes_eblouissant_defense_sans_armure: { text: 'CA sans armure calculée (10 + Dex + Cha, sans bouclier).' },
+        jeu_de_jambes_eblouissant_degats_bardiques: { text: (d) => `Frappe à mains nues calculée (onglet Combat) : Dextérité et 1${bardicInspirationDie(d.level)} contondants, sans armure ni bouclier, quand la Dextérité est au moins égale à la Force.` },
+        jeu_de_jambes_en_tandem: { text: (d) => `Dé d'Inspiration bardique : ${bardicInspirationDie(d.level)}.`, partial: true }
+    },
+    college_of_valor: {
+        formation_martiale_armes: { text: 'Les armes de guerre comptent comme maîtrisées.' },
+        formation_martiale_armures_et_focaliseur: { text: 'Rappel « À vérifier » près de la CA tant que les cases Intermédiaires et Boucliers ne sont pas cochées.', partial: true },
+        inspiration_martiale: { text: (d) => `Dé d'Inspiration bardique : ${bardicInspirationDie(d.level)}.`, partial: true }
+    },
+    college_of_lore: {
+        mots_cinglants: { text: (d) => `Dé d'Inspiration bardique : ${bardicInspirationDie(d.level)}.`, partial: true }
+    },
+    life_domain: {
+        preservation_de_la_vie: { text: (d) => `PV à répartir : ${5 * d.level} (5 × niveau de Clerc).`, partial: true }
+    },
+    light_domain: {
+        radiance_de_l_aube: { text: (d) => `Dégâts : 2d10 + ${d.level} radiants, sauvegarde de Constitution DD ${abilityDC(d, 'wis')}.`, partial: true },
+        flash_protecteur_ameliore: { text: (d) => `PV temporaires : 2d6 ${signed(mod(d, 'wis'))}.`, partial: true }
+    },
+    prophecy_domain: {
+        benediction_de_clairvoyance: { text: (d) => `PV temporaires : ${mod(d, 'wis') + d.level} (Sagesse + niveau de Clerc).`, partial: true },
+        vapeurs_regeneratrices: { text: (d) => `PV en plus par sort de soins : ${signed(mod(d, 'wis'))}.`, partial: true }
+    },
+    celestial_patron: {
+        ame_radieuse: { text: (d) => `Bonus aux dégâts radiants ou de feu : ${signed(mod(d, 'cha'))} ; la Résistance est à noter vous-même.`, partial: true },
+        resilience_celeste: { text: (d) => `PV temporaires : ${d.level + mod(d, 'cha')} pour vous, ${Math.floor(d.level / 2) + mod(d, 'cha')} pour chaque allié choisi.`, partial: true }
+    },
+    evoker: {
+        evocation_renforcee: { text: (d) => `Bonus à un jet de dégâts : ${signed(mod(d, 'int'))}.`, partial: true }
+    },
+    draconic_sorcery: {
+        resilience_draconique: { text: 'CA sans armure calculée (10 + Dex + Cha) ; « dont +X PV » sous les PV maximum, à reporter vous-même.' },
+        affinite_elementaire: { text: (d) => `Bonus à un jet de dégâts du type choisi : ${signed(mod(d, 'cha'))} ; la Résistance est à noter vous-même.`, partial: true }
+    },
+    demigod_bloodline: {
+        la_force_en_heritage: { text: `Armes de corps à corps : Charisme utilisé quand il est meilleur (onglet Combat). ${CHECK_TEXT('de la sauvegarde de Force')}`, partial: true }
+    },
+    path_of_the_heretic: {
+        lutteur_precoce: { text: CHECK_TEXT('d\'Athlétisme'), partial: true },
+        archer_aux_muscles_d_acier: { text: 'Arc long : Force utilisée quand elle dépasse la Dextérité (onglet Combat).', partial: true },
+        foulee_du_titan: { text: (d) => `Sauvegarde de Constitution DD ${abilityDC(d, 'str')} (8 + Force + maîtrise).`, partial: true }
+    },
+    circle_of_the_sea: {
+        affinite_aquatique: { text: 'Rappel « Nage = Vitesse » près de la Vitesse (onglet Combat).', partial: true }
+    },
+    way_of_the_shield_dancer: {
+        technique_aresienne_bouclier_compatible: { text: 'Avec un bouclier : CA sans armure, Arts martiaux et DD de Lutte calculés.' },
+        technique_aresienne_maitrise_des_boucliers: { text: 'Rappel « À vérifier » près de la CA tant que la case Boucliers n\'est pas cochée.' }
     }
 };
 
@@ -101,7 +192,7 @@ const SPELL_FEATURES = {
     light_domain: { sorts_du_domaine_de_la_lumiere: true },
     trickery_domain: { sorts_du_domaine_de_la_supercherie: true },
     war_domain: { sorts_du_domaine_de_la_guerre: true },
-    prophecy_domain: { sorts_du_domaine_de_la_prophetie: true, conscience_etendue: 'Maîtrise de Perception : à cocher vous-même.' },
+    prophecy_domain: { sorts_du_domaine_de_la_prophetie: true, conscience_etendue: 'Maîtrise de Perception : rappel « À vérifier » près de la compétence tant qu\'elle n\'est pas cochée.' },
     circle_of_the_moon: { sorts_du_cercle_de_la_lune: true },
     circle_of_the_sea: { sorts_du_cercle_de_la_mer: true },
     circle_of_the_stars: { carte_stellaire: 'Lancers gratuits de Rayon traçant : rappel.' },

@@ -15,6 +15,7 @@ import { DD_RULES } from '../data/dd-rules.js';
 import { ABILITY_IDS, SKILLS } from '../data/constants.js';
 import { parseWeaponConfig } from './logic.js';
 import { isUnarmedStrike } from './weapons.js';
+import { subclassNotes } from './subclass-calcs.js';
 
 /** Texte brut (les anciennes sauvegardes peuvent contenir du HTML), sans accents ni majuscules */
 function fold(value) {
@@ -292,7 +293,10 @@ export function weaponProficiencyNote(proficiency, pb, hasMastery = false) {
  */
 const SUBCLASS_ARMOR_TRAINING = Object.freeze([
     ['college_of_valor', 3, 'Collège de la Vaillance', 'Formation martiale', ['medium', 'shield']],
-    ['college_of_epic_muse', 6, 'Collège de poésie épique', 'Égide du poète', ['medium']]
+    ['college_of_epic_muse', 6, 'Collège de poésie épique', 'Égide du poète', ['medium']],
+    // Odyssée : L'Odysséen (Soldat vagabond) et la Voie du bouclier donnent la maîtrise des boucliers au niveau 3
+    ['the_odyssean', 3, "L'Odysséen", 'Soldat vagabond', ['shield']],
+    ['way_of_the_shield_dancer', 3, 'La Voie du bouclier', 'Technique arésienne', ['shield']]
 ]);
 
 /** Formation d'armure : [clé de sauvegarde, mots, case de l'onglet Combat] */
@@ -351,5 +355,7 @@ export function classFeatureNotes(derived, record = {}) {
             `${feature} (niveau ${minLevel}) : vous êtes formé aux ${words}. Case ${boxes} des maîtrises d'armures (onglet Combat) à cocher : la fiche ne coche rien elle-même${missing.includes('shield') ? ', et sans elle le bouclier ne compte pas dans la CA' : ''}.`,
             undefined, { check: true });
     }
+    // Petits calculs des sous-classes (lot 4) : Initiative, compétences, maîtrises à cocher, vitesses…
+    for (const [zone, notes] of Object.entries(subclassNotes(derived, record))) (zones[zone] ??= []).push(...notes);
     return zones;
 }

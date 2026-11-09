@@ -2,6 +2,23 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.24.0] - 2026-11-09 (Sous-classes, lot 4 : petits calculs)
+### Added
+- Initiative calculée : + Sagesse pour le Traqueur d'ombre, + Charisme pour L'Odysséen (niveau 13) ;
+  Avantage rappelé près de l'Initiative pour le Champion et l'Assassin.
+- Errant féerique : Sagesse (minimum +1) ajoutée aux compétences de Charisme.
+- Onglet Combat : Frappe à mains nues du Collège de la Danse (Dextérité, dé d'Inspiration bardique,
+  sans armure ni bouclier) ; Charisme pour les armes de corps à corps de l'Ascendance divine ; Force
+  pour l'arc long de la Voie herculéenne ; « Coup critique sur 19 ou 20 » (18 à 20 au niveau 15)
+  sous les armes du Champion, et de L'Hoplite au niveau 15.
+- Rappels « À vérifier » quand une sous-classe donne une maîtrise non cochée (Esprit d'acier,
+  Guerrier de la Miséricorde, Domaine de la prophétie, Voie herculéenne, Ascendance divine, boucliers
+  de La Voie du bouclier).
+- Près de la Vitesse : escalade du Voleur, nage du Cercle de la Mer, « dont +3 m » de l'Aura
+  d'alacrité ; près des jets contre la mort : Survivant du Champion.
+- Bloc « Sous-classe » : DD, dés et PV calculés dans une trentaine de textes (DD du Moine, dé
+  d'Inspiration bardique, Protection arcanique, Frappe mortelle, Radiance de l'aube…).
+
 ## [4.23.0] - 2026-11-09 (Sous-classes, lot 3 : sorts toujours préparés)
 ### Added
 - Bloc « Sorts de sous-classe » de l'onglet Magie pour 26 sous-classes de plus : domaines du Clerc
