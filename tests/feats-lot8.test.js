@@ -8,7 +8,7 @@ import { featEffects, weaponFeatNotes, AUTOMATED_FEATS, irresistibleBoost } from
 import { FEAT_CHOICE_RULES, featChoiceGrants, epicAsiAbilities, ENERGY_TYPES } from '../js/rules/feat-choices.js';
 import { featCounters, restFeatUses } from '../js/rules/feat-uses.js';
 import { deriveCharacter } from '../js/rules/character.js';
-import { rowFromRulebookWeapon } from '../js/rules/weapons.js';
+import { rowFromRulebookWeapon, featBuffs, effectiveBuffs } from '../js/rules/weapons.js';
 import { FEATS_DATA } from '../js/data/feats.js';
 import { DD_RULES } from '../js/data/dd-rules.js';
 import { SKILLS } from '../js/data/constants.js';
@@ -135,6 +135,26 @@ describe('Faveurs épiques : effets', () => {
         assert.ok(featEffects(boon('faveur_de_memoire_magique'))['featSlot:19'].some(n => n.check && /capacité Sorts/.test(n.text)));
         const knight = boon('faveur_de_memoire_magique', {}, { char_subclass: 'Chevalier occulte' });
         assert.ok(!slotTexts(knight).some(t => /Prérequis/.test(t)));
+    });
+
+    test("boutons Visée infaillible et Dans l'ombre : proposés avec leur faveur, rien d'autre", () => {
+        assert.deepEqual(featBuffs(boon('faveur_de_prouesse_martiale')), ['peerlessAim']);
+        assert.deepEqual(featBuffs(boon('faveur_de_l_esprit_nocturne')), ['nightSpirit']);
+        assert.deepEqual(featBuffs(hero({ char_level: '8', feat_8: 'faveur_de_vitesse' })), []);
+        // Visée infaillible : simple mémo, aucun calcul d'arme ne change
+        const aim = boon('faveur_de_prouesse_martiale', {}, { combat_buffs: { peerlessAim: true } });
+        assert.equal(effectiveBuffs('fighter', aim.combat_buffs, aim).peerlessAim, true);
+        const sword = weapon('Épée longue');
+        assert.deepEqual(weaponFeatNotes(sword, aim), weaponFeatNotes(sword, boon('faveur_de_prouesse_martiale')));
+        // Bouton resté allumé sans la faveur : ignoré
+        assert.equal(effectiveBuffs('fighter', { peerlessAim: true }, hero()).peerlessAim, false);
+    });
+
+    test("Dans l'ombre : Résistance rappelée près de la CA seulement bouton allumé", () => {
+        const off = featEffects(boon('faveur_de_l_esprit_nocturne')).armorClass;
+        assert.ok(off.every(n => n.inactive));
+        const on = featEffects(boon('faveur_de_l_esprit_nocturne', {}, { combat_buffs: { nightSpirit: true } })).armorClass;
+        assert.ok(on.some(n => !n.inactive && /sauf psychiques et radiants/.test(n.text)));
     });
 
     test('chaque faveur a au moins une note dans son encadré', () => {

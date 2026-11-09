@@ -450,8 +450,14 @@ const FEAT_RULES = {
     },
 
     // Faveur de l'esprit nocturne — « Boon of the Night Spirit »
-    faveur_de_l_esprit_nocturne: ({ add }) => {
-        add('featSlot', "Dans une lumière faible ou les ténèbres : action Bonus pour devenir Invisible (jusqu'à votre prochaine action, action Bonus ou Réaction), et Résistance à tous les dégâts sauf psychiques et radiants.");
+    // Bouton « Dans l'ombre » (combat_buffs.nightSpirit, tableau des armes) : repère près de la CA
+    faveur_de_l_esprit_nocturne: ({ record, add }) => {
+        add('featSlot', "Dans une lumière faible ou les ténèbres : action Bonus pour devenir Invisible (jusqu'à votre prochaine action, action Bonus ou Réaction), et Résistance à tous les dégâts sauf psychiques et radiants. Bouton « Dans l'ombre » dans le tableau des armes : allumé, la Résistance est rappelée près de la CA.");
+        if (record.combat_buffs?.nightSpirit === true) {
+            add('armorClass', "Dans l'ombre : Résistance à tous les dégâts sauf psychiques et radiants.");
+        } else {
+            add('armorClass', "Résistance à tous les dégâts sauf psychiques et radiants : seulement dans l'ombre (bouton « Dans l'ombre » éteint).", { inactive: true });
+        }
     },
 
     // Faveur de mémoire magique — « Boon of Spell Recall » (prérequis : capacité Sorts)
@@ -465,7 +471,7 @@ const FEAT_RULES = {
 
     // Faveur de prouesse martiale — « Boon of Combat Prowess »
     faveur_de_prouesse_martiale: ({ add }) => {
-        add('featSlot', "Un jet d'attaque raté peut toucher à la place ; de nouveau possible au début de votre prochain tour.");
+        add('featSlot', "Visée infaillible : un jet d'attaque raté peut toucher à la place ; de nouveau possible au début de votre prochain tour. Bouton « Visée infaillible » dans le tableau des armes : allumez-le quand vous l'utilisez, éteignez-le au début de votre prochain tour.");
     },
 
     // Faveur de récupération — « Boon of Recovery » : réserve de dix d10 (cases), Dernier rempart

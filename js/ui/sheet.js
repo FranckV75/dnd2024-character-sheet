@@ -610,7 +610,8 @@ const MENTION_LABELS = {
         maitre_des_armures_intermediaires: 'Dex max 3',
         maitre_des_boucliers: `Coup de bouclier DD\u00a0${note.value}`,
         duelliste_defensif: `Parade\u00a0+${note.value}`,
-        defense: 'Défense\u00a0+1'
+        defense: 'Défense\u00a0+1',
+        faveur_de_l_esprit_nocturne: 'Résistance (ombre)'
     })[note.featId] ?? note.featName,
     speed: (note) => note.featId === 'athlete' ? 'Escalade\u00a0= Vitesse' : `dont\u00a0+${note.value}\u00a0m grâce à ${note.featName}`,
     deathSaves: (note) => `Avantage (${note.featName})`,

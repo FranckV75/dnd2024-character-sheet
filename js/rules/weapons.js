@@ -39,7 +39,13 @@ const FEAT_BUFFS = {
     // Expert de la charge (PHB 2024 « Charger », p. 202) : +1d8 aux dégâts d'une attaque au corps à corps
     charger: 'expert_de_la_charge',
     // Style Duel (PHB 2024 p. 209) : +2 aux dégâts à une main, sans autre arme
-    dueling: 'duel'
+    dueling: 'duel',
+    // Faveur de prouesse martiale (« Boon of Combat Prowess », p. 210) : Visée infaillible, une fois
+    // par tour ; allumé = déjà utilisée ce tour (aucun calcul)
+    peerlessAim: 'faveur_de_prouesse_martiale',
+    // Faveur de l'esprit nocturne (« Boon of the Night Spirit », p. 211) : dans une lumière faible ou
+    // les ténèbres ; allumé = repère de Résistance près de la CA (js/rules/feat-effects.js)
+    nightSpirit: 'faveur_de_l_esprit_nocturne'
 };
 
 /** Début du type de dégâts écrit dans le manuel (« 1d8 tran. ») → abréviation v3 (WEAPON_DAMAGE_TYPES) */
@@ -277,14 +283,16 @@ export function buffsForClass(slug) {
  * @param {string} slug
  * @param {Object} buffs - combat_buffs
  * @param {Object} [character] - pour les bonus ouverts par un don (Cogneur lourd, Expert de la charge)
- * @returns {{ rage: boolean, sneakAttack: boolean, hunterMark: boolean, heavyWeaponMaster: boolean, charger: boolean }}
+ * @returns {{ rage: boolean, sneakAttack: boolean, hunterMark: boolean, heavyWeaponMaster: boolean, charger: boolean,
+ *   dueling: boolean, peerlessAim: boolean, nightSpirit: boolean }}
  */
 export function effectiveBuffs(slug, buffs, character) {
     const allowed = character ? buffsForCharacter(slug, character) : buffsForClass(slug);
     const on = (key) => allowed.includes(key) && buffs?.[key] === true;
     return {
         rage: on('rage'), sneakAttack: on('sneakAttack'), hunterMark: on('hunterMark'),
-        heavyWeaponMaster: on('heavyWeaponMaster'), charger: on('charger'), dueling: on('dueling')
+        heavyWeaponMaster: on('heavyWeaponMaster'), charger: on('charger'), dueling: on('dueling'),
+        peerlessAim: on('peerlessAim'), nightSpirit: on('nightSpirit')
     };
 }
 

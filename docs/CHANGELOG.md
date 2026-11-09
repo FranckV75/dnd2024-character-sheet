@@ -2,6 +2,15 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.14.0] - 2026-11-09 (Boutons des faveurs épiques)
+### Added
+- Boutons de combat « Visée infaillible » (Faveur de prouesse martiale : mémo « utilisée ce tour », aucun
+  calcul) et « Dans l'ombre » (Faveur de l'esprit nocturne : repère « Résistance (ombre) » sous la CA),
+  proposés seulement avec leur faveur, utilisables fiche verrouillée, éteints au repos long.
+### Changed
+- Format de sauvegarde : clés facultatives `peerlessAim` et `nightSpirit` dans `combat_buffs` ; aucune clé
+  renommée ni supprimée.
+
 ## [4.13.0] - 2026-11-09 (Faveurs épiques)
 ### Added
 - Les 12 faveurs épiques : menu « Caractéristique +1 » (jusqu'à 30, alerte au-delà), alerte si une faveur

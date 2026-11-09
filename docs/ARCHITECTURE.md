@@ -150,6 +150,8 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   Niveau d'acquisition selon la classe : `featSlotLevelFor`. Défense est comptée dans la CA calculée
   (`computeArmorClass`), Archerie dans l'attaque (`computeWeapon`), Duel par un bouton de combat
   (`combat_buffs.dueling`).
+- Faveurs épiques : boutons de combat `combat_buffs.peerlessAim` (Visée infaillible, simple mémo « utilisée
+  ce tour ») et `combat_buffs.nightSpirit` (Dans l'ombre : repère « Résistance (ombre) » près de la CA).
 - Dons repliés (pastille du niveau, onglet Aptitudes & Traits) : retenus sur l'appareil seulement
   (`localStorage` `dd2024_feats_folded`, liste « emplacement:don »), jamais dans la fiche.
 - Effets des dons (`featEffects`, `js/rules/feat-effects.js`) : des notes rangées par zone de la fiche

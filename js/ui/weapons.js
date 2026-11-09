@@ -103,6 +103,18 @@ const BUFF_DEFS = {
         icon: 'swords',
         text: 'Duel (+2)',
         title: "Duel (style de combat) : +2 aux dégâts avec une arme de corps à corps tenue à une main, sans autre arme. Allumé, le +2 est ajouté aux armes de corps à corps qui ne sont pas à Deux mains."
+    }),
+    // Faveur de prouesse martiale (PHB 2024 p. 210) : allumé = utilisée ce tour
+    peerlessAim: () => ({
+        icon: 'target',
+        text: 'Visée infaillible',
+        title: "Faveur de prouesse martiale : quand vous ratez un jet d'attaque, vous pouvez toucher à la place, une fois par tour. Allumez-le quand vous l'utilisez, éteignez-le au début de votre prochain tour."
+    }),
+    // Faveur de l'esprit nocturne (PHB 2024 p. 211)
+    nightSpirit: () => ({
+        icon: 'moon',
+        text: "Dans l'ombre",
+        title: "Faveur de l'esprit nocturne : dans une lumière faible ou les ténèbres, Résistance à tous les dégâts sauf psychiques et radiants (repère près de la CA), et Invisible en action Bonus. Allumez-le quand vous y êtes."
     })
 };
 
