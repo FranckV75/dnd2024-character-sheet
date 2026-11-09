@@ -11,7 +11,7 @@ import { el, icon, setIconLabel } from './dom.js';
 import { openModal, confirmModal } from './modal.js';
 import { getClient } from '../cloud/client.js';
 import { createCloudSync, SYNC_KEY } from '../cloud/controller.js';
-import { friendlyError, newerVersion } from '../cloud/sync.js';
+import { friendlyError, newerVersion, syncStatusLabel } from '../cloud/sync.js';
 
 const storage = {
     get(key) { try { return localStorage.getItem(key); } catch { return null; } }
@@ -164,7 +164,8 @@ export function initAccount({ store, setStatus, saveWithCharacter, saveNow }) {
         persist: saveNow,
         ui: { ask: (kind, data) => (QUESTIONS[kind] ? QUESTIONS[kind](data) : Promise.resolve(null)), status: setStatus }
     });
-    saveWithCharacter(SYNC_KEY, () => JSON.stringify(sync.getBase()));
+    // Base changée par un autre onglet (fiche inchangée) : reprise si elle va avec la fiche enregistrée
+    saveWithCharacter(SYNC_KEY, () => JSON.stringify(sync.getBase()), (storedSheet) => sync.adoptStoredBase(storedSheet));
 
     // ------------------------------------------------------------------ Barre
     const statusLabel = el('span', { class: 'account-status', role: 'status' });
@@ -202,15 +203,7 @@ export function initAccount({ store, setStatus, saveWithCharacter, saveNow }) {
             return;
         }
         const who = (state.user.email || '').split('@')[0].slice(0, 16);
-        let syncLabel = state.name ? `fiche « ${state.name} » à jour en ligne` : 'fiche à jour';
-        let hint = '';
-        if (state.pending) syncLabel = 'une question attend votre réponse';
-        else if (state.detached) {
-            syncLabel = 'fiche ouverte gardée dans ce navigateur seulement';
-            hint = 'Cette fiche n\'est pas enregistrée dans votre compte (par exemple après l\'avoir supprimée de « Mes personnages », ou après avoir choisi « Ne rien faire »). « Enregistrer en ligne » l\'ajoute à votre compte ; « Mes personnages » ouvre un autre personnage.';
-        } else if (state.lastError || state.needsCheck) {
-            syncLabel = 'synchronisation en échec, nouvel essai automatique';
-        } else if (state.dirty) syncLabel = 'enregistrement en ligne…';
+        const { label: syncLabel, hint } = syncStatusLabel(state);
         statusLabel.textContent = `Connecté (${who}) — ${syncLabel}`;
         statusLabel.title = [statusLabel.textContent, `Compte : ${state.user.email}`, hint, state.lastError].filter(Boolean).join('\n');
         setIconLabel(loginButton, 'logout', 'Déconnexion');

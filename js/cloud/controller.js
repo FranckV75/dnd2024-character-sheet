@@ -15,6 +15,18 @@
 //   charHash  (enregistré seulement) empreinte de la fiche enregistrée avec cette base
 // « Modifiée » = l'empreinte actuelle de la fiche diffère de base.hash.
 //
+// Empreintes : toujours calculées sur la forme normalisée de la fiche (sheetFingerprint :
+// celle qu'elle aura après enregistrement puis relecture, migrateCharacter), jamais sur la
+// fiche telle qu'elle est en mémoire : un espace final ou une caractéristique vidée, retouchés
+// à la relecture, ne font plus croire à une autre fiche (fausse question « existe déjà en
+// ligne » / « deux versions différentes »). Les valeurs saisies ne sont pas modifiées.
+// Une base enregistrée par la v4.15 (empreintes de la fiche en mémoire) reste reconnue : voir
+// storedBaseFor.
+//
+// Autre onglet (js/state/local-save.js) : quand la fiche enregistrée a été changée par un autre onglet du
+// même navigateur, elle est reprise avec la base enregistrée en même temps qu'elle (même personnage :
+// les opérations en cours continuent ; un nouveau nom tapé là-bas n'est pas renommé ici).
+//
 // La base est enregistrée dans le navigateur EN MÊME TEMPS que la fiche (main.js).
 // Au chargement, si la fiche enregistrée ne correspond pas à sa base (charHash),
 // le lien est oublié : on reposera la question prudente plutôt que de se tromper
@@ -46,7 +58,7 @@ import {
     decideOnCheck, cloudName, fingerprint, friendlyError, isLegacyRowName, withoutV4State
 } from './sync.js';
 import { characterName, STORAGE_KEYS } from '../state/persistence.js';
-import { migrateCharacter, isV3Save } from '../state/migrate.js';
+import { migrateCharacter, normalizeCharacter, isV3Save } from '../state/migrate.js';
 import { createDefaultCharacter } from '../state/schema.js';
 
 export const SYNC_KEY = 'dd2024_cloud_sync';
@@ -60,6 +72,21 @@ export function isBlankCharacter(character) {
     const blank = createDefaultCharacter();
     return !characterName(character) && Object.keys(blank).every(key =>
         JSON.stringify(character?.[key] ?? null) === JSON.stringify(blank[key]));
+}
+
+/** Dernière empreinte calculée (la fiche du store ne change d'objet qu'à chaque modification) */
+let lastHashed = { character: null, hash: '' };
+
+/**
+ * Empreinte du contenu d'une fiche, calculée sur sa forme normalisée (voir l'en-tête).
+ * @param {Object} character
+ * @returns {string}
+ */
+export function sheetFingerprint(character) {
+    if (character && character === lastHashed.character) return lastHashed.hash;
+    const hash = fingerprint(normalizeCharacter(character));
+    if (character && typeof character === 'object') lastHashed = { character, hash };
+    return hash;
 }
 
 const EMPTY_BASE = { name: '', userId: '', updatedAt: null, hash: '', sentHashes: [], detached: false };
@@ -120,6 +147,9 @@ export function createCloudSync({
     let queue = Promise.resolve();
     let needsCheck = false;
     let lastError = '';
+    // Nouveau nom repris d'un autre onglet, où la question du renommage est posée : jamais
+    // reposée ici (une seule question, dans l'onglet où le nom a été tapé)
+    let renameElsewhere = '';
     // Premier lancement de la v4 dans ce navigateur (aucun suivi de synchronisation) : nom exact
     // sous lequel la v3 a enregistré cette fiche en ligne, utilisé une seule fois par attach()
     let legacyName = storage.get(SYNC_KEY) === null ? String(storage.get(ACTIVE_NAME_KEY) || '').trim() : '';
@@ -127,20 +157,76 @@ export function createCloudSync({
 
     /** Base enregistrée, seulement si elle correspond bien à la fiche enregistrée avec elle */
     function startupBase() {
-        const saved = parseBase(storage.get(SYNC_KEY));
-        const { charHash, ...rest } = saved;
-        if (!charHash || charHash !== fingerprint(store.get())) return { ...EMPTY_BASE };
-        return { ...EMPTY_BASE, ...rest };
+        return storedBaseFor(store.get(), readStoredSheet()) ?? { ...EMPTY_BASE };
+    }
+
+    /** Fiche telle qu'elle est écrite dans le navigateur (avant toute normalisation), ou null */
+    function readStoredSheet() {
+        try {
+            const raw = JSON.parse(storage.get(STORAGE_KEYS.character) || 'null');
+            return raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : null;
+        } catch {
+            return null;
+        }
+    }
+
+    /**
+     * Base enregistrée (SYNC_KEY) si elle a été enregistrée avec la fiche `character`, sinon null.
+     * Base de la v4.15 : son charHash est l'empreinte de la fiche en mémoire, c'est-à-dire du texte
+     * enregistré tel quel (`storedRaw`). Reconnue ainsi, elle est convertie : les empreintes qui
+     * désignaient ce même contenu (hash, sentHashes) prennent la forme normalisée.
+     * @param {Object} character - fiche ouverte (déjà migrée)
+     * @param {Object|null} storedRaw - fiche brute enregistrée avec la base
+     * @returns {Object|null}
+     */
+    function storedBaseFor(character, storedRaw) {
+        try {
+            const { charHash, ...rest } = parseBase(storage.get(SYNC_KEY));
+            if (!charHash) return null;
+            const current = sheetFingerprint(character);
+            if (charHash === current) return { ...EMPTY_BASE, ...rest };
+            const legacy = storedRaw ? fingerprint(storedRaw) : '';
+            if (!legacy || charHash !== legacy || sheetFingerprint(storedRaw) !== current) return null;
+            const upgrade = (hash) => (hash === legacy ? current : hash);
+            return { ...EMPTY_BASE, ...rest, hash: upgrade(rest.hash), sentHashes: rest.sentHashes.map(upgrade) };
+        } catch {
+            return null; // fiche enregistrée illisible (valeur que la lecture ne sait pas convertir)
+        }
+    }
+
+    /** Base enregistrée qui va avec la fiche brute `storedRaw` enregistrée par un autre onglet, ou null */
+    function storedBaseForRaw(storedRaw) {
+        if (!storedRaw) return null;
+        try {
+            return storedBaseFor(normalizeCharacter(storedRaw), storedRaw);
+        } catch {
+            return null;
+        }
+    }
+
+    /** Même personnage en ligne (nom, compte, gardé hors ligne ou non) */
+    const sameLink = (a, b) => a.name === b.name && a.userId === b.userId && a.detached === b.detached;
+
+    /**
+     * Base reprise d'un autre onglet (fiche ou base enregistrées là-bas). Une question posée ici
+     * concernait l'ancien lien : si le lien a changé, elle est abandonnée (génération suivante).
+     */
+    function adoptBase(next) {
+        if (pending && !sameLink(base, next)) epoch += 1;
+        base = next;
+        // Nouveau nom repris de l'autre onglet : c'est lui qui pose la question du renommage
+        const name = current();
+        renameElsewhere = linked() && name && name !== linked() ? name : '';
     }
 
     const current = () => cloudName(characterName(store.get()));
     /** Nom du personnage lié, valable pour l'utilisateur connecté */
     const linked = () => (base.name && !base.detached && user && base.userId === user.id ? base.name : '');
-    const isDirty = () => fingerprint(store.get()) !== base.hash;
-    const contentOf = (row) => fingerprint(migrateCharacter(row.data).character);
+    const isDirty = () => sheetFingerprint(store.get()) !== base.hash;
+    const contentOf = (row) => sheetFingerprint(row.data);
     /** Version écrite par la v3, identique à la fiche à l'état de jeu v4 près (que la v3 ne connaît pas) */
     const sameApartFromV4State = (row, character) => isV3Save(row.data)
-        && fingerprint(withoutV4State(migrateCharacter(row.data).character)) === fingerprint(withoutV4State(character));
+        && fingerprint(withoutV4State(normalizeCharacter(row.data))) === fingerprint(withoutV4State(normalizeCharacter(character)));
 
     /** Photographie (génération + compte) ; stale(s) = la fiche ou le compte a changé depuis */
     const snapshot = () => ({ epoch, userId: user?.id || null });
@@ -154,7 +240,7 @@ export function createCloudSync({
 
     /** Lie la fiche à une version en ligne, dont `data` est le contenu envoyé ou chargé */
     function linkTo(name, userId, updatedAt, data) {
-        setBase({ name, userId, updatedAt, hash: fingerprint(data), sentHashes: [], detached: false });
+        setBase({ name, userId, updatedAt, hash: sheetFingerprint(data), sentHashes: [], detached: false });
         if (isDirty()) schedulePush();
     }
 
@@ -222,7 +308,7 @@ export function createCloudSync({
         epoch += 1;
         changeStore(() => store.replace(character));
         setBase({
-            name: row.name, userId: user.id, updatedAt: row.updated_at, hash: fingerprint(character), sentHashes: [], detached: false
+            name: row.name, userId: user.id, updatedAt: row.updated_at, hash: sheetFingerprint(character), sentHashes: [], detached: false
         });
         ui.status(message || `☁️ « ${row.name} » chargé depuis votre compte.`);
     }
@@ -252,13 +338,14 @@ export function createCloudSync({
             return;
         }
         if (name !== attached) {
-            if (nameReady) await renameFlow(name, s);
+            // Nom tapé dans un autre onglet : la question y est posée, pas ici
+            if (nameReady && name !== renameElsewhere) await renameFlow(name, s);
             return;
         }
         if (!isDirty()) return;
 
         const data = store.get();
-        setBase({ sentHashes: [...base.sentHashes, fingerprint(data)].slice(-MAX_UNCONFIRMED) });
+        setBase({ sentHashes: [...base.sentHashes, sheetFingerprint(data)].slice(-MAX_UNCONFIRMED) });
         const updatedAt = await updateIfUnchanged(client, user.id, name, data, base.updatedAt, now());
         if (stale(s)) return;
         if (updatedAt) {
@@ -273,6 +360,17 @@ export function createCloudSync({
     }
 
     /**
+     * Pendant une lecture en ligne, un autre onglet de ce navigateur a lié la fiche à `name` (il
+     * l'a créée ou envoyée en ligne, adoptStoredBase) : plus de question à poser, l'envoi suivant
+     * ajoute les changements de cet onglet.
+     */
+    function linkedMeanwhile(name) {
+        if (linked() !== name) return false;
+        if (isDirty()) schedulePush();
+        return true;
+    }
+
+    /**
      * Lie une fiche non liée au personnage en ligne du même nom, ou le crée.
      * La ligne existante est lue AVANT toute création (une création refusée laisserait une
      * erreur 409 dans la console du navigateur) ; la création reste « création seule ».
@@ -283,7 +381,7 @@ export function createCloudSync({
         const hint = legacyName;
         legacyName = '';
         let row = await fetchCharacter(client, s.userId, name);
-        if (stale(s)) return;
+        if (stale(s) || linkedMeanwhile(name)) return;
         if (!row && isLegacyRowName(hint, name)) {
             // Fiche enregistrée par la v3 sous un nom un peu différent (mise en forme dans le nom)
             const old = await fetchCharacter(client, s.userId, hint);
@@ -306,8 +404,9 @@ export function createCloudSync({
             row = await fetchCharacter(client, s.userId, name);
             if (stale(s)) return;
         }
+        if (linkedMeanwhile(name)) return;
         if (!row) throw new Error(`« ${name} » est momentanément indisponible en ligne, nouvel essai à la prochaine modification`);
-        if (contentOf(row) === fingerprint(store.get())) {
+        if (contentOf(row) === sheetFingerprint(store.get())) {
             linkTo(name, s.userId, row.updated_at, store.get());
             return;
         }
@@ -317,6 +416,7 @@ export function createCloudSync({
             linkTo(name, s.userId, row.updated_at, migrateCharacter(row.data).character);
             return;
         }
+        if (linkedMeanwhile(name)) return;
         const choice = await ask('exists', { name, cloudUpdatedAt: row.updated_at, localSavedAt });
         if (stale(s)) return;
         if (choice === 'open') {
@@ -343,7 +443,7 @@ export function createCloudSync({
      * n'a pas changé entre-temps. Contenu différent : la question habituelle est posée d'abord.
      */
     async function attachLegacyRow(name, old, localSavedAt, s) {
-        const same = contentOf(old) === fingerprint(store.get()) || sameApartFromV4State(old, store.get());
+        const same = contentOf(old) === sheetFingerprint(store.get()) || sameApartFromV4State(old, store.get());
         if (!same) {
             const choice = await ask('exists', { name: old.name, cloudUpdatedAt: old.updated_at, localSavedAt });
             if (stale(s)) return;
@@ -385,7 +485,7 @@ export function createCloudSync({
 
     async function handleConflict(name, row, s) {
         const cloudContent = contentOf(row);
-        if (cloudContent === fingerprint(store.get())) {
+        if (cloudContent === sheetFingerprint(store.get())) {
             linkTo(name, s.userId, row.updated_at, store.get());
             return;
         }
@@ -518,8 +618,30 @@ export function createCloudSync({
         }, pushDelay);
     }
 
-    store.subscribe((_state, changedKeys) => {
+    let lastSeen = store.get();
+    store.subscribe((state, changedKeys, meta = {}) => {
+        const previous = lastSeen;
+        lastSeen = state;
         if (ownChange) return;
+        if (changedKeys === null && meta.source === 'other-tab') {
+            // Fiche reprise d'un autre onglet (main.js), qui l'a enregistrée avec sa base : la base
+            // est reprise aussi. Même personnage (même nom) : une opération en ligne en cours ici
+            // continue (une création réussie lie la fiche ; l'envoi suivant ajoute les changements
+            // repris). Autre personnage : abandonnée (génération suivante).
+            const samePerson = cloudName(characterName(previous)) === current();
+            if (!samePerson) epoch += 1;
+            clearTimer(timer);
+            timer = null;
+            legacyName = '';
+            // Base pas encore lisible : elle arrive dans un événement séparé, souvent juste après
+            // celui de la fiche (main.js). Celle de cet onglet est gardée pour le même personnage,
+            // puis remplacée par adoptStoredBase dès que la base enregistrée arrive.
+            adoptBase(storedBaseForRaw(meta.stored ?? null) ?? (samePerson ? base : { ...EMPTY_BASE }));
+            emit();
+            // Saisies de cet onglet gardées par-dessus (meta.merged) : envoyées comme d'habitude
+            if (meta.merged && current()) schedulePush();
+            return;
+        }
         if (changedKeys === null) {
             // Import d'un fichier ou nouvelle fiche : plus lié à aucun personnage en ligne,
             // et toute opération en cours concernant l'ancienne fiche est abandonnée
@@ -544,6 +666,10 @@ export function createCloudSync({
             user,
             name: linked(),
             dirty: Boolean(linked()) && isDirty(),
+            // La fiche a un nom (sans nom, elle n'est jamais envoyée en ligne)
+            named: Boolean(current()),
+            // Nouveau nom tapé dans un autre onglet, où la question du renommage attend
+            renameElsewhere: Boolean(renameElsewhere) && renameElsewhere === current() && renameElsewhere !== linked(),
             detached: base.detached,
             pending,
             needsCheck,
@@ -560,7 +686,20 @@ export function createCloudSync({
     return {
         getState,
         /** Base à enregistrer avec la fiche (main.js), avec l'empreinte de la fiche enregistrée */
-        getBase: () => ({ ...base, charHash: fingerprint(store.get()) }),
+        getBase: () => ({ ...base, charHash: sheetFingerprint(store.get()) }),
+
+        /**
+         * Un autre onglet a changé la base enregistrée sans changer la fiche (envoi en ligne
+         * réussi là-bas) : reprise si elle a été enregistrée avec la fiche `storedRaw` (texte du
+         * navigateur) et si aucune question n'est posée ici ; sinon la base de cet onglet reste.
+         * @param {Object|null} storedRaw
+         */
+        adoptStoredBase(storedRaw) {
+            const adopted = storedBaseForRaw(storedRaw);
+            if (!adopted) return;
+            adoptBase(adopted);
+            emit();
+        },
         onChange(listener) {
             listeners.add(listener);
             return () => listeners.delete(listener);
@@ -592,6 +731,7 @@ export function createCloudSync({
         /** Le champ Nom a été validé (on l'a quitté) */
         nameCommitted() {
             nameEditing = false;
+            renameElsewhere = ''; // nom validé dans cet onglet : la question est posée ici
             if (!user || base.detached) return queue;
             clearTimer(timer);
             timer = null;

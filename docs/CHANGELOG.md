@@ -2,6 +2,55 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.16.0] - 2026-11-09 (Protection des données)
+### Fixed
+- Fiche piégée : un texte long contenant des attributs cachés (`data-out="__proto__"`…) bloquait le
+  démarrage (plus de barre Gestion, plus d'enregistrement). Ces attributs sont retirés à l'affichage,
+  ignorés par la fiche, et une étape du démarrage en échec n'empêche plus la barre Gestion ni
+  l'enregistrement automatique de démarrer.
+- Fiche abîmée ou fabriquée (sauvegarde du navigateur ou import) : une valeur d'un type inattendu (nom
+  d'arme ou d'armure qui est un nombre ou un objet, texte long qui est un objet…) bloquait la lecture
+  de la sauvegarde, ou laissait la fiche à moitié dessinée. Une liste ou un objet dans un champ texte
+  devient son texte (rien n'est perdu) ; un champ illisible n'empêche plus d'afficher les autres ; une
+  erreur de lecture imprévue est traitée comme une sauvegarde illisible (copie de secours), et l'import
+  l'explique en français.
+- Connexion coupée au chargement (DOMPurify absent) : la première retouche d'un texte long
+  réenregistrait sa version sans mise en forme (retours à la ligne, gras, couleurs perdus). Les textes
+  longs sont désormais en lecture seule, avec le bandeau « Mise en forme indisponible (connexion) :
+  textes longs en lecture seule » ; le texte enregistré n'est jamais modifié, ses retours à la ligne
+  restent visibles.
+- Deux onglets ouverts sur la fiche : l'onglet resté ouvert effaçait en silence ce qui avait été tapé
+  dans l'autre. La fiche enregistrée par un autre onglet est maintenant reprise (message « Fiche mise à
+  jour depuis un autre onglet »), y compris au retour sur un onglet gelé (iPad). Une saisie pas encore
+  enregistrée, ou enregistrée au même instant que l'autre onglet (onglets en arrière-plan, trois
+  onglets ou plus), est gardée par-dessus : deux saisies sur des champs différents sont toujours
+  gardées toutes les deux. Si l'autre onglet a ouvert un autre personnage, la saisie en cours n'y est
+  pas ajoutée et c'est signalé. Le suivi de la synchronisation en ligne suit la fiche reprise : le lien
+  en ligne est gardé, même quand les deux onglets enregistrent en même temps ou pendant une création
+  en ligne ; un changement de nom n'est demandé que dans l'onglet où il a été tapé (l'autre onglet
+  affiche « nouveau nom : répondez à la question dans l'autre onglet »).
+- Fiche reprise d'un autre onglet : la case d'arme ou d'armure en cours de saisie garde le curseur ;
+  une suppression confirmée pendant ce temps s'applique bien (ou, si l'arme a été modifiée là-bas, un
+  message l'indique) et « Annuler la suppression » reste disponible.
+- Fausse question « Ce personnage existe déjà en ligne » / « Deux versions différentes » après un
+  espace en fin de champ, une caractéristique vidée ou un « 1/3 » d'inspiration, suivi d'un
+  rechargement ou d'une coupure réseau. Les empreintes de synchronisation sont calculées sur la fiche
+  telle qu'elle sera relue ; les valeurs saisies ne sont pas modifiées. Le suivi déjà enregistré par la
+  4.15.0 reste reconnu : la mise à jour ne pose aucune question.
+- Sauvegarde du navigateur illisible : la fiche vierge ouverte à la place l'écrasait à la première
+  saisie. Le texte illisible est d'abord gardé de côté (copie de secours téléchargeable depuis la
+  fenêtre d'avertissement).
+- Barre du compte : une fiche sans nom n'affiche plus « fiche à jour » mais « donnez un nom au
+  personnage pour l'enregistrer en ligne » (une fiche sans nom n'est jamais envoyée en ligne).
+- Import : un fichier JSON qui n'est pas une fiche (aucun champ de fiche reconnu) est refusé avec un
+  message clair ; la fiche actuelle n'est pas modifiée.
+### Changed
+- Format de sauvegarde : inchangé (aucune clé ajoutée, renommée ni supprimée dans la fiche). Nouvelle
+  clé du navigateur seulement, hors format de sauvegarde : `dd2024_char_backup` (copie de secours d'une
+  sauvegarde illisible ; une copie plus ancienne et différente n'est jamais écrasée, la nouvelle reçoit
+  un suffixe daté `dd2024_char_backup_<date>`). Les empreintes de `dd2024_cloud_sync` sont désormais
+  calculées sur la fiche normalisée (celles de la 4.15.0 restent reconnues).
+
 ## [4.15.0] - 2026-11-09 (Règles de classe et maîtrise des armes)
 ### Added
 - Paladin niveau 6 : Aura de protection (+ mod. de Charisme, minimum +1) comptée dans les six jets de

@@ -585,7 +585,8 @@ export function initStyleEditor({ root, store, setStatus }) {
     document.addEventListener('dd:lockchange', () => {
         if (isLocked()) reset();
     });
-    store.subscribe((_state, changedKeys) => {
-        if (changedKeys === null) reset();
+    store.subscribe((_state, changedKeys, meta = {}) => {
+        // Fiche reprise d'un autre onglet : le texte en cours de mise en forme reste le même
+        if (changedKeys === null && meta.source !== 'other-tab') reset();
     });
 }

@@ -1,7 +1,8 @@
 // =============================================================================
 // MAIN.JS - Point d'entrée de l'application (v4)
 // Crée le store, construit la fiche puis branche chaque fonctionnalité.
-// Chaque module reçoit le même contexte : { root, store, setStatus }.
+// Chaque module reçoit le même contexte : { root, store, setStatus, saveWithCharacter, saveNow }.
+// Enregistre la fiche dans le navigateur et reprend celle qu'un autre onglet y a enregistrée.
 // =============================================================================
 
 import { initTheme } from './ui/theme.js';
@@ -24,7 +25,10 @@ import { initAccount } from './ui/account.js';
 import { fitCellTexts } from './ui/cell-text.js';
 import { createStore } from './state/store.js';
 import { createDefaultCharacter } from './state/schema.js';
-import { loadLocal, saveLocal } from './state/persistence.js';
+import { loadLocal, saveLocal, STORAGE_KEYS } from './state/persistence.js';
+import { createLocalSave } from './state/local-save.js';
+import { richTextAvailable } from './ui/sanitize.js';
+import { showRichTextNotice, showUnreadableSaveNotice } from './ui/boot-notices.js';
 
 const AUTOSAVE_DELAY_MS = 600;
 
@@ -70,26 +74,78 @@ const setAutosaveStatus = (message) => {
 initTheme();
 initAnimations();
 
+// Texte enregistré tel quel (avant lecture) : sert à repérer les écritures d'un autre onglet
+const bootText = readStored(STORAGE_KEYS.character);
 const saved = loadLocal();
 const store = createStore(saved ? saved.character : createDefaultCharacter());
 
-/**
- * Données enregistrées dans le navigateur EN MÊME TEMPS que la fiche (même onglet, même
- * instant), par exemple le suivi de synchronisation en ligne : clé → fonction qui donne la valeur.
- */
-const savedWithCharacter = new Map();
+function readStored(key) {
+    try {
+        return localStorage.getItem(key);
+    } catch {
+        return null;
+    }
+}
+
+// --- Sauvegarde automatique dans le navigateur, plusieurs onglets (js/state/local-save.js) ---
+// Écriture différée pendant la saisie, mais jamais perdue : elle est faite tout de suite
+// quand la page est masquée (rechargement, onglet fermé, changement d'application sur iPad,
+// où Safari gèle les minuteries). beforeunload est évité : peu fiable sur iOS.
+const localSave = createLocalSave({
+    store,
+    // Accès différé : lire « localStorage » peut échouer (stockage bloqué), local-save.js le prévoit
+    storage: {
+        getItem: (key) => localStorage.getItem(key),
+        setItem: (key, value) => localStorage.setItem(key, value),
+        removeItem: (key) => localStorage.removeItem(key)
+    },
+    writeSheet: (character) => saveLocal(character),
+    knownText: bootText,
+    delay: AUTOSAVE_DELAY_MS,
+    status: {
+        saved: () => setAutosaveStatus('Enregistré dans ce navigateur'),
+        changing: () => setAutosaveStatus('Modifications en cours…'),
+        failed: () => setStatus('⚠️ Enregistrement impossible (stockage du navigateur indisponible)'),
+        message: setStatus
+    }
+});
 
 const ctx = {
     root, store, setStatus,
-    /** Ajoute une donnée à enregistrer avec la fiche */
-    saveWithCharacter: (key, getValue) => savedWithCharacter.set(key, getValue),
+    /** Ajoute une donnée à enregistrer avec la fiche (voir local-save.js) */
+    saveWithCharacter: (key, getValue, onStoredChange) => localSave.saveWithCharacter(key, getValue, onStoredChange),
     /** Enregistre tout de suite la fiche (et les données associées) */
-    saveNow: () => saveNow()
+    saveNow: () => localSave.saveNow()
 };
 
-createSheet(root, store);
-decorateIcons(root); // icônes dorées des titres et des onglets (data-icon)
-initTabs(root);
+// Écouteurs posés AVANT ceux des fonctionnalités : au retour sur l'onglet, la fiche des autres
+// onglets est reprise avant la vérification en ligne (account.js)
+const checkOtherTabs = () => localSave.checkOtherTabs();
+window.addEventListener('storage', (event) => {
+    if (localSave.watches(event.key)) checkOtherTabs();
+});
+window.addEventListener('pageshow', checkOtherTabs);
+window.addEventListener('focus', checkOtherTabs);
+window.addEventListener('pagehide', () => localSave.flush());
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') localSave.flush();
+    else checkOtherTabs();
+});
+
+// --- Construction de la fiche ---
+// Une étape en échec (fiche piégée, donnée inattendue) n'empêche ni la barre Gestion (import,
+// export, compte) ni l'enregistrement automatique de démarrer.
+for (const [label, step] of [
+    ['la construction de la fiche', () => createSheet(root, store)],
+    ['les icônes', () => decorateIcons(root)], // icônes dorées des titres et des onglets (data-icon)
+    ['les onglets', () => initTabs(root)]
+]) {
+    try {
+        step();
+    } catch (error) {
+        console.error(`Échec de ${label} :`, error);
+    }
+}
 for (const init of [initToolbar, initAccount, initGallery, initWeapons, initArmors, initSpells, initRest, initStyleEditor, initMotion, initFeedback]) {
     try {
         init(ctx);
@@ -97,7 +153,11 @@ for (const init of [initToolbar, initAccount, initGallery, initWeapons, initArmo
         console.error(`Échec de l'initialisation de ${init.name} :`, error);
     }
 }
-initLock();
+try {
+    initLock();
+} catch (error) {
+    console.error('Échec de l\'initialisation du verrou :', error);
+}
 
 // Cases de texte des tableaux : hauteur ajustée au contenu après chaque mise à jour
 let fitFrame = 0;
@@ -108,47 +168,12 @@ const scheduleFit = () => {
 store.subscribe(scheduleFit);
 scheduleFit();
 
-// --- Sauvegarde automatique dans le navigateur ---
-// Écriture différée pendant la saisie, mais jamais perdue : elle est faite tout de suite
-// quand la page est masquée (rechargement, onglet fermé, changement d'application sur iPad,
-// où Safari gèle les minuteries). beforeunload est évité : peu fiable sur iOS.
-var saveTimer = null; // var : utilisable par ctx.saveNow avant cette ligne
+// Enregistrement automatique branché en dernier : un import est enregistré une fois que chaque
+// fonctionnalité a réagi (base en ligne remise à zéro…)
+localSave.start();
 
-function saveNow() {
-    clearTimeout(saveTimer);
-    saveTimer = null;
-    if (!saveLocal(store.get())) {
-        setStatus('⚠️ Enregistrement impossible (stockage du navigateur indisponible)');
-        return;
-    }
-    for (const [key, getValue] of savedWithCharacter) {
-        try {
-            localStorage.setItem(key, getValue());
-        } catch {
-            // Stockage plein : on efface l'ancienne valeur plutôt que de la laisser à côté
-            // d'une fiche qui ne lui correspond plus
-            try { localStorage.removeItem(key); } catch { /* stockage indisponible */ }
-        }
-    }
-    setAutosaveStatus('Enregistré dans ce navigateur');
-}
-
-/** Écrit la sauvegarde en attente, s'il y en a une */
-function flushSave() {
-    if (saveTimer !== null) saveNow();
-}
-
-store.subscribe((_state, changedKeys) => {
-    // Import ou nouvelle fiche : enregistré immédiatement
-    if (changedKeys === null) {
-        saveNow();
-        return;
-    }
-    setAutosaveStatus('Modifications en cours…');
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(saveNow, AUTOSAVE_DELAY_MS);
-});
-window.addEventListener('pagehide', flushSave);
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') flushSave();
-});
+// --- Avis du démarrage ---
+// Mise en forme indisponible (DOMPurify non chargé) : textes longs en lecture seule
+if (!richTextAvailable()) showRichTextNotice(root);
+// Sauvegarde du navigateur illisible : une copie de secours est gardée avant tout enregistrement
+if (saved?.backupKey !== undefined) showUnreadableSaveNotice({ backupKey: saved.backupKey, text: bootText ?? '' });

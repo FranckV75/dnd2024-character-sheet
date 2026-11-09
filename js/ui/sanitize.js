@@ -3,14 +3,24 @@
 //
 // Le texte riche des joueurs (gras, couleurs, retours à la ligne) et les textes
 // de règles (descriptions de dons) passent par DOMPurify, chargé dans index.html.
-// Si DOMPurify n'a pas pu se charger (hors ligne), on n'affiche que le texte brut.
+// Si DOMPurify n'a pas pu se charger (hors ligne), on n'affiche que le texte brut
+// (retours à la ligne conservés) et les champs riches passent en lecture seule
+// (richTextAvailable, js/ui/sheet.js et lock.js) : le texte enregistré n'est jamais
+// réécrit à partir de cet affichage simplifié.
+//
+// Aucun attribut data-* ni aria-* n'est gardé : un texte importé ne doit jamais pouvoir
+// se faire passer pour un élément de la fiche (data-field, data-out, data-icon…).
 // =============================================================================
+
+import { safeText } from '../state/migrate.js';
 
 /** Balises produites par l'édition riche (v3 : execCommand → <font>, <div>...) */
 const RICH_CONFIG = {
     ALLOWED_TAGS: ['b', 'i', 'u', 'em', 'strong', 'br', 'span', 'sub', 'sup', 'mark', 'div', 'p', 'font'],
     // Pas de « class » : une fiche importée ne doit pas pouvoir reprendre les classes de l'application
-    ALLOWED_ATTR: ['style', 'color', 'size']
+    ALLOWED_ATTR: ['style', 'color', 'size'],
+    ALLOW_DATA_ATTR: false,
+    ALLOW_ARIA_ATTR: false
 };
 
 /**
@@ -57,22 +67,47 @@ function ensureStyleHook(purifier) {
 /** Textes de règles : mise en forme simple et liens */
 const RULES_CONFIG = {
     ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br', 'a', 'span'],
-    ALLOWED_ATTR: ['href']
+    ALLOWED_ATTR: ['href'],
+    ALLOW_DATA_ATTR: false,
+    ALLOW_ARIA_ATTR: false
 };
 
 function escapeText(text) {
     return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function plainText(html) {
-    return escapeText(new DOMParser().parseFromString(String(html ?? ''), 'text/html').body.textContent || '');
+/** Fin de ligne d'un texte riche : <br> ou fin de bloc (<div>, <p>, <li>) */
+const LINE_BREAK = /<br\s*\/?>|<\/(div|p|li)>/gi;
+
+/**
+ * Texte brut, retours à la ligne gardés (seule balise produite : <br>, le reste est échappé).
+ * @param {*} html
+ * @returns {string}
+ */
+export function plainText(html) {
+    const marked = safeText(html).replace(LINE_BREAK, '\n');
+    const text = new DOMParser().parseFromString(marked, 'text/html').body.textContent || '';
+    return escapeText(text.replace(/\n+$/, '')).replace(/\n/g, '<br>');
 }
+
+/**
+ * DOMPurify est-il chargé ? Sinon (connexion coupée au premier chargement), les textes longs
+ * s'affichent sans mise en forme et ne doivent pas être modifiés : les réenregistrer
+ * effacerait leur mise en forme.
+ * @returns {boolean}
+ */
+export function richTextAvailable() {
+    return typeof globalThis.DOMPurify?.sanitize === 'function';
+}
+
+/** Réglages de DOMPurify (lus par les tests) */
+export const SANITIZE_CONFIGS = Object.freeze({ rich: RICH_CONFIG, rules: RULES_CONFIG });
 
 function purify(html, config) {
     const purifier = globalThis.DOMPurify;
-    if (!purifier?.sanitize) return plainText(html);
+    if (!richTextAvailable()) return plainText(html);
     ensureStyleHook(purifier);
-    return purifier.sanitize(String(html ?? ''), config);
+    return purifier.sanitize(safeText(html), config);
 }
 
 /**

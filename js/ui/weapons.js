@@ -17,7 +17,8 @@
 
 import { DD_RULES } from '../data/dd-rules.js';
 import { EMPTY_WEAPON } from '../state/schema.js';
-import { stripHTML, findRulebookWeapon } from '../state/migrate.js';
+import { stripHTML, safeText, findRulebookWeapon } from '../state/migrate.js';
+import { locateRow } from '../state/other-tab.js';
 import { deriveCharacter, computeWeapon, sneakAttackDice } from '../rules/character.js';
 import { getRageBonus, parseWeaponConfig } from '../rules/logic.js';
 import { weaponFeatNotes } from '../rules/feat-effects.js';
@@ -126,7 +127,7 @@ let configCounter = 0;
 let notesCounter = 0;
 
 const fold = (text) => text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-const plain = (value) => stripHTML(String(value ?? ''));
+const plain = (value) => stripHTML(safeText(value));
 
 /**
  * @param {{ root: HTMLElement, store: Object, setStatus: (message: string) => void }} ctx
@@ -245,10 +246,14 @@ export function initWeapons(ctx) {
             });
             if (!ok || isLocked()) return;
         }
-        // Le tableau a pu changer pendant la confirmation : on retire la ligne demandée
+        // Le tableau a pu changer pendant la confirmation (ici ou dans un autre onglet) : on retire
+        // la ligne demandée, retrouvée par son contenu
         const list = weapons();
-        const at = list.indexOf(row);
-        if (at === -1) return;
+        const at = locateRow(list, row, index);
+        if (at === -1) {
+            setStatus(`⚠️ « ${typed || 'Arme sans nom'} » a été modifiée entre-temps (autre onglet) : rien n'a été supprimé`);
+            return;
+        }
         index = at;
         const name = typed || 'sans nom';
         store.update({ dynamic_weapons: removeWeapon(list, index) });
@@ -754,11 +759,45 @@ export function initWeapons(ctx) {
         refreshRows(weapons(), derived, buffs, character);
     }
 
-    function render(character, changedKeys) {
+    /** Cellule en cours de saisie : arme (contenu), colonne, sélection ; null si hors du tableau */
+    function focusedCell(list) {
+        const active = document.activeElement;
+        const index = rows.findIndex(r => r.tr.contains(active));
+        if (index === -1) return null;
+        const key = Object.keys(rows[index].inputs).find(k => rows[index].inputs[k] === active);
+        if (!key) return null;
+        return { weapon: list[index], index, key, start: active.selectionStart, end: active.selectionEnd };
+    }
+
+    /** Remet le curseur dans la même cellule de la même arme après reconstruction des lignes */
+    function restoreFocus(cell, list) {
+        if (!cell) return;
+        const at = locateRow(list, cell.weapon, cell.index);
+        const input = rows[at]?.inputs[cell.key];
+        if (!input) return;
+        input.focus();
+        try {
+            input.setSelectionRange(cell.start, cell.end);
+        } catch {
+            // champ sans sélection de texte
+        }
+    }
+
+    /** Liste affichée (pour retrouver la cellule en cours de saisie quand une autre fiche arrive) */
+    let shownList = [];
+
+    function render(character, changedKeys, meta = {}) {
         const list = weapons();
-        if (changedKeys === null) hideUndo();
-        if (changedKeys === null || list.length !== rows.length) rebuild(list);
+        // Fiche reprise d'un autre onglet : les lignes restent (le champ en cours de saisie garde
+        // le curseur) et la dernière suppression peut encore être annulée
+        const otherTab = changedKeys === null && meta.source === 'other-tab';
+        if (changedKeys === null && !otherTab) hideUndo();
+        const cell = otherTab ? focusedCell(shownList) : null;
+        const rebuilt = (changedKeys === null && !otherTab) || list.length !== rows.length;
+        if (rebuilt) rebuild(list);
         refresh(character);
+        if (rebuilt) restoreFocus(cell, list);
+        shownList = list;
     }
 
     document.addEventListener('dd:lockchange', () => {

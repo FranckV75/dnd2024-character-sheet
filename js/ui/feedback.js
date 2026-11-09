@@ -14,7 +14,7 @@
 
 import { classSlug, parseNumber } from '../rules/character.js';
 import { effectiveBuffs } from '../rules/weapons.js';
-import { el } from './dom.js';
+import { el, sheetElements } from './dom.js';
 import { motionOff } from './motion-pref.js';
 
 
@@ -186,7 +186,7 @@ function initValuePulse(root, store) {
     // Fiche remplacée (import, chargement en ligne, nouvelle fiche) : pas de pulsation
     let replaced = false;
 
-    for (const node of root.querySelectorAll(WATCHED)) seen.set(node, node.textContent);
+    for (const node of sheetElements(root, WATCHED)) seen.set(node, node.textContent);
 
     const pulse = (node) => {
         // Pulsation encore en cours : elle va au bout, sans repartir de zéro (pas de
@@ -233,7 +233,7 @@ function initValuePulse(root, store) {
         if (pending.size) schedule();
     });
     const options = { childList: true, characterData: true, subtree: true };
-    for (const node of root.querySelectorAll('[data-out]')) observer.observe(node, options);
+    for (const node of sheetElements(root, '[data-out]')) observer.observe(node, options);
     // Lignes des armes : recréées quand on en ajoute ou retire une, d'où le tableau entier
     const weaponsBody = root.querySelector('#weapons-feature tbody');
     if (weaponsBody) observer.observe(weaponsBody, options);

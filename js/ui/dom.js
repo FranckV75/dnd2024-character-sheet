@@ -39,6 +39,21 @@ export function fillSelect(select, options, placeholder = '— Choisir —') {
 /** "+3" / "-1" */
 export const signed = (n) => (n >= 0 ? `+${n}` : String(n));
 
+/** Champ de texte long saisi par le joueur (contenu libre, voir sanitize.js) */
+export const RICH_FIELD = '[data-kind="rich"]';
+
+/**
+ * Éléments de la fiche qui correspondent à `selector`, sans ceux placés DANS un texte saisi par
+ * le joueur : un texte importé ne peut jamais se faire passer pour un champ (data-field), une
+ * valeur calculée (data-out) ou une icône (data-icon) de la fiche.
+ * @param {ParentNode} root
+ * @param {string} selector
+ * @returns {Element[]}
+ */
+export function sheetElements(root, selector) {
+    return [...root.querySelectorAll(selector)].filter(node => !node.parentElement?.closest(RICH_FIELD));
+}
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /** Tracés des icônes (grille 16 × 16), dessinés dans la couleur du texte (currentColor) */
@@ -145,7 +160,8 @@ export function icon(name) {
         'stroke-linecap': 'round', 'stroke-linejoin': 'round', class: 'icon'
     };
     for (const [key, value] of Object.entries(attrs)) svg.setAttribute(key, value);
-    for (const [tag, shapeAttrs] of ICONS[name] || []) {
+    // Nom inconnu (ou « __proto__ », « constructor »… venant d'un attribut) : icône vide
+    for (const [tag, shapeAttrs] of (Object.hasOwn(ICONS, name) ? ICONS[name] : [])) {
         const shape = document.createElementNS(SVG_NS, tag);
         for (const [key, value] of Object.entries(shapeAttrs)) shape.setAttribute(key, value);
         svg.append(shape);

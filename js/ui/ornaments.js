@@ -8,14 +8,14 @@
 // decorateIcons() sur son conteneur.
 // =============================================================================
 
-import { icon } from './dom.js';
+import { icon, sheetElements } from './dom.js';
 
 /**
  * Ajoute l'icône de chaque élément [data-icon] de `root` (une seule fois par élément).
  * @param {ParentNode} root
  */
 export function decorateIcons(root = document) {
-    for (const host of root.querySelectorAll('[data-icon]')) {
+    for (const host of sheetElements(root, '[data-icon]')) {
         if (host.querySelector(':scope > .icon')) continue;
         host.prepend(icon(host.dataset.icon));
     }

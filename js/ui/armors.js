@@ -12,7 +12,8 @@
 // =============================================================================
 
 import { EMPTY_ARMOR } from '../state/schema.js';
-import { stripHTML } from '../state/migrate.js';
+import { stripHTML, safeText } from '../state/migrate.js';
+import { locateRow } from '../state/other-tab.js';
 import { parseNumber, armorCategory, deriveCharacter, mediumArmorDexMax } from '../rules/character.js';
 import {
     ARMOR_TYPES, searchArmorCatalogue, armorRowFromCatalogue, armorWarnings, armorTraining, isBlankArmor,
@@ -56,7 +57,7 @@ const CATEGORY_NAMES = {
 };
 const STATUS_COUNTED = 'Comptée dans la CA de la fiche.';
 
-const textOf = (value) => stripHTML(String(value ?? ''));
+const textOf = (value) => stripHTML(safeText(value));
 const armorsOf = (character) => (Array.isArray(character.dynamic_armors) ? character.dynamic_armors : []);
 const asObject = (row) => (row && typeof row === 'object' ? row : {});
 const typeOf = (row) => textOf(row.type) || 'none';
@@ -167,10 +168,14 @@ export function initArmors({ root, store, setStatus }) {
             });
             if (!ok) return;
         }
-        // Le tableau a pu changer pendant la confirmation : on retire la ligne demandée
+        // Le tableau a pu changer pendant la confirmation (ici ou dans un autre onglet) : on retire
+        // la ligne demandée, retrouvée par son contenu
         const list = armorsOf(store.get());
-        const at = list.indexOf(row);
-        if (at === -1) return;
+        const at = locateRow(list, row, index);
+        if (at === -1) {
+            setStatus(`⚠️ « ${name || 'Armure sans nom'} » a été modifiée entre-temps (autre onglet) : rien n'a été supprimé`);
+            return;
+        }
         store.update({ dynamic_armors: list.filter((_, i) => i !== at) });
         // Le bouton supprimé a disparu avec la ligne : le focus va au bouton voisin (ou à « Ajouter »)
         if (!document.activeElement || document.activeElement === document.body) {
@@ -186,7 +191,8 @@ export function initArmors({ root, store, setStatus }) {
     let configCounter = 0;
     function openConfig(index) {
         if (isLocked()) return;
-        const original = asObject(armorsOf(store.get())[index]);
+        const source = armorsOf(store.get())[index];
+        const original = asObject(source);
         const ctx = armorContext(deriveCharacter(store.get()));
         const entry = catalogueArmor(original);
         const manual = followsManual(original, entry);
@@ -287,8 +293,11 @@ export function initArmors({ root, store, setStatus }) {
                     onClick: () => {
                         // Le tableau a pu changer pendant la fenêtre : on modifie la ligne ouverte
                         const list = armorsOf(store.get());
-                        const at = list[index] === original ? index : list.indexOf(original);
-                        if (at === -1) return;
+                        const at = locateRow(list, source, index);
+                        if (at === -1) {
+                            setStatus('⚠️ Armure modifiée entre-temps (autre onglet) : réglages non appliqués');
+                            return;
+                        }
                         const next = draft();
                         replaceRow(at, () => next);
                         // Nouveau bonus magique : la ligne s'enchante sous les yeux, fenêtre refermée
@@ -520,15 +529,47 @@ export function initArmors({ root, store, setStatus }) {
         }
     }
 
-    function render(character, changedKeys) {
-        const count = armorsOf(character).length;
-        if (changedKeys === null || count !== rows.length) {
-            rebuild(count);
+    /** Cellule en cours de saisie : armure (contenu), colonne, sélection ; null si hors du tableau */
+    function focusedCell(list) {
+        const active = document.activeElement;
+        const index = rows.findIndex(r => r.tr.contains(active));
+        if (index === -1) return null;
+        const key = Object.keys(TEXT_COLUMNS).find(k => rows[index].controls[k] === active);
+        if (!key) return null;
+        return { armor: list[index], index, key, start: active.selectionStart, end: active.selectionEnd };
+    }
+
+    /** Remet le curseur dans la même cellule de la même armure après reconstruction des lignes */
+    function restoreFocus(cell, list) {
+        if (!cell) return;
+        const input = rows[locateRow(list, cell.armor, cell.index)]?.controls[cell.key];
+        if (!input) return;
+        input.focus();
+        try {
+            input.setSelectionRange(cell.start, cell.end);
+        } catch {
+            // champ sans sélection de texte
+        }
+    }
+
+    /** Liste affichée (pour retrouver la cellule en cours de saisie quand une autre fiche arrive) */
+    let shownList = [];
+
+    function render(character, changedKeys, meta = {}) {
+        const list = armorsOf(character);
+        // Fiche reprise d'un autre onglet : les lignes restent (le champ en cours de saisie garde le curseur)
+        const otherTab = changedKeys === null && meta.source === 'other-tab';
+        const cell = otherTab ? focusedCell(shownList) : null;
+        const rebuilt = (changedKeys === null && !otherTab) || list.length !== rows.length;
+        shownList = list;
+        if (rebuilt) {
+            rebuild(list.length);
             applyLocked();
-        } else if (!changedKeys.some(isWatched)) {
+        } else if (changedKeys !== null && !changedKeys.some(isWatched)) {
             return;
         }
         fill(character);
+        if (rebuilt) restoreFocus(cell, list);
     }
 
     store.subscribe(render);

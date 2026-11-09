@@ -17,10 +17,10 @@ export function createStore(initial = createDefaultCharacter()) {
     let state = structuredClone(initial);
     const listeners = new Set();
 
-    function notify(changedKeys) {
+    function notify(changedKeys, meta = {}) {
         for (const listener of listeners) {
             try {
-                listener(state, changedKeys);
+                listener(state, changedKeys, meta);
             } catch (e) {
                 console.error('Erreur dans un abonné du store :', e);
             }
@@ -48,15 +48,17 @@ export function createStore(initial = createDefaultCharacter()) {
         /**
          * Remplace tout le personnage (chargement, import, nouvelle fiche).
          * @param {Object} character
+         * @param {Object} [meta] - transmis aux abonnés ; { source: 'other-tab', stored } quand la
+         *        fiche est reprise d'un autre onglet (main.js) : déjà enregistrée, rien à réécrire
          */
-        replace(character) {
+        replace(character, meta = {}) {
             state = structuredClone(character);
-            notify(null);
+            notify(null, meta);
         },
 
         /**
-         * @param {(state: Object, changedKeys: string[]|null) => void} listener
-         *        changedKeys vaut null quand tout le personnage a été remplacé
+         * @param {(state: Object, changedKeys: string[]|null, meta: Object) => void} listener
+         *        changedKeys vaut null quand tout le personnage a été remplacé (meta : voir replace)
          * @returns {() => void} Fonction de désabonnement
          */
         subscribe(listener) {

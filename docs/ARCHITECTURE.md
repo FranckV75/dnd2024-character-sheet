@@ -22,7 +22,8 @@ css/                    Une feuille par fonctionnalité ; toute couleur vient de
 js/
 ├── boot-theme.js       Thème et choix « Sans animation » mémorisés, posés avant le premier
 │                       affichage (pas de flash clair)
-├── main.js             Démarrage de l'application, sauvegarde automatique dans le navigateur
+├── main.js             Démarrage de l'application (une étape en échec n'empêche ni la barre
+│                       Gestion ni l'enregistrement), branchement de l'enregistrement automatique
 ├── data/               Données du jeu (objets exportés, aucun accès au navigateur)
 │   ├── constants.js    Caractéristiques, compétences, fonds par défaut
 │   ├── dd-rules.js     Classes, sous-classes (dont Odyssée), espèces, historiques,
@@ -54,7 +55,11 @@ js/
 │   ├── migrate.js      Conversion de toute ancienne sauvegarde vers le format courant,
 │   │                   reprise de l'état de jeu que la v3 gardait à part dans le navigateur
 │   ├── store.js        Source unique de vérité + abonnements
-│   └── persistence.js  localStorage (mêmes clés que la v3) et fichiers JSON
+│   ├── persistence.js  localStorage (mêmes clés que la v3), copie de secours d'une sauvegarde
+│   │                   illisible, fichiers JSON (un JSON qui n'est pas une fiche est refusé)
+│   ├── local-save.js   Enregistrement automatique dans le navigateur et reprise de la fiche
+│   │                   enregistrée par un autre onglet (sans DOM, testé avec plusieurs onglets)
+│   └── other-tab.js    Fiche enregistrée par un autre onglet : reprise et fusion (pure)
 └── ui/                 Interface (un module par fonctionnalité, initialisé par main.js)
     ├── sheet.js        Construit la fiche, relie chaque champ data-field au store,
     │                   affiche les valeurs calculées (data-out)
@@ -65,7 +70,8 @@ js/
     │                   retenu sur l'appareil, jamais dans la sauvegarde)
     ├── magic.js        Aspect des armes et armures magiques (pastille, décors, enchantement)
     ├── modal.js · autocomplete.js · cell-text.js · dom.js   (briques partagées)
-    └── sanitize.js     Nettoyage du texte riche via DOMPurify
+    ├── boot-notices.js Avis du démarrage (mise en forme indisponible, sauvegarde illisible)
+    └── sanitize.js     Nettoyage du texte riche via DOMPurify (sans attribut data-* ni aria-*)
 data/spells.json        Base de sorts (chargée à la demande)
 assets/backgrounds/     Fonds d'écran WebP fournis
 dev/preview.html        Outil de capture : charge une fiche d'exemple (localhost seulement)
@@ -105,6 +111,41 @@ docs/archive-v3/        Documents de la v3
 - Les champs courts sont de vrais `<input>` (texte simple) ; les textes longs sont des zones
   `contenteditable` (`data-kind="rich"`) nettoyées par DOMPurify.
 - Un champ en cours de saisie n'est jamais réécrit (le curseur ne saute pas).
+- Un texte saisi ne peut jamais se faire passer pour un élément de la fiche : DOMPurify retire tout
+  attribut `data-*` / `aria-*`, les recherches de la page (`sheetElements`, dom.js) ignorent ce qui
+  est placé dans un champ riche, et un nom lu dans un attribut (`data-out`, `data-icon`) n'est
+  cherché que parmi les clés propres (`Object.hasOwn` : « __proto__ » ne désigne rien).
+- DOMPurify non chargé (connexion coupée au premier chargement) : les textes longs s'affichent sans
+  mise en forme (retours à la ligne gardés), en lecture seule, avec un bandeau ; ils ne sont jamais
+  réenregistrés à partir de cet affichage simplifié.
+
+## Plusieurs onglets dans le même navigateur
+
+- Tous les onglets partagent la même sauvegarde (`dd2024_char`). Chaque onglet retient le texte
+  qu'il a lu ou écrit en dernier ; s'il a changé (événement `storage`, ou retour sur l'onglet :
+  `visibilitychange`, `pageshow`, `focus`, car Safari peut geler un onglet), la fiche enregistrée
+  est reprise (`store.replace(fiche, { source: 'other-tab' })`) sans être réécrite, avec un message
+  (js/state/local-save.js, décision dans js/state/other-tab.js).
+- Saisies de cet onglet gardées par-dessus la fiche reprise : celles pas encore enregistrées
+  (enregistrement différé de 0,6 s ; même champ modifié des deux côtés : celui de cet onglet
+  l'emporte), et celles enregistrées moins de 0,6 s avant l'arrivée de l'autre fiche si l'autre
+  onglet n'a pas touché ce champ (il a écrit au même instant sans les voir : onglets en arrière-plan,
+  dont les minuteries partent ensemble, ou trois onglets). Au-delà, l'autre onglet a forcément vu la
+  saisie : sa fiche fait foi (une valeur remise en arrière là-bas est respectée). Autre personnage
+  ouvert là-bas (nom changé) : rien n'est ajouté, la saisie est signalée.
+- Une fusion est réenregistrée après le délai habituel, jamais tout de suite : le navigateur prévient
+  clé par clé, et la base de synchronisation, écrite juste après la fiche, arrive souvent dans un
+  second événement (63 fois sur 64 dans Edge). Elle est ainsi reprise avant d'être réécrite.
+- La base de synchronisation enregistrée avec la fiche est reprise aussi (controller.js) ; quand
+  l'autre onglet ne change que la base (envoi en ligne réussi), `adoptStoredBase` la reprend. Même
+  personnage : une opération en ligne en cours continue (une création réussie lie la fiche) ; une
+  question ouverte est abandonnée si le lien change. Un nouveau nom repris d'un autre onglet n'y
+  déclenche pas la question du renommage (posée dans l'onglet où il a été tapé).
+- Tableaux d'armes et d'armures : une fiche reprise ne reconstruit pas les lignes (le curseur reste),
+  et une ligne lue avant une fenêtre (suppression, réglages) est retrouvée par son contenu
+  (`locateRow`).
+- Tests : `tests/local-save.test.js` (navigateur simulé à plusieurs onglets, tests/helpers/tabs.js,
+  avec l'ordre des événements mesuré dans Edge).
 
 ## Sauvegarde en ligne
 
@@ -112,10 +153,15 @@ docs/archive-v3/        Documents de la v3
   `updated_at` = version.
 - La fiche retient sa « base » (personnage lié, version connue, empreinte du contenu), enregistrée
   dans le navigateur avec la fiche, au même instant (`dd2024_cloud_sync`).
+- Empreintes toujours calculées sur la forme normalisée de la fiche (`sheetFingerprint` : celle
+  qu'elle aura une fois relue, `migrateCharacter`) : un espace final ou une caractéristique vidée ne
+  font plus poser de fausse question. Une base de la v4.15 (empreinte de la fiche en mémoire) est
+  reconnue et convertie au premier chargement.
 - Écritures sûres : création seule pour une nouvelle fiche ou un import ; mise à jour seulement si la
   version en ligne est toujours celle connue ; sinon une question est posée (fermée = rien n'est écrasé).
 - Toute opération commencée avant un changement de fiche ou de compte est abandonnée sans rien écrire.
-- Tests : `tests/cloud.test.js`, `tests/cloud-controller.test.js` (faux Supabase réaliste).
+- Tests : `tests/cloud.test.js`, `tests/cloud-controller.test.js`, `tests/cloud-normalized.test.js`
+  (faux Supabase réaliste ; bases v4.15 des 11 fiches de test).
 
 ## Format de la fiche
 

@@ -30,6 +30,80 @@ export function isV3Save(raw) {
     return Boolean(raw) && typeof raw === 'object' && !Array.isArray(raw) && !('spell_slots_state' in raw);
 }
 
+/** Clés des toutes premières versions (converties par migrateCharacter) */
+const LEGACY_KEYS = ['hd_total', 'hd_spent', 'profs_other'];
+
+/**
+ * Les données ressemblent-elles à une fiche de personnage ? Au moins une clé connue de la fiche
+ * (format actuel ou ancien) : un fichier JSON quelconque (package.json…) ne remplace pas la fiche.
+ * @param {*} raw - données brutes, avant migration
+ * @returns {boolean}
+ */
+export function isCharacterData(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return false;
+    const known = createDefaultCharacter();
+    return Object.keys(raw).some(key => Object.hasOwn(known, key) || LEGACY_KEYS.includes(key)
+        || /^(feat|class_res)_\d+$/.test(key));
+}
+
+/**
+ * Forme normalisée d'une fiche (celle qu'elle aura après enregistrement puis relecture) :
+ * sert à comparer deux fiches sans tenir compte d'un espace final, d'une caractéristique vidée…
+ * La fiche elle-même n'est pas modifiée.
+ * @param {*} character
+ * @returns {Object}
+ */
+export function normalizeCharacter(character) {
+    return migrateCharacter(character).character;
+}
+
+/**
+ * Texte d'une valeur quelconque, sans jamais échouer. Une valeur que String() ne sait pas
+ * convertir (objet piégé d'un fichier fabriqué : {"toString": 1}) donne son texte JSON.
+ * @param {*} value
+ * @returns {string}
+ */
+export function safeText(value) {
+    if (typeof value === 'string') return value;
+    if (value === null || value === undefined) return '';
+    try {
+        return String(value);
+    } catch {
+        try {
+            return JSON.stringify(value) ?? '';
+        } catch {
+            return '';
+        }
+    }
+}
+
+/**
+ * Valeur d'un champ texte : une liste ou un objet (fichier abîmé ou fabriqué, jamais écrit par
+ * la fiche) devient son texte JSON, rien n'est perdu ; texte, nombre, booléen, null : inchangés.
+ * @param {*} value
+ * @returns {*}
+ */
+function textField(value) {
+    if (value === null || typeof value !== 'object') return value;
+    try {
+        return JSON.stringify(value) ?? '';
+    } catch {
+        return safeText(value);
+    }
+}
+
+/**
+ * Applique textField aux champs texte d'un objet (d'après les valeurs vides de `empty`).
+ * @param {Object} record - modifié sur place
+ * @param {Object} empty - ex. EMPTY_WEAPON
+ * @param {string[]} [skip] - champs traités à part
+ */
+function textFields(record, empty, skip = []) {
+    for (const [key, blank] of Object.entries(empty)) {
+        if (typeof blank === 'string' && !skip.includes(key) && Object.hasOwn(record, key)) record[key] = textField(record[key]);
+    }
+}
+
 /**
  * Retire les balises HTML et décode les entités courantes (champs texte simples).
  * @param {*} value
@@ -52,7 +126,7 @@ export function stripHTML(value) {
  * "Hache à 2 mains (1)" → "hache à deux mains", "Hachettes" → "hachette"
  */
 function normalizeWeaponName(name) {
-    return stripHTML(name || '').toLowerCase()
+    return stripHTML(safeText(name)).toLowerCase()
         .replace(/\(\d+\)/g, '')
         .replace(/à 2 mains/g, 'à deux mains')
         .replace(/\s+/g, ' ')
@@ -97,6 +171,7 @@ function fixOldGlaive(weapon, report) {
 
 function migrateWeapon(raw, report) {
     const weapon = { ...EMPTY_WEAPON, ...(raw && typeof raw === 'object' ? raw : {}) };
+    textFields(weapon, EMPTY_WEAPON, ['weaponConfig']);
 
     // Anciennes sauvegardes : { name, atk: "+6", dmg: "1D12+4" } sans données de calcul.
     // On rattache l'arme au manuel pour activer le calcul automatique (atk/dmg d'origine conservés).
@@ -108,7 +183,7 @@ function migrateWeapon(raw, report) {
             if (!weapon.category) weapon.category = ref.category;
             if (!stripHTML(weapon.prop)) weapon.prop = ref.prop;
             if (!stripHTML(weapon.prof)) weapon.prof = ref.prof;
-            report.push(`Arme « ${stripHTML(weapon.name)} » rattachée au manuel (${ref.name}) pour le calcul automatique.`);
+            report.push(`Arme « ${stripHTML(safeText(weapon.name))} » rattachée au manuel (${ref.name}) pour le calcul automatique.`);
         }
     }
     fixOldGlaive(weapon, report);
@@ -120,12 +195,13 @@ function migrateWeapon(raw, report) {
 
 function migrateArmor(raw, report) {
     const armor = { ...EMPTY_ARMOR, ...(raw && typeof raw === 'object' ? raw : {}) };
+    textFields(armor, EMPTY_ARMOR);
     if (!raw || !raw.type) {
-        const name = stripHTML(armor.name).toLowerCase();
+        const name = stripHTML(safeText(armor.name)).toLowerCase();
         const ref = EQUIPMENT_DATA.armors.find(a => a.name.toLowerCase() === name);
         if (ref) {
             armor.type = ref.type;
-            report.push(`Armure « ${stripHTML(armor.name)} » : type « ${ref.type} » déduit du manuel.`);
+            report.push(`Armure « ${stripHTML(safeText(armor.name))} » : type « ${ref.type} » déduit du manuel.`);
         }
     }
     armor.stealth = armor.stealth === true;
@@ -135,11 +211,12 @@ function migrateArmor(raw, report) {
 
 function migrateSpell(raw) {
     const spell = { ...EMPTY_SPELL, ...(raw && typeof raw === 'object' ? raw : {}) };
+    textFields(spell, EMPTY_SPELL, ['lvl']);
     // Mêmes règles de lecture que la v3 : case cochée si valeur « vraie »,
     // « préparé » sauf si vide, false ou "0" ; niveau vide = sort mineur (0)
     for (const flag of ['c', 'r', 'm']) spell[flag] = Boolean(spell[flag]);
     spell.prep = ![undefined, null, '', false, '0'].includes(spell.prep);
-    spell.lvl = stripHTML(String(spell.lvl ?? '')) || '0';
+    spell.lvl = stripHTML(safeText(spell.lvl)) || '0';
     return spell;
 }
 
@@ -162,8 +239,11 @@ export function migrateCharacter(input) {
     for (const field of PLAIN_TEXT_FIELDS) {
         if (typeof character[field] === 'string') character[field] = stripHTML(character[field]);
         else if (character[field] === null || character[field] === undefined) character[field] = '';
-        else character[field] = String(character[field]);
+        else character[field] = safeText(character[field]);
     }
+    // Autres champs texte (textes longs, dons…) : jamais une liste ou un objet (fichier fabriqué),
+    // que les règles et l'affichage ne savent pas lire
+    textFields(character, createDefaultCharacter(), PLAIN_TEXT_FIELDS);
 
     // 3. Cases à cocher : null / absent → false
     for (const field of BOOLEAN_FIELDS) character[field] = character[field] === true;
@@ -183,9 +263,9 @@ export function migrateCharacter(input) {
         }
     }
     if (raw.hd_current === undefined && raw.hd_spent !== undefined) {
-        const spent = String(raw.hd_spent).match(/\d+/);
+        const spent = safeText(raw.hd_spent).match(/\d+/);
         character.hd_current = spent ? spent[0] : '0';
-        report.push(`Dés de vie utilisés repris de l'ancien champ (« ${raw.hd_spent} » → ${character.hd_current}).`);
+        report.push(`Dés de vie utilisés repris de l'ancien champ (« ${safeText(raw.hd_spent)} » → ${character.hd_current}).`);
     }
     // La v3 imposait le dé de vie de la classe à chaque ouverture : une fiche v3 enregistrée
     // juste après un import pouvait garder un autre dé (« d8 » pour un Barbare). Même règle,
@@ -198,19 +278,19 @@ export function migrateCharacter(input) {
         }
     }
     // Dés utilisés : toujours un nombre (une liste v3 périmée pouvait enregistrer '')
-    if (!/^\d+$/.test(character.hd_current)) {
-        if (character.hd_current) report.push(`Dés de vie utilisés illisibles (« ${character.hd_current} ») : remis à 0.`);
+    if (!/^\d+$/.test(safeText(character.hd_current))) {
+        if (character.hd_current) report.push(`Dés de vie utilisés illisibles (« ${safeText(character.hd_current)} ») : remis à 0.`);
         character.hd_current = '0';
     }
 
     // 6. Ancien champ des maîtrises d'armes
     if (raw.profs_other && !raw.profs_weapons) {
-        character.profs_weapons = raw.profs_other;
+        character.profs_weapons = textField(raw.profs_other);
         report.push('Maîtrises d\'armes reprises de l\'ancien champ « profs_other ».');
     }
 
     // 7. Épuisement : nombre entre 0 et 6
-    const fatigue = parseInt(character.fatigue_level, 10);
+    const fatigue = parseInt(safeText(character.fatigue_level), 10);
     character.fatigue_level = Number.isFinite(fatigue) ? Math.max(0, Math.min(6, fatigue)) : 0;
 
     // 8. Champs v4 de type objet (bonus de combat, emplacements de sorts)

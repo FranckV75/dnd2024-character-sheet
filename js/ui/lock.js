@@ -13,6 +13,9 @@
 // l'attribut data-locked="true" sur <body> et l'événement 'dd:lockchange' sur document.
 // =============================================================================
 
+import { sheetElements } from './dom.js';
+import { richTextAvailable } from './sanitize.js';
+
 const STORAGE_KEY = 'dd2024_lock_mode';
 
 const PLAY_FIELDS = new Set([
@@ -41,13 +44,16 @@ export function isLocked() {
  */
 export function applyLock(root = document) {
     const locked = isLocked();
-    for (const field of root.querySelectorAll('[data-field]')) {
+    // Mise en forme indisponible (DOMPurify non chargé) : textes longs en lecture seule
+    const richReadOnly = !richTextAvailable();
+    for (const field of sheetElements(root, '[data-field]')) {
         const frozen = locked && !isPlayField(field.dataset.field) && field.dataset.play !== 'true';
         if (field.dataset.kind === 'rich') {
-            field.contentEditable = frozen ? 'false' : 'true';
+            const readOnly = frozen || richReadOnly;
+            field.contentEditable = readOnly ? 'false' : 'true';
             // Verrouillé : annoncé en lecture seule et toujours atteignable au clavier
             // (pour lire et faire défiler un long texte à la table)
-            if (frozen) {
+            if (readOnly) {
                 field.setAttribute('aria-readonly', 'true');
                 field.tabIndex = 0;
             } else {

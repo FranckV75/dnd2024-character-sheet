@@ -134,6 +134,39 @@ export function withoutV4State(character) {
     return copy;
 }
 
+/**
+ * Texte de l'état de la synchronisation dans la barre (connecté), après « Connecté (nom) — ».
+ * @param {{ name: string, named: boolean, dirty: boolean, detached: boolean, pending: boolean, renameElsewhere?: boolean,
+ *           needsCheck: boolean, lastError: string }} state - getState() du contrôleur
+ * @returns {{ label: string, hint: string }} hint : explication ajoutée à l'infobulle ('' sinon)
+ */
+export function syncStatusLabel(state) {
+    if (state.pending) return { label: 'une question attend votre réponse', hint: '' };
+    if (state.detached) {
+        return {
+            label: 'fiche ouverte gardée dans ce navigateur seulement',
+            hint: 'Cette fiche n\'est pas enregistrée dans votre compte (par exemple après l\'avoir supprimée de « Mes personnages », ou après avoir choisi « Ne rien faire »). « Enregistrer en ligne » l\'ajoute à votre compte ; « Mes personnages » ouvre un autre personnage.'
+        };
+    }
+    if (state.lastError || state.needsCheck) return { label: 'synchronisation en échec, nouvel essai automatique', hint: '' };
+    // Fiche sans nom : jamais envoyée en ligne (le nom désigne le personnage dans le compte)
+    if (state.named === false) {
+        return {
+            label: 'donnez un nom au personnage pour l\'enregistrer en ligne',
+            hint: 'Une fiche sans nom reste enregistrée dans ce navigateur seulement.'
+        };
+    }
+    // Nom changé dans un autre onglet : la question du renommage y attend une réponse
+    if (state.renameElsewhere) {
+        return {
+            label: 'nouveau nom : répondez à la question dans l\'autre onglet',
+            hint: 'Le nom a été changé dans un autre onglet de ce navigateur, qui demande quoi faire dans votre compte. Si cet onglet a été fermé, rechargez la page pour retrouver la question.'
+        };
+    }
+    if (state.dirty) return { label: 'enregistrement en ligne…', hint: '' };
+    return { label: state.name ? `fiche « ${state.name} » à jour en ligne` : 'fiche à jour', hint: '' };
+}
+
 /** Écart en dessous duquel deux dates sont considérées comme la même version (règle de la v3) */
 export const SAME_TIME_MS = 5000;
 

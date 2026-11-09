@@ -21,8 +21,8 @@ import { FEAT_CHOICE_RULES, slotChoice, setFeatChoicePatch, fieldOptions, fieldA
 import {
     featName, featSlotName, isHuman, classFeatSlot, featSlotCounts, featSlotLevelFor, STYLE_ALTERNATIVES
 } from '../rules/feats.js';
-import { sanitizeRich, sanitizeRulesText } from './sanitize.js';
-import { el, fillSelect, icon, signed } from './dom.js';
+import { sanitizeRich, sanitizeRulesText, richTextAvailable } from './sanitize.js';
+import { el, fillSelect, icon, signed, sheetElements, RICH_FIELD } from './dom.js';
 import { applyLock, isLocked } from './lock.js';
 import { openModal } from './modal.js';
 import { createCalcBubble } from './calc-bubble.js';
@@ -253,8 +253,12 @@ function readField(field) {
 
 function bindFields(root, store) {
     const onEdit = (event) => {
-        const field = event.target.closest('[data-field]');
-        if (!field || !root.contains(field)) return;
+        // Le champ lui-même, jamais un élément placé dans un texte saisi (voir sheetElements)
+        const rich = event.target.closest(RICH_FIELD);
+        const field = rich || event.target.closest('[data-field]');
+        if (!field || !root.contains(field) || !field.dataset.field) return;
+        // Mise en forme indisponible : le texte affiché est simplifié, il n'est jamais réenregistré
+        if (rich && !richTextAvailable()) return;
         const key = field.dataset.field;
         const patch = { [key]: readField(field) };
 
@@ -446,11 +450,22 @@ function bindArmorClassBubble(root) {
     });
 }
 
+/**
+ * Valeur affichée par un élément data-out="nom" ou "nom:argument" ('' si le nom est inconnu).
+ * Object.hasOwn : un nom comme « __proto__ » ou « constructor » ne désigne jamais une fonction.
+ * @param {string} spec - valeur de data-out
+ * @param {Object} d - deriveCharacter()
+ * @param {Object} character
+ * @returns {string|number}
+ */
+export function outputValue(spec, d, character) {
+    const [name, arg] = String(spec ?? '').split(':');
+    return (Object.hasOwn(OUTPUTS, name) ? OUTPUTS[name](d, arg, character) : undefined) ?? '';
+}
+
 function renderOutputs(root, character, d) {
-    for (const out of root.querySelectorAll('[data-out]')) {
-        const [name, arg] = out.dataset.out.split(':');
-        const value = OUTPUTS[name]?.(d, arg, character);
-        out.textContent = value ?? '';
+    for (const out of sheetElements(root, '[data-out]')) {
+        out.textContent = outputValue(out.dataset.out, d, character);
     }
     lastArmorClass = d.armorClass;
     root.querySelector('.ac-hex').setAttribute('aria-label', `Classe d'armure ${d.armorClass.value} : détail du calcul`);
@@ -650,7 +665,8 @@ function zoneNotes(effects, zone) {
 
 /** Une mention par don actif de la zone (un don sans effet pour le moment n'en a pas) */
 function zoneMentions(zone, notes) {
-    const label = MENTION_LABELS[zone.split('.')[0]];
+    const family = zone.split('.')[0];
+    const label = Object.hasOwn(MENTION_LABELS, family) ? MENTION_LABELS[family] : (note) => note.featName;
     const byFeat = new Map();
     for (const note of notes) {
         if (note.inactive) continue;
@@ -710,7 +726,7 @@ function openFeatNotes(button) {
  * par zone : un toucher ouvre le détail (les infobulles n'existent pas sur tablette).
  */
 function renderFeatMentions(root, effects) {
-    for (const button of root.querySelectorAll('[data-feat-zone]')) {
+    for (const button of sheetElements(root, '[data-feat-zone]')) {
         const zone = button.dataset.featZone;
         const notes = zoneNotes(effects, zone);
         const labels = zoneMentions(zone, notes);
@@ -901,8 +917,13 @@ function render(root, character, replaced = false) {
     const d = deriveCharacter(character);
     renderDynamicSelects(root, character, d);
     renderClassResource(root, character, d);
-    for (const field of root.querySelectorAll('[data-field]')) {
-        writeField(field, character[field.dataset.field], replaced);
+    for (const field of sheetElements(root, '[data-field]')) {
+        // Une valeur inattendue (fiche fabriquée) n'empêche pas d'afficher les autres champs
+        try {
+            writeField(field, character[field.dataset.field], replaced);
+        } catch (error) {
+            console.error(`Champ « ${field.dataset.field} » illisible :`, error);
+        }
     }
     const effects = featEffects(character, d);
     const counters = featCounters(character, d);
@@ -925,8 +946,9 @@ export function createSheet(root, store) {
     buildAbilities(root);
     buildSkills(root);
     buildFeats(root);
-    for (const rich of root.querySelectorAll('[data-kind="rich"]')) {
-        rich.contentEditable = 'true';
+    // Modifiables seulement si la mise en forme est disponible (applyLock, lock.js)
+    for (const rich of sheetElements(root, RICH_FIELD)) {
+        rich.contentEditable = richTextAvailable() ? 'true' : 'false';
         rich.setAttribute('role', 'textbox');
         rich.setAttribute('aria-multiline', 'true');
         rich.setAttribute('aria-keyshortcuts', 'Alt+F10');
