@@ -652,6 +652,30 @@ const DD_RULES = {
             19: [4, 3, 3, 3, 2, 0, 0, 0, 0],
             20: [4, 3, 3, 3, 2, 0, 0, 0, 0]
         },
+        // Tiers de lanceur (PHB 2024, Chevalier occulte et Escroc arcanique : même table, sorts de
+        // Magicien) ; rien avant le niveau 3, où la sous-classe arrive
+        third: {
+            1: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            2: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            3: [2, 0, 0, 0, 0, 0, 0, 0, 0],
+            4: [3, 0, 0, 0, 0, 0, 0, 0, 0],
+            5: [3, 0, 0, 0, 0, 0, 0, 0, 0],
+            6: [3, 0, 0, 0, 0, 0, 0, 0, 0],
+            7: [4, 2, 0, 0, 0, 0, 0, 0, 0],
+            8: [4, 2, 0, 0, 0, 0, 0, 0, 0],
+            9: [4, 2, 0, 0, 0, 0, 0, 0, 0],
+            10: [4, 3, 0, 0, 0, 0, 0, 0, 0],
+            11: [4, 3, 0, 0, 0, 0, 0, 0, 0],
+            12: [4, 3, 0, 0, 0, 0, 0, 0, 0],
+            13: [4, 3, 2, 0, 0, 0, 0, 0, 0],
+            14: [4, 3, 2, 0, 0, 0, 0, 0, 0],
+            15: [4, 3, 2, 0, 0, 0, 0, 0, 0],
+            16: [4, 3, 3, 0, 0, 0, 0, 0, 0],
+            17: [4, 3, 3, 0, 0, 0, 0, 0, 0],
+            18: [4, 3, 3, 0, 0, 0, 0, 0, 0],
+            19: [4, 3, 3, 1, 0, 0, 0, 0, 0],
+            20: [4, 3, 3, 1, 0, 0, 0, 0, 0]
+        },
         // Warlock (Pacte) : emplacements uniques qui reviennent au repos court
         pact: {
             1: [1, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -684,17 +708,26 @@ const DD_RULES = {
         bard: 'full', cleric: 'full', druid: 'full', sorcerer: 'full', wizard: 'full',
         paladin: 'half', ranger: 'half',
         warlock: 'pact',
-        // Non-lanceurs (pas de slots par défaut)
+        // Non-lanceurs (pas de slots par défaut) ; le Guerrier et le Roublard le deviennent avec
+        // une sous-classe lanceuse (subclassCasterType) : la classe elle-même reste à null
         barbarian: null, fighter: null, monk: null, rogue: null
+    },
+
+    /** Sous-classes qui donnent l'Incantation à une classe sans magie : type de lanceur et classe */
+    subclassCasterType: {
+        eldritch_knight: { type: 'third', class: 'fighter' },
+        arcane_trickster: { type: 'third', class: 'rogue' }
     },
 
     /**
      * Retourne les emplacements de sorts pour une classe et un niveau donnés.
      * @param {string} className - Nom de la classe (FR, EN ou slug)
      * @param {number} level - Niveau du personnage (1-20)
+     * @param {string} [subclass] - identifiant de sous-classe (deriveCharacter().subclass) : Chevalier
+     *        occulte, Escroc arcanique (tiers de lanceur, seulement avec leur classe)
      * @returns {Object} - { 1: nbSlots, 2: nbSlots, ..., 9: nbSlots } ou {} si non-lanceur
      */
-    getSpellSlots(className, level) {
+    getSpellSlots(className, level, subclass = '') {
         if (!className || !level) return {};
 
         // Trouver le slug de la classe
@@ -711,7 +744,8 @@ const DD_RULES = {
 
         if (!classSlug) return {};
 
-        const type = this.casterType[classSlug];
+        const bySubclass = this.subclassCasterType[subclass];
+        const type = this.casterType[classSlug] || (bySubclass?.class === classSlug ? bySubclass.type : null);
         if (!type) return {};
 
         const clampedLevel = Math.max(1, Math.min(20, level));

@@ -66,10 +66,12 @@ export function hitDieForClass(className) {
  * Emplacements de sorts par niveau de sort.
  * @param {string} className
  * @param {number} level
+ * @param {string} [subclass] - identifiant de sous-classe : Chevalier occulte et Escroc arcanique
+ *        (tiers de lanceur, lot 6 des sous-classes)
  * @returns {Object} - ex. { 1: 4, 2: 2 } ; {} pour un non-lanceur
  */
-export function spellSlotsFor(className, level) {
-    return DD_RULES.getSpellSlots(className, level);
+export function spellSlotsFor(className, level, subclass = '') {
+    return DD_RULES.getSpellSlots(className, level, subclass);
 }
 
 const ARMOR_TYPE_ALIASES = {
@@ -692,7 +694,7 @@ export function deriveCharacter(record = {}) {
             subclass, level
         }),
         spellcasting: computeSpellcasting(record.spell_ability, mods, pb),
-        spellSlots: spellSlotsFor(className, level),
+        spellSlots: spellSlotsFor(className, level, subclass),
         classResource: getClassResourceInfo(level, className, mods),
         hitDie: hitDieForClass(className),
         exhaustion: exhaustionEffects(record.fatigue_level),

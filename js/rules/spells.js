@@ -161,11 +161,14 @@ export function spellLevelLabel(level) {
  * si c'est une classe de lanceur de sorts, sinon aucune (toutes les classes).
  * @param {string} filterValue - character.spell_class_filter
  * @param {string} characterClassSlug - ex. 'wizard', 'barbarian', ''
+ * @param {string} [subclass] - deriveCharacter().subclass : Chevalier occulte et Escroc arcanique
+ *        prennent leurs sorts dans la liste du Magicien
  * @returns {string} - identifiant de classe, ou '' pour toutes
  */
-export function effectiveSpellClass(filterValue, characterClassSlug) {
+export function effectiveSpellClass(filterValue, characterClassSlug, subclass = '') {
     const value = String(filterValue || '').trim();
     if (SPELL_CLASS_OPTIONS.some(([slug]) => slug === value)) return value;
+    if (DD_RULES.subclassCasterType?.[subclass]?.class === characterClassSlug && characterClassSlug) return 'wizard';
     if (characterClassSlug && DD_RULES.casterType[characterClassSlug]) {
         return SPELL_CLASS_OPTIONS.some(([slug]) => slug === characterClassSlug) ? characterClassSlug : '';
     }
@@ -499,7 +502,7 @@ export function adjustSlotMax(state, level, delta, rulebookCount = 0) {
 /**
  * Niveaux de sorts à afficher dans le suivi des emplacements, avec leur libellé :
  * ceux du manuel pour la classe et le niveau, plus ceux ajoutés à la main
- * (max > 0 dans spell_slots_state : Chevalier occulte, Escroc arcanique, multiclasse...).
+ * (max > 0 dans spell_slots_state : multiclasse, règle maison...).
  * Occultiste : les emplacements du manuel sont ceux de la Magie de pacte.
  * @param {Object} spellSlots - deriveCharacter().spellSlots, ex. { 1: 4, 2: 2 }
  * @param {string} classSlug
@@ -531,8 +534,7 @@ export function slotLevels(spellSlots, classSlug = '', state = {}) {
 /**
  * Niveau de sort (1 à 9) proposé pour un suivi d'emplacements ajouté à la main : le premier
  * niveau sans suivi au-dessus des emplacements du manuel (Arcanum mystique d'un Occultiste
- * de niveau 11+, multiclasse, Chevalier occulte ou Escroc arcanique dont la fiche ne calcule pas encore les
- * emplacements…).
+ * de niveau 11+, multiclasse…).
  * @param {Array<{ level: string, rulebook?: number }>} shown - résultat de slotLevels()
  * @returns {string} - '' si aucun niveau n'est disponible
  */

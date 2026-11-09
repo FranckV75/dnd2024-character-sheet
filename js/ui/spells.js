@@ -307,8 +307,8 @@ export function initSpells(ctx) {
             // Nombre d'emplacements changé : reconstruction, en gardant le focus sur le même bouton
             const focusedLabel = slotsBox.contains(document.activeElement) ? document.activeElement.getAttribute('aria-label') : null;
             slotsSignature = signature;
-            // Ajout manuel d'un niveau au-dessus de ceux du manuel (comme le « + » de la v3) : Chevalier
-            // occulte, Escroc arcanique, Arcanum mystique de l'Occultiste, multiclasse...
+            // Ajout manuel d'un niveau au-dessus de ceux du manuel (comme le « + » de la v3) : Arcanum
+            // mystique de l'Occultiste, multiclasse...
             const free = nextFreeSlotLevel(levels);
             slotsBox.replaceChildren(...[
                 ...levels.map(info => buildSlotGroup(info, state)),
@@ -461,7 +461,8 @@ export function initSpells(ctx) {
             maxItems: 12,
             getItems: (query) => {
                 const character = store.get();
-                const classSlug = effectiveSpellClass(character.spell_class_filter, deriveCharacter(character).classSlug);
+                const derivedNow = deriveCharacter(character);
+                const classSlug = effectiveSpellClass(character.spell_class_filter, derivedNow.classSlug, derivedNow.subclass);
                 return searchSpells(spellsDb, query, { classSlug, limit: 12 }).map(spell => ({
                     label: spellDisplayName(spell),
                     detail: `niv. ${spell.level} · ${spell.school}`,
@@ -726,7 +727,7 @@ export function initSpells(ctx) {
 
     function renderClassFilter(character, d) {
         const value = String(character.spell_class_filter || '');
-        const own = SPELL_CLASS_OPTIONS.find(([slug]) => slug === effectiveSpellClass('', d.classSlug));
+        const own = SPELL_CLASS_OPTIONS.find(([slug]) => slug === effectiveSpellClass('', d.classSlug, d.subclass));
         const firstLabel = own ? `Classe du personnage (${own[1]})` : 'Toutes les classes';
         if (classSelect.options.length === 0) {
             classSelect.replaceChildren(el('option', { value: '', text: firstLabel }),

@@ -29,6 +29,25 @@ const chaMod = (derived) => Number(derived?.mods?.cha) || 0;
  */
 const paladinDC = (derived) => 8 + (Number(derived?.pb) || 2) + chaMod(derived);
 const SPELLS_TEXT = 'Bloc « Sorts de sous-classe » de l\'onglet Magie : toujours préparés, hors du nombre de sorts préparés.';
+
+/**
+ * Sorts préparés de niveau 1+ du Chevalier occulte et de l'Escroc arcanique (PHB 2024, même table) :
+ * 3 au niveau 3, 4 au 4, 5 au 7, 6 au 8, 7 au 10, 8 au 11, 9 au 13, 10 au 14, 11 au 16, 12 au 19, 13 au 20.
+ * @param {number} level - niveau de Guerrier ou de Roublard
+ * @returns {number} 0 avant le niveau 3
+ */
+export function thirdCasterPrepared(level) {
+    const steps = [[20, 13], [19, 12], [16, 11], [14, 10], [13, 9], [11, 8], [10, 7], [8, 6], [7, 5], [4, 4], [3, 3]];
+    return steps.find(([min]) => level >= min)?.[1] ?? 0;
+}
+
+/** Caractéristique d'incantation (Intelligence) : choisie ou non dans l'onglet Magie */
+function spellAbilityText(derived) {
+    const sc = derived?.spellcasting;
+    return sc?.ability === 'int'
+        ? `Intelligence choisie dans l'onglet Magie : DD des sorts ${sc.dc}, attaque ${signed(sc.attack)}.`
+        : 'Caractéristique d\'incantation : choisissez Intelligence dans l\'onglet Magie.';
+}
 const COMBAT_BOXES = 'Case dans l\'onglet Combat, vidée au repos long.';
 const mod = (derived, id) => Number(derived?.mods?.[id]) || 0;
 // `where` contient la préposition (« de la sauvegarde de Force », « d'Athlétisme ») ; plural : deux cases
@@ -203,6 +222,15 @@ const MANUAL_AUTOMATION = {
     },
     path_of_the_world_tree: {
         racines_percutantes: { text: 'Rappel sous les armes de corps à corps Lourdes ou Polyvalentes (onglet Combat).', partial: true }
+    },
+    // Lot 6 : tiers de lanceur (emplacements calculés par DD_RULES.getSpellSlots, table « third »)
+    eldritch_knight: {
+        incantation_emplacements_de_sorts: { text: 'Emplacements de sorts calculés (onglet Magie), rendus au repos long.' },
+        incantation_sorts_mineurs_et_sorts_prepares: { text: (d) => `À respecter vous-même : ${thirdCasterPrepared(d.level)} sorts préparés de niveau 1+, ${d.level >= 10 ? 3 : 2} sorts mineurs (liste du Magicien, proposée par défaut dans l'onglet Magie).`, partial: true },
+        incantation_caracteristique: { text: (d) => spellAbilityText(d), partial: true }
+    },
+    arcane_trickster: {
+        incantation: { text: (d) => `Emplacements de sorts calculés (onglet Magie). À respecter vous-même : ${thirdCasterPrepared(d.level)} sorts préparés de niveau 1+, Main de mage + ${d.level >= 10 ? 3 : 2} sorts mineurs (liste du Magicien). ${spellAbilityText(d)}`, partial: true }
     },
     way_of_the_shield_dancer: {
         technique_aresienne_bouclier_compatible: { text: 'Avec un bouclier : CA sans armure, Arts martiaux et DD de Lutte calculés.' },

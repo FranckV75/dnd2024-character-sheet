@@ -2,6 +2,15 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.26.0] - 2026-11-09 (Sous-classes, lot 6 : Chevalier occulte et Escroc arcanique)
+### Added
+- Emplacements de sorts calculés pour le Chevalier occulte (Guerrier) et l'Escroc arcanique
+  (Roublard) à partir du niveau 3, selon la table du tiers de lanceur du PHB 2024. Un maximum déjà
+  réglé à la main sur une fiche reste prioritaire.
+- Onglet Magie : la liste du Magicien est proposée par défaut pour ces deux sous-classes.
+- Bloc « Sous-classe » : nombre de sorts préparés et de sorts mineurs à respecter, DD et attaque
+  des sorts quand l'Intelligence est choisie.
+
 ## [4.25.0] - 2026-11-09 (Sous-classes, lot 5 : combat et ressources)
 ### Added
 - Tableau des armes : boutons de sous-classe qui ajoutent leurs dés aux dégâts — Frénésie du
