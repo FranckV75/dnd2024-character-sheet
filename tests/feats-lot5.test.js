@@ -39,7 +39,7 @@ describe('+1 des dons généraux (lot 5)', () => {
         assert.deepEqual(asiAbilities(undefined), []);
     });
 
-    test('chaque don général avec un +1 a son menu (ou sa caractéristique fixe) ; pas les faveurs épiques', () => {
+    test('chaque don général avec un +1 a son menu (ou sa caractéristique fixe) ; les faveurs épiques ont le leur (lot 8)', () => {
         const general = Object.entries(FEATS_DATA).filter(([, f]) => f.type === 'Général' && f.asi && f.asi !== 'Aucune');
         for (const [id, feat] of general) {
             const rule = FEAT_CHOICE_RULES[id];
@@ -52,7 +52,7 @@ describe('+1 des dons généraux (lot 5)', () => {
                 if (field && FEAT_CHOICE_RULES[id].fields.length === 1) assert.deepEqual(field.options.map(([value]) => value), expected, id);
             }
         }
-        assert.equal(FEAT_CHOICE_RULES.faveur_du_destin, undefined);
+        assert.equal(FEAT_CHOICE_RULES.faveur_du_destin.epic, true);
         assert.deepEqual(FEAT_CHOICE_RULES.gaillard, { fixedAbility: 'con', fields: [] });
         assert.deepEqual(FEAT_CHOICE_RULES.duelliste_defensif, { fixedAbility: 'dex', fields: [] });
         assert.deepEqual(FEAT_CHOICE_RULES.sentinelle.fields[0].options.map(([v]) => v), ['str', 'dex']);

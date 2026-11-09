@@ -2,6 +2,22 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.13.0] - 2026-11-09 (Faveurs épiques)
+### Added
+- Les 12 faveurs épiques : menu « Caractéristique +1 » (jusqu'à 30, alerte au-delà), alerte si une faveur
+  est notée dans un emplacement d'avant le niveau 19 ; une caractéristique au-delà de 20 n'est plus
+  signalée avec une faveur.
+- Vigueur « dont +40 PV », Vitesse « dont +9 m » (valeurs saisies inchangées) ; dégâts du 20 naturel sous
+  chaque arme (Attaque irrésistible) ; compétences restant à cocher et Expertise au choix (Compétence) ;
+  deux résistances au choix et DD de la Redirection (Résistance aux énergies) ; prérequis de Mémoire
+  magique (capacité Sorts, pas la Magie de pacte) ; rappels des autres faveurs.
+- Cases : dix d10 et Dernier rempart (Récupération), vidés au repos long ; Destin, vidé au repos court.
+  Un don peut désormais avoir plusieurs groupes de cases.
+### Changed
+- Format de sauvegarde : dans `feat_choices`, champs `expertise`, `energy1`, `energy2` des faveurs ; dans
+  `feat_uses`, clés `faveur_de_recuperation`, `faveur_de_recuperation_rempart`, `faveur_du_destin`. Aucune
+  clé renommée ni supprimée.
+
 ## [4.12.0] - 2026-11-09 (Frappe à mains nues et derniers dons)
 ### Added
 - « Frappe à mains nues » dans la liste des armes du manuel : attaque et dégâts calculés (1 + Force), dé du

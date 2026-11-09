@@ -15,7 +15,10 @@
 // feats.js ← weapons.js ← character.js ← feat-effects.js ← rest.js
 // =============================================================================
 
-import { featSlots, featName, featSlotName, reachedFeatIds, hasFightingStyle, classOf, STYLE_ALTERNATIVES } from './feats.js';
+import {
+    featSlots, featName, featSlotName, reachedFeatIds, hasFightingStyle, classOf, subclassOf, STYLE_ALTERNATIVES, characterLevel,
+    featSlotLevelFor
+} from './feats.js';
 import { FEATS_DATA } from '../data/feats.js';
 import { deriveCharacter, computeWeapon, hitDieForClass, parseNumber } from './character.js';
 import { parseWeaponConfig } from './logic.js';
@@ -23,7 +26,7 @@ import { weaponReach, weaponDamageType, isBlankWeapon, isUnarmedStrike, isCrossb
 import { DD_RULES } from '../data/dd-rules.js';
 import { ABILITY_IDS, SKILLS } from '../data/constants.js';
 import {
-    FEAT_CHOICE_RULES, featChoiceGrants, REPEATABLE_CHOICE_FEATS, abilityName, skillName, elementWord, slotChoice
+    FEAT_CHOICE_RULES, featChoiceGrants, REPEATABLE_CHOICE_FEATS, abilityName, skillName, elementWord, slotChoice, ENERGY_TYPES
 } from './feat-choices.js';
 import { FEAT_SPELL_FEATS, featSpellGroups, featSpellSummary } from './feat-spells.js';
 
@@ -103,7 +106,11 @@ export const AUTOMATED_FEATS = Object.freeze([
     'combat_a_mains_nues', 'combat_en_aveugle', 'interception', 'protection', 'guerrier_beni', 'guerrier_druidique',
     // Lot 7 : Frappe à mains nues, armes et rappels
     'athlete', 'bagarreur_de_tavernes', 'combattant_a_deux_armes', 'combattant_monte', 'comedien', 'discret',
-    'empoigneur', 'faconneur', 'formation_aux_armes_de_guerre', 'maitre_d_armes', 'maitre_arbaletrier', 'tireur_d_elite'
+    'empoigneur', 'faconneur', 'formation_aux_armes_de_guerre', 'maitre_d_armes', 'maitre_arbaletrier', 'tireur_d_elite',
+    // Lot 8 : faveurs épiques (niveau 19)
+    'faveur_d_attaque_irresistible', 'faveur_de_competence', 'faveur_de_deplacement_dimensionnel', 'faveur_de_l_esprit_nocturne',
+    'faveur_de_memoire_magique', 'faveur_de_prouesse_martiale', 'faveur_de_recuperation', 'faveur_de_resistance_aux_energies',
+    'faveur_de_vigueur', 'faveur_de_vision_veritable_vision_lucide', 'faveur_de_vitesse', 'faveur_du_destin'
 ]);
 
 const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
@@ -416,6 +423,99 @@ const FEAT_RULES = {
         if (!weapons.some(isPolearm)) add('featSlot', "Aucune de ces armes dans le tableau des armes.", { inactive: true });
     },
 
+    // ----- Lot 8 : faveurs épiques — PHB 2024 p. 210-211 (le +1, max 30 : js/rules/feat-choices.js) -----
+
+    // Faveur d'attaque irrésistible — « Boon of Irresistible Offense »
+    faveur_d_attaque_irresistible: ({ derived, record, add }) => {
+        const boost = irresistibleBoost(record, derived);
+        add('featSlot', 'Vos dégâts contondants, perforants et tranchants ignorent toujours la Résistance.');
+        add('featSlot', boost
+            ? `Sur un 20 au d20 d'un jet d'attaque : +${boost.score} dégâts du type de l'attaque (votre ${boost.name}, la valeur augmentée par ce don) ; rappel sous chaque arme.`
+            : "Sur un 20 au d20 d'un jet d'attaque : dégâts en plus égaux à la valeur de la caractéristique augmentée par ce don (à choisir ci-dessus).",
+        boost ? { value: boost.score } : {});
+    },
+
+    // Faveur de compétence — « Boon of Skill » : maîtrise de toutes les compétences (l'Expertise : feat-choices.js)
+    faveur_de_competence: ({ derived, add }) => {
+        const missing = SKILLS.filter(skill => !derived.skills[skill.id]?.proficient).map(skill => skill.name);
+        add('featSlot', missing.length
+            ? `Maîtrise de toutes les compétences : ${missing.length === 1 ? 'reste à cocher' : `${missing.length} restent à cocher`} (${missing.join(', ')}). La fiche ne coche rien elle-même.`
+            : 'Maîtrise de toutes les compétences : toutes cochées.',
+        missing.length ? { check: true } : { ticked: true });
+    },
+
+    // Faveur de déplacement dimensionnel — « Boon of Dimensional Travel »
+    faveur_de_deplacement_dimensionnel: ({ add }) => {
+        add('featSlot', "Juste après l'action Attaque ou l'action Magie : vous vous téléportez jusqu'à 9 m, dans un espace libre que vous voyez.");
+    },
+
+    // Faveur de l'esprit nocturne — « Boon of the Night Spirit »
+    faveur_de_l_esprit_nocturne: ({ add }) => {
+        add('featSlot', "Dans une lumière faible ou les ténèbres : action Bonus pour devenir Invisible (jusqu'à votre prochaine action, action Bonus ou Réaction), et Résistance à tous les dégâts sauf psychiques et radiants.");
+    },
+
+    // Faveur de mémoire magique — « Boon of Spell Recall » (prérequis : capacité Sorts)
+    faveur_de_memoire_magique: ({ derived, record, add }) => {
+        const text = "Sort lancé avec un emplacement de niveau 1 à 4 : lancez 1d4 ; si le résultat est égal au niveau de l'emplacement, celui-ci n'est pas dépensé.";
+        add('featSlot', text);
+        if (derived.classSlug && !hasSpellcasting(record, derived)) {
+            add('featSlot', 'Prérequis : la capacité Sorts (une classe de lanceur de sorts, ou Chevalier occulte, Escroc arcanique).', { check: true });
+        }
+    },
+
+    // Faveur de prouesse martiale — « Boon of Combat Prowess »
+    faveur_de_prouesse_martiale: ({ add }) => {
+        add('featSlot', "Un jet d'attaque raté peut toucher à la place ; de nouveau possible au début de votre prochain tour.");
+    },
+
+    // Faveur de récupération — « Boon of Recovery » : réserve de dix d10 (cases), Dernier rempart
+    faveur_de_recuperation: ({ record, add }) => {
+        const hpMax = parseNumber(record.hp_max, 0);
+        const half = Math.floor(hpMax / 2);
+        add('featSlot', `Dernier rempart (case ci-dessous), une fois par repos long : réduit à 0 PV, vous tombez à 1 PV à la place et regagnez ${half > 0 ? `${half} PV (moitié de vos PV max)` : 'la moitié de vos PV max'}.`,
+            half > 0 ? { value: half } : {});
+        add('featSlot', "Réserve de dix d10 (cases ci-dessous) : action Bonus, lancez-en autant que vous voulez et regagnez le total en PV ; tous rendus au repos long.");
+    },
+
+    // Faveur de résistance aux énergies — « Boon of Energy Resistance »
+    faveur_de_resistance_aux_energies: ({ derived, record, add }) => {
+        const chosen = energyChoices(record);
+        const dc = 8 + derived.mods.con + derived.pb;
+        add('featSlot', chosen.length
+            ? `Résistance : ${chosen.map(id => energyName(id).toLowerCase()).join(' et ')} (à changer, si vous le voulez, après un repos long).`
+            : 'Résistance à deux types de dégâts à choisir ci-dessus (à changer, si vous le voulez, après un repos long).');
+        if (chosen.length === 2 && chosen[0] === chosen[1]) {
+            add('featSlot', 'Deux types de dégâts différents : choisissez-en un autre.', { check: true });
+        }
+        add('featSlot', `Redirection (Réaction) : quand vous subissez des dégâts d'un de ces types, une créature que vous voyez à 18 m fait un jet de sauvegarde de Dextérité DD ${dc}, sinon elle subit 2d12 ${signed(derived.mods.con)} dégâts de ce type.`,
+            { value: dc });
+    },
+
+    // Faveur de vigueur — « Boon of Fortitude » : PV max +40 (jamais ajoutés à la valeur saisie)
+    faveur_de_vigueur: ({ derived: { mods }, add }) => {
+        add('hpMax', 'dont +40 PV grâce à Faveur de vigueur', { value: 40, manual: true });
+        add('featSlot', '+40 PV max : à compter vous-même dans les PV max saisis, la fiche ne les ajoute pas.', { value: 40, manual: true });
+        if (mods.con > 0) add('featSlot', `Quand vous regagnez des PV : +${mods.con} PV en plus (modificateur de Constitution), une fois par tour.`);
+    },
+
+    // Faveur de vision lucide — « Boon of Truesight »
+    faveur_de_vision_veritable_vision_lucide: ({ add }) => {
+        add('featSlot', 'Vision lucide à 18 m : à noter vous-même avec vos sens.');
+    },
+
+    // Faveur de vitesse — « Boon of Speed » : Vitesse +9 m (la vitesse saisie n'est pas modifiée)
+    faveur_de_vitesse: ({ add }) => {
+        add('speed', "+9 m grâce à Faveur de vitesse. La Vitesse saisie n'est pas modifiée : ajoutez-les vous-même s'ils n'y sont pas déjà.",
+            { value: 9, manual: true });
+        add('featSlot', 'Vitesse +9 m : à reporter vous-même dans la Vitesse saisie (repère à côté).', { value: 9, manual: true });
+        add('featSlot', "Action Bonus : vous vous Désengagez, ce qui met aussi fin à l'état Agrippé pour vous.");
+    },
+
+    // Faveur du destin — « Boon of Fate » (case : feat-uses.js)
+    faveur_du_destin: ({ add }) => {
+        add('featSlot', "Une créature à 18 m (vous compris) réussit ou rate un test d20 : lancez 2d4 et ajoutez-les ou retirez-les au résultat. Case ci-dessous : rendue au repos court ou long, ou quand vous lancez l'Initiative (décochez-la alors vous-même).");
+    },
+
     // ----- Lot 7 — règles vérifiées dans le PHB 2024 anglais (le +1 : js/rules/feat-choices.js) -----
 
     // Athlète — PHB 2024 « Athlete », p. 202 : Vitesse d'escalade = Vitesse (la Vitesse saisie n'est pas lue)
@@ -565,6 +665,37 @@ const FEAT_RULES = {
     guerrier_druidique: ({ record, add }) => alternativeNotes('guerrier_druidique', 'Druide', "Assistance et Poussière d'étoile", 'la Sagesse', record, add)
 };
 
+/** Choix d'un don dans son premier emplacement atteint ({} si le don n'est pas atteint) */
+function firstChoice(record, featId) {
+    const slot = featSlots(record).find(s => s.reached && s.featId === featId);
+    return slot ? slotChoice(record, slot.level, featId) : {};
+}
+
+/**
+ * Faveur d'attaque irrésistible : valeur de la caractéristique augmentée par le don (Force ou
+ * Dextérité, choisie dans l'encadré), ajoutée aux dégâts sur un 20 au d20.
+ * @returns {{ score: number, name: string } | null} null tant que la caractéristique n'est pas choisie
+ */
+export function irresistibleBoost(record, derived) {
+    const { ability } = firstChoice(record, 'faveur_d_attaque_irresistible');
+    return ability ? { score: derived.scores[ability], name: abilityName(ability) } : null;
+}
+
+/** Types de dégâts choisis avec Faveur de résistance aux énergies */
+function energyChoices(record) {
+    const choice = firstChoice(record, 'faveur_de_resistance_aux_energies');
+    return [choice.energy1, choice.energy2].filter(Boolean);
+}
+const energyName = (id) => ENERGY_TYPES.find(([key]) => key === id)?.[1] ?? id;
+
+/** Capacité Sorts (prérequis de Faveur de mémoire magique) : emplacements de sorts de la classe,
+ *  ou sous-classe Chevalier occulte / Escroc arcanique. Pas la Magie de pacte de l'Occultiste : le
+ *  PHB 2024 écrit « Spellcasting or Pact Magic Feature » quand elle suffit, ici « Spellcasting Feature ». */
+function hasSpellcasting(record, derived) {
+    return (derived.classSlug !== 'warlock' && Object.keys(derived.spellSlots ?? {}).length > 0)
+        || ['eldritch_knight', 'arcane_trickster'].includes(subclassOf(record));
+}
+
 /** DD de l'Imitation du Comédien (PHB 2024 « Actor », p. 202) : 8 + mod. Charisme + bonus de maîtrise */
 export function actorDC(derived) {
     return 8 + derived.mods.cha + derived.pb;
@@ -676,7 +807,11 @@ function choiceNotes(grant, { derived, grants, record, add }) {
         add(`scores.${ability}`, `+${amount} ${ofWord(abilityName(ability))}. La valeur saisie n'est pas modifiée : ajoutez ce bonus vous-même s'il n'y est pas déjà.`,
             { value: amount, manual: true });
         const score = derived.scores[ability];
-        if (score > 20 && !hasEpicBoon(derived)) {
+        if (score > 30) {
+            const text = `${abilityName(ability)} ${score} : une caractéristique ne dépasse jamais 30.`;
+            add('featSlot', text, { check: true });
+            add(`scores.${ability}`, text, { check: true });
+        } else if (score > 20 && !hasEpicBoon(derived)) {
             const text = `${abilityName(ability)} ${score} : un don ne fait pas dépasser 20 (seuls une Faveur épique, un objet magique ou une capacité de classe le permettent).`;
             add('featSlot', text, { check: true });
             add(`scores.${ability}`, text, { check: true });
@@ -715,7 +850,8 @@ function choiceNotes(grant, { derived, grants, record, add }) {
         }
         // Expert : l'Expertise porte sur une compétence déjà maîtrisée (case cochée, ou celle choisie en
         // Maîtrise). On lit la case elle-même : cocher le losange compte déjà la compétence comme maîtrisée.
-        const unmastered = kind === 'expertise' && record[`skill_prof_${skill}`] !== true
+        // Pas la Faveur de compétence : elle donne la maîtrise de toutes les compétences (« à cocher »).
+        const unmastered = featId === 'expert' && kind === 'expertise' && record[`skill_prof_${skill}`] !== true
             && !grant.skills.some(other => other.kind === 'proficiency' && other.skill === skill);
         const [text, extra] = unmastered
             ? [`L'Expertise d'Expert porte sur une compétence que vous maîtrisez déjà (ou celle choisie en Maîtrise ci-dessus) : ${skillLabel} n'est pas maîtrisée.`, { check: true }]
@@ -786,6 +922,13 @@ const WEAPON_ONLY_FEATS = new Set([
 ]);
 
 const WEAPON_RULES = [
+    // Lot 8 : Faveur d'attaque irrésistible, sur toute arme (et la Frappe à mains nues)
+    { featId: 'faveur_d_attaque_irresistible', applies: () => true,
+        value: ({ record, derived }) => irresistibleBoost(record, derived)?.score,
+        text: ({ record, derived }) => {
+            const boost = irresistibleBoost(record, derived);
+            return `Sur un 20 au d20 : +${boost ? boost.score : '(valeur de la caractéristique du don)'} dégâts ; dégâts contondants, perforants et tranchants sans Résistance.`;
+        } },
     // Lot 7 : Frappe à mains nues (PHB 2024 p. 377)
     { featId: 'bagarreur_de_tavernes', applies: ({ weapon }) => isUnarmedStrike(weapon),
         text: () => '1d4 au lieu de 1 (le plus gros dé est compté), relancez les 1 ; une fois par tour (action Attaque), vous pouvez aussi repousser la cible de 1,50 m.' },
@@ -948,6 +1091,13 @@ export function featEffects(character, derived = deriveCharacter(character || {}
                     { check: true, slot: slot.level }));
             }
             continue;
+        }
+        // Faveur épique (PHB 2024) : prérequis niveau 19. Le don se choisit au niveau où l'emplacement
+        // s'acquiert : une faveur notée dans un emplacement plus bas (16, 4, origine) ne remplit pas le
+        // prérequis, même une fois le personnage au niveau 19.
+        if (Object.hasOwn(FEATS_DATA, slot.featId) && FEATS_DATA[slot.featId].type === 'Épique' && featSlotLevelFor(slot.level, record) < 19) {
+            (effects[`featSlot:${slot.level}`] ??= []).push(note(slot.featId,
+                'Prérequis : niveau 19 (les faveurs épiques se prennent au niveau 19).', { check: true }));
         }
         // Style de combat (PHB 2024) : prérequis « capacité Style de combat » (Guerrier ; Paladin et Rôdeur au niveau 2)
         if (Object.hasOwn(FEATS_DATA, slot.featId) && FEATS_DATA[slot.featId].type === 'Style de combat' && !hasFightingStyle(record)) {

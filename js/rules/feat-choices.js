@@ -41,7 +41,9 @@
 // Lot 5 : le +1 de chaque don général que la fiche ne suivait pas encore (Sentinelle, Mobile,
 // Figure de proue…) vient du champ « asi » de js/data/feats.js, vérifié contre le PHB 2024 (32 dons) :
 // un menu « Caractéristique +1 » s'il y a un choix, sinon fixedAbility (Gaillard : Constitution).
-// Les faveurs épiques (+1 jusqu'à 30) viendront avec le lot 8.
+// Lot 8, faveurs épiques (« Epic Boon Feats », p. 210-211) : +1 jusqu'à 30 (menu selon le champ
+// « asi »), plus l'Expertise de Faveur de compétence et les deux types de dégâts de Faveur de
+// résistance aux énergies (à changer après un repos long : le menu se change à tout moment).
 // Champs facultatifs d'un menu : dependsOn + optionsBy (options selon un autre choix : sorts de la
 // liste choisie), fromLevel (menu utile à partir de ce niveau de personnage).
 // Fonctions pures : le personnage reçu n'est jamais modifié.
@@ -216,7 +218,44 @@ const GENERAL_ASI_RULES = Object.fromEntries(Object.entries(FEATS_DATA)
         ? { fixedAbility: ids[0], fields: [] }
         : { fields: [{ key: 'ability', label: 'Caractéristique +1', options: abilityOptions(ids) }] }]));
 
-export const FEAT_CHOICE_RULES = Object.freeze({ ...CHOICE_RULES, ...GENERAL_ASI_RULES });
+/** Types de dégâts de Faveur de résistance aux énergies (PHB 2024 p. 210) : [id, nom] */
+export const ENERGY_TYPES = Object.freeze([
+    ['acid', 'Acide'], ['cold', 'Froid'], ['fire', 'Feu'], ['lightning', 'Foudre'], ['necrotic', 'Nécrotique'],
+    ['poison', 'Poison'], ['psychic', 'Psychique'], ['radiant', 'Radiant'], ['thunder', 'Tonnerre']
+]);
+
+/**
+ * Caractéristiques du +1 d'une faveur épique : « +1 au choix (max 30) » → les six ;
+ * « +1 For ou Dex (max 30) » → ['str', 'dex'].
+ * @param {string} asi - champ « asi » de js/data/feats.js
+ * @returns {string[]}
+ */
+export function epicAsiAbilities(asi) {
+    const text = String(asi ?? '').replace(/\s*\(max 30\)\s*$/, '');
+    return text === '+1 au choix' ? [...ABILITY_IDS] : asiAbilities(text);
+}
+
+/** Choix en plus du +1, pour deux faveurs */
+const EPIC_EXTRA_FIELDS = {
+    faveur_de_competence: [{ key: 'expertise', label: 'Expertise', options: skillOptions(SKILL_IDS) }],
+    faveur_de_resistance_aux_energies: [
+        { key: 'energy1', label: 'Résistance 1', options: ENERGY_TYPES },
+        { key: 'energy2', label: 'Résistance 2', options: ENERGY_TYPES }
+    ]
+};
+
+/** Faveurs épiques : menu « Caractéristique +1 » (jusqu'à 30), et leurs autres choix */
+const EPIC_RULES = Object.fromEntries(Object.entries(FEATS_DATA)
+    .filter(([, feat]) => feat.type === 'Épique')
+    .map(([id, feat]) => [id, {
+        epic: true,
+        fields: [
+            { key: 'ability', label: 'Caractéristique +1', options: abilityOptions(epicAsiAbilities(feat.asi)) },
+            ...(EPIC_EXTRA_FIELDS[id] ?? [])
+        ]
+    }]));
+
+export const FEAT_CHOICE_RULES = Object.freeze({ ...CHOICE_RULES, ...GENERAL_ASI_RULES, ...EPIC_RULES });
 
 /**
  * Options d'un menu, compte tenu des autres choix du don (sorts de la liste choisie pour Initié

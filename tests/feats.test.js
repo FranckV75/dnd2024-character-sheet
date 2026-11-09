@@ -192,8 +192,8 @@ describe('featEffects : structure', () => {
         assert.equal(Object.keys(effects).some(zone => zone.startsWith('featSlot:') || zone.startsWith('weapon:')), false);
     });
 
-    test('don sans effet automatisé ou inconnu : aucune note', () => {
-        const effects = featEffects(fighter({ feat_1: 'faveur_du_destin', feat_4: 'texte libre' }));
+    test('don inconnu ou texte libre : aucune note (tous les dons du manuel sont gérés depuis le lot 8)', () => {
+        const effects = featEffects(fighter({ feat_1: 'don_inconnu', feat_4: 'texte libre' }));
         assert.equal(Object.values(effects).flat().length, 0);
     });
 

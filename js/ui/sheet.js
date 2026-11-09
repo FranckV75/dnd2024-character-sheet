@@ -529,7 +529,7 @@ function renderFeats(root, character, d, effects, counters) {
         const activeId = state === 'active' && feat ? featId : '';
         renderFeatSheet(root.querySelector(`[data-feat-sheet="${level}"]`), activeId, level, effects,
             // Don pris dans deux emplacements : ses cases restent sous le premier (le second a une alerte)
-            counters.find(counter => counter.featId === activeId && counter.level === level), character);
+            counters.filter(counter => counter.featId === activeId && counter.level === level), character);
     }
 }
 
@@ -539,16 +539,16 @@ function renderFeats(root, character, d, effects, counters) {
 // verrouillée (état de jeu, comme la ressource de classe) et se vident au repos.
 // ---------------------------------------------------------------------------
 
-/** Groupe de cases d'un don ; `where` distingue les deux endroits pour les identifiants */
+/** Groupe de cases d'un compteur ; `where` distingue les deux endroits pour les identifiants */
 function counterGroup(counter, where) {
-    const id = `feat-counter-${where}-${counter.featId}`;
-    return el('div', { class: 'feat-counter', 'data-feat-counter': counter.featId, 'data-max': String(counter.max) },
+    const id = `feat-counter-${where}-${counter.key}`;
+    return el('div', { class: 'feat-counter', 'data-feat-counter': counter.key, 'data-max': String(counter.max) },
         el('span', { class: 'feat-counter-name', id: `${id}-name` },
             el('span', { class: 'label accent', text: counter.label }),
             el('small', { class: 'feat-counter-meta', text: `${counter.featName} · ${counter.resetText}` })),
         el('div', { class: 'resource-slots', role: 'group', 'aria-labelledby': `${id}-name` },
             Array.from({ length: counter.max }, (_, i) => el('input', {
-                type: 'checkbox', class: 'round-check', 'data-feat-use': counter.featId,
+                type: 'checkbox', class: 'round-check', 'data-feat-use': counter.key,
                 'aria-label': `${counter.label} : ${i + 1} sur ${counter.max} (cochée = dépensé)`
             }))),
         el('small', { class: 'feat-counter-use', text: counter.use }));
@@ -557,7 +557,7 @@ function counterGroup(counter, where) {
 /** Coche les `used` premières cases de chaque compteur (sans reconstruire : le focus reste) */
 function syncCounterChecks(root, counters) {
     for (const counter of counters) {
-        for (const group of root.querySelectorAll(`[data-feat-counter="${counter.featId}"]`)) {
+        for (const group of root.querySelectorAll(`[data-feat-counter="${counter.key}"]`)) {
             group.querySelectorAll('input[data-feat-use]').forEach((box, i) => {
                 const checked = i < counter.used;
                 if (box.checked !== checked) box.checked = checked;
@@ -569,7 +569,7 @@ function syncCounterChecks(root, counters) {
 /** Bande « dons » de l'onglet Combat, masquée si aucun don atteint n'a de cases */
 function renderFeatCounters(root, counters) {
     const box = root.querySelector('#feat-counters');
-    const signature = JSON.stringify(counters.map(({ featId, max, label }) => [featId, max, label]));
+    const signature = JSON.stringify(counters.map(({ key, max, label }) => [key, max, label]));
     if (renderedSignatures.get(box) !== signature) {
         renderedSignatures.set(box, signature);
         box.replaceChildren(...counters.map(counter => counterGroup(counter, 'combat')));
@@ -822,15 +822,15 @@ const featSheetParts = new WeakMap();
  * @param {string} featId - don actif de l'emplacement ('' : encadré masqué)
  * @param {number} level - niveau de l'emplacement
  * @param {Object} effects - featEffects()
- * @param {Object} [counter] - compteur du don (featCounters)
+ * @param {Object[]} counters - compteurs du don (featCounters), souvent aucun
  * @param {Object} character
  */
-function renderFeatSheet(box, featId, level, effects, counter, character) {
+function renderFeatSheet(box, featId, level, effects, counters, character) {
     box.hidden = !featId;
     const zones = (FEAT_SHEET_ZONES[featId] ?? ['featSlot']).map(zone => (zone === 'featSlot' ? `featSlot:${level}` : zone));
     const notes = featId ? zones.flatMap(zone => effects[zone] ?? []).filter(note => note.featId === featId) : [];
     // Les cases cochées ne reconstruisent pas l'encadré (syncCounterChecks) : seul leur nombre compte ici
-    const structure = JSON.stringify([featId, counter ? [counter.max, counter.label] : null]);
+    const structure = JSON.stringify([featId, counters.map(counter => [counter.key, counter.max, counter.label])]);
     let parts = featSheetParts.get(box);
     if (!parts || parts.structure !== structure) {
         parts = { structure, choices: null, list: null, notesSignature: null };
@@ -846,7 +846,7 @@ function renderFeatSheet(box, featId, level, effects, counter, character) {
             el('span', { class: 'feat-sheet-title' }, icon('gear'), el('span', { text: 'Dans la fiche' })),
             parts.choices,
             parts.list,
-            counter ? counterGroup(counter, `slot${level}`) : null
+            ...counters.map(counter => counterGroup(counter, `slot${level}`))
         ].filter(Boolean));
     }
     if (!featId) return;

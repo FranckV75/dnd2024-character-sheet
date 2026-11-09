@@ -98,7 +98,7 @@ export function classOf(character) {
 }
 
 /** Sous-classe du personnage (identifiant de DD_RULES.subclasses, ex. 'champion') ; '' si inconnue */
-function subclassOf(character) {
+export function subclassOf(character) {
     const clean = plain(character?.char_subclass).toLowerCase();
     if (!clean) return '';
     for (const [slug, sub] of Object.entries(DD_RULES.subclasses)) {
