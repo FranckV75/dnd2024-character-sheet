@@ -223,9 +223,13 @@
                         <div class="box class-resource" id="class-resource">
                             <span class="label accent" data-out="classResourceLabel"></span>
                             <div class="resource-slots" id="class-resource-slots"></div>
+                            <!-- Repères de sous-classe (rang du poème, Influence sur la chance) : js/ui/sheet.js -->
+                            <button type="button" class="feat-mention" data-feat-zone="classResource" hidden></button>
                         </div>
                         <!-- Dons à usages limités (Chanceux, Tueur de mages) : js/ui/sheet.js, renderFeatCounters -->
                         <div class="box feat-counters" id="feat-counters" hidden></div>
+                        <!-- Tirages de la Déferlante (Sorcellerie sauvage) : js/ui/wild-magic.js -->
+                        <div class="box wild-magic" id="wild-magic" hidden></div>
                     </div>
 
                     <!-- Armes : construit par js/ui/weapons.js -->
@@ -286,6 +290,7 @@
                 </section>
                 <section class="box">
                     <h3 id="h-companions" data-icon="paw">Compagnons &amp; familiers</h3>
+                    <div class="companion-cards" id="companion-cards" hidden></div>
                     <div class="rich rich-sm" data-field="companions" data-kind="rich" aria-labelledby="h-companions">
                     </div>
                 </section>

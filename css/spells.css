@@ -974,6 +974,19 @@
     color: var(--ko);
 }
 
+/* Sorts des autres terrains (Cercle de la Terre, lot 7) : repliés sous ceux de la terre choisie */
+.subclass-spells-others {
+    margin: 6px 0 0;
+}
+
+.subclass-spells-others > summary {
+    min-height: 32px;
+    cursor: pointer;
+    font-family: var(--font-title);
+    font-size: 0.85rem;
+    color: var(--quiet-ink);
+}
+
 @media (pointer: coarse) {
     .feat-spell-name,
     .feat-spell-free {
@@ -991,5 +1004,12 @@
     .feat-spell-name {
         min-height: 0;
         text-decoration: none;
+    }
+}
+
+/* Impression (lot 7) : les sorts des terrains non choisis, repliés à l'écran, ne s'impriment pas */
+@media print {
+    .subclass-spells-others {
+        display: none;
     }
 }

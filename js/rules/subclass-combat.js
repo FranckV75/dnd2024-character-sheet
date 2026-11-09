@@ -16,6 +16,8 @@
 
 import { isUnarmedStrike, weaponReach } from './weapons.js';
 import { getRageBonus } from './logic.js';
+import { MANEUVERS } from '../data/maneuvers.js';
+import { LAND_TYPES, DAMAGE_TYPES } from '../data/subclass-choices.js';
 
 const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
 const mod = (stats, id) => Number(stats?.mods?.[id]) || 0;
@@ -44,6 +46,46 @@ export function superiorityDiceCount(level) {
  */
 export function maneuverDC(stats) {
     return 8 + Math.max(mod(stats, 'str'), mod(stats, 'dex')) + (Number(stats?.pb) || 2);
+}
+
+/**
+ * Nombre de manœuvres connues (PHB 2024, p. 93) : 3 au niveau 3, puis 2 de plus aux niveaux 7, 10
+ * et 15 (5, 7, 9).
+ * @param {number} level - niveau de Guerrier
+ * @returns {number}
+ */
+export function maneuversKnown(level) {
+    if (level < 3) return 0;
+    return level >= 15 ? 9 : level >= 10 ? 7 : level >= 7 ? 5 : 3;
+}
+
+/**
+ * Manœuvres choisies (lot 7, menus « maneuver1 »… de subclass_choices, déjà validés par
+ * deriveCharacter : sans doublon, menus atteints seulement), dans l'ordre des menus.
+ * @param {Object} derived - deriveCharacter() (subclassChoices)
+ * @returns {Object[]} entrées de MANEUVERS
+ */
+export function knownManeuvers(derived) {
+    if (!has(derived, 'battle_master')) return [];
+    return Object.entries(derived.subclassChoices ?? {})
+        .filter(([key]) => /^maneuver\d+$/.test(key))
+        .sort(([a], [b]) => Number(a.slice(8)) - Number(b.slice(8)))
+        .map(([, id]) => MANEUVERS.find(m => m.id === id))
+        .filter(Boolean);
+}
+
+/**
+ * Chiffres d'une manœuvre pour le personnage : dé, DD, Parade, Ralliement.
+ * @param {Object} maneuver - entrée de MANEUVERS
+ * @param {Object} derived - deriveCharacter()
+ * @returns {string} « 1d8 ; DD 13 (Force) », « 1d8 + 3 dégâts en moins »…
+ */
+export function maneuverNumbers(maneuver, derived) {
+    const die = `1${superiorityDie(levelOf(derived))}`;
+    const plus = (n) => (n < 0 ? ` - ${-n}` : ` + ${n}`);
+    if (maneuver.id === 'parry') return `${die}${plus(Math.max(mod(derived, 'str'), mod(derived, 'dex')))} dégâts en moins`;
+    if (maneuver.id === 'rally') return `${die}${plus(Math.floor(levelOf(derived) / 2))} PV temporaires`;
+    return maneuver.save ? `${die} ; DD ${maneuverDC(derived)} (${maneuver.save === 'str' ? 'Force' : 'Sagesse'})` : die;
 }
 
 /**
@@ -124,7 +166,14 @@ export function subclassCombatWeaponNotes(weapon, derived) {
     const notes = [];
     const add = (featId, featName, text) => notes.push({ featId, featName, text, classFeature: true });
     if (has(derived, 'battle_master')) {
-        add('dd_des_man_uvres', 'Manœuvres', `Dé de supériorité : ${superiorityDie(levelOf(derived))} ; DD des manœuvres : ${maneuverDC(derived)}.`);
+        // Manœuvres connues jouées avec une attaque (lot 7) : rappelées sous chaque arme
+        const melee = weaponReach(weapon).melee;
+        const withAttack = knownManeuvers(derived)
+            .filter(m => ['hit', 'miss', 'attack'].includes(m.timing) || (m.timing === 'bonus' && m.damage === 'self'))
+            .filter(m => melee || !['sweeping_attack', 'lunging_attack', 'feinting_attack'].includes(m.id))
+            .map(m => `${m.name}${m.save ? ` (${m.save === 'str' ? 'For' : 'Sag'})` : ''}`);
+        add('dd_des_man_uvres', 'Manœuvres', `Dé de supériorité : ${superiorityDie(levelOf(derived))} ; DD des manœuvres : ${maneuverDC(derived)}.`
+            + (withAttack.length ? ` Connues : ${withAttack.join(', ')}.` : ''));
     }
     if (has(derived, 'path_of_the_world_tree', 10) && weaponReach(weapon).melee && !isUnarmedStrike(weapon) && heavyOrVersatile(weapon)) {
         add('racines_percutantes', 'Racines percutantes', 'À votre tour : allonge +3 m, et Poussée ou Renversement en plus de la botte de l\'arme.');
@@ -137,7 +186,9 @@ export function subclassCombatWeaponNotes(weapon, derived) {
 
 /**
  * Résistances et immunités de la sous-classe : [sous-classe, niveau, id de la capacité, nom,
- * mention courte, texte, condition (clé de combat_buffs qui l'allume, facultative)].
+ * mention courte, texte, condition (clé de combat_buffs qui l'allume, ou { choice } : case à cocher
+ * de subclass_choices qui l'allume, comme « starry_form » ; facultative), choix (lot 7,
+ * facultatif : { key, value } de subclass_choices ; un AUTRE choix enregistré retire le repère)].
  * Sans condition, la Résistance est permanente (ou dépend d'un choix noté dans le texte).
  */
 export const SUBCLASS_DEFENSES = Object.freeze([
@@ -159,16 +210,17 @@ export const SUBCLASS_DEFENSES = Object.freeze([
         'Résistance à un type de dégâts (sauf force) choisi à la fin de chaque repos court ou long.'],
     ['celestial_patron', 6, 'ame_radieuse', 'Âme radieuse', 'Résistance radiante',
         'Résistance aux dégâts radiants.'],
-    ['draconic_sorcery', 6, 'affinite_elementaire', 'Affinité élémentaire', 'Résistance (dragon)',
-        'Résistance au type de dégâts de votre ascendance draconique.'],
+    ['draconic_sorcery', 6, 'affinite_elementaire', 'Affinité élémentaire', 'Résistance (affinité)',
+        'Résistance au type choisi avec Affinité élémentaire : acide, froid, feu, foudre ou poison.'],
     ['path_of_the_wild_heart', 3, 'rage_sauvage', 'Rage sauvage (Ours)', 'Ours (Rage)',
-        'Si vous choisissez l\'Ours en entrant en Rage : Résistance à tous les dégâts sauf force, nécrotiques, psychiques et radiants.', 'rage'],
+        'Si vous choisissez l\'Ours en entrant en Rage : Résistance à tous les dégâts sauf force, nécrotiques, psychiques et radiants.', 'rage',
+        { key: 'rage', value: 'bear' }],
     ['path_of_the_heretic', 10, 'rage_d_hercule', 'Rage d\'Hercule', 'Immunité poison (Rage)',
         'Pendant la Rage : immunité aux dégâts de poison et à l\'état Effrayé.', 'rage'],
     ['path_of_the_berserker', 6, 'rage_aveugle', 'Rage aveugle', 'Charme et peur (Rage)',
         'Pendant la Rage : immunité aux états Charmé et Effrayé.', 'rage'],
     ['circle_of_the_stars', 14, 'plein_d_etoiles', 'Plein d\'étoiles', 'Résistance C/P/T (forme)',
-        'En Forme étoilée : Résistance aux dégâts contondants, perforants et tranchants.'],
+        'En Forme étoilée : Résistance aux dégâts contondants, perforants et tranchants.', { choice: 'starry_form' }],
     ['circle_of_the_sea', 10, 'ne_de_la_tempete', 'Né de la tempête', 'Résistance (Colère)',
         'Tant que la Colère de la mer est active : Résistance aux dégâts de froid, de foudre et de tonnerre, et vol.'],
     ['amazon_warrior', 3, 'cri_de_guerre', 'Cri de guerre', 'Résistance C/P/T (Cri)',
@@ -177,19 +229,66 @@ export const SUBCLASS_DEFENSES = Object.freeze([
         'Harmonisation élémentaire active : Résistance à l\'acide, au froid, au feu, à la foudre ou au tonnerre (au choix à chaque tour).']
 ]);
 
+/** « Résistance … » d'un type de dégâts (DAMAGE_TYPES) : « au feu », « aux dégâts contondants » */
+const resistanceTo = (id) => DAMAGE_TYPES.find(([type]) => type === id)?.[2] ?? '';
+
+/**
+ * Résistance dont le type dépend d'un choix de sous-classe (lot 7) : Protection de la nature (terre
+ * du Cercle de la Terre), Affinité élémentaire, Résilience fiélonne.
+ * @param {string} subclass
+ * @param {Object<string, string>} choice - derived.subclassChoices (choix déjà validés)
+ * @returns {{ featId: string, mention: string, text: string } | null} null sans choix : la ligne
+ *   générique de SUBCLASS_DEFENSES reste
+ */
+export function choiceDefense(subclass, choice = {}) {
+    if (subclass === 'circle_of_the_land') {
+        const land = LAND_TYPES.find(([id]) => id === choice?.land);
+        if (!land) return null;
+        const to = resistanceTo(land[2]);
+        const name = land[1].toLowerCase();
+        return {
+            featId: 'protection_de_la_nature', mention: `Résistance ${to} (terre ${name})`,
+            text: `Immunité à l'état Empoisonné ; Résistance ${to} tant que la terre ${name} est choisie.`
+        };
+    }
+    if (subclass === 'draconic_sorcery' && resistanceTo(choice?.element)) {
+        const to = resistanceTo(choice.element);
+        return { featId: 'affinite_elementaire', mention: `Résistance ${to}`, text: `Résistance ${to} (type choisi avec Affinité élémentaire).` };
+    }
+    if (subclass === 'fiend_patron' && resistanceTo(choice?.resistance)) {
+        const [, label] = DAMAGE_TYPES.find(([id]) => id === choice.resistance);
+        return {
+            featId: 'resilience_fielonne', mention: `Résistance : ${label.toLowerCase()}`,
+            text: `Résistance ${resistanceTo(choice.resistance)}, choisie à la fin du dernier repos ; un autre type (sauf force) peut être choisi à la fin de chaque repos court ou long.`
+        };
+    }
+    return null;
+}
+
+/** Condition d'une défense remplie : bouton de combat_buffs allumé, ou case de subclass_choices cochée */
+const conditionMet = (buff, derived, record) => (typeof buff === 'string'
+    ? record?.combat_buffs?.[buff] === true
+    : derived?.subclassChoices?.[buff.choice] === 'on');
+
 /**
  * Repères de Résistance près de la CA (zone armorClass). Une défense liée à la Rage est grisée
- * (inactive) tant que le bouton Rage est éteint.
+ * (inactive) tant que le bouton Rage est éteint ; Plein d'étoiles, tant que « En Forme étoilée »
+ * n'est pas cochée (bloc Sous-classe). Un type de dégâts choisi (choiceDefense) remplace
+ * la mention et le texte génériques de la ligne.
  * @param {Object} derived - deriveCharacter()
  * @param {Object} [record] - fiche (combat_buffs)
  * @returns {Object} { armorClass: [...] } ou {}
  */
 export function subclassDefenseNotes(derived, record = {}) {
+    const chosen = choiceDefense(derived?.subclass, derived?.subclassChoices ?? {});
     const notes = SUBCLASS_DEFENSES
         .filter(([subclass, level]) => has(derived, subclass, level))
+        .filter(([, , , , , , , needs]) => !needs || !derived.subclassChoices?.[needs.key]
+            || derived.subclassChoices[needs.key] === needs.value)
         .map(([, , featId, featName, mention, text, buff]) => ({
             featId, featName, text, mention, classFeature: true,
-            ...(buff && record?.combat_buffs?.[buff] !== true ? { inactive: true } : {})
+            ...(chosen?.featId === featId ? { mention: chosen.mention, text: chosen.text } : {}),
+            ...(buff && !conditionMet(buff, derived, record) ? { inactive: true } : {})
         }));
     return notes.length ? { armorClass: notes } : {};
 }

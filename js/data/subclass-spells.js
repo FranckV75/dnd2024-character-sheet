@@ -5,7 +5,8 @@
 // Par sous-classe (clé de DD_RULES.subclasses) : lignes [niveau de classe, nom anglais, nom français,
 // niveau du sort (0 = sort mineur), 'R' si rituel, { note, group }]. Les noms sont ceux de
 // data/spells.json (vérifiés par un test). note : précision affichée sous le sort (rituel seulement,
-// caractéristique…) ; group : terrain du Cercle de la Terre (un seul préparé à la fois).
+// caractéristique…) ; group : terrain du Cercle de la Terre (un seul préparé à la fois), domaine
+// de l'Ancêtre divin (un seul, choisi une fois pour toutes) ou école du Philosophe de l'Académie.
 // Sources : Player's Handbook 2024 anglais, tables de sorts des sous-classes (« … Spells ») et
 // capacités qui donnent un sort ; Odyssée des Seigneurs Dragons : Serment des Seigneurs Dragons
 // (« Lien télépathique » : sort de Rary), Domaine de la Prophétie (sorts des niveaux 1 et 3 du livre
@@ -13,6 +14,9 @@
 // Pas ici : sorts au choix du joueur (Découvertes magiques du Savoir, Escroc arcanique, Chevalier
 // occulte) et sorts ajoutés à une liste sans être préparés (patron des Destinées).
 // =============================================================================
+
+/** Sorts de l'Ancêtre divin : lancés sans emplacement, pas préparés */
+const FREE_CAST = 'Une fois sans emplacement, de nouveau après un repos court ou long.';
 
 export const SUBCLASS_SPELLS = Object.freeze({
     // Paladin (lot 2)
@@ -271,6 +275,28 @@ export const SUBCLASS_SPELLS = Object.freeze({
         [9, 'Legend Lore', 'Mythes et légendes', 5],
         [9, 'Summon Dragon', 'Convocation de dragon', 5]
     ],
+    // Ascendance divine (Odyssée, Ancêtre divin, niveau 1 du livre ramené au 3) : deux sorts par
+    // domaine, lancés sans emplacement (pas des sorts préparés) ; seul le domaine choisi (menu
+    // « domain », js/data/subclass-choices.js) est affiché. Connaissance : le livre dit « balisage »,
+    // aucun sort de ce nom ; Identification (domaine de la Connaissance de 2014) en attendant Franck.
+    demigod_bloodline: [
+        [3, 'Command', 'Injonction', 1, '', { group: 'Connaissance', note: FREE_CAST }],
+        [3, 'Identify', 'Identification', 1, 'R', { group: 'Connaissance', note: FREE_CAST }],
+        [3, 'Shield of Faith', 'Bouclier de la foi', 1, '', { group: 'Guerre', note: FREE_CAST }],
+        [3, 'Thunderous Smite', 'Châtiment de tonnerre', 1, '', { group: 'Guerre', note: FREE_CAST }],
+        [3, 'Faerie Fire', 'Lueurs féeriques', 1, '', { group: 'Lumière', note: FREE_CAST }],
+        [3, 'Burning Hands', 'Mains brûlantes', 1, '', { group: 'Lumière', note: FREE_CAST }],
+        [3, 'Bane', 'Imprécation', 1, '', { group: 'Mort', note: FREE_CAST }],
+        [3, 'Ray of Sickness', 'Rayon empoisonné', 1, '', { group: 'Mort', note: FREE_CAST }],
+        [3, 'Entangle', 'Enchevêtrement', 1, '', { group: 'Nature', note: FREE_CAST }],
+        [3, 'Healing Word', 'Mot de guérison', 1, '', { group: 'Nature', note: FREE_CAST }],
+        [3, 'Charm Person', 'Charme-personne', 1, '', { group: 'Ruse', note: FREE_CAST }],
+        [3, "Tasha's Hideous Laughter", 'Fou rire de Tasha', 1, '', { group: 'Ruse', note: FREE_CAST }],
+        [3, 'Fog Cloud', 'Nappe de brouillard', 1, '', { group: 'Tempête', note: FREE_CAST }],
+        [3, 'Thunderwave', 'Vague tonnante', 1, '', { group: 'Tempête', note: FREE_CAST }],
+        [3, 'Bless', 'Bénédiction', 1, '', { group: 'Vie', note: FREE_CAST }],
+        [3, 'Cure Wounds', 'Soins', 1, '', { group: 'Vie', note: FREE_CAST }]
+    ],
     // Sorcier
     archfey_patron: [
         [3, 'Calm Emotions', 'Apaisement des émotions', 2],
@@ -333,5 +359,10 @@ export const SUBCLASS_SPELLS = Object.freeze({
         [3, 'Minor Illusion', 'Illusion mineure', 0, '', { note: 'Sort mineur, hors du nombre de sorts mineurs (un autre au choix si vous le connaissez déjà).' }],
         [6, 'Summon Beast', 'Convocation de bête', 2],
         [6, 'Summon Fey', 'Convocation de fée', 3]
+    ],
+    // Philosophe de l'Académie (Odyssée, p. 46) : Amis donné par l'école du Sophisme (group = libellé
+    // de l'école, PHILOSOPHER_SCHOOLS) ; seulement si cette école est choisie
+    academy_philosopher: [
+        [3, 'Friends', 'Amis', 0, '', { group: 'Sophisme', note: 'Sort mineur du Sophisme, hors du nombre de sorts mineurs (Intelligence).' }]
     ]
 });

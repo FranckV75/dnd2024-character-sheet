@@ -2,6 +2,25 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.27.0] - 2026-11-09 (Sous-classes, lot 7 : choix, compagnons, formes)
+### Added
+- Choix de sous-classe mémorisés (nouvelle clé facultative `subclass_choices`, ignorée par l'ancien
+  site) : menus sous la capacité dans le bloc « Sous-classe ». Les choix de jeu (option de la Rage,
+  aspect, proie du chasseur…) restent modifiables fiche verrouillée.
+- Voie du Cœur sauvage (Ours, Panthère, Saumon, Faucon), Chasseur (Tueur de colosses ou Briseur de
+  hordes, Tactiques défensives), Cercle de la Terre (terre choisie : ses sorts et sa Résistance),
+  Affinité élémentaire, Résilience fiélonne, Esprit d'acier, Ancêtre divin, Troisième œil,
+  Révélation dans la chair, Présage cosmique, Cri de guerre, Prédictions des Moires…
+- Maître de guerre : les 20 manœuvres du PHB 2024 (3, puis 5, 7 et 9), chiffrées dans le bloc et
+  rappelées sous les armes, près de l'Initiative, des compétences et de la CA ; Disciple de la guerre.
+- Philosophe de l'Académie : école (et seconde école de l'Éclectisme), cases et repères de l'école.
+- Cercle de la Lune et Cercle des Étoiles : chiffres des formes (CA, PV temporaires, constellations).
+- Cartes de compagnons (section « Compagnons & familiers ») : bête primordiale du Maître des bêtes,
+  stimfée de l'Amazone, pseudodragon et dragon lié du Seigneur Dragon, avec leurs PV actuels (nouvelle
+  clé facultative `subclass_companions`, PV pleins au repos long sauf un dragon à 0 PV).
+- Poésie épique : compteur de strophes et rang du poème ; Magie sauvage : tirages d20 et d100 qui
+  renvoient à la ligne de la table du manuel.
+
 ## [4.26.0] - 2026-11-09 (Sous-classes, lot 6 : Chevalier occulte et Escroc arcanique)
 ### Added
 - Emplacements de sorts calculés pour le Chevalier occulte (Guerrier) et l'Escroc arcanique

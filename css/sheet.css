@@ -863,6 +863,67 @@ fieldset.inline-checks {
     display: none;
 }
 
+/* ---------- Tirages de la Déferlante (Sorcellerie sauvage, js/ui/wild-magic.js, lot 7) ---------- */
+.vitals-2 > .wild-magic {
+    grid-column: 1 / -1;
+}
+
+.wild-magic {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 16px;
+    padding: 10px 16px;
+    border: 2px solid var(--accent);
+}
+
+.wild-magic[hidden] {
+    display: none;
+}
+
+.wild-magic-title {
+    margin: 0;
+}
+
+.wild-magic-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.wild-magic-roll {
+    min-height: 44px;
+    font-family: var(--font-title);
+    font-weight: 700;
+}
+
+/* Résultat et rappels : textes en Alegreya, sur toute la largeur */
+.wild-magic-result,
+.wild-magic-reminders {
+    flex: 1 1 100%;
+    margin: 0;
+    font-family: var(--font-text);
+    font-weight: 400;
+    color: var(--text);
+}
+
+.wild-magic-result:empty {
+    display: none;
+}
+
+.wild-magic-reminders {
+    padding-left: 18px;
+    font-size: 0.9rem;
+    font-style: italic;
+    color: var(--text-muted);
+}
+
+@media print {
+    .wild-magic {
+        display: none;
+    }
+}
+
 .feat-counter {
     flex: 1 1 260px;
     display: grid;
@@ -2158,6 +2219,54 @@ fieldset.inline-checks {
     color: var(--accent);
 }
 
+/* Choix de sous-classe (lot 7) : mêmes menus que les choix des dons, sous le texte de la capacité */
+.subclass-choices {
+    margin: 6px 0 2px;
+}
+
+.subclass-choice-when {
+    font-family: var(--font-text);
+    font-size: 0.88rem;
+    font-style: italic;
+    color: var(--quiet-ink);
+}
+
+/* Compteur d'un choix (strophes de la Poésie épique, lot 7) : « − [14] + », boutons de 44 px */
+.subclass-stepper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.subclass-step {
+    min-width: 44px;
+    min-height: 44px;
+    font-family: var(--font-title);
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.subclass-step-value.input {
+    width: 4.5em;
+    min-height: 44px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--number);
+    text-align: center;
+}
+
+/* Case à cocher d'un choix (Révélation dans la chair) : case et libellé sur une ligne */
+.subclass-choice-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    font-family: var(--font-text);
+    color: var(--text);
+    cursor: pointer;
+}
+
 .subclass-options {
     margin: 4px 0 0 12px;
 }
@@ -2168,6 +2277,48 @@ fieldset.inline-checks {
 
 .subclass-options .subclass-feature-name {
     font-size: 0.78rem;
+}
+
+/* Option choisie (école du Philosophe, lot 7) : étiquette « Choisie » ou « Seconde école » */
+.subclass-option-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 0 6px;
+    border: 1px solid var(--gold-soft);
+    border-radius: 8px;
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+    color: var(--accent);
+}
+
+.subclass-option.is-chosen .subclass-feature-name {
+    color: var(--accent);
+}
+
+/* Options non choisies, repliées sous l'option choisie */
+.subclass-options-others {
+    margin: 4px 0 0 12px;
+}
+
+.subclass-options-others > summary {
+    cursor: pointer;
+    font-family: var(--font-title);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--quiet-ink);
+}
+
+.subclass-options-others .subclass-options {
+    margin-left: 12px;
+}
+
+@media print {
+    .subclass-options-others {
+        display: none;
+    }
 }
 
 .subclass-upcoming {
@@ -2192,5 +2343,178 @@ fieldset.inline-checks {
 @media print {
     .subclass-upcoming {
         display: none;
+    }
+}
+
+/* ---------- Cartes des compagnons de sous-classe (js/ui/companions.js, lot 7) ----------
+   Même encadré que le bloc Sous-classe ; libellés et chiffres en Cinzel, textes en Alegreya. */
+.companion-cards {
+    display: grid;
+    gap: 8px;
+    margin: 0 0 8px;
+}
+
+.companion-cards[hidden] {
+    display: none;
+}
+
+.companion-card {
+    min-width: 0;
+    padding: 6px 10px 8px;
+    border-left: 3px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+    background: var(--feat-invite-bg);
+    break-inside: avoid;
+}
+
+.companion-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 10px;
+}
+
+.companion-name {
+    margin: 0;
+    font-family: var(--font-title);
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+}
+
+.companion-type,
+.companion-entry-text,
+.companion-missing,
+.companion-note {
+    margin: 0;
+    font-family: var(--font-text);
+    font-size: 0.95rem;
+    color: var(--text);
+}
+
+.companion-type,
+.companion-missing,
+.companion-note {
+    font-style: italic;
+    color: var(--quiet-ink);
+}
+
+.companion-missing {
+    margin-top: 4px;
+}
+
+.companion-note {
+    margin-top: 3px;
+    font-size: 0.88rem;
+}
+
+/* CA, PV, Vitesse, Initiative : petites cases sur une ligne qui passe à la ligne si besoin */
+.companion-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    margin: 6px 0 4px;
+}
+
+.companion-stats:empty {
+    display: none;
+}
+
+.companion-stat {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.companion-stat-label,
+.companion-line-label,
+.companion-section,
+.companion-abilities-label,
+.companion-abilities-row.is-head {
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--accent-ink);
+}
+
+.companion-stat-value,
+.companion-abilities-row,
+.companion-entry-name {
+    font-family: var(--font-title);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--number);
+}
+
+.companion-stat-detail {
+    font-family: var(--font-text);
+    font-size: 0.85rem;
+    color: var(--quiet-ink);
+}
+
+/* PV actuels : saisie modifiable même fiche verrouillée, puis « / max » */
+.companion-hp {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.companion-hp-input.input {
+    width: 4.5em;
+    min-height: 32px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--number);
+    text-align: center;
+}
+
+/* Six caractéristiques : score (modificateur) et sauvegarde */
+.companion-abilities {
+    display: grid;
+    gap: 1px;
+    margin: 4px 0;
+}
+
+.companion-abilities-row {
+    display: grid;
+    grid-template-columns: 3.4em repeat(6, minmax(0, 1fr));
+    gap: 4px;
+    align-items: baseline;
+    text-align: center;
+}
+
+.companion-abilities-row + .companion-abilities-row {
+    border-top: 1px solid var(--border-soft);
+}
+
+.companion-abilities-label {
+    text-align: left;
+}
+
+.companion-lines,
+.companion-entries {
+    margin: 2px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.companion-lines li + li,
+.companion-entries li + li {
+    margin-top: 2px;
+}
+
+.companion-section {
+    margin: 6px 0 0;
+}
+
+.companion-entry.is-inactive {
+    opacity: 0.55;
+}
+
+@media print {
+    .companion-card {
+        background: none;
     }
 }

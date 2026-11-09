@@ -18,6 +18,7 @@ import { weaponReach, isUnarmedStrike } from './weapons.js';
 import { divineFuryDie } from './subclass-features.js';
 import { subclassInitiativeBonuses, subclassSkillBonus, subclassWeaponStat, danceUnarmedDie } from './subclass-calcs.js';
 import { subclassBuffDamage } from './subclass-combat.js';
+import { subclassChoice } from './subclass-choices.js';
 import {
     subclassId, auraOfProtectionBonus, jackOfAllTradesBonus, unarmoredDefenseOptions, weaponProficiency,
     shieldKeepsMartialArts, subclassFinesse
@@ -671,6 +672,8 @@ export function deriveCharacter(record = {}) {
         className,
         classSlug: slug,
         subclass,
+        // Choix de sous-classe valides (lot 7, clé subclass_choices) : { champ: valeur }
+        subclassChoices: subclassChoice(record, { subclass, level }),
         auraOfProtection: aura,
         jackOfAllTrades: jack,
         scores,

@@ -638,12 +638,15 @@ const MENTION_LABELS = {
         defense: 'Défense\u00a0+1',
         faveur_de_l_esprit_nocturne: 'Résistance (ombre)'
     })[note.featId] ?? note.featName,
-    speed: (note) => ({
+    // Choix de sous-classe (lot 7) : mention courte fournie avec la note (« Vol = Vitesse »)
+    speed: (note) => note.mention ?? ({
         athlete: 'Escalade\u00a0= Vitesse',
         monte_en_l_air: 'Escalade\u00a0= Vitesse',
         affinite_aquatique: 'Nage\u00a0= Vitesse'
-    })[note.featId] ?? `dont\u00a0+${note.value}\u00a0m grâce à ${note.featName}`,
+    })[note.featId] ?? (note.value === undefined ? note.featName : `dont\u00a0+${note.value}\u00a0m grâce à ${note.featName}`),
     deathSaves: (note) => `Avantage (${note.featName})`,
+    // Près des cases de la ressource de classe (lot 7) : « Poème rang 2 · min. 2 », « Influence ±1d4 »
+    classResource: (note) => note.mention ?? note.featName,
     saves: (note) => ({
         mage_de_guerre: 'Avantage Concentration',
         maitre_des_boucliers: 'Interposition',
@@ -663,6 +666,7 @@ function zoneTitle(zone) {
     if (zone === 'armorClass') return "Classe d'armure";
     if (zone === 'speed') return 'Vitesse';
     if (zone === 'deathSaves') return 'Jets contre la mort';
+    if (zone === 'classResource') return 'Ressource de classe';
     const [family, id] = zone.split('.');
     if (family === 'skills') return `Compétence : ${SKILLS.find(skill => skill.id === id)?.name ?? id}`;
     const name = ABILITIES.find(a => a.id === id)?.name ?? '';
@@ -685,7 +689,8 @@ function zoneMentions(zone, notes) {
     for (const note of notes) {
         if (note.inactive) continue;
         // Un don répétable pris deux fois (Amélioration de caractéristique) : une mention par emplacement
-        const key = `${note.featId}:${note.slot ?? ''}`;
+        // Deux effets d'une même capacité (Parade et Jeu de jambes, nage et vol) : une pastille par mention
+        const key = `${note.featId}:${note.slot ?? ''}:${note.mention ?? ''}`;
         // La note chiffrée de chaque don donne la mention (« dont +8 », « DD 13 »)
         const kept = byFeat.get(key);
         if (!kept || (kept.value === undefined && note.value !== undefined)) byFeat.set(key, note);

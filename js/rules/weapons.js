@@ -344,6 +344,8 @@ export function subclassBuffs(character, derived) {
     const level = derived?.level ?? characterLevel(character?.char_level);
     return Object.entries(SUBCLASS_BUFFS)
         .filter(([, [id, minLevel]]) => id === subclass && level >= minLevel)
+        // Chasseur : pas de bouton Tueur de colosses si Briseur de hordes est choisi (lot 7, subclass_choices)
+        .filter(([key]) => !(key === 'colossusSlayer' && derived?.subclassChoices?.prey === 'horde'))
         .map(([key]) => key);
 }
 

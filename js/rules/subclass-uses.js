@@ -27,6 +27,9 @@ import { SUBCLASS_FEATURES } from '../data/subclass-features.js';
 import { DD_RULES } from '../data/dd-rules.js';
 import { RESET_TEXT } from './feat-uses.js';
 import { superiorityDiceCount, psionicDice } from './subclass-combat.js';
+import { CREATURE_TYPES, DIVINE_DOMAINS } from '../data/subclass-choices.js';
+import { SUBCLASS_SPELLS } from '../data/subclass-spells.js';
+import { philosopherSchools } from './subclass-choices.js';
 
 export const SUBCLASS_USES_KEY = 'subclass_uses';
 
@@ -35,6 +38,11 @@ const once = () => 1;
 /** Modificateur de Sagesse ou de Charisme, minimum 1 */
 const wisMin1 = ({ mods }) => Math.max(1, Number(mods?.wis) || 0);
 const chaMin1 = ({ mods }) => Math.max(1, Number(mods?.cha) || 0);
+/** Noms des deux sorts du domaine choisi pour l'Ancêtre divin (Ascendance divine), ou [] */
+function divineAncestorSpells({ subclassChoices: c } = {}) {
+    const domain = DIVINE_DOMAINS.find(([id]) => id === c?.domain)?.[1];
+    return domain ? (SUBCLASS_SPELLS.demigod_bloodline ?? []).filter(row => row[5]?.group === domain).map(row => row[2]) : [];
+}
 /** Modificateur d'Intelligence, sans minimum (Philosophe de l'Académie : aucune case s'il est nul) */
 const intMod = ({ mods }) => Math.max(0, Number(mods?.int) || 0);
 
@@ -45,7 +53,9 @@ const intMod = ({ mods }) => Math.max(0, Number(mods?.int) || 0);
  *  - reset : 'long' (repos long), 'short' (repos court ou long), 'rage' (fin de la Rage ou tout repos),
  *    'shortOne' (une case au repos court, toutes au repos long : dés psioniques), ou une fonction
  *    (derived) qui renvoie l'un d'eux (Flash protecteur : repos court à partir du niveau 6) ;
- *  - use : à quoi sert une case (phrase courte).
+ *  - use : à quoi sert une case (phrase courte), ou une fonction (derived) qui la donne selon un choix
+ *    de sous-classe (lot 7 : présage tiré, type de monstre, domaine, d20 noté…) ;
+ *  - school : école du Philosophe de l'Académie qui donne la case (absente sans ce choix).
  */
 export const SUBCLASS_COUNTERS = Object.freeze({
     path_of_the_zealot: [
@@ -104,6 +114,11 @@ export const SUBCLASS_COUNTERS = Object.freeze({
             use: 'Action Bonus, 10 minutes. Un emplacement de niveau 5 la rend (décochez).' }
     ],
     oath_of_the_dragonlords: [
+        // Lot 7 : souffle du dragon lié (pacte du Seigneur Dragon, Odyssée p. 55) : une fois, puis repos
+        // court ou long ; au niveau 20 (Lien indestructible), recharge normale sur 5-6 : plus de case
+        { feature: 'lien_du_seigneur_dragon', label: 'Souffle du dragon', inText: 'Souffle du dragon',
+            max: ({ level = 1 }) => (level >= 20 ? 0 : 1), reset: 'short',
+            use: 'Le dragon lié souffle une fois, puis il doit finir un repos court ou long.' },
         { feature: 'lien_indestructible', label: 'Lien indestructible', inText: 'Lien indestructible', max: once, reset: 'long',
             use: 'Votre dragon rate une sauvegarde : il la réussit à la place.' }
     ],
@@ -148,7 +163,11 @@ export const SUBCLASS_COUNTERS = Object.freeze({
     ],
     circle_of_the_stars: [
         { feature: 'presage_cosmique', label: "Présage cosmique", inText: "Présage cosmique", max: wisMin1, reset: 'long',
-            use: "Réaction : +1d6 (Bienfait) ou −1d6 (Malheur) à un test d20 à 9 m." },
+            // Lot 7 : selon le présage tiré au repos long (menu « omen »)
+            use: ({ subclassChoices: c } = {}) => ({
+                weal: "Réaction : +1d6 (Bienfait) au test d20 d'une créature visible à 9 m.",
+                woe: "Réaction : −1d6 (Malheur) au test d20 d'une créature visible à 9 m."
+            })[c?.omen] ?? "Réaction : +1d6 (Bienfait) ou −1d6 (Malheur) à un test d20 à 9 m." },
         { feature: 'carte_stellaire', label: "Carte stellaire", inText: "Carte stellaire", max: wisMin1, reset: 'long',
             use: "Rayon traçant sans emplacement (carte en main)." }
     ],
@@ -200,7 +219,12 @@ export const SUBCLASS_COUNTERS = Object.freeze({
     ],
     amazon_warrior: [
         { feature: 'cri_de_guerre', label: "Cri de guerre", inText: "Cri de guerre", max: wisMin1, reset: 'long',
-            use: "Action Bonus, 1 minute : Avantage contre un type de monstre, Résistance C/P/T." },
+            use: ({ subclassChoices: c } = {}) => {
+                const foe = CREATURE_TYPES.find(([id]) => id === c?.foe)?.[1];
+                return foe
+                    ? `Action Bonus, 1 minute : Avantage aux attaques contre : ${foe} ; Résistance C/P/T.`
+                    : "Action Bonus, 1 minute : Avantage contre un type de monstre, Résistance C/P/T.";
+            } },
         { feature: 'brassards_de_parade', label: "Brassards de parade", inText: "Brassards de parade", max: wisMin1, reset: 'short',
             use: "Réaction quand une attaque vous touche : +5 à la CA jusqu'à votre prochain tour." },
         { feature: 'points_de_pression', label: "Points de pression", inText: "Points de pression", max: wisMin1, reset: 'short',
@@ -236,7 +260,12 @@ export const SUBCLASS_COUNTERS = Object.freeze({
     ],
     demigod_bloodline: [
         { feature: 'ancetre_divin', label: "Sorts de l'ancêtre divin", inText: "Sorts de l'ancêtre divin", max: () => 2, reset: 'short',
-            use: "Une case par sort du domaine lancé sans emplacement." },
+            use: (derived = {}) => {
+                const spells = divineAncestorSpells(derived);
+                return spells.length
+                    ? `Sans emplacement : ${spells.join(', ')} (une case par sort).`
+                    : "Une case par sort du domaine lancé sans emplacement.";
+            } },
         { feature: 'resistance_divine', label: "Résistance divine", inText: "Résistance divine", max: once, reset: 'long',
             use: "Une sauvegarde ratée devient réussie." }
     ],
@@ -263,6 +292,11 @@ export const SUBCLASS_COUNTERS = Object.freeze({
             use: "Avec le lien d'Esprit éveillé : Désavantage pour vous attaquer, Avantage pour vous. Un emplacement de pacte la rend (décochez)." }
     ],
     the_fates_patron: [
+        // Lot 7 : un seul d20 par repos (menu « prediction »), perdu au repos suivant
+        { feature: 'predictions_des_moires', label: "Prédiction des Moires", inText: "Prédiction des Moires", max: once, reset: 'short',
+            use: ({ subclassChoices: c } = {}) => (c?.prediction
+                ? `Remplace un jet d'attaque, de sauvegarde ou de caractéristique (le vôtre ou celui d'une créature visible) par ${c.prediction}.`
+                : "Notez le d20 lancé à la fin du repos (menu de la capacité) : il remplace un jet d'attaque, de sauvegarde ou de caractéristique.") },
         { feature: 'exigence_des_moires', label: "Exigence des Moires", inText: "Exigence des Moires", max: () => 2, reset: 'long',
             use: "Une créature réduite à 0 PV : un emplacement de sort regagné." },
         { feature: 'nul_n_echappe_a_son_destin', label: "Nul n'échappe à son destin", inText: "Nul n'échappe à son destin", max: once, reset: 'long',
@@ -272,7 +306,11 @@ export const SUBCLASS_COUNTERS = Object.freeze({
         { feature: 'presage', label: "Présage (d20 notés)", inText: "résultats de Présage", max: ({ level }) => (level >= 14 ? 3 : 2), reset: 'long',
             use: "Notez les d20 lancés après le repos long ; une case par résultat utilisé." },
         { feature: 'troisieme_il', label: "Troisième œil", inText: "Troisième œil", max: once, reset: 'short',
-            use: "Action Bonus : vision dans le noir 36 m, lire les langues, ou Voir l'invisible." }
+            use: ({ subclassChoices: c } = {}) => ({
+                darkvision: "Vision dans le noir à 36 m jusqu'au prochain repos.",
+                comprehension: "Lire toutes les langues jusqu'au prochain repos.",
+                see: "Détection de l'invisibilité sans emplacement."
+            })[c?.eye] ?? "Action Bonus : vision dans le noir 36 m, lire les langues, ou Voir l'invisible." }
     ],
     evoker: [
         { feature: 'surcharge', label: "Surcharge (sans contrepartie)", inText: "Surcharge (sans contrepartie)", max: once, reset: 'long',
@@ -288,7 +326,17 @@ export const SUBCLASS_COUNTERS = Object.freeze({
         { feature: 'plenitude_physique', label: "Plénitude physique", inText: "Plénitude physique", max: wisMin1, reset: 'long',
             use: "Action Bonus : regagnez un dé d'Arts martiaux + Sagesse en PV (minimum 1)." }
     ],
+    // Lot 7 : cases d'une école seulement si elle est choisie (school, philosopherSchools) ; la
+    // seconde école de l'Éclectisme compte à partir du niveau 5 (Odyssée, p. 44 et 46)
     academy_philosopher: [
+        { feature: 'empirisme', school: 'empirisme', label: "Empirisme (sort gratuit)", inText: "Empirisme (sort gratuit)", max: once, reset: 'short',
+            use: "Lancez Identification ou Détection de la magie sans emplacement (un seul des deux)." },
+        { feature: 'epicurisme', school: 'epicurisme', label: "Épicurisme", inText: "Épicurisme", max: intMod, reset: 'short',
+            use: "Réaction : Désavantage à l'attaque d'une créature visible qui vous cible." },
+        { feature: 'stoicisme', school: 'stoicisme', label: "Stoïcisme", inText: "Stoïcisme", max: once, reset: 'short',
+            use: "Tombé à 0 PV par des dégâts : dépensez un emplacement niv. 1+ (à cocher dans les emplacements) pour rester à 1 PV." },
+        { feature: 'hedonisme', school: 'hedonisme', label: "Hédonisme", inText: "Hédonisme", max: once, reset: 'short',
+            use: ({ level = 1 } = {}) => `Un sort ou une capacité vous soigne : +${2 * level} PV (2 × niveau de Magicien).` },
         { feature: 'principes_metaphysiques', label: "Principes métaphysiques", inText: "Principes métaphysiques", max: once, reset: 'short',
             use: "Réaction : un sort à cible unique change de cible." },
         { feature: 'paradoxe_magique', label: "Paradoxe magique", inText: "Paradoxe magique", max: intMod, reset: 'long',
@@ -340,6 +388,8 @@ export function subclassCounters(character, derived) {
     return ALL_COUNTERS.filter(def => def.subclass === subclass).flatMap(def => {
         const feature = features.find(f => f.id === def.feature);
         if (!feature || feature.level > (derived.level ?? 1)) return [];
+        // École du Philosophe : seulement l'école (ou la seconde école) choisie
+        if (def.school && !philosopherSchools(derived).includes(def.school)) return [];
         const max = Math.max(0, Math.trunc(def.max(derived)) || 0);
         if (max === 0) return [];
         return [{
@@ -353,7 +403,7 @@ export function subclassCounters(character, derived) {
             used: clampUses(state[def.key], max),
             reset: resetOf(def, derived),
             resetText: SUBCLASS_RESET_TEXT[resetOf(def, derived)],
-            use: def.use
+            use: typeof def.use === 'function' ? def.use(derived) : def.use
         }];
     });
 }

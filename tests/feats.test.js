@@ -148,7 +148,8 @@ describe('deriveCharacter : dons', () => {
         };
         const now = deriveCharacter(record);
         // Lot A (4.15.0) : sous-classe, Aura de protection et Touche-à-tout (0 pour ce Guerrier)
-        const NEW_FIELDS = ['feats', 'initiativeDetail', 'wornArmor', 'subclass', 'auraOfProtection', 'jackOfAllTrades'];
+        // Lot 7 des sous-classes : choix de sous-classe (subclassChoices)
+        const NEW_FIELDS = ['feats', 'initiativeDetail', 'wornArmor', 'subclass', 'subclassChoices', 'auraOfProtection', 'jackOfAllTrades'];
         // Aller-retour JSON, comme le relevé (-0 de l'Épuisement au niveau 0 devient 0)
         const kept = Object.fromEntries(Object.entries(now).filter(([key]) => !NEW_FIELDS.includes(key)));
         // Détail par ligne du tableau des armures (ajouté avec la colonne CA calculée) : même valeur et même source

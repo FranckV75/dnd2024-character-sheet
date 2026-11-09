@@ -237,6 +237,8 @@ function longRestMessage(summary) {
         summary.exhaustionBefore > 0 ? `épuisement ${summary.exhaustionBefore} → ${summary.exhaustionAfter}` : null,
         `${listText(['emplacements de sorts', 'ressources de classe',
             ...(summary.featUsesRestored ?? []).map(use => `${use.inText ?? use.label} (${use.featName})`)])} récupérés`,
+        // Compagnons de sous-classe blessés (lot 7) : PV pleins
+        summary.companionsHealed?.length ? `PV des compagnons au maximum (${listText(summary.companionsHealed)})` : null,
         'jets contre la mort et bonus de combat remis à zéro'
     ].filter(Boolean);
     let message = `8 heures de repos, dont au moins 6 de sommeil. Effets : ${effects.join(', ')}.`;

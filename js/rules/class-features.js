@@ -17,6 +17,10 @@ import { parseWeaponConfig } from './logic.js';
 import { isUnarmedStrike } from './weapons.js';
 import { subclassNotes } from './subclass-calcs.js';
 import { subclassDefenseNotes } from './subclass-combat.js';
+import { subclassChoiceNotes } from './subclass-choices.js';
+import { formNotes } from './subclass-forms.js';
+import { epicPoemNotes } from './epic-poem.js';
+import { wildMagicNotes } from './wild-magic.js';
 
 /** Texte brut (les anciennes sauvegardes peuvent contenir du HTML), sans accents ni majuscules */
 function fold(value) {
@@ -360,5 +364,13 @@ export function classFeatureNotes(derived, record = {}) {
     for (const [zone, notes] of Object.entries(subclassNotes(derived, record))) (zones[zone] ??= []).push(...notes);
     // Résistances de la sous-classe (lot 5) : repères près de la CA
     for (const [zone, notes] of Object.entries(subclassDefenseNotes(derived, record))) (zones[zone] ??= []).push(...notes);
+    // Choix de sous-classe (lot 7) : vitesses de l'Aspect sauvage…
+    for (const [zone, notes] of Object.entries(subclassChoiceNotes(derived, record))) (zones[zone] ??= []).push(...notes);
+    // Formes du Cercle de la Lune et des Étoiles (lot 7) : repères pendant la forme cochée
+    for (const [zone, notes] of Object.entries(formNotes(derived))) (zones[zone] ??= []).push(...notes);
+    // Repères près des cases de la ressource de classe (lot 7, zone classResource) : rang du poème
+    // (Poésie épique), Influence sur la chance (Sorcellerie sauvage)
+    for (const [zone, notes] of Object.entries(epicPoemNotes(derived))) (zones[zone] ??= []).push(...notes);
+    for (const [zone, notes] of Object.entries(wildMagicNotes(derived))) (zones[zone] ??= []).push(...notes);
     return zones;
 }

@@ -60,7 +60,7 @@ const GRIMOIRE_STORAGE_KEY = 'dd2024_grimoire_open';
 // Dons et leurs choix : repère « Adepte » (Adepte élémentaire) sur les sorts du type choisi
 // Sorts de dons : leurs choix, leurs lancers gratuits (feat_uses) et la caractéristique du DD
 const RELEVANT_KEYS = new Set(['dynamic_spells', 'spell_slots_state', 'spell_class_filter', 'char_class', 'char_subclass', 'char_level',
-    'feat_choices', 'feat_uses', 'char_species', ...FEAT_SLOT_ORDER.map(level => `feat_${level}`), ...ABILITY_IDS.map(id => `${id}_score`)]);
+    'feat_choices', 'feat_uses', 'char_species', 'subclass_choices', ...FEAT_SLOT_ORDER.map(level => `feat_${level}`), ...ABILITY_IDS.map(id => `${id}_score`)]);
 
 /** « Adepte (feu) » : types d'Adepte élémentaire infligés par ce sort */
 function adeptTypes(spell, elements) {
@@ -913,9 +913,14 @@ export function initSpells(ctx) {
     let subclassSignature = null;
 
     function renderSubclassSpells(character, d) {
-        const { reached, upcoming } = subclassSpells(d);
+        const { reached, upcoming, others = [] } = subclassSpells(d);
         const name = subclassFeatures(d).subclass?.name ?? '';
         const spells = markListedSpells(reached, character.dynamic_spells);
+        const land = d.subclass === 'circle_of_the_land';
+        // Terre choisie (lot 7) : un seul terrain affiché, les autres repliés dessous
+        const chosenLand = land && others.length > 0;
+        const otherGroups = [...new Set(others.map(spell => spell.group))];
+        const othersListed = markListedSpells(others, character.dynamic_spells);
         // Niveaux à venir : « niveau 9 : Hâte, Protection contre l'énergie »
         // (Cercle de la Terre : « Boule de feu (Aride) »)
         const next = [...new Set(upcoming.map(spell => spell.classLevel))]
@@ -923,23 +928,34 @@ export function initSpells(ctx) {
                 .map(spell => (spell.group ? `${spell.name} (${spell.group})` : spell.name)).join(', ')}`);
         // Sorts rangés par terrain (Cercle de la Terre), sinon une seule liste
         const groups = [...new Set(spells.map(spell => spell.group ?? ''))];
-        const signature = JSON.stringify([name, spells, next]);
+        const signature = JSON.stringify([name, spells, next, othersListed]);
         subclassBox.hidden = spells.length === 0;
         if (signature === subclassSignature) return;
         subclassSignature = signature;
         const list = (items) => el('ul', { class: 'feat-spells-list' }, items.map(featSpellLine));
+        const groupBlock = (group, items) => el('div', { class: 'feat-spells-group' },
+            el('div', { class: 'feat-spells-head' }, el('strong', { class: 'feat-spells-name', text: group })),
+            list(items.filter(spell => spell.group === group)));
+        let intro;
+        if (spells.every(spell => /^Seulement en rituel/.test(spell.note ?? ''))) {
+            // Voie du Cœur sauvage : rituels seulement
+            intro = `Donnés par votre sous-classe (${name}) : lancés seulement en rituel, ils ne comptent pas dans vos sorts préparés.`;
+        } else if (spells.every(spell => /^Une fois sans emplacement/.test(spell.note ?? ''))) {
+            // Ascendance divine : sorts de l'ancêtre, lancés sans emplacement
+            intro = `Donnés par votre sous-classe (${name}) : chacun se lance une fois sans emplacement, de nouveau après un repos court ou long ; ce ne sont pas des sorts préparés.`;
+        } else {
+            intro = `Donnés par votre sous-classe (${name}) : toujours préparés, ils ne comptent ni dans vos sorts préparés ni dans vos sorts mineurs.`
+                + (land ? (chosenLand
+                    ? ' Terre choisie à votre dernier repos long : seuls ses sorts sont préparés.'
+                    : ' Seuls ceux du terrain choisi à votre dernier repos long sont préparés (choix dans l\'onglet Aptitudes & Traits).') : '');
+        }
         subclassBox.replaceChildren(...(spells.length ? [
             el('h4', { class: 'feat-spells-title', id: 'subclass-spells-title' }, icon('star'), el('span', { text: 'Sorts de sous-classe' })),
-            el('p', { class: 'feat-spells-intro', text: (spells.every(spell => /^Seulement en rituel/.test(spell.note ?? ''))
-                // Voie du Cœur sauvage : rituels seulement
-                ? `Donnés par votre sous-classe (${name}) : lancés seulement en rituel, ils ne comptent pas dans vos sorts préparés.`
-                : `Donnés par votre sous-classe (${name}) : toujours préparés, ils ne comptent ni dans vos sorts préparés ni dans vos sorts mineurs.`)
-                + (groups[0] ? ' Seuls ceux du terrain choisi à votre dernier repos long sont préparés.' : '') }),
-            ...(groups[0]
-                ? groups.map(group => el('div', { class: 'feat-spells-group' },
-                    el('div', { class: 'feat-spells-head' }, el('strong', { class: 'feat-spells-name', text: group })),
-                    list(spells.filter(spell => spell.group === group))))
-                : [list(spells)]),
+            el('p', { class: 'feat-spells-intro', text: intro }),
+            ...(groups[0] ? groups.map(group => groupBlock(group, spells)) : [list(spells)]),
+            otherGroups.length ? el('details', { class: 'subclass-spells-others' },
+                el('summary', { text: `Autres terrains, pas préparés (${otherGroups.join(', ')})` }),
+                ...otherGroups.map(group => groupBlock(group, othersListed))) : null,
             next.length ? el('p', { class: 'feat-spells-extra' }, el('strong', { text: 'À venir : ' }), `${next.join(' ; ')}.`) : null
         ].filter(Boolean) : []));
     }

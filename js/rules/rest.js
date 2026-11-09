@@ -20,6 +20,8 @@ import { deriveCharacter, parseNumber } from './character.js';
 import { restFeatNotes } from './feat-effects.js';
 import { restFeatUses } from './feat-uses.js';
 import { restSubclassUses } from './subclass-uses.js';
+import { restSubclassChoices } from './subclass-choices.js';
+import { restCompanions } from './subclass-companions.js';
 import { restFeatSpellUses } from './feat-spells.js';
 import { isHuman } from './feats.js';
 
@@ -227,6 +229,9 @@ export function planShortRest(character, { diceSpent = 0, healing = 0, sorcerous
     const subclassUses = restSubclassUses(character, d, 'short');
     const featUses = { patch: { ...featCounts.patch, ...subclassUses.patch }, restored: [...featCounts.restored, ...subclassUses.restored] };
     Object.assign(patch, featUses.patch);
+    // Choix de sous-classe dont l'effet s'arrête au repos (Troisième œil, Prédictions des Moires…)
+    const subclassChoices = restSubclassChoices(character, d, 'short');
+    Object.assign(patch, subclassChoices.patch);
 
     // --- Magie de pacte (Sorcier) : seuls les emplacements de pacte reviennent ---
     // Les niveaux de pacte sont ceux que donne la table du Sorcier (niveau 1 à 5) ; un
@@ -256,6 +261,7 @@ export function planShortRest(character, { diceSpent = 0, healing = 0, sorcerous
             pactSlotsRestored,
             slotRecovery: slotRecoveryFeature(character, d),
             featUsesRestored: featUses.restored,
+            subclassChoicesCleared: subclassChoices.cleared,
             // Rappels propres au repos long (Fabrication rapide du Façonneur) : pas ici
             featNotes: restFeatNotes(character, d).filter(note => note.restKind !== 'long'),
             canStart: canStartRest(character)
@@ -322,6 +328,12 @@ export function planLongRest(character) {
         restored: [...counters.restored, ...spellUses.restored, ...subclassUses.restored]
     };
     Object.assign(patch, featUses.patch);
+    // Choix de sous-classe effacés au repos (Présage cosmique en plus au repos long)
+    const subclassChoices = restSubclassChoices(character, d, 'long');
+    Object.assign(patch, subclassChoices.patch);
+    // Compagnons de sous-classe (bête primordiale, stimfée, dragon…) : PV pleins
+    const companions = restCompanions(character, d, 'long');
+    Object.assign(patch, companions.patch);
 
     return {
         patch,
@@ -336,6 +348,9 @@ export function planLongRest(character) {
             resourcesRestored,
             heroicInspiration: isHuman(character),
             featUsesRestored: featUses.restored,
+            subclassChoicesCleared: subclassChoices.cleared,
+            // Compagnons blessés qui retrouvent tous leurs PV (noms des cartes)
+            companionsHealed: companions.healed,
             // Rappels propres au repos court (Repas reconstituant du Chef cuisinier) : pas ici
             featNotes: restFeatNotes(character, d).filter(note => note.restKind !== 'short'),
             canStart: canStartRest(character)

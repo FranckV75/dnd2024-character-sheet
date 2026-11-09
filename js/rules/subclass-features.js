@@ -15,9 +15,20 @@ import { getRageBonus } from './logic.js';
 import { normalizeText } from './spells.js';
 import { bardicInspirationDie, monkFocusDC, martialArtsDieText, abilityDC } from './subclass-calcs.js';
 import {
-    SUBCLASS_DEFENSES, frenzyDice, dreadfulStrikeDice, feyStrikesDie, superiorityDie, maneuverDC, psionicDice
+    SUBCLASS_DEFENSES, frenzyDice, dreadfulStrikeDice, feyStrikesDie, superiorityDie, maneuverDC, psionicDice,
+    maneuversKnown, knownManeuvers, maneuverNumbers
 } from './subclass-combat.js';
+import { ARTISAN_TOOLS } from '../data/maneuvers.js';
+import { SKILLS } from '../data/constants.js';
+import { LAND_TYPES, DAMAGE_TYPES, DIVINE_DOMAINS } from '../data/subclass-choices.js';
+import { choiceDefense } from './subclass-combat.js';
+import { choiceLabel, philosopherSchools, schoolLabel } from './subclass-choices.js';
+import { moonFormLines, starryFormLines, moonFormNumbers, inWildShape, inStarryForm, chosenConstellation } from './subclass-forms.js';
+import { epicPoemTexts } from './epic-poem.js';
+
+const SKILL_NAMES = Object.fromEntries(SKILLS.map(skill => [skill.id, skill.name]));
 import { SUBCLASS_COUNTERS, SUBCLASS_RESET_TEXT } from './subclass-uses.js';
+import { hunterMarkDie } from './character.js';
 
 /** Signe devant un nombre : « +3 », « -1 » */
 const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
@@ -28,6 +39,8 @@ const chaMod = (derived) => Number(derived?.mods?.cha) || 0;
  * d'un effet du Conduit divin est celui des sorts de la classe) : 8 + maîtrise + Charisme.
  */
 const paladinDC = (derived) => 8 + (Number(derived?.pb) || 2) + chaMod(derived);
+/** Avantages de Révélation dans la chair (cases du menu, js/data/subclass-choices.js) */
+const REVELATIONS = [['rev_aquatic', 'Adaptation aquatique'], ['rev_flight', 'Vol scintillant'], ['rev_see', 'Voir l\'invisible'], ['rev_worm', 'Mouvement vermiforme']];
 const SPELLS_TEXT = 'Bloc « Sorts de sous-classe » de l\'onglet Magie : toujours préparés, hors du nombre de sorts préparés.';
 
 /**
@@ -49,6 +62,8 @@ function spellAbilityText(derived) {
         : 'Caractéristique d\'incantation : choisissez Intelligence dans l\'onglet Magie.';
 }
 const COMBAT_BOXES = 'Case dans l\'onglet Combat, vidée au repos long.';
+/** « Carte du pseudodragon dans « Compagnons & familiers » … » (lot 7, js/rules/subclass-companions.js) */
+const cardOf = (whose) => `Carte ${whose} dans « Compagnons & familiers » (plus bas dans cet onglet)`;
 const mod = (derived, id) => Number(derived?.mods?.[id]) || 0;
 // `where` contient la préposition (« de la sauvegarde de Force », « d'Athlétisme ») ; plural : deux cases
 const CHECK_TEXT = (where, plural = false) =>
@@ -65,8 +80,21 @@ const initiativeText = (d, id, name) => mod(d, id) > 0
  * Les capacités qui donnent des sorts (SPELL_FEATURES) sont ajoutées à la suite.
  */
 const MANUAL_AUTOMATION = {
+    // Lot 7 : strophes, rang du poème et minimum du dé d'Inspiration (js/rules/epic-poem.js)
     college_of_epic_muse: {
-        egide_du_poete: { text: 'Rappel « À vérifier » près de la CA tant que la case Intermédiaires n\'est pas cochée.', partial: true }
+        composition_des_strophes: { text: (d) => epicPoemTexts(d).composition, partial: true },
+        inspirations_poetiques: { text: (d) => epicPoemTexts(d).inspirations, list: (d) => epicPoemTexts(d).inspirationList, partial: true },
+        egide_du_poete: { text: (d) => epicPoemTexts(d).aegis, partial: true },
+        epithetes_protectrices: { text: (d) => epicPoemTexts(d).epithets, partial: true }
+    },
+    // Lot 7 : tirages de la Déferlante (js/rules/wild-magic.js, js/ui/wild-magic.js) ; les cases de
+    // Marées du chaos et de Déferlante domptée gardent leur texte de cases (ajouté par withCounter)
+    wild_magic_sorcery: {
+        deferlante_de_magie_sauvage: { text: 'Boutons « Déferlante ? (d20) » et « Table (d100) » dans l\'onglet Combat : le résultat et sa ligne dans la table du manuel (les effets se lisent dans le manuel).', partial: true },
+        marees_du_chaos: { text: 'Quand sa case est cochée, rappel de la Déferlante automatique sous les boutons de tirage.' },
+        influence_sur_la_chance: { text: 'Repère « Influence ±1d4 » près des cases de points de sorcellerie (onglet Combat).', partial: true },
+        chaos_maitrise: { text: 'Le bouton d100 (et la Déferlante après un 20) tire deux résultats ; vous gardez celui de votre choix.' },
+        deferlante_domptee: { text: 'Rappel sous les boutons de tirage tant que sa case n\'est pas cochée.' }
     },
     // Lot 2 : Voie du Zélote (Korgul)
     path_of_the_zealot: {
@@ -99,7 +127,50 @@ const MANUAL_AUTOMATION = {
     oath_of_the_dragonlords: {
         fureur_du_dragon: { text: (d) => `Sauvegarde de Sagesse DD ${paladinDC(d)} (DD de vos sorts de Paladin, règle 2024 ; le livre de l'Odyssée dit 14).`, partial: true },
         mepris_des_laches: { text: (d) => `Sauvegarde de Charisme DD ${paladinDC(d)} (DD de vos sorts de Paladin, règle 2024 ; le livre de l'Odyssée dit 14).`, partial: true },
-        lien_indestructible: { text: COMBAT_BOXES, partial: true }
+        lien_indestructible: { text: COMBAT_BOXES, partial: true },
+        // Lot 7 : couleur de l'œuf mémorisée ; cartes du pseudodragon et du dragon (subclass-companions.js)
+        familier_pseudodragon: {
+            text: (d) => {
+                const egg = choiceLabel('oath_of_the_dragonlords', 'egg', d.subclassChoices?.egg);
+                return `${egg
+                    ? `Œuf de dragon : ${egg.toLowerCase()} (couleur mémorisée par la fiche).`
+                    : 'Couleur de l\'œuf à choisir dans le menu ci-dessous quand il est trouvé ou rapporté.'} ${cardOf('du pseudodragon')}.`;
+            },
+            partial: true
+        },
+        // Lot 7 : carte du dragon lié et case du souffle (js/rules/subclass-companions.js)
+        lien_du_seigneur_dragon: {
+            text: (d) => `${cardOf('du dragon lié')} : PV ${40 + 2 * d.level} (40 + 2 × niveau), sauvegardes du bloc ${signed(Number(d.pb) || 2)}. ${d.level >= 20
+                ? 'Souffle : recharge sur 5-6 (Lien indestructible), plus de case dans l\'onglet Combat.'
+                : 'Case « Souffle du dragon » dans l\'onglet Combat, rendue au repos court ou long.'}`,
+            partial: true
+        },
+        jeune_dragon: { text: `${cardOf('du dragon')} : immunité et sens partagés quand vous le montez (rappel) ; le bloc du jeune dragon n'est pas recopié.`, partial: true }
+    },
+    // Lot 7 : compagnons (cartes calculées, js/rules/subclass-companions.js)
+    beast_master: {
+        compagnon_primordial: {
+            text: (d) => {
+                const beast = choiceLabel('beast_master', 'beast', d.subclassChoices?.beast);
+                return beast
+                    ? `${cardOf(`« ${beast} »`)} : CA, PV, sauvegardes et Frappe calculées ; PV actuels à suivre sur la carte.`
+                    : 'Bête à choisir dans le menu ci-dessous ; sa carte (CA, PV, Frappe) s\'affiche ensuite dans « Compagnons & familiers », plus bas dans cet onglet.';
+            },
+            partial: true
+        },
+        entrainement_exceptionnel: { text: `${cardOf('du compagnon')} : action bonus et dégâts de Force rappelés.`, partial: true },
+        furie_bestiale: {
+            text: (d) => `${cardOf('du compagnon')} : Frappe ×2 ; +${hunterMarkDie({ level: d.level, classSlug: d.classSlug })} de Force sur une cible marquée, actif quand le bouton Marque du chasseur est allumé.`,
+            partial: true
+        },
+        partage_des_sorts: { text: `${cardOf('du compagnon')} : rappel.`, partial: true }
+    },
+    amazon_warrior: {
+        compagnon_stimfee: {
+            text: (d) => `${cardOf('de la stimfée')} : PV ${(d.level >= 11 ? 30 : 15) + d.level}, attaques ${signed(4 + (Number(d.pb) || 2))} et DD ${10 + (Number(d.pb) || 2)} avec votre bonus de maîtrise ; PV actuels à suivre sur la carte.`,
+            partial: true
+        },
+        fauconniere_chevronnee: { text: `${cardOf('de la stimfée')}, mise à jour : CA + maîtrise, PV 30 + niveau, dés 2d6, attaques magiques, réaction d'interception rappelée.`, partial: true }
     },
     // Lot 4 : petits calculs (js/rules/subclass-calcs.js)
     champion: {
@@ -117,7 +188,8 @@ const MANUAL_AUTOMATION = {
     },
     gloom_stalker: {
         embusqueur_redoutable_bonus_d_initiative: { text: (d) => `${initiativeText(d, 'wis', 'Modificateur de Sagesse')}.` },
-        esprit_d_acier: { text: CHECK_TEXT('de la sauvegarde de Sagesse') },
+        // Lot 7 : sauvegarde choisie dans le menu (Sagesse par défaut)
+        esprit_d_acier: { text: (d) => CHECK_TEXT(`de la sauvegarde ${({ int: 'd\'Intelligence', cha: 'de Charisme' })[d.subclassChoices?.save] ?? 'de Sagesse'}`) },
         embusqueur_redoutable_frappe_effroyable: { text: (d) => `Bouton « Frappe effroyable » du tableau des armes (+${dreadfulStrikeDice(d.level)} psychiques) et ${countText(d, 'gloom_stalker', 'embusqueur_redoutable_frappe_effroyable')}.` },
         deluge_du_traqueur: { text: 'Dé de la Frappe effroyable passé à 2d8 (bouton du tableau des armes) ; attaque en plus ou effroi à jouer vous-même.', partial: true }
     },
@@ -195,9 +267,31 @@ const MANUAL_AUTOMATION = {
     },
     draconic_sorcery: {
         resilience_draconique: { text: 'CA sans armure calculée (10 + Dex + Cha) ; « dont +X PV » sous les PV maximum, à reporter vous-même.' },
-        affinite_elementaire: { text: (d) => `Bonus à un jet de dégâts du type choisi : ${signed(mod(d, 'cha'))} ; Résistance rappelée près de la CA.`, partial: true }
+        // Lot 7 : type choisi dans le menu
+        affinite_elementaire: {
+            text: (d) => {
+                const chosen = choiceDefense('draconic_sorcery', d.subclassChoices);
+                const type = DAMAGE_TYPES.find(([id]) => id === d.subclassChoices?.element)?.[1] ?? '';
+                return chosen
+                    ? `Type choisi : ${type.toLowerCase()}. Bonus à un jet de dégâts d'un sort de ce type : ${signed(mod(d, 'cha'))} (Charisme) ; repère « ${chosen.mention} » près de la CA.`
+                    : `Type à choisir dans le menu ci-dessous. Bonus à un jet de dégâts du type choisi : ${signed(mod(d, 'cha'))} ; Résistance rappelée près de la CA.`;
+            },
+            partial: true
+        }
     },
     demigod_bloodline: {
+        // Lot 7 : domaine choisi dans le menu ; ses deux sorts dans le bloc de l'onglet Magie
+        ancetre_divin: {
+            text: (d) => {
+                const domain = choiceLabel('demigod_bloodline', 'domain', d.subclassChoices?.domain);
+                const pb = Number(d.pb) || 2;
+                const spells = subclassSpells(d).reached.map(spell => spell.name);
+                return domain
+                    ? `Domaine : ${domain} ; ${spells.join(' et ')} dans le bloc « Sorts de sous-classe » de l'onglet Magie (lancés sans emplacement, pas des sorts préparés). Maîtrise doublée aux jets de Charisme avec les dieux et les célestes, si elle s'applique : +${2 * pb} au lieu de +${pb}.`
+                    : 'Domaine à choisir dans le menu ci-dessous : ses deux sorts s\'afficheront dans le bloc « Sorts de sous-classe » de l\'onglet Magie.';
+            },
+            partial: true
+        },
         la_force_en_heritage: { text: `Armes de corps à corps : Charisme utilisé quand il est meilleur (onglet Combat). ${CHECK_TEXT('de la sauvegarde de Force')}`, partial: true }
     },
     path_of_the_heretic: {
@@ -205,24 +299,194 @@ const MANUAL_AUTOMATION = {
         archer_aux_muscles_d_acier: { text: 'Arc long : Force utilisée quand elle dépasse la Dextérité (onglet Combat).', partial: true },
         foulee_du_titan: { text: (d) => `Sauvegarde de Constitution DD ${abilityDC(d, 'str')} (8 + Force + maîtrise).`, partial: true }
     },
+    // Lot 7 : terre choisie dans le menu (js/data/subclass-choices.js)
+    circle_of_the_land: {
+        sorts_du_cercle_de_la_terre: {
+            text: (d) => {
+                const land = choiceLabel('circle_of_the_land', 'land', d.subclassChoices?.land);
+                return land
+                    ? `${SPELLS_TEXT} Terre ${land.toLowerCase()} choisie : seuls ses sorts y sont préparés, les autres terrains sont rappelés dessous.`
+                    : `${SPELLS_TEXT} Choisissez la terre dans le menu ci-dessous : seuls ses sorts seront affichés comme préparés.`;
+            }
+        },
+        protection_de_la_nature: {
+            text: (d) => {
+                const chosen = choiceDefense('circle_of_the_land', d.subclassChoices);
+                return chosen
+                    ? `Repère « ${chosen.mention} » près de la CA (onglet Combat), selon la terre choisie sous « Sorts du Cercle de la Terre ».`
+                    : 'Repère « Résistance (terre) » près de la CA (onglet Combat) ; choisissez la terre sous « Sorts du Cercle de la Terre » pour que la fiche nomme le type.';
+            },
+            partial: true
+        },
+        sanctuaire_naturel: {
+            text: (d) => {
+                const chosen = choiceDefense('circle_of_the_land', d.subclassChoices);
+                return chosen
+                    ? `Vos alliés dans le cube gagnent votre ${chosen.mention}.`
+                    : 'Vos alliés dans le cube gagnent la Résistance de votre Protection de la nature (type selon la terre choisie).';
+            },
+            partial: true
+        }
+    },
+    // Lot 7 : carte de la Forme sauvage (js/rules/subclass-forms.js), forme cochée dans le bloc
+    circle_of_the_moon: {
+        formes_du_cercle: {
+            text: (d) => (inWildShape(d)
+                ? `En Forme sauvage (case cochée) : repère « Forme : CA ${moonFormNumbers(d.level, d.mods?.wis).ac} » près de la CA (onglet Combat)${d.level >= 6 ? ', Sagesse rappelée sous la sauvegarde de Constitution' : ''}. Chiffres de la forme ci-dessous ; la bête et ses statistiques restent à jouer.`
+                : 'Chiffres de la forme ci-dessous. Cochez « En Forme sauvage » pendant la forme : la CA de forme est alors rappelée près de la CA (onglet Combat). La fiche ne coche pas la case de Forme sauvage et n\'écrit pas les PV temporaires.'),
+            list: (d) => moonFormLines(d),
+            partial: true
+        },
+        formes_du_cercle_ameliorees: {
+            text: 'Rappel dans le détail de Formes du cercle ; avec « En Forme sauvage » cochée, Sagesse à ajouter rappelée sous la sauvegarde de Constitution.',
+            partial: true
+        },
+        forme_lunaire: { text: 'Rappel dans le détail de Formes du cercle : +2d10 radiants une fois par tour, Pas de lune partagé.', partial: true }
+    },
+    circle_of_the_stars: {
+        // Lot 7 : carte de la Forme étoilée (js/rules/subclass-forms.js), forme et constellation dans le bloc
+        forme_etoilee: {
+            text: (d) => {
+                const label = choiceLabel('circle_of_the_stars', 'constellation', chosenConstellation(d));
+                const state = inStarryForm(d) ? 'Forme étoilée en cours (case cochée)' : 'Cochez « En Forme étoilée » pendant la forme';
+                return `${state} ; ${label ? `constellation : ${label}` : 'constellation à choisir dans le menu'}. Chiffres des constellations ci-dessous ; la fiche ne coche pas la case de Forme sauvage.`;
+            },
+            list: (d) => starryFormLines(d),
+            partial: true
+        },
+        constellations_scintillantes: {
+            text: 'Dés 2d8 et vol du Dragon comptés dans le détail de Forme étoilée ; avec le Dragon et « En Forme étoilée » cochée, vol de 6 m rappelé près de la Vitesse.',
+            partial: true
+        },
+        plein_d_etoiles: {
+            text: 'Repère « Résistance C/P/T (forme) » près de la CA (onglet Combat), allumé quand « En Forme étoilée » est cochée (bloc Sous-classe).',
+            partial: true
+        },
+        presage_cosmique: {
+            text: (d) => ({
+                weal: 'Bienfait tiré au dernier repos long : +1d6, rappelé sous les cases.',
+                woe: 'Malheur tiré au dernier repos long : −1d6, rappelé sous les cases.'
+            })[d.subclassChoices?.omen] ?? 'Présage à noter dans le menu ci-dessous après chaque repos long (dé pair : Bienfait, impair : Malheur) ; effacé au repos long suivant.',
+            partial: true
+        }
+    },
+    aberrant_sorcery: {
+        revelation_dans_la_chair: {
+            text: (d) => {
+                const on = REVELATIONS.filter(([key]) => d.subclassChoices?.[key] === 'on').map(([, name]) => name);
+                return on.length
+                    ? `Actif : ${on.join(', ')} ; coût : ${on.length} point${on.length > 1 ? 's' : ''} de sorcellerie, à cocher vous-même. Nage et vol rappelés près de la Vitesse ; décochés au repos.`
+                    : 'Cochez ci-dessous les avantages pris (un point de sorcellerie chacun) : la fiche rappelle le coût, et la nage ou le vol près de la Vitesse.';
+            },
+            partial: true
+        }
+    },
+    fiend_patron: {
+        resilience_fielonne: {
+            text: (d) => {
+                const chosen = choiceDefense('fiend_patron', d.subclassChoices);
+                return chosen
+                    ? `Repère « ${chosen.mention} » près de la CA (onglet Combat) ; rappel du choix à la fin de chaque repos court ou long.`
+                    : 'Type à choisir dans le menu ci-dessous (repère « Résistance au choix » près de la CA en attendant) ; rappel à la fin de chaque repos court ou long.';
+            },
+            partial: true
+        }
+    },
+    the_fates_patron: {
+        predictions_des_moires: {
+            text: (d) => (d.subclassChoices?.prediction
+                ? `Résultat noté : ${d.subclassChoices.prediction}, rappelé sous la case ; effacé au repos suivant.`
+                : 'Notez le d20 lancé à la fin de chaque repos dans le menu ci-dessous ; effacé au repos suivant.'),
+            partial: true
+        }
+    },
+    diviner: {
+        troisieme_il: {
+            text: (d) => ({
+                darkvision: 'Vision dans le noir à 36 m choisie : repère près de la Vitesse jusqu\'au prochain repos.',
+                comprehension: 'Lire toutes les langues choisi, jusqu\'au prochain repos.',
+                see: 'Voir l\'invisible choisi : Détection de l\'invisibilité sans emplacement.'
+            })[d.subclassChoices?.eye] ?? 'Avantage à choisir dans le menu ci-dessous à chaque utilisation ; effacé au repos.',
+            partial: true
+        }
+    },
     circle_of_the_sea: {
         affinite_aquatique: { text: 'Rappel « Nage = Vitesse » près de la Vitesse (onglet Combat).', partial: true }
     },
     // Voie du Cœur sauvage : sorts lancés seulement en rituel, jamais préparés
     path_of_the_wild_heart: {
         langage_des_betes: { text: 'Bloc « Sorts de sous-classe » de l\'onglet Magie : lancés seulement en rituel, hors du nombre de sorts préparés.' },
-        langage_de_la_nature: { text: 'Bloc « Sorts de sous-classe » de l\'onglet Magie : lancé seulement en rituel, hors du nombre de sorts préparés.' }
+        langage_de_la_nature: { text: 'Bloc « Sorts de sous-classe » de l\'onglet Magie : lancé seulement en rituel, hors du nombre de sorts préparés.' },
+        // Lot 7 : options choisies dans les menus du bloc (js/data/subclass-choices.js)
+        rage_sauvage: {
+            text: (d) => {
+                const option = d.subclassChoices?.rage;
+                if (option === 'bear' || !option) {
+                    return `${option ? 'Ours choisi' : 'Option à choisir dans le menu ci-dessous'} : repère « Ours (Rage) » près de la CA (onglet Combat), allumé avec le bouton Rage${option ? '' : ' (retiré si vous choisissez l\'Aigle ou le Loup)'}.`;
+                }
+                return `${option === 'eagle' ? 'Aigle' : 'Loup'} choisi pour cette Rage : le repère de l'Ours est retiré.`;
+            },
+            partial: true
+        },
+        aspect_sauvage: {
+            text: (d) => ({
+                owl: 'Hibou : vision dans le noir à 18 m (ou +18 m si vous l\'avez déjà), à noter vous-même avec vos sens.',
+                panther: 'Panthère : repère « escalade = Vitesse » près de la Vitesse (onglet Combat).',
+                salmon: 'Saumon : repère « nage = Vitesse » près de la Vitesse (onglet Combat).'
+            })[d.subclassChoices?.aspect] ?? 'Aspect à choisir dans le menu ci-dessous : Panthère et Saumon ajoutent un repère près de la Vitesse.',
+            partial: true
+        },
+        puissance_sauvage: {
+            text: (d) => ({
+                falcon: 'Faucon : repère « vol = Vitesse » près de la Vitesse, allumé avec le bouton Rage si aucune armure n\'est équipée.',
+                lion: 'Lion choisi pour cette Rage (pas de vol).',
+                ram: 'Bélier choisi pour cette Rage (pas de vol).'
+            })[d.subclassChoices?.power] ?? 'Option à choisir dans le menu ci-dessous : le Faucon ajoute un repère de vol près de la Vitesse.',
+            partial: true
+        }
     },
     // Lot 5 : boutons du tableau des armes et dés des ressources (js/rules/subclass-combat.js)
     path_of_the_berserker: {
         frenesie: { text: (d) => `Bouton « Frénésie » du tableau des armes : +${frenzyDice(d.level)} au premier coup de Force du tour, compté quand la Rage est allumée aussi.` }
     },
     hunter: {
-        proie_du_chasseur: { text: 'Bouton « Tueur de colosses » du tableau des armes (+1d8) ; Briseur de hordes à jouer vous-même.', partial: true }
+        proie_du_chasseur: {
+            text: (d) => (d.subclassChoices?.prey === 'horde'
+                ? 'Briseur de hordes choisi : attaque supplémentaire à jouer vous-même (le bouton « Tueur de colosses » est retiré du tableau des armes).'
+                : `${d.subclassChoices?.prey ? 'Tueur de colosses choisi' : 'Option à choisir dans le menu ci-dessous'} : bouton « Tueur de colosses » du tableau des armes (+1d8, une fois par tour).`),
+            partial: true
+        },
+        tactiques_defensives: {
+            text: (d) => ({
+                escape: "Échapper à la horde choisi : les attaques d'opportunité contre vous ont le Désavantage.",
+                multiattack: 'Défense contre les attaques multiples choisie : après un coup reçu, Désavantage aux autres attaques de cette créature contre vous ce tour-ci.'
+            })[d.subclassChoices?.tactics] ?? 'Option à choisir dans le menu ci-dessous, mémorisée par la fiche.',
+            partial: true
+        }
     },
     battle_master: {
         superiorite_martiale_des_de_superiorite: { text: (d) => `${countText(d, 'battle_master', 'superiorite_martiale_des_de_superiorite')} (dés de ${superiorityDie(d.level)}) ; bouton « Manœuvre » du tableau des armes pour ajouter le dé aux dégâts.` },
-        superiorite_martiale_man_uvres: { text: 'Dé et DD rappelés sous chaque arme ; la liste de vos manœuvres est à noter vous-même.', partial: true },
+        // Lot 7 : manœuvres choisies dans les menus (js/data/maneuvers.js), détaillées en liste
+        superiorite_martiale_man_uvres: {
+            text: (d) => {
+                const known = maneuversKnown(d.level);
+                const chosen = knownManeuvers(d).length;
+                return `${chosen} manœuvre${chosen > 1 ? 's' : ''} choisie${chosen > 1 ? 's' : ''} sur ${known} dans les menus ci-dessous (une seule remplaçable aux niveaux 7, 10 et 15). `
+                    + 'Celles jouées avec une attaque sont rappelées sous chaque arme, celles de test ou de défense près de l\'Initiative, des compétences ou de la CA.';
+            },
+            list: (d) => knownManeuvers(d).map(m => `${m.name} (${maneuverNumbers(m, d)}) : ${m.text}`),
+            partial: true
+        },
+        disciple_de_la_guerre: {
+            text: (d) => {
+                const skill = SKILL_NAMES[d.subclassChoices?.student_skill];
+                const tool = ARTISAN_TOOLS.find(([id]) => id === d.subclassChoices?.student_tool)?.[1];
+                return `${skill ? `Compétence : ${skill} (repère « à cocher » tant que sa case ne l'est pas)` : 'Compétence à choisir dans le menu ci-dessous'} ; `
+                    + `${tool ? `outils : ${tool}, à noter dans le champ Outils` : 'outils d\'artisan à choisir'}.`;
+            },
+            partial: true
+        },
+        implacable: { text: 'Une fois par tour, en utilisant une manœuvre : lancez 1d8 au lieu de dépenser un dé de supériorité (les cases ne changent pas).', partial: true },
         dd_des_man_uvres: { text: (d) => `DD des manœuvres : ${maneuverDC(d)} (8 + Force ou Dextérité + maîtrise), rappelé sous chaque arme.` },
         superiorite_martiale_amelioree: { text: (d) => (d.level >= 18
             ? 'Remplacé par le d12 de Supériorité martiale ultime (niveau 18).'
@@ -240,6 +504,61 @@ const MANUAL_AUTOMATION = {
     },
     arcane_trickster: {
         incantation: { text: (d) => `Emplacements de sorts calculés (onglet Magie). À respecter vous-même : ${thirdCasterPrepared(d.level)} sorts préparés de niveau 1+, Main de mage + ${d.level >= 10 ? 3 : 2} sorts mineurs (liste du Magicien). ${spellAbilityText(d)}`, partial: true }
+    },
+    // Lot 7 : école choisie dans le menu (js/data/subclass-choices.js) ; les textes des écoles
+    // s'affichent seulement sous l'école active (subclassFeatures)
+    academy_philosopher: {
+        ecole_philosophique: {
+            text: (d) => {
+                const [first, second] = philosopherSchools(d);
+                if (!first) return 'École à choisir dans le menu ci-dessous : ses cases, ses repères et ses sorts s\'afficheront, avec son détail sous son nom.';
+                if (first !== 'eclectisme') return `École choisie : ${schoolLabel(first)} (détail sous son nom ; les autres écoles sont repliées).`;
+                if (second) return `École choisie : Éclectisme, avec ${schoolLabel(second)} comme seconde école (détail sous leurs noms ; les autres écoles sont repliées).`;
+                return (Number(d.level) || 1) >= 5
+                    ? 'École choisie : Éclectisme ; seconde école à choisir dans le second menu ci-dessous.'
+                    : 'École choisie : Éclectisme ; second menu (seconde école) au niveau 5.';
+            },
+            partial: true
+        },
+        cynisme: {
+            text: 'Rappel chiffré : copier un nouveau sort dans le grimoire coûte 1 h et 25 po par niveau du sort (au lieu de 2 h et 50 po). Composantes matérielles d\'une valeur totale de 50 po au plus : 10 minutes de recherche sur place.',
+            partial: true
+        },
+        eclectisme: {
+            text: (d) => {
+                const second = philosopherSchools(d)[1];
+                const lang = 'Langue en plus : à noter vous-même dans Langues.';
+                if (second) return `Seconde école : ${schoolLabel(second)}, ses cases et ses repères s'ajoutent. ${lang}`;
+                return (Number(d.level) || 1) >= 5
+                    ? `Seconde école à choisir dans le menu sous « École philosophique ». ${lang}`
+                    : `Seconde école au niveau 5 (menu sous « École philosophique »). ${lang}`;
+            },
+            partial: true
+        },
+        empirisme: {
+            text: (d) => `${CHECK_TEXT('de Perception')} Lancer gratuit d'Identification ou de Détection de la magie (un seul des deux) : ${countText(d, 'academy_philosopher', 'empirisme')}.`,
+            partial: true
+        },
+        epicurisme: {
+            text: (d) => `Réaction qui impose le Désavantage, autant de fois que votre modificateur d'Intelligence : ${countText(d, 'academy_philosopher', 'epicurisme')}.`,
+            partial: true
+        },
+        stoicisme: {
+            text: (d) => `${countText(d, 'academy_philosopher', 'stoicisme')} ; l'emplacement de niveau 1+ dépensé est à cocher vous-même (emplacements de l'onglet Magie).`,
+            partial: true
+        },
+        sophisme: {
+            text: (d) => `Expertise en Persuasion (+${2 * (Number(d.pb) || 2)}) : rappel « À vérifier » près de la compétence tant que la case Expertise n'est pas cochée. Amis dans le bloc « Sorts de sous-classe » de l'onglet Magie, en plus de vos sorts mineurs.`,
+            partial: true
+        },
+        hedonisme: {
+            text: (d) => `Soin reçu d'un sort ou d'une capacité : +${2 * (Number(d.level) || 1)} PV (2 × niveau de Magicien) ; ${countText(d, 'academy_philosopher', 'hedonisme')}.`,
+            partial: true
+        },
+        scepticisme: {
+            text: 'Repère « Avantage contre sorts » près de la CA (onglet Combat) ; l\'Avantage est à jouer vous-même.',
+            partial: true
+        }
     },
     way_of_the_shield_dancer: {
         technique_aresienne_bouclier_compatible: { text: 'Avec un bouclier : CA sans armure, Arts martiaux et DD de Lutte calculés.' },
@@ -358,23 +677,50 @@ export function divineFuryDie({ classSlug, subclass = '', level = 1 } = {}) {
 }
 
 /**
- * Sorts toujours préparés (ou connus) donnés par la sous-classe (js/data/subclass-spells.js).
- * @param {{ subclass: string, level: number }} derived - deriveCharacter()
- * @returns {{ reached: SubclassSpell[], upcoming: SubclassSpell[] }}
- *   reached : sorts déjà donnés ; upcoming : ceux des niveaux suivants. SubclassSpell :
- *   { classLevel, vo, name, level (niveau du sort, 0 = sort mineur), ritual, note?, group? } ;
- *   group : terrain du Cercle de la Terre (un seul à la fois, choisi à chaque repos long)
+ * Groupe de sorts retenu par un choix de sous-classe (lot 7) : terre du Cercle de la Terre, domaine
+ * de l'Ancêtre divin. undefined : pas de groupe choisi.
+ * @param {string} subclass
+ * @param {Object<string, string>} [choice] - derived.subclassChoices
+ * @returns {string|undefined} libellé du groupe (« Aride », « Guerre »)
  */
-export function subclassSpells({ subclass = '', level = 1 } = {}) {
+function chosenSpellGroup(subclass, choice = {}) {
+    if (subclass === 'circle_of_the_land') return LAND_TYPES.find(([id]) => id === choice?.land)?.[1];
+    if (subclass === 'demigod_bloodline') return DIVINE_DOMAINS.find(([id]) => id === choice?.domain)?.[1];
+    return undefined;
+}
+
+/**
+ * Sorts toujours préparés (ou connus) donnés par la sous-classe (js/data/subclass-spells.js).
+ * Cercle de la Terre : avec une terre choisie, seuls ses sorts sont donnés, ceux des autres terrains
+ * (déjà atteints) vont dans `others` ; sans choix, tous les terrains (affichage d'avant le lot 7).
+ * Ascendance divine : seuls les sorts du domaine choisi ; aucun sans choix.
+ * Philosophe de l'Académie : seulement ceux des écoles actives (Amis avec le Sophisme) ; aucun sans choix.
+ * @param {{ subclass: string, level: number, subclassChoices?: Object }} derived - deriveCharacter()
+ * @returns {{ reached: SubclassSpell[], upcoming: SubclassSpell[], others: SubclassSpell[] }}
+ *   reached : sorts déjà donnés ; upcoming : ceux des niveaux suivants ; others : terrains non
+ *   choisis (Cercle de la Terre). SubclassSpell :
+ *   { classLevel, vo, name, level (niveau du sort, 0 = sort mineur), ritual, note?, group? } ;
+ *   group : terrain du Cercle de la Terre ou domaine de l'Ancêtre divin
+ */
+export function subclassSpells({ subclass = '', level = 1, subclassChoices = {} } = {}) {
     const rows = Object.hasOwn(SUBCLASS_SPELLS, subclass) ? SUBCLASS_SPELLS[subclass] : [];
     const spells = rows.map(([classLevel, vo, name, spellLevel, flag, options]) => ({
         classLevel, vo, name, level: spellLevel, ritual: flag === 'R',
         ...(options?.note ? { note: options.note } : {}),
         ...(options?.group ? { group: options.group } : {})
     }));
+    const group = chosenSpellGroup(subclass, subclassChoices);
+    // Philosophe de l'Académie : seulement les sorts des écoles actives (Amis du Sophisme)
+    const schools = subclass === 'academy_philosopher' ? philosopherSchools({ subclass, subclassChoices }).map(schoolLabel) : null;
+    // Domaine de l'Ancêtre divin pas encore choisi : rien à afficher
+    const kept = schools ? spells.filter(spell => schools.includes(spell.group))
+        : group || subclass !== 'demigod_bloodline' ? spells.filter(spell => !group || spell.group === group) : [];
     return {
-        reached: spells.filter(spell => spell.classLevel <= level),
-        upcoming: spells.filter(spell => spell.classLevel > level)
+        reached: kept.filter(spell => spell.classLevel <= level),
+        upcoming: kept.filter(spell => spell.classLevel > level),
+        others: group && subclass === 'circle_of_the_land'
+            ? spells.filter(spell => spell.group !== group && spell.classLevel <= level)
+            : []
     };
 }
 
@@ -392,7 +738,11 @@ export const SUBCLASS_LEVEL = 3;
  * @property {'calcul'|'bouton'|'rappel'} family
  * @property {string} text
  * @property {{ text: string, partial?: boolean } | null} automation - ce que la fiche en fait
- * @property {SubclassFeature[]} options - options de cette capacité (écoles du Philosophe)
+ * @property {SubclassFeature[]} options - options de cette capacité (écoles du Philosophe) ; une
+ *   option choisie porte chosen: true (et second: true pour la seconde école de l'Éclectisme) et son
+ *   automation ; les autres ont automation: null
+ * @property {boolean} [chosen]
+ * @property {boolean} [second]
  */
 
 /**
@@ -408,11 +758,27 @@ export function subclassFeatures(derived = {}) {
     const list = Object.hasOwn(SUBCLASS_FEATURES, subclass) ? SUBCLASS_FEATURES[subclass] : null;
     if (!info || !list) return { subclass: null, reached: [], upcoming: [] };
     const automation = SUBCLASS_AUTOMATION[subclass] ?? {};
-    const resolve = (entry) => (entry && typeof entry.text === 'function' ? { ...entry, text: entry.text(derived) } : (entry ?? null));
+    // Texte et liste (lot 7 : manœuvres choisies…) calculés pour le personnage
+    const resolve = (entry) => {
+        if (!entry) return null;
+        const text = typeof entry.text === 'function' ? entry.text(derived) : entry.text;
+        const list = typeof entry.list === 'function' ? entry.list(derived) : entry.list;
+        return { ...entry, text, ...(list ? { list } : {}) };
+    };
+    // Option choisie (école du Philosophe) : marquée, avec ce que la fiche en fait ; les autres non
+    const [chosen, second] = philosopherSchools(derived);
+    const option = (feature) => {
+        const isChosen = feature.id === chosen || feature.id === second;
+        return {
+            ...feature, options: [],
+            automation: isChosen ? resolve(automation[feature.id]) : null,
+            ...(isChosen ? { chosen: true } : {}), ...(second && feature.id === second ? { second: true } : {})
+        };
+    };
     const shape = (feature) => ({
         ...feature,
         automation: resolve(automation[feature.id]),
-        options: list.filter(option => option.optionOf === feature.id).map(option => ({ ...option, automation: null, options: [] }))
+        options: list.filter(other => other.optionOf === feature.id).map(option)
     });
     const main = list.filter(feature => !feature.optionOf).map(shape);
     return {

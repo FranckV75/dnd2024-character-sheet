@@ -160,6 +160,24 @@ const SUBCLASS_PROFICIENCIES = Object.freeze([
     ['prophecy_domain', 3, 'skill_prof_perception', 'skills.perception', 'Conscience étendue', 'la maîtrise de Perception']
 ]);
 
+/** Sauvegardes possibles d'Esprit d'acier (Traqueur d'ombre 7) : [caractéristique, « de Sagesse »…] */
+const STEEL_MIND_SAVES = Object.freeze({ wis: 'de Sagesse', int: "d'Intelligence", cha: 'de Charisme' });
+
+/**
+ * Ligne d'Esprit d'acier selon le choix enregistré (lot 7) : Intelligence ou Charisme à la place de la
+ * Sagesse ; sans choix, la ligne d'origine (Sagesse).
+ * @param {Object} derived - deriveCharacter() (subclassChoices)
+ * @param {Array} row - ligne gloom_stalker de SUBCLASS_PROFICIENCIES
+ * @returns {Array}
+ */
+function steelMindRow(derived, row) {
+    const save = derived?.subclassChoices?.save;
+    if (!save || save === 'wis' || !STEEL_MIND_SAVES[save]) return row;
+    const [subclass, minLevel, , , name] = row;
+    return [subclass, minLevel, `${save}_save_prof`, `saves.${save}`, name,
+        `la maîtrise des sauvegardes ${STEEL_MIND_SAVES[save]} (choisie parce que la Sagesse était déjà maîtrisée)`];
+}
+
 /** Une maîtrise est cochée (l'Expertise compte comme maîtrise) */
 function ticked(record, field) {
     if (record?.[field] === true) return true;
@@ -201,8 +219,9 @@ export function subclassNotes(derived, record = {}) {
                 { value: glamour, applied: true });
         }
     }
-    // Maîtrises à cocher
-    for (const [subclass, minLevel, field, zone, name, gives] of SUBCLASS_PROFICIENCIES) {
+    // Maîtrises à cocher (Esprit d'acier : sauvegarde choisie dans le menu « save », Sagesse par défaut)
+    for (const row of SUBCLASS_PROFICIENCIES) {
+        const [subclass, minLevel, field, zone, name, gives] = row[0] === 'gloom_stalker' ? steelMindRow(derived, row) : row;
         if (!has(derived, subclass, minLevel) || ticked(record, field)) continue;
         add(zone, subclass, name, `${name} (niveau ${minLevel}) vous donne ${gives} : case à cocher vous-même, la fiche ne coche rien.`, { check: true });
     }
