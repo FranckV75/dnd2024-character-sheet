@@ -112,7 +112,9 @@ describe('Effets et sauvegarde', () => {
         assert.ok(AUTOMATED_FEATS.includes('chanceux') && AUTOMATED_FEATS.includes('tueur_de_mages'));
         const effects = featEffects(hero());
         assert.match(effects['featSlot:1'][0].text, /^2 points de Chance/);
-        assert.equal(effects['featSlot:4'].length, 2);
+        // Esprit préservé, Briseur de concentration, puis le +1 For ou Dex (lot 5) à choisir
+        assert.equal(effects['featSlot:4'].length, 3);
+        assert.match(effects['featSlot:4'][2].text, /^Choix à faire ci-dessus : Caractéristique \+1/);
         // Briseur de concentration : texte complet dans l'encadré du don (vaut aussi pour les sorts)
         assert.match(effects['featSlot:4'][1].text, /^Briseur de concentration : .*Désavantage/);
         assert.ok(!effects.weapons.some(n => n.featId === 'tueur_de_mages'));

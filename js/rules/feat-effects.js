@@ -17,12 +17,13 @@
 
 import { featSlots, featName, featSlotName, reachedFeatIds } from './feats.js';
 import { FEATS_DATA } from '../data/feats.js';
-import { deriveCharacter } from './character.js';
+import { deriveCharacter, computeWeapon, hitDieForClass, parseNumber } from './character.js';
+import { parseWeaponConfig } from './logic.js';
 import { weaponReach, weaponDamageType, isBlankWeapon } from './weapons.js';
 import { DD_RULES } from '../data/dd-rules.js';
 import { ABILITY_IDS, SKILLS } from '../data/constants.js';
 import {
-    FEAT_CHOICE_RULES, featChoiceGrants, REPEATABLE_CHOICE_FEATS, abilityName, skillName, elementWord
+    FEAT_CHOICE_RULES, featChoiceGrants, REPEATABLE_CHOICE_FEATS, abilityName, skillName, elementWord, slotChoice
 } from './feat-choices.js';
 import { FEAT_SPELL_FEATS, featSpellGroups, featSpellSummary } from './feat-spells.js';
 
@@ -46,6 +47,7 @@ import { FEAT_SPELL_FEATS, featSpellGroups, featSpellSummary } from './feat-spel
  * @property {boolean} [ticked] - la case due au don est cochée sur la fiche (lot 3)
  * @property {number} [slot] - niveau de l'emplacement du don (dons à choix : un même don peut être
  *   pris dans deux emplacements, chacun avec son choix)
+ * @property {'short'} [restKind] - rappel de fin de repos court seulement (zone 'rest')
  */
 
 /**
@@ -68,14 +70,16 @@ import { FEAT_SPELL_FEATS, featSpellGroups, featSpellSummary } from './feat-spel
  *  - 'spells'       : zone des sorts (Mage de guerre) ;
  *  - 'weapons'      : tableau des armes, rappels généraux (Charge, Abattage, Sentinelle…) ;
  *  - 'rest'         : fin d'un repos court ou long (Musicien) ;
- *  - 'healing'      : soins donnés aux autres (Guérisseur).
+ *  - 'healing'      : soins donnés aux autres (Guérisseur) ;
+ *  - 'speed'        : Vitesse saisie (Mobile : « dont +3 m », jamais ajoutés) ;
+ *  - 'deathSaves'   : jets contre la mort (Gaillard : Avantage).
  */
 export const FEAT_ZONES = Object.freeze([
     'initiative', 'hpMax', 'armorClass',
     ...ABILITY_IDS.map(id => `saves.${id}`),
     ...ABILITY_IDS.map(id => `scores.${id}`),
     ...SKILLS.map(skill => `skills.${skill.id}`),
-    'spells', 'weapons', 'rest', 'healing'
+    'spells', 'weapons', 'rest', 'healing', 'speed', 'deathSaves'
 ]);
 
 /** Dons dont la fiche tient compte (lot 1) */
@@ -90,7 +94,10 @@ export const AUTOMATED_FEATS = Object.freeze([
     'amelioration_de_caracteristique', 'resilient', 'observateur', 'expert', 'esprit_affute', 'doue',
     'adepte_elementaire',
     // Lot 6 : dons à sorts (js/rules/feat-spells.js)
-    'initie_a_la_magie', 'affinite_feerique', 'affinite_ombreuse', 'magie_rituelle', 'telepathe', 'telekinesiste'
+    'initie_a_la_magie', 'affinite_feerique', 'affinite_ombreuse', 'magie_rituelle', 'telepathe', 'telekinesiste',
+    // Lot 5 : vitesse, PV temporaires, armures, armes d'hast, poison
+    'mobile', 'figure_de_proue', 'incantateur_d_elite', 'protection_legere', 'protection_intermediaire',
+    'protection_lourde', 'duelliste_defensif', 'gaillard', 'chef_cuisinier', 'empoisonneur', 'maitre_d_hast'
 ]);
 
 const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
@@ -110,8 +117,80 @@ export function toughHitPoints(level) {
     return 2 * level;
 }
 
+/** Texte brut d'un champ saisi (les anciennes sauvegardes peuvent contenir du HTML) */
+const plainText = (value) => String(value ?? '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ');
+/** Sans accents ni majuscules, pour reconnaître un nom saisi (« Bâton » → « baton ») */
+const fold = (value) => plainText(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+
+/**
+ * Formations d'armure (cases « Maîtrises d'armures » de l'onglet Combat) : [clé, mots, case].
+ * La fiche ne coche jamais ces cases : elle dit seulement si elles le sont.
+ */
+const ARMOR_TRAINING = Object.freeze({
+    light: ['prof_armor_light', 'armures légères', 'Légères'],
+    medium: ['prof_armor_med', 'armures intermédiaires', 'Intermédiaires'],
+    heavy: ['prof_armor_heavy', 'armures lourdes', 'Lourdes'],
+    shield: ['prof_armor_shield', 'boucliers', 'Boucliers']
+});
+
+/**
+ * Protection légère, intermédiaire, lourde (PHB 2024 « Lightly / Moderately / Heavily Armored »,
+ * p. 204-205) : prérequis de formation, formations données (cochées ou à cocher), formation déjà
+ * donnée par la classe.
+ */
+function armorTrainingNotes(kinds, prerequisite, { derived, record, add }) {
+    if (prerequisite) {
+        const [field, words, box] = ARMOR_TRAINING[prerequisite];
+        if (record[field] !== true) {
+            add('featSlot', `Prérequis : formation aux ${words} (case « ${box} » des maîtrises d'armures, onglet Combat, non cochée).`, { check: true });
+        }
+    }
+    for (const kind of kinds) {
+        const [field, words, box] = ARMOR_TRAINING[kind];
+        if (record[field] === true) add('featSlot', `Formation aux ${words} : case « ${box} » cochée.`, { ticked: true });
+        else add('featSlot', `Formation aux ${words} à cocher (case « ${box} » des maîtrises d'armures, onglet Combat) : la fiche ne coche rien elle-même.`, { check: true });
+    }
+    const fromClass = DD_RULES.classes[derived.classSlug]?.armorProf ?? [];
+    if (kinds.every(kind => fromClass.includes(kind))) {
+        add('featSlot', `Votre classe (${derived.className}) donne déjà cette formation : ce don ne vous apporte que son +1.`);
+    }
+}
+
+/** Maîtrise d'outil donnée par un don : notée ou non dans le champ Outils (onglet Compétences & Histoire) */
+function toolNote(record, pattern, label, add) {
+    if (pattern.test(fold(record.profs_tools))) add('featSlot', `${label} : maîtrise notée dans le champ Outils.`, { ticked: true });
+    else add('featSlot', `${label} : maîtrise à noter dans le champ Outils (onglet Compétences & Histoire).`, { check: true });
+}
+
+/** Arme du tableau qui a une propriété (« finesse », « allonge »...) */
+const hasProperty = (weapon, word) => fold(weapon?.prop).split(/[,;]/).some(part => part.trim().startsWith(word));
+
+/**
+ * Arme d'hast de Maître d'hast (PHB 2024 « Polearm Master », p. 206) : Bâton, Lance, ou arme à la
+ * fois Lourde et à Allonge (Coutille, Hallebarde, Lance d'arçon, Pique). Nom reconnu au début
+ * (« Bâton +1 ») ; la Lance d'arçon l'est par ses propriétés.
+ * Aussi « Bâton de feu » ou « Lance de foudre », mais pas « Lance-pierre ».
+ */
+export function isPolearm(weapon) {
+    const name = fold(weapon?.name);
+    return /^(baton|lance)(?=$|[\s+,(])/.test(name) || (hasProperty(weapon, 'lourde') && hasProperty(weapon, 'allonge'));
+}
+
+/**
+ * DD du poison d'Empoisonneur (PHB 2024 « Poisoner », p. 206) : 8 + modificateur de la
+ * caractéristique augmentée par le don + bonus de maîtrise ; null tant qu'elle n'est pas choisie.
+ * @param {Object} record
+ * @param {Object} derived
+ * @returns {number|null}
+ */
+export function poisonerDC(record, derived) {
+    const slot = featSlots(record).find(s => s.reached && s.featId === 'empoisonneur');
+    const ability = slot ? slotChoice(record, slot.level, 'empoisonneur').ability : '';
+    return ability ? 8 + derived.mods[ability] + derived.pb : null;
+}
+
 // -----------------------------------------------------------------------------
-// Effets par don : chaque fonction reçoit { derived, add } et range ses notes
+// Effets par don : chaque fonction reçoit { derived, record, add } et range ses notes
 // -----------------------------------------------------------------------------
 const FEAT_RULES = {
     // Vigilant — PHB 2024 « Alert », p. 200
@@ -261,6 +340,74 @@ const FEAT_RULES = {
             { value: pb });
         add('healing', 'Retirage des soins : sur un dé de soins (sort ou Médecin de combat), relancez un 1 et gardez le nouveau résultat.');
         add('featSlot', `Médecin de combat : dé de vie de la cible ${signed(pb)} ; relancer les 1.`, { value: pb });
+    },
+
+    // ---- Lot 5 (règles vérifiées dans le PHB 2024 anglais ; le +1 : js/rules/feat-choices.js) ----
+
+    // Mobile — PHB 2024 « Speedy », p. 208 : Vitesse +3 m (la vitesse saisie n'est pas modifiée)
+    mobile: ({ add }) => {
+        add('speed', "+3 m grâce à Mobile. La Vitesse saisie n'est pas modifiée : ajoutez-les vous-même s'ils n'y sont pas déjà.",
+            { value: 3, manual: true });
+        add('featSlot', 'Vitesse +3 m : à reporter vous-même dans la Vitesse saisie (repère à côté).', { value: 3, manual: true });
+        add('featSlot', "Foncer : quand vous prenez l'action Foncer, le terrain difficile ne vous coûte pas de mouvement en plus jusqu'à la fin du tour.");
+        add('featSlot', "Les attaques d'opportunité contre vous ont le Désavantage.");
+    },
+
+    // Incantateur d'élite — PHB 2024 « Spell Sniper », p. 208
+    incantateur_d_elite: ({ add }) => {
+        add('featSlot', "Portée : un sort à jet d'attaque dont la portée est d'au moins 3 m peut porter 18 m plus loin (au choix).");
+        add('featSlot', "Vos jets d'attaque de sort ignorent les abris partiels (+2 CA) et importants (+5 CA), pas l'abri total.");
+        add('featSlot', "Pas de Désavantage à vos jets d'attaque de sort quand un ennemi se trouve à 1,50 m de vous.");
+    },
+
+    protection_legere: (ctx) => armorTrainingNotes(['light', 'shield'], '', ctx),
+    protection_intermediaire: (ctx) => {
+        armorTrainingNotes(['medium'], 'light', ctx);
+        ctx.add('featSlot', 'Ce don ne donne pas la formation aux boucliers (règles 2024).');
+    },
+    protection_lourde: (ctx) => {
+        armorTrainingNotes(['heavy'], 'medium', ctx);
+        ctx.add('featSlot', "La formation ne retire ni la Force demandée par l'armure (sinon −3 m de vitesse) ni le Désavantage en Discrétion.");
+    },
+
+    // Duelliste défensif — PHB 2024 « Defensive Duelist », p. 203 : Parade (Réaction)
+    duelliste_defensif: ({ derived: { pb, scores, armorClass }, record, add }) => {
+        const ac = armorClass.value;
+        const text = `Parade (Réaction, arme de Finesse en main) : quand une attaque au corps à corps vous touche, +${pb} à la CA (${ac} → ${ac + pb}) contre les attaques au corps à corps jusqu'au début de votre prochain tour ; l'attaque peut alors rater.`;
+        add('armorClass', text, { value: pb });
+        add('featSlot', text, { value: pb });
+        const weapons = Array.isArray(record.dynamic_weapons) ? record.dynamic_weapons : [];
+        if (!weapons.some(weapon => hasProperty(weapon, 'finesse'))) {
+            add('featSlot', 'Aucune arme de Finesse dans le tableau des armes (Dague, Rapière, Cimeterre, Épée courte, Fouet, Fléchette).', { inactive: true });
+        }
+        if (scores.dex < 13) add('featSlot', `Prérequis : Dextérité 13 ou plus (valeur saisie : ${scores.dex}).`, { check: true });
+    },
+
+    // Gaillard — PHB 2024 « Durable », p. 203
+    gaillard: ({ derived: { level, className }, record, add }) => {
+        add('deathSaves', 'Trompe-la-mort : Avantage aux jets de sauvegarde contre la mort (deux d20, gardez le meilleur).');
+        add('featSlot', 'Trompe-la-mort : Avantage aux jets de sauvegarde contre la mort (repère près des cases).');
+        const used = Math.min(level, Math.max(0, parseNumber(record.hd_current, 0)));
+        const die = plainText(record.hd_type).trim() || hitDieForClass(className);
+        const available = level - used;
+        add('featSlot', `Récupération rapide (action Bonus) : dépensez un dé de vie${die ? ` (${die})` : ''} et regagnez autant de PV que le résultat, sans le modificateur de Constitution. Dés de vie restants : ${available} sur ${level} (à décompter vous-même).`,
+            available > 0 ? { value: available } : { inactive: true });
+    },
+
+    // Chef cuisinier — PHB 2024 « Chef », p. 202
+    chef_cuisinier: ({ derived: { pb }, record, add }) => {
+        add('rest', `Repas reconstituant (repos court) : jusqu'à ${4 + pb} créatures qui mangent et dépensent au moins un dé de vie regagnent 1d8 PV de plus.`,
+            { value: 4 + pb, restKind: 'short' });
+        add('featSlot', `Repas reconstituant : à la fin d'un repos court, jusqu'à ${4 + pb} créatures qui dépensent un dé de vie regagnent 1d8 PV de plus (rappel dans la fenêtre du repos).`, { value: 4 + pb });
+        add('featSlot', `${pb} friandises à cocher (onglet Combat et ci-dessous), refaites au repos long : action Bonus pour en manger une, ${pb} PV temporaires ; elles se gâtent après 8 heures.`, { value: pb });
+        toolNote(record, /cuisin/, 'Ustensiles de cuisinier', add);
+    },
+
+    // Maître d'hast — PHB 2024 « Polearm Master », p. 206 (attaques calculées sur chaque arme d'hast)
+    maitre_d_hast: ({ record, add }) => {
+        add('featSlot', "Armes : Bâton, Lance, et les armes Lourdes à Allonge (Coutille, Hallebarde, Lance d'arçon, Pique). Frappe double et Frappe réactive calculées sur ces armes, dans le tableau des armes.");
+        const weapons = Array.isArray(record.dynamic_weapons) ? record.dynamic_weapons : [];
+        if (!weapons.some(isPolearm)) add('featSlot', "Aucune de ces armes dans le tableau des armes.", { inactive: true });
     }
 };
 
@@ -392,6 +539,37 @@ function choiceNotes(grant, { derived, grants, record, add }) {
         add('featSlot', `${grant.tools === 1 ? "1 maîtrise d'outil" : `${grant.tools} maîtrises d'outils`} : à noter dans le champ Outils (onglet Compétences & Histoire).`);
     }
 
+    // Figure de proue — PHB 2024 « Inspiring Leader », p. 204 : niveau + modificateur de la
+    // caractéristique augmentée par ce don (peut être négatif), à la fin de chaque repos
+    if (featId === 'figure_de_proue') {
+        const ability = grant.choice.ability;
+        if (ability) {
+            const hp = Math.max(0, derived.level + derived.mods[ability]);
+            const formula = `niveau ${derived.level} ${signed(derived.mods[ability])} ${abilityName(ability)}`;
+            add('rest', `Représentation galvanisante : à la fin du repos, jusqu'à 6 créatures (vous compris) à 9 m ou moins qui assistent à votre discours, chant ou danse gagnent ${hp} PV temporaires (${formula}). Les PV temporaires ne s'additionnent pas : on garde les plus élevés.`,
+                { value: hp });
+            add('featSlot', `Représentation galvanisante : ${hp} PV temporaires (${formula}) pour 6 créatures au plus (vous compris), à 9 m, à la fin de chaque repos court ou long (rappel dans la fenêtre du repos).`,
+                { value: hp });
+        } else {
+            add('featSlot', 'PV temporaires de la Représentation galvanisante : niveau + modificateur de la caractéristique choisie ci-dessus.', { inactive: true });
+        }
+    }
+
+    // Empoisonneur — PHB 2024 « Poisoner », p. 206 : DD 8 + mod. de la caractéristique augmentée + maîtrise
+    if (featId === 'empoisonneur') {
+        const ability = grant.choice.ability;
+        if (ability) {
+            const dc = 8 + derived.mods[ability] + derived.pb;
+            add('featSlot', `Poison : jet de sauvegarde de Constitution DD ${dc} (8 ${signed(derived.mods[ability])} ${abilityName(ability)} ${signed(derived.pb)} maîtrise) ; raté : 2d8 dégâts de poison et Empoisonné jusqu'à la fin de votre prochain tour. Rappel sur chaque arme.`,
+                { value: dc });
+        } else {
+            add('featSlot', 'DD du poison : 8 + modificateur de la caractéristique choisie ci-dessus + bonus de maîtrise.', { inactive: true });
+        }
+        add('featSlot', `Préparation : 1 heure et 50 po de matériaux pour ${derived.pb} doses ; action Bonus pour enduire une arme ou une munition (1 minute, ou jusqu'à ce qu'elle touche).`, { value: derived.pb });
+        add('featSlot', 'Poison virulent : vos jets de dégâts de poison ignorent la Résistance au poison.');
+        toolNote(record, /empoison/, "Kit d'empoisonneur", add);
+    }
+
     // Rappels propres au don (noms des actions : ceux de js/data/feats.js)
     if (featId === 'observateur') add('featSlot', "Observation rapide : l'action Observation en action Bonus.");
     if (featId === 'esprit_affute') add('featSlot', "Étude rapide : l'action Étude en action Bonus.");
@@ -427,7 +605,27 @@ const WEAPON_RULES = [
     { featId: 'broyeur', applies: ({ type }) => type === 'CONT',
         text: () => 'Une fois par tour, déplacer la cible de 1,50 m ; sur un critique, Avantage aux attaques contre elle (jusqu\'à votre prochain tour).' },
     { featId: 'empaleur_perforateur', applies: ({ type }) => type === 'PERF',
-        text: () => 'Une fois par tour, relancer un dé de dégâts ; sur un critique, un dé de dégâts de plus.' }
+        text: () => 'Une fois par tour, relancer un dé de dégâts ; sur un critique, un dé de dégâts de plus.' },
+    // Lot 5
+    { featId: 'duelliste_defensif', applies: ({ weapon }) => hasProperty(weapon, 'finesse'),
+        value: ({ derived }) => derived.pb,
+        text: ({ derived }) => `Parade : en Réaction quand une attaque au corps à corps vous touche, +${derived.pb} à la CA contre le corps à corps jusqu'au début de votre prochain tour.` },
+    { featId: 'maitre_d_hast', applies: ({ weapon }) => isPolearm(weapon),
+        text: ({ weapon, derived, buffs }) => {
+            // Frappe double : toujours un d4 contondant (dé ou type réglé pour l'arme ignorés, bonus
+            // magique gardé) ; Rage et Marque du chasseur comptent, pas Cogneur lourd ni la Charge
+            // (réservés à l'action Attaque)
+            const { dmgDieOverride, dmgTypeOverride, ...config } = parseWeaponConfig(weapon.weaponConfig);
+            const strike = computeWeapon({ ...weapon, baseDmg: '1d4 cont.', weaponConfig: config }, derived,
+                { rage: Boolean(buffs.rage), hunterMark: Boolean(buffs.hunterMark) });
+            const attack = strike ? strike.attack.text.split(':').pop().trim() : '';
+            const damage = strike ? strike.damage.text : '1d4 contondants';
+            const reach = hasProperty(weapon, 'allonge') ? '3 m' : '1,50 m';
+            return `Frappe double (action Bonus, juste après l'action Attaque avec cette arme) : attaque ${attack} avec l'autre bout, ${damage}. Frappe réactive (Réaction) : une attaque quand une créature entre dans votre allonge (${reach}).`;
+        } },
+    { featId: 'empoisonneur', applies: ({ record, derived }) => poisonerDC(record, derived) !== null,
+        value: ({ record, derived }) => poisonerDC(record, derived),
+        text: ({ record, derived }) => `Poison (action Bonus, 1 dose) : jet de sauvegarde de Constitution DD ${poisonerDC(record, derived)}, sinon 2d8 dégâts de poison et Empoisonné.` }
 ];
 
 /**
@@ -437,12 +635,13 @@ const WEAPON_RULES = [
  * @param {Object} weapon - ligne de dynamic_weapons
  * @param {Object} character - personnage (pour les dons atteints)
  * @param {Object} [derived] - deriveCharacter(character), recalculé s'il est absent
+ * @param {Object} [buffs] - bonus de combat actifs (Rage…), comme pour computeWeapon
  * @returns {FeatNote[]}
  */
-export function weaponFeatNotes(weapon, character, derived = deriveCharacter(character || {})) {
+export function weaponFeatNotes(weapon, character, derived = deriveCharacter(character || {}), buffs = {}) {
     if (isBlankWeapon(weapon) || !weapon.atkKey || !String(weapon.name ?? '').replace(/<[^>]*>/g, '').trim()) return [];
     const feats = new Set(derived.feats ?? reachedFeatIds(character));
-    const ctx = { derived, melee: weaponReach(weapon).melee, type: weaponDamageType(weapon) };
+    const ctx = { derived, record: character || {}, weapon, buffs: buffs || {}, melee: weaponReach(weapon).melee, type: weaponDamageType(weapon) };
     return WEAPON_RULES
         .filter(rule => feats.has(rule.featId) && rule.applies(ctx))
         .map(rule => {
@@ -491,10 +690,13 @@ export function featEffects(character, derived = deriveCharacter(character || {}
         if (!slot.reached) continue;
         const first = !firstSlot.has(slot.featId);
         if (first) firstSlot.set(slot.featId, slot.level);
-        else if (Object.hasOwn(FEATS_DATA, slot.featId) && !Object.hasOwn(FEAT_CHOICE_RULES, slot.featId)) {
-            (effects[`featSlot:${slot.level}`] ??= []).push(note(slot.featId,
-                `${featName(slot.featId)} est déjà pris au ${featSlotName(firstSlot.get(slot.featId))} : ce don ne se prend qu'une fois. Choisissez un autre don ici.`,
-                { check: true, slot: slot.level }));
+        else if (Object.hasOwn(FEATS_DATA, slot.featId) && !REPEATABLE_CHOICE_FEATS.includes(slot.featId)) {
+            // Dons à choix (le +1 de Sentinelle, Mobile…) : l'alerte vient de la boucle des choix
+            if (!Object.hasOwn(FEAT_CHOICE_RULES, slot.featId)) {
+                (effects[`featSlot:${slot.level}`] ??= []).push(note(slot.featId,
+                    `${featName(slot.featId)} est déjà pris au ${featSlotName(firstSlot.get(slot.featId))} : ce don ne se prend qu'une fois. Choisissez un autre don ici.`,
+                    { check: true, slot: slot.level }));
+            }
             continue;
         }
         if (!Object.hasOwn(FEAT_RULES, slot.featId)) continue;
@@ -502,6 +704,7 @@ export function featEffects(character, derived = deriveCharacter(character || {}
         const slotZone = `featSlot:${slot.level}`;
         rule({
             derived,
+            record,
             add: (zone, text, extra) => {
                 if (zone !== 'featSlot' && !first) return;
                 const key = zone === 'featSlot' ? slotZone : zone;

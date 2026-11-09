@@ -2,6 +2,30 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.9.0] - 2026-11-09 (Dons : vitesse, PV temporaires, armures, armes d'hast, poison)
+### Added
+- Mobile : repère « dont +3 m grâce à Mobile » sous la Vitesse (la vitesse saisie n'est pas modifiée).
+- Duelliste défensif : repère « Parade +N » sous la CA et calcul de la Parade sous chaque arme de Finesse.
+- Maître d'hast : Frappe double calculée sous le Bâton, la Lance et les armes Lourdes à Allonge (toujours
+  1d4 contondant, bonus magique de l'arme, Rage et Marque du chasseur comptés), rappel de la Frappe réactive.
+- Empoisonneur : DD du poison sous les armes, préparation des doses, Poison virulent, maîtrise du kit.
+- Gaillard : repère « Avantage (Gaillard) » près des jets contre la mort, dés de vie restants pour la
+  Récupération rapide.
+- Chef cuisinier : friandises à cocher (remises à neuf au repos long), Repas reconstituant rappelé dans la
+  fenêtre du repos court.
+- Figure de proue : PV temporaires de la Représentation galvanisante (niveau + modificateur) dans la
+  fenêtre des repos.
+- Protection légère, intermédiaire et lourde, Incantateur d'élite : maîtrises et rappels, prérequis vérifié.
+- Le +1 de caractéristique des 32 dons généraux est suivi (menu s'il y a un choix, sinon automatique) ;
+  la valeur saisie n'est jamais modifiée, un repère s'affiche près de la caractéristique.
+### Fixed
+- Druide : maîtrise des armures légères et des boucliers seulement (PHB 2024).
+- Textes d'Empoisonneur (le poison dure jusqu'à ce que l'arme touche) et de Maître d'hast (« entre dans
+  votre allonge »).
+- Un don qui n'est pas calculé affiche quand même son +1 et ses alertes, puis « le reste : rappel seulement ».
+### Changed
+- Format de sauvegarde inchangé : les choix vont dans feat_choices, les friandises dans feat_uses.
+
 ## [4.8.0] - 2026-11-09 (Don de l'Humain, dons repliables)
 ### Added
 - Humain : second don d'origine (trait Polyvalent, PHB 2024), juste sous celui de l'historique, avec la

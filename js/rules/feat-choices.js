@@ -38,6 +38,10 @@
 //    niveau 1 que le bonus de maîtrise (un menu de plus aux niveaux 5, 9, 13 et 17) ;
 //  - Télépathe (« Telepathic », p. 207-208) et Télékinésiste (« Telekinetic », p. 207) : +1 Int, Sag
 //    ou Cha, caractéristique de leur sort.
+// Lot 5 : le +1 de chaque don général que la fiche ne suivait pas encore (Sentinelle, Mobile,
+// Figure de proue…) vient du champ « asi » de js/data/feats.js, vérifié contre le PHB 2024 (32 dons) :
+// un menu « Caractéristique +1 » s'il y a un choix, sinon fixedAbility (Gaillard : Constitution).
+// Les faveurs épiques (+1 jusqu'à 30) viendront avec le lot 8.
 // Champs facultatifs d'un menu : dependsOn + optionsBy (options selon un autre choix : sorts de la
 // liste choisie), fromLevel (menu utile à partir de ce niveau de personnage).
 // Fonctions pures : le personnage reçu n'est jamais modifié.
@@ -45,6 +49,7 @@
 
 import { ABILITIES, ABILITY_IDS, SKILLS } from '../data/constants.js';
 import { featSlots, featName, characterLevel } from './feats.js';
+import { FEATS_DATA } from '../data/feats.js';
 import {
     MAGIC_INITIATE_LISTS, FEY_TOUCHED_SPELLS, SHADOW_TOUCHED_SPELLS, RITUAL_SPELLS
 } from '../data/feat-spells.js';
@@ -105,7 +110,7 @@ const RITUAL_FROM_LEVEL = [0, 0, 5, 9, 13, 17];
  *    (libellés longs) ;
  *  - fixedAbility : caractéristique augmentée sans choix (Esprit affûté : Intelligence).
  */
-export const FEAT_CHOICE_RULES = Object.freeze({
+const CHOICE_RULES = {
     amelioration_de_caracteristique: {
         repeatable: true,
         fields: [{
@@ -185,7 +190,33 @@ export const FEAT_CHOICE_RULES = Object.freeze({
     telekinesiste: {
         fields: [{ key: 'ability', label: 'Caractéristique +1', options: CASTING_ABILITIES }]
     }
-});
+};
+
+/** Abréviations du champ « asi » de js/data/feats.js */
+const ASI_ABBREVIATIONS = Object.freeze({ For: 'str', Dex: 'dex', Con: 'con', Int: 'int', Sag: 'wis', Cha: 'cha' });
+
+/**
+ * Caractéristiques d'un « +1 » de don général : « +1 For ou Dex » → ['str', 'dex'].
+ * @param {string} asi - champ « asi » de js/data/feats.js
+ * @returns {string[]} [] si le texte n'est pas un simple +1 (Aucune, faveur épique, +2…)
+ */
+export function asiAbilities(asi) {
+    const match = String(asi ?? '').match(/^\+1 (.+)$/);
+    if (!match) return [];
+    const ids = match[1].split(' ou ').map(word => ASI_ABBREVIATIONS[word.trim()]);
+    return ids.length && ids.every(Boolean) ? ids : [];
+}
+
+/** Dons généraux sans autre choix : seulement leur +1 (menu, ou caractéristique fixe sans menu) */
+const GENERAL_ASI_RULES = Object.fromEntries(Object.entries(FEATS_DATA)
+    .filter(([id, feat]) => feat.type === 'Général' && !Object.hasOwn(CHOICE_RULES, id))
+    .map(([id, feat]) => [id, asiAbilities(feat.asi)])
+    .filter(([, ids]) => ids.length > 0)
+    .map(([id, ids]) => [id, ids.length === 1
+        ? { fixedAbility: ids[0], fields: [] }
+        : { fields: [{ key: 'ability', label: 'Caractéristique +1', options: abilityOptions(ids) }] }]));
+
+export const FEAT_CHOICE_RULES = Object.freeze({ ...CHOICE_RULES, ...GENERAL_ASI_RULES });
 
 /**
  * Options d'un menu, compte tenu des autres choix du don (sorts de la liste choisie pour Initié

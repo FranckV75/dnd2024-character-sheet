@@ -507,7 +507,7 @@ export function initWeapons(ctx) {
             if (blank && shown) entryShown = true;
             row.tr.hidden = !shown;
             row.tr.classList.toggle('is-entry', blank);
-            writeFeatNotes(row, weaponFeatNotes(weapon, character, derived), label, shown);
+            writeFeatNotes(row, weaponFeatNotes(weapon, character, derived, buffs), label, shown);
             writeMasteryButton(row, findMastery(weapon.prof), label);
             row.inputs.name.placeholder = blank ? 'Nouvelle arme…' : 'Nom…';
             if (shown) visible++;

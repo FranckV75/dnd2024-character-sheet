@@ -581,14 +581,17 @@ const MENTION_LABELS = {
         // C/P/T : seuls les dégâts contondants, perforants et tranchants d'une attaque sont réduits
         maitre_des_armures_lourdes: `Dégâts C/P/T\u00a0−${note.value}`,
         maitre_des_armures_intermediaires: 'Dex max 3',
-        maitre_des_boucliers: `Coup de bouclier DD\u00a0${note.value}`
+        maitre_des_boucliers: `Coup de bouclier DD\u00a0${note.value}`,
+        duelliste_defensif: `Parade\u00a0+${note.value}`
     })[note.featId] ?? note.featName,
+    speed: (note) => `dont\u00a0+${note.value}\u00a0m grâce à ${note.featName}`,
+    deathSaves: (note) => `Avantage (${note.featName})`,
     saves: (note) => ({
         mage_de_guerre: 'Avantage Concentration',
         maitre_des_boucliers: 'Interposition'
     })[note.featId] ?? note.featName,
     // Augmentation d'un don à choix : « +2 don niv. 4 » (la valeur saisie n'est pas modifiée)
-    scores: (note) => `+${note.value}\u00a0don niv.\u00a0${note.slot}`,
+    scores: (note) => `+${note.value}\u00a0don ${Number(note.slot) === HUMAN_FEAT_SLOT ? 'humain' : `niv.\u00a0${note.slot}`}`,
     skills: (note) => note.featName
 };
 
@@ -597,6 +600,8 @@ function zoneTitle(zone) {
     if (zone === 'initiative') return 'Initiative';
     if (zone === 'hpMax') return 'Points de vie maximum';
     if (zone === 'armorClass') return "Classe d'armure";
+    if (zone === 'speed') return 'Vitesse';
+    if (zone === 'deathSaves') return 'Jets contre la mort';
     const [family, id] = zone.split('.');
     if (family === 'skills') return `Compétence : ${SKILLS.find(skill => skill.id === id)?.name ?? id}`;
     const name = ABILITIES.find(a => a.id === id)?.name ?? '';
@@ -716,7 +721,8 @@ const FEAT_SHEET_ZONES = { guerisseur: ['healing'], mage_de_guerre: ['featSlot',
  */
 function choiceControls(featId, level) {
     const rule = Object.hasOwn(FEAT_CHOICE_RULES, featId) ? FEAT_CHOICE_RULES[featId] : null;
-    if (!rule) return null;
+    // Gaillard, Duelliste défensif… : +1 sans choix (fixedAbility), aucun menu
+    if (!rule || !rule.fields.length) return null;
     const option = ([value, text]) => el('option', { value, text });
     return el('div', {
         class: 'feat-choices', role: 'group', 'aria-label': `Choix du don ${featName(featId)} (${featSlotName(level)})`,
@@ -820,15 +826,23 @@ function renderFeatSheet(box, featId, level, effects, counter, character) {
     const notesSignature = JSON.stringify(notes);
     if (parts.notesSignature === notesSignature) return;
     parts.notesSignature = notesSignature;
-    // Une alerte (même don pris deux fois...) s'affiche aussi pour un don que la fiche ne calcule pas
-    const automated = notes.length > 0 && (AUTOMATED_FEATS.includes(featId) || notes.some(note => note.check));
-    parts.list.replaceChildren(automated
-        ? el('ul', { class: 'feat-sheet-list' }, notes.map(note => {
-            const [kind, tag] = noteKind(note);
-            return el('li', { 'data-kind': kind },
-                el('span', { class: 'feat-tag', text: tag }), el('span', { text: note.text }));
-        }))
-        : el('p', { class: 'feat-sheet-none', text: 'Rappel seulement : la fiche ne calcule rien pour ce don, sa description ci-dessus fait foi.' }));
+    // Don que la fiche ne calcule pas : ses notes éventuelles (son +1, une alerte « même don pris
+    // deux fois ») puis « le reste : rappel seulement »
+    const automated = AUTOMATED_FEATS.includes(featId);
+    const items = notes.map(note => {
+        const [kind, tag] = noteKind(note);
+        return el('li', { 'data-kind': kind },
+            el('span', { class: 'feat-tag', text: tag }), el('span', { text: note.text }));
+    });
+    parts.list.replaceChildren(...[
+        items.length ? el('ul', { class: 'feat-sheet-list' }, items) : null,
+        automated && items.length ? null : el('p', {
+            class: 'feat-sheet-none',
+            text: items.length
+                ? 'Le reste du don : rappel seulement, sa description ci-dessus fait foi.'
+                : 'Rappel seulement : la fiche ne calcule rien pour ce don, sa description ci-dessus fait foi.'
+        })
+    ].filter(Boolean));
 }
 
 /** Compétences maîtrisées (et expertes) mises en avant : la règle vient de deriveCharacter */

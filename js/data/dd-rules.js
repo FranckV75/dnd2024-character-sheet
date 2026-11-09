@@ -44,7 +44,7 @@ const DD_RULES = {
             hitDice: "d8",
             primaryAbility: ["wis"],
             savingThrows: ["int", "wis"],
-            armorProf: ["light", "medium", "shield"],
+            armorProf: ["light", "shield"],
             weaponProf: ["simple"]
         },
         fighter: {

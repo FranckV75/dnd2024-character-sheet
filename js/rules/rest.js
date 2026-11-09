@@ -316,7 +316,8 @@ export function planLongRest(character) {
             resourcesRestored,
             heroicInspiration: isHuman(character),
             featUsesRestored: featUses.restored,
-            featNotes: restFeatNotes(character, d),
+            // Rappels propres au repos court (Repas reconstituant du Chef cuisinier) : pas ici
+            featNotes: restFeatNotes(character, d).filter(note => note.restKind !== 'short'),
             canStart: canStartRest(character)
         }
     };

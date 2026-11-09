@@ -67,9 +67,11 @@ describe('Choix enregistrés', () => {
 
     test('Chaque don à choix a des champs et des options', () => {
         for (const [id, rule] of Object.entries(FEAT_CHOICE_RULES)) {
-            assert.ok(rule.fields.length > 0, id);
+            // Lot 5 : un don général sans choix n'a que son +1 fixe (Gaillard : Constitution)
+            assert.ok(rule.fields.length > 0 || rule.fixedAbility, id);
             for (const field of rule.fields) assert.ok(field.label && field.options.length > 1, `${id}.${field.key}`);
-            assert.ok(AUTOMATED_FEATS.includes(id), id);
+            // Les dons qui ne demandent que leur +1 (Athlète, Sentinelle…) ne sont pas tous automatisés
+            if (rule.fields.some(field => field.key !== 'ability')) assert.ok(AUTOMATED_FEATS.includes(id), id);
         }
         assert.deepEqual(REPEATABLE_CHOICE_FEATS, ['amelioration_de_caracteristique', 'doue', 'adepte_elementaire', 'initie_a_la_magie']);
     });

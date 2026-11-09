@@ -103,7 +103,7 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
   dégâts avec une arme Lourde), proposé seulement si le don est choisi à un niveau atteint.
 - Puis étape 6 (bascule).
 - Projet « dons actifs » (idée de Franck), classement et lots dans `docs/DONS_ACTIFS.md` ; lots 0 (données)
-  et 1 (gains rapides) ✅ faits le 04/11/2026 ; lot 2 (compteurs : Chanceux, Tueur de mages) ✅ et lot 3 (choix mémorisés) ✅ le 06/11/2026 ; lot 6 (sorts donnés par un don, avec Télékinésiste) ✅ le 08/11/2026 ; second don d'origine de l'Humain et dons repliables (pastille du niveau) ✅ le 08/11/2026. Point de départ : chaque don pertinent choisi dans Aptitudes & Traits,
+  et 1 (gains rapides) ✅ faits le 04/11/2026 ; lot 2 (compteurs : Chanceux, Tueur de mages) ✅ et lot 3 (choix mémorisés) ✅ le 06/11/2026 ; lot 6 (sorts donnés par un don, avec Télékinésiste) ✅ le 08/11/2026 ; second don d'origine de l'Humain et dons repliables (pastille du niveau) ✅ le 08/11/2026 ; lot 5 (vitesse, PV temporaires, armures, armes d'hast, poison, et le +1 de tous les dons généraux) ✅ le 09/11/2026. Suites possibles : dons supplémentaires du Guerrier (niveaux 6 et 14) et du Roublard (niveau 10), lots 4, 7 et 8. Point de départ : chaque don pertinent choisi dans Aptitudes & Traits,
   à un niveau atteint, ajoute son effet de jeu, comme la Rage pour le Barbare. Cogneur lourd sert de modèle :
   le mécanisme est déjà générique (`FEAT_BUFFS` et `featBuffs` dans `js/rules/weapons.js`, bouton décrit
   dans `BUFF_DEFS` de `js/ui/weapons.js`, effet calculé dans `computeWeapon`).
@@ -136,6 +136,8 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
 - Moine et Ensorceleur : points de discipline / de sorcellerie à partir du niveau 2.
 - Moine : la Défense sans armure ne s'applique plus avec un bouclier.
 - Les 10 dons de style de combat sont classés « Style de combat » (et non « Général »).
+- Druide : maîtrise des armures légères et des boucliers seulement (la v3 ajoutait les armures
+  intermédiaires).
 
 ## Données à compléter
 

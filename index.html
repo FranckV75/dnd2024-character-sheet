@@ -150,6 +150,8 @@
                             <div class="stat-cell">
                                 <label class="label" for="f-speed">Vitesse</label>
                                 <input id="f-speed" data-field="speed" class="input value-md center" autocomplete="off">
+                                <!-- « +3 m (Mobile) » : la vitesse saisie n'est jamais modifiée (js/ui/sheet.js) -->
+                                <button type="button" class="feat-mention" data-feat-zone="speed" hidden></button>
                             </div>
                         </div>
                         <fieldset class="box death-saves">
@@ -164,6 +166,8 @@
                                 <input type="checkbox" class="round-check" data-field="ds_f2" aria-label="Échec 2">
                                 <input type="checkbox" class="round-check" data-field="ds_f3" aria-label="Échec 3">
                             </div>
+                            <!-- « Avantage (Gaillard) » : js/ui/sheet.js -->
+                            <button type="button" class="feat-mention" data-feat-zone="deathSaves" hidden></button>
                         </fieldset>
                     </div>
 

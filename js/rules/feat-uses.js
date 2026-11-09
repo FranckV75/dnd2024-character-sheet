@@ -41,6 +41,14 @@ export const FEAT_COUNTERS = Object.freeze({
         reset: 'short',
         use: "Une sauvegarde d'Intelligence, de Sagesse ou de Charisme ratée devient un succès."
     },
+    // Chef cuisinier — PHB 2024 « Chef », p. 202 : friandises = bonus de maîtrise, faites au repos long
+    chef_cuisinier: {
+        label: 'Friandises',
+        inText: 'friandises',
+        max: ({ pb }) => pb,
+        reset: 'long',
+        use: "Action Bonus (toute créature) : une friandise donne autant de PV temporaires que votre bonus de maîtrise ; elles se gâtent après 8 heures."
+    },
     magie_rituelle: {
         label: 'Rituel rapide',
         inText: 'Rituel rapide',

@@ -142,6 +142,14 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   et niveau d'acquisition : `FEAT_SLOT_ORDER` et `featSlotLevel` (`js/state/schema.js`).
 - Dons repliés (pastille du niveau, onglet Aptitudes & Traits) : retenus sur l'appareil seulement
   (`localStorage` `dd2024_feats_folded`, liste « emplacement:don »), jamais dans la fiche.
+- Effets des dons (`featEffects`, `js/rules/feat-effects.js`) : des notes rangées par zone de la fiche
+  (`FEAT_ZONES` : caractéristiques, CA, initiative, vitesse, jets contre la mort, PV max, sauvegardes,
+  compétences…) et par emplacement (`featSlot:<niveau>`). Une zone affiche un repère « dont +X grâce à… »
+  (bouton `data-feat-zone` d'`index.html`) ; la valeur saisie n'est jamais modifiée. Une note marquée
+  `restKind: 'short'` n'apparaît que dans la fenêtre du repos court (Repas reconstituant du Chef cuisinier).
+- Le +1 des dons généraux sans autre choix vient du champ « asi » de `js/data/feats.js`
+  (`GENERAL_ASI_RULES`, `js/rules/feat-choices.js`) : un menu « Caractéristique +1 » s'il y a un choix,
+  sinon une caractéristique fixe sans menu (Gaillard : Constitution). Rien n'est ajouté à la valeur saisie.
 - Une fiche sans la clé `spell_slots_state` n'a jamais été enregistrée par la v4 (`isV3Save`) : la
   synchronisation ne charge jamais en silence une version en ligne écrite par la v3 (onglet resté
   ouvert après la bascule), elle pose la question.

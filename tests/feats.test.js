@@ -174,7 +174,8 @@ describe('featEffects : structure', () => {
                 assert.equal(n.featName, FEATS_DATA[n.featId].name, zone);
                 assert.ok(n.text.length > 0, zone);
                 assert.ok(!/<[^>]+>/.test(n.text), `pas de HTML : ${zone}`);
-                for (const key of Object.keys(n)) assert.ok(['featId', 'featName', 'text', 'value', 'applied', 'manual', 'inactive'].includes(key), key);
+                // slot : emplacement d'un don à choix (son +1, lot 5)
+                for (const key of Object.keys(n)) assert.ok(['featId', 'featName', 'text', 'value', 'applied', 'manual', 'inactive', 'slot'].includes(key), key);
             }
         }
     });
@@ -191,7 +192,7 @@ describe('featEffects : structure', () => {
     });
 
     test('don sans effet automatisé ou inconnu : aucune note', () => {
-        const effects = featEffects(fighter({ feat_1: 'chef_cuisinier', feat_4: 'texte libre' }));
+        const effects = featEffects(fighter({ feat_1: 'bagarreur_de_tavernes', feat_4: 'texte libre' }));
         assert.equal(Object.values(effects).flat().length, 0);
     });
 
@@ -243,7 +244,9 @@ describe('featEffects : dons du lot 1 (PHB 2024)', () => {
         assert.deepEqual(effects['saves.dex'], []);
         // L'emplacement ne renvoie plus à une zone des sorts que l'onglet Magie n'affiche pas :
         // l'encadré « Dans la fiche » reprend les deux rappels (FEAT_SHEET_ZONES, js/ui/sheet.js)
-        assert.deepEqual(texts(effects['featSlot:4']), ['Avantage pour la Concentration noté sur la sauvegarde de Constitution.']);
+        // puis son +1 Int, Sag ou Cha (lot 5), pas encore choisi
+        assert.deepEqual(texts(effects['featSlot:4']), ['Avantage pour la Concentration noté sur la sauvegarde de Constitution.',
+            'Choix à faire ci-dessus : Caractéristique +1.']);
     });
 
     test('Maître des armures lourdes : réduction = bonus de maîtrise en armure lourde', () => {

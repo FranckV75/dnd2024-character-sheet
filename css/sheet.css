@@ -1313,6 +1313,30 @@ fieldset.inline-checks {
     font-size: 0.74rem;
 }
 
+/* Sous la Vitesse (« dont +3 m grâce à Mobile ») : libellé et valeur restent à la même hauteur que
+   dans les cases voisines du groupe, le repère se place dans l'espace libre au-dessous */
+.stat-cell:has(> .feat-mention) {
+    display: grid;
+    grid-template-rows: 1fr auto auto 1fr;
+    justify-items: center;
+    row-gap: 6px;
+}
+
+.stat-cell:has(> .feat-mention) > .label {
+    grid-row: 2;
+}
+
+.stat-cell:has(> .feat-mention) > :is(.input, output) {
+    grid-row: 3;
+}
+
+.stat-cell > .feat-mention {
+    grid-row: 4;
+    align-self: start;
+    padding-inline: 6px;
+    font-size: 0.74rem;
+}
+
 /* ---------- Dons : encadré « Dans la fiche » sous la description (renderFeatSheet) ---------- */
 
 /* Même filet que la description, en or : ce que la fiche calcule ou rappelle pour ce don */
@@ -1979,6 +2003,11 @@ fieldset.inline-checks {
        monte pas jusqu'à elle et s'étend vers le bas (toujours 44 px : 2 + 26 + 16) */
     .ability .feat-mention::before {
         inset: -2px -4px -16px;
+    }
+
+    /* Sous les cases « Échecs » des jets contre la mort (6 px au-dessus) : même principe */
+    .death-saves .feat-mention::before {
+        inset: -3px -4px -15px;
     }
 }
 
