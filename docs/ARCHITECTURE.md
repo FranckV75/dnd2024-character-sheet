@@ -6,7 +6,8 @@ HTML/CSS/JavaScript natifs, modules ES chargés directement par le navigateur (a
 
 ```
 index.html              Page de la fiche : barre « Gestion », en-tête, 4 onglets (point d'entrée : js/main.js)
-css/                    Une feuille par fonctionnalité ; toute couleur vient de base.css
+css/                    Une feuille par fonctionnalité ; toute couleur passe par une variable CSS
+│                       (thèmes dans base.css, variables locales dans magic, gallery, style-editor, print)
 ├── base.css            Jetons de thème clair / sombre (variables CSS), typographie
 ├── sheet.css           Mise en page de la fiche, tablettes 768–1100 px
 ├── components.css      Boutons, fenêtres, auto-complétion, cases des tableaux (partagés)
@@ -24,13 +25,14 @@ js/
 │                       affichage (pas de flash clair)
 ├── main.js             Démarrage de l'application (une étape en échec n'empêche ni la barre
 │                       Gestion ni l'enregistrement), branchement de l'enregistrement automatique
-├── data/               Données du jeu (objets exportés, aucun accès au navigateur)
+├── data/               Données du jeu (objets exportés ; seul spells.js charge un fichier)
 │   ├── constants.js    Caractéristiques, compétences, fonds par défaut
 │   ├── dd-rules.js     Classes, sous-classes (dont Odyssée), espèces, historiques,
 │   │                   destins héroïques, emplacements de sorts, armes
 │   ├── equipment.js    Armures
 │   ├── feats.js        Dons (Origine, Général, Style de combat, Épique)
 │   ├── feat-spells.js  Sorts permis par les dons à sorts (tirés de data/spells.json, testés)
+│   ├── weapon-masteries.js  Bottes d'armes (Weapon Mastery, PHB 2024) : textes et règles
 │   └── spells.js       Chargement à la demande de data/spells.json
 ├── rules/              Règles D&D 2024 : fonctions pures, testées
 │   ├── logic.js        Calculs élémentaires (modificateurs, maîtrise, armes, ressources)
@@ -38,7 +40,9 @@ js/
 │   ├── weapons.js      Tableau des armes (filtres, bonus de combat, configuration)
 │   ├── class-features.js  Capacités de classe calculées (Aura de protection, Touche-à-tout,
 │   │                   Défense sans armure de sous-classe) et maîtrise des armes
-│   ├── armors.js       Armures (CA, bouclier, armure équipée)
+│   ├── armors.js       Tableau des armures (types, ligne d'armure) ; le calcul de CA est dans
+│   │                   character.js (computeArmorClass, armorLine), réexporté ici
+│   ├── weapon-masteries.js  Bottes d'armes : botte d'une arme, effet affiché
 │   ├── spells.js       Grimoire (recherche, tri, filtres, emplacements de sorts)
 │   ├── feats.js · feat-effects.js · feat-uses.js · feat-choices.js
 │   │                   Dons : emplacements atteints, effets, usages dépensés, choix mémorisés
@@ -69,6 +73,7 @@ js/
     ├── motion-pref.js  Animations en marche ou coupées (appareil ou bouton « Sans animation »,
     │                   retenu sur l'appareil, jamais dans la sauvegarde)
     ├── magic.js        Aspect des armes et armures magiques (pastille, décors, enchantement)
+    ├── calc-bubble.js  Bulle de calcul : détail d'une valeur calculée (CA d'une armure, écusson CA)
     ├── modal.js · autocomplete.js · cell-text.js · dom.js   (briques partagées)
     ├── boot-notices.js Avis du démarrage (mise en forme indisponible, sauvegarde illisible)
     └── sanitize.js     Nettoyage du texte riche via DOMPurify (sans attribut data-* ni aria-*)
@@ -82,7 +87,9 @@ scripts/check.js        Garde-fous (npm run check)
 tests/                  Tests Node (npm test) ; tests/fixtures/local/ = vraies sauvegardes, non publiées
 supabase/policies.sql   Règles de sécurité de la base (inchangées depuis la v3)
 docs/archive-v3/        Documents de la v3
-.agent/                 Ancienne configuration d'agent de la v3 (Antigravity), à ne pas modifier
+.agent/                 Ancienne configuration d'agent de la v3 (Antigravity) : rules/ et context/,
+                        à ne pas modifier (anciennes procédures workflows/ supprimées en 4.18.0)
+.claude/skills/         Procédures pour Claude Code (audit-fiche : audit complet de la fiche)
 ```
 
 ## Flux de données

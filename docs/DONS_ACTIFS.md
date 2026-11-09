@@ -162,10 +162,10 @@ Aucun de ces styles ne sert à Korgul, Hedera, Fafnir ou Cephalus : leur classe 
   - Résilient : +1 à la caractéristique du jet de sauvegarde choisi.
   - Les 12 faveurs épiques : +1 au choix, maximum 30. Exceptions : Attaque irrésistible (For ou Dex) et Mémoire magique (Int, Sag ou Cha).
 
-**Descriptions vides :** les 12 faveurs épiques. Il faut les rédiger.
+**Descriptions vides :** aucune (les 12 faveurs épiques ont été rédigées au lot 0).
 
 **Textes à corriger :**
-- Guérisseur : l'effet s'appelle tantôt « Soigneur de bataille », tantôt « Médecin de combat ». Il faut choisir un nom.
+- ✅ Guérisseur : nom retenu « Médecin de combat » partout (données et rappels).
 - Façonneur : dans la table de fabrication, « masse » doit être « massue ».
 - Athlète : coquille « Lorsque vous êtes en À terre ».
 - Discret : il faut écrire « action Se cacher » au lieu de « action Furtivité ». Coquille « Vous obtenez de Vision aveugle ».
@@ -223,7 +223,7 @@ Le guide n'ajoute **aucun don**. Ses espèces suivent l'ancien format, avec des 
 
 ### Découpage proposé en lots
 
-Lots 0 et 1 faits le 04/11/2026 (commit local, en attente de publication). Effets en `js/rules/feats.js`
+Lots 0 et 1 faits le 04/11/2026 et publiés. Effets en `js/rules/feats.js`
 et `js/rules/feat-effects.js` ; la fiche ne modifie jamais une valeur saisie (« dont +X grâce à… »).
 
 | Lot | Contenu | Pourquoi |

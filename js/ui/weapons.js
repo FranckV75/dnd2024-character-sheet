@@ -67,7 +67,7 @@ const STAT_OPTIONS = [
 ];
 
 const DAMAGE_TYPE_LABELS = {
-    TRAN: 'Tranchant', CONT: 'Contondant', PERF: 'Perçant', FEU: 'Feu', FROID: 'Froid',
+    TRAN: 'Tranchant', CONT: 'Contondant', PERF: 'Perforant', FEU: 'Feu', FROID: 'Froid',
     NECR: 'Nécrotique', RADI: 'Radiant', FORCE: 'Force', PSYCH: 'Psychique', POISON: 'Poison',
     ACIDE: 'Acide', FOUDRE: 'Foudre', TONNERRE: 'Tonnerre'
 };

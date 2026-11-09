@@ -406,4 +406,3 @@ export function adeptElements(character) {
 /** Nom affiché d'une caractéristique, d'une compétence, d'un type de dégâts */
 export const abilityName = (id) => ABILITY_NAMES[id] ?? id;
 export const skillName = (id) => SKILL_NAMES[id] ?? id;
-export const elementName = (id) => ELEMENT_NAMES[id] ?? id;

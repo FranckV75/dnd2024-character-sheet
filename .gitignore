@@ -8,3 +8,5 @@ saves/
 *.crdownload
 .claude/settings.local.json
 tests/fixtures/local/
+.claude/worktrees/
+.claude/scheduled_tasks.lock

@@ -55,14 +55,14 @@ import {
     listCharacters, fetchCharacter, insertCharacter, updateIfUnchanged, deleteCharacter, deleteIfUnchanged
 } from './repository.js';
 import {
-    decideOnCheck, cloudName, fingerprint, friendlyError, isLegacyRowName, withoutV4State
+    decideOnCheck, cloudName, fingerprint, friendlyError, isLegacyRowName, isRename, withoutV4State
 } from './sync.js';
 import { characterName, STORAGE_KEYS } from '../state/persistence.js';
 import { migrateCharacter, normalizeCharacter, isV3Save } from '../state/migrate.js';
 import { createDefaultCharacter } from '../state/schema.js';
 
 export const SYNC_KEY = 'dd2024_cloud_sync';
-export const LAST_SAVED_KEY = 'dd2024_last_saved';
+export const LAST_SAVED_KEY = STORAGE_KEYS.lastSaved;
 /** Nom exact de la ligne en ligne enregistré par la v3 (puis par la v4 à chaque sauvegarde) */
 export const ACTIVE_NAME_KEY = STORAGE_KEYS.activeName;
 const PUSH_DELAY_MS = 2000;
@@ -337,7 +337,7 @@ export function createCloudSync({
             if (nameReady || !nameEditing) await attach(name, s);
             return;
         }
-        if (name !== attached) {
+        if (isRename(attached, name)) {
             // Nom tapé dans un autre onglet : la question y est posée, pas ici
             if (nameReady && name !== renameElsewhere) await renameFlow(name, s);
             return;

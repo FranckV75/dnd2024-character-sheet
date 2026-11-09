@@ -141,7 +141,7 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
 
 ## Données à compléter
 
-- Les 12 Faveurs épiques n'ont pas de description (à rechercher, pas urgent).
+- ✅ Les 12 Faveurs épiques ont leur description (lot 0 des dons).
 - ✅ Don « Cogneur lourd » (nom 2024) : l'ancien nom 2014 « Maître des armes lourdes » est rangé dans
   `aliases` pour la recherche (étape 4). L'identifiant `maitre_des_armes_lourdes_cogneur_lourd` est
   conservé tel quel : les sauvegardes de Korgul l'utilisent.
@@ -150,7 +150,7 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
   « vision lucide » confirmé par le glossaire des règles 2024 d'AideDD, « Perforateur » confirmé par
   Franck dans le Manuel des joueurs 2024 en français.
 
-## Changements faits sur `master` (v3) depuis le début de la v4, à reporter
+## Changements faits sur `master` (v3) pendant la v4 : ✅ tous repris
 
 - `0aa093a` : connexion Supabase reconnue après une session initiale vide.
 - `46043d9` : formulaire de connexion mémorisable par le navigateur (`<form>`, autocomplete,
@@ -159,21 +159,21 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
   `.github/workflows/supabase-keepalive.yml` (empêche la mise en pause du projet Supabase gratuit).
 - Supabase (réglé par Franck) : Site URL et Redirect URLs = `https://franckv75.github.io/dnd2024-character-sheet/`.
 
-→ Étape 5 : reprendre ces comportements (et envisager la connexion par lien magique).
-→ Étape 6 : fusionner `master` dans `v4` avant la bascule, pour garder au minimum le workflow keep-alive.
+→ ✅ Repris à l'étape 5 (mot de passe oublié, nouveau mot de passe) ; le workflow keep-alive est dans
+  `.github/workflows/`. La connexion par lien magique reste une idée.
 
 ## Choix validés à l'étape 4
 
 - Tablette : propriétés et notes longues des armes abrégées avec « … » (texte complet au toucher) : OK.
 - Impression : relevé du personnage (dons non choisis masqués) ; lignes de sorts vides imprimées et
   valeurs très longues coupées dans les cellules : acceptés tels quels.
-- Non traités : Restauration ensorcelée, Récupération arcanique (« 1 fois par repos long ») restent des rappels.
+- Restauration ensorcelée : case dans la fenêtre de repos court (points rendus automatiquement).
+  Restauration arcanique et Récupération naturelle : rappel, emplacements à décocher soi-même.
 
-## À reprendre dans l'interface (étapes 4-5)
+## Reprises dans l'interface (étapes 4-5) : ✅ faites
 
-- Étape 3 : armes, armures et sorts sont affichés en lecture seule ; ajout, modification et
-  suppression des lignes à l'étape 4 (ainsi que boutons de repos, bonus de combat, galerie,
-  verrouillage, éditeur de style, impression, « Nouvelle fiche » et bascule perception passive manuelle).
+- Armes, armures et sorts modifiables, boutons de repos, bonus de combat, galerie, verrouillage,
+  éditeur de style, impression, « Nouvelle fiche » et perception passive manuelle : faits à l'étape 4.
 - Les champs courts (scores, PV, niveau…) sont désormais de vrais champs de saisie : une mise en
   forme (gras, couleur) posée en v3 sur ces champs s'affiche en texte simple.
 

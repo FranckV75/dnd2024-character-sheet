@@ -8,6 +8,8 @@
 // elle contient des modifications non envoyées.
 // =============================================================================
 
+import { HUMAN_FEAT_SLOT, CLASS_FEAT_SLOTS } from '../state/schema.js';
+
 const time = (iso) => {
     const t = Date.parse(iso || '');
     return Number.isFinite(t) ? t : null;
@@ -120,8 +122,9 @@ export function isLegacyRowName(legacyName, name) {
  * Clés propres à la v4 (bonus de combat, emplacements de sorts, usages et choix des dons, second don
  * d'origine de l'Humain feat_0) : la v3 les efface en enregistrant (sa page n'a pas ces champs)
  */
-export const V4_ONLY_KEYS = Object.freeze(['combat_buffs', 'spell_slots_state', 'feat_uses', 'feat_choices', 'feat_0',
-    'feat_2', 'feat_6', 'feat_7', 'feat_10', 'feat_14']);
+export const V4_ONLY_KEYS = Object.freeze(['combat_buffs', 'spell_slots_state', 'feat_uses', 'feat_choices',
+    // Emplacements de dons propres à la v4, déduits de schema.js (un nouvel emplacement y est ajouté tout seul)
+    ...[HUMAN_FEAT_SLOT, ...Object.keys(CLASS_FEAT_SLOTS).map(Number)].map((slot) => `feat_${slot}`)]);
 
 /**
  * Fiche sans l'état de jeu propre à la v4, pour comparer avec une version écrite par la v3.

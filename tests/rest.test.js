@@ -238,3 +238,11 @@ describe('Repos long', () => {
         assert.deepEqual(plan.patch.spell_slots_state, {});
     });
 });
+
+test('sorcerousRestorationMax : moitié du niveau d\'Ensorceleur à partir du niveau 5, sinon 0', async () => {
+    const { sorcerousRestorationMax } = await import('../js/rules/rest.js');
+    assert.equal(sorcerousRestorationMax({ classSlug: 'sorcerer', level: 4 }), 0);
+    assert.equal(sorcerousRestorationMax({ classSlug: 'sorcerer', level: 5 }), 2);
+    assert.equal(sorcerousRestorationMax({ classSlug: 'sorcerer', level: 20 }), 10);
+    assert.equal(sorcerousRestorationMax({ classSlug: 'wizard', level: 10 }), 0);
+});

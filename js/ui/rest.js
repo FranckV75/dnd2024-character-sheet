@@ -12,7 +12,8 @@ import { el, signed, icon, setIconLabel } from './dom.js';
 import { openModal } from './modal.js';
 import { deriveCharacter } from '../rules/character.js';
 import {
-    hitDiceState, hitDiceHealing, parseManualHitDice, canStartRest, planShortRest, planLongRest
+    hitDiceState, hitDiceHealing, parseManualHitDice, canStartRest, planShortRest, planLongRest,
+    sorcerousRestorationMax
 } from '../rules/rest.js';
 
 const rollDie = (faces) => Math.floor(Math.random() * faces) + 1;
@@ -75,7 +76,7 @@ function openShortRest(store) {
     const hd = hitDiceState(character);
     const preview = planShortRest(character).summary;
     const dieLabel = hd.faces ? `d${hd.faces}` : 'type de dé non choisi';
-    const sorcerousMax = d.classSlug === 'sorcerer' && d.level >= 5 ? Math.floor(d.level / 2) : 0;
+    const sorcerousMax = sorcerousRestorationMax(d);
 
     // --- Champs ---
     const diceInput = el('input', {

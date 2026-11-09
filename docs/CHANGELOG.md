@@ -2,6 +2,21 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.18.0] - 2026-11-09 (Ménage)
+### Fixed
+- Réglage d'une arme : le type de dégâts s'appelle « Perforant » (et non « Perçant »), comme partout ailleurs.
+### Changed
+- Restauration ensorcelée : le maximum affiché dans la fenêtre de repos court vient de la même règle
+  que le calcul (js/rules/rest.js, sorcerousRestorationMax), au lieu d'une copie dans l'interface.
+- Clé « dernière sauvegarde » écrite à un seul endroit ; emplacements de dons propres à la v4
+  (V4_ONLY_KEYS) déduits de schema.js ; le contrôleur de synchronisation utilise isRename (testé).
+- Documentation remise à jour (ARCHITECTURE, ROADMAP, DONS_ACTIFS) ; skill audit-fiche publié dans
+  le dépôt (.claude/skills/).
+### Removed
+- Les 8 anciennes procédures d'Antigravity (.agent/workflows/), remplacées par le skill audit-fiche,
+  /code-review et CLAUDE.md (accord de Franck). .agent/rules/ et .agent/context/ restent.
+- Fonction inutilisée elementName (js/rules/feat-choices.js).
+
 ## [4.17.0] - 2026-11-09 (Vitesse de l'onglet Combat)
 ### Changed
 - Saisie plus fluide sur l'onglet Combat : la hauteur des cases des tableaux (armes, armures, sorts)

@@ -177,6 +177,16 @@ function slotRecoveryFeature(character, d) {
  * @returns {{ patch: Object, summary: Object }} summary.featNotes : rappels des dons à la fin du
  *          repos (FeatNote[], voir feat-effects.js), vide sans don concerné
  */
+/**
+ * Restauration ensorcelée (Ensorceleur niveau 5+, une fois par repos long) : nombre maximal de
+ * points de sorcellerie rendus au repos court, la moitié du niveau (arrondie à l'inférieur) ; 0 sinon.
+ * @param {{ classSlug: string, level: number }} d - résultat de deriveCharacter
+ * @returns {number}
+ */
+export function sorcerousRestorationMax(d) {
+    return d.classSlug === 'sorcerer' && d.level >= 5 ? Math.floor(d.level / 2) : 0;
+}
+
 export function planShortRest(character, { diceSpent = 0, healing = 0, sorcerousRestoration = false } = {}) {
     const d = deriveCharacter(character);
     const hd = hitDiceState(character);
@@ -204,9 +214,9 @@ export function planShortRest(character, { diceSpent = 0, healing = 0, sorcerous
     let toRestore = [];
     if (reset === 'all') toRestore = used;
     else if (reset === 'one') toRestore = used.slice(-1);
-    else if (sorcerousRestoration && d.classSlug === 'sorcerer' && d.level >= 5) {
+    else if (sorcerousRestoration && sorcerousRestorationMax(d) > 0) {
         // Restauration ensorcelée : jusqu'à la moitié du niveau d'Ensorceleur (arrondi inférieur)
-        toRestore = used.slice(-Math.floor(d.level / 2));
+        toRestore = used.slice(-sorcerousRestorationMax(d));
     }
     for (const i of toRestore) patch[`class_res_${i}`] = false;
 
