@@ -10,10 +10,26 @@
 
 import { SUBCLASS_FEATURES } from '../data/subclass-features.js';
 import { DD_RULES } from '../data/dd-rules.js';
+import { SUBCLASS_SPELLS } from '../data/subclass-spells.js';
+import { getRageBonus } from './logic.js';
+import { normalizeText } from './spells.js';
+
+/** Signe devant un nombre : « +3 », « -1 » */
+const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
+/** Modificateur de Charisme (0 s'il manque) */
+const chaMod = (derived) => Number(derived?.mods?.cha) || 0;
+/**
+ * DD des sorts de Paladin = DD du Conduit divin (PHB 2024, Paladin, « Channel Divinity » : le DD
+ * d'un effet du Conduit divin est celui des sorts de la classe) : 8 + maîtrise + Charisme.
+ */
+const paladinDC = (derived) => 8 + (Number(derived?.pb) || 2) + chaMod(derived);
+const SPELLS_TEXT = 'Bloc « Sorts de sous-classe » de l\'onglet Magie : toujours préparés, hors du nombre de sorts préparés.';
+const COMBAT_BOXES = 'Case dans l\'onglet Combat, vidée au repos long.';
 
 /**
  * Ce que la fiche fait de chaque capacité qu'elle gère, par sous-classe puis identifiant :
  * { text, partial } — partial : seule une partie de la capacité est calculée, le reste est un rappel.
+ * text peut être une fonction de deriveCharacter() quand il contient un nombre calculé (DD, bonus).
  */
 export const SUBCLASS_AUTOMATION = Object.freeze({
     draconic_sorcery: {
@@ -37,8 +53,72 @@ export const SUBCLASS_AUTOMATION = Object.freeze({
     },
     champion: {
         style_de_combat_supplementaire: { text: 'Second emplacement « Style de combat » dans les dons (onglet Aptitudes & Traits).' }
+    },
+    // Lot 2 : Voie du Zélote (Korgul)
+    path_of_the_zealot: {
+        fureur_divine: { text: (d) => `Bouton Rage allumé (onglet Combat) : +${divineFuryDie(d) || '1d6'} (Fureur divine) sur chaque arme et la Frappe à mains nues ; une seule fois par tour, sur la première créature touchée.` },
+        guerrier_des_dieux: { text: 'Réserve de d12 en cases dans l\'onglet Combat, rendue au repos long.' },
+        focalisation_fanatique: { text: (d) => `Case dans l'onglet Combat, vidée quand le bouton Rage s'éteint ou au repos ; bonus à la relance : +${getRageBonus(d.level)}.` },
+        presence_zelee: { text: 'Case dans l\'onglet Combat, vidée au repos long (décochez-la si vous dépensez une Rage pour la récupérer).' },
+        rage_des_dieux: { text: COMBAT_BOXES, partial: true }
+    },
+    // Lot 2 : serments du Paladin (Iria)
+    oath_of_devotion: {
+        sorts_du_serment_de_devotion: { text: SPELLS_TEXT },
+        arme_sacree: { text: (d) => `Bonus à l'attaque avec l'arme imprégnée : ${signed(Math.max(1, chaMod(d)))} (Charisme, minimum +1), à ajouter vous-même pendant les 10 minutes.`, partial: true },
+        nimbe_sacre: { text: (d) => `Dégâts radiants de l'aura : ${chaMod(d) + (Number(d.pb) || 2)} (Charisme + maîtrise). ${COMBAT_BOXES}`, partial: true }
+    },
+    oath_of_glory: {
+        sorts_du_serment_de_gloire: { text: SPELLS_TEXT },
+        chatiment_inspirant: { text: (d) => `PV temporaires à répartir : 2d8 + ${d.level}.`, partial: true },
+        defense_glorieuse: { text: (d) => `Bonus à la CA : ${signed(Math.max(1, chaMod(d)))} ; ${Math.max(1, chaMod(d))} case${Math.max(1, chaMod(d)) > 1 ? 's' : ''} dans l'onglet Combat, vidée${Math.max(1, chaMod(d)) > 1 ? 's' : ''} au repos long.`, partial: true },
+        legende_vivante: { text: COMBAT_BOXES, partial: true }
+    },
+    oath_of_the_ancients: {
+        sorts_du_serment_des_anciens: { text: SPELLS_TEXT },
+        courroux_de_la_nature: { text: (d) => `Sauvegarde de Force DD ${paladinDC(d)} (DD de vos sorts de Paladin).`, partial: true },
+        sentinelle_immortelle: { text: (d) => `PV regagnés : ${3 * d.level}. ${COMBAT_BOXES}`, partial: true },
+        champion_antique: { text: COMBAT_BOXES, partial: true }
+    },
+    oath_of_vengeance: {
+        sorts_du_serment_de_vengeance: { text: SPELLS_TEXT },
+        ange_vengeur: { text: COMBAT_BOXES, partial: true }
+    },
+    // Odyssée : DD 14 dans le livre (règles de 2014) ; décision de Franck : règle 2024, DD des sorts
+    oath_of_the_dragonlords: {
+        sorts_du_serment: { text: SPELLS_TEXT },
+        fureur_du_dragon: { text: (d) => `Sauvegarde de Sagesse DD ${paladinDC(d)} (DD de vos sorts de Paladin, règle 2024 ; le livre de l'Odyssée dit 14).`, partial: true },
+        mepris_des_laches: { text: (d) => `Sauvegarde de Charisme DD ${paladinDC(d)} (DD de vos sorts de Paladin, règle 2024 ; le livre de l'Odyssée dit 14).`, partial: true },
+        lien_indestructible: { text: COMBAT_BOXES, partial: true }
     }
 });
+
+/**
+ * Fureur divine (Voie du Zélote, PHB 2024, niveau 3) : 1d6 + la moitié du niveau de Barbare, une fois
+ * par tour pendant la Rage, avec une arme ou une Frappe à mains nues.
+ * @param {{ classSlug: string, subclass?: string, level: number }} stats - deriveCharacter()
+ * @returns {string} « 1d6+2 », ou '' si le personnage n'a pas la capacité
+ */
+export function divineFuryDie({ classSlug, subclass = '', level = 1 } = {}) {
+    if (classSlug !== 'barbarian' || subclass !== 'path_of_the_zealot' || level < 3) return '';
+    return `1d6+${Math.floor(level / 2)}`;
+}
+
+/**
+ * Sorts toujours préparés de la sous-classe (lot 2 : serments du Paladin ; lot 3 : les autres).
+ * @param {{ subclass: string, level: number }} derived - deriveCharacter()
+ * @returns {{ reached: Array<{ classLevel: number, vo: string, name: string, level: number, ritual: boolean }>,
+ *             upcoming: Array<{ classLevel: number, vo: string, name: string, level: number, ritual: boolean }> }}
+ *   reached : sorts déjà donnés ; upcoming : ceux des niveaux suivants
+ */
+export function subclassSpells({ subclass = '', level = 1 } = {}) {
+    const rows = Object.hasOwn(SUBCLASS_SPELLS, subclass) ? SUBCLASS_SPELLS[subclass] : [];
+    const spells = rows.map(([classLevel, vo, name, spellLevel, flag]) => ({ classLevel, vo, name, level: spellLevel, ritual: flag === 'R' }));
+    return {
+        reached: spells.filter(spell => spell.classLevel <= level),
+        upcoming: spells.filter(spell => spell.classLevel > level)
+    };
+}
 
 /** Niveau où la sous-classe s'obtient (D&D 2024 : niveau 3 pour toutes les classes) */
 export const SUBCLASS_LEVEL = 3;
@@ -60,18 +140,20 @@ export const SUBCLASS_LEVEL = 3;
 /**
  * Capacités de la sous-classe, réparties entre atteintes et à venir.
  * Les options d'une capacité (optionOf) sont rangées sous elle, pas dans les listes.
- * @param {{ subclass: string, level: number }} derived - deriveCharacter() (subclass : clé de DD_RULES.subclasses)
+ * @param {{ subclass: string, level: number, pb?: number, mods?: Object }} derived - deriveCharacter() (subclass : clé de DD_RULES.subclasses)
  * @returns {{ subclass: { key: string, name: string, source: string } | null,
  *             reached: SubclassFeature[], upcoming: SubclassFeature[] }}
  */
-export function subclassFeatures({ subclass = '', level = 1 } = {}) {
+export function subclassFeatures(derived = {}) {
+    const { subclass = '', level = 1 } = derived;
     const info = DD_RULES.subclasses[subclass];
     const list = Object.hasOwn(SUBCLASS_FEATURES, subclass) ? SUBCLASS_FEATURES[subclass] : null;
     if (!info || !list) return { subclass: null, reached: [], upcoming: [] };
     const automation = SUBCLASS_AUTOMATION[subclass] ?? {};
+    const resolve = (entry) => (entry && typeof entry.text === 'function' ? { ...entry, text: entry.text(derived) } : (entry ?? null));
     const shape = (feature) => ({
         ...feature,
-        automation: automation[feature.id] ?? null,
+        automation: resolve(automation[feature.id]),
         options: list.filter(option => option.optionOf === feature.id).map(option => ({ ...option, automation: null, options: [] }))
     });
     const main = list.filter(feature => !feature.optionOf).map(shape);
@@ -91,4 +173,20 @@ export function subclassFeatures({ subclass = '', level = 1 } = {}) {
 export function automationKind(feature) {
     if (!feature?.automation) return 'reminder';
     return feature.automation.partial ? 'partial' : 'calc';
+}
+
+/** Nom de sort comparable : comme le grimoire (normalizeText), espaces regroupés en plus */
+const spellKey = (text) => normalizeText(text).replace(/\s+/g, ' ').trim();
+
+/**
+ * Repère « Aussi dans votre liste » : marque chaque sort de sous-classe que le joueur a aussi noté
+ * dans son grimoire (nom français ou anglais, sans tenir compte de la mise en forme, de la casse, des
+ * accents, de l'apostrophe courbe ni des espaces en trop).
+ * @param {Array<{ name: string, vo: string }>} spells - subclassSpells().reached
+ * @param {Array<{ name?: string }>} rows - dynamic_spells
+ * @returns {Array<Object>} copies des sorts, avec listed: boolean
+ */
+export function markListedSpells(spells, rows) {
+    const listed = new Set((Array.isArray(rows) ? rows : []).map(row => spellKey(row?.name)).filter(Boolean));
+    return spells.map(spell => ({ ...spell, listed: listed.has(spellKey(spell.name)) || listed.has(spellKey(spell.vo)) }));
 }

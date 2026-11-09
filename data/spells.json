@@ -5305,7 +5305,7 @@
     "desc": "Vous touchez physiquement une créature consentante pour lui octroyer la faculté d'entrevoir l'avenir immédiat. Pour toute la durée, la cible a un Avantage aux jets de d20 et les autres créatures subissent un Désavantage aux jets d'attaque contre elle. Le sort prend fin prématurément si vous le relancez.<br>"
   },
   {
-    "name": "Présence royale de Yolane",
+    "name": "Présence royale de Yolande|Présence royale de Yolane",
     "vo": "Yolande's Regal Presence",
     "level": 5,
     "school": "Enchantement",

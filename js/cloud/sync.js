@@ -119,10 +119,11 @@ export function isLegacyRowName(legacyName, name) {
 }
 
 /**
- * Clés propres à la v4 (bonus de combat, emplacements de sorts, usages et choix des dons, second don
- * d'origine de l'Humain feat_0) : la v3 les efface en enregistrant (sa page n'a pas ces champs)
+ * Clés propres à la v4 (bonus de combat, emplacements de sorts, usages et choix des dons, usages des
+ * capacités de sous-classe, second don d'origine de l'Humain feat_0) : la v3 les efface en enregistrant
+ * (sa page n'a pas ces champs)
  */
-export const V4_ONLY_KEYS = Object.freeze(['combat_buffs', 'spell_slots_state', 'feat_uses', 'feat_choices',
+export const V4_ONLY_KEYS = Object.freeze(['combat_buffs', 'spell_slots_state', 'feat_uses', 'feat_choices', 'subclass_uses',
     // Emplacements de dons propres à la v4, déduits de schema.js (un nouvel emplacement y est ajouté tout seul)
     ...[HUMAN_FEAT_SLOT, ...Object.keys(CLASS_FEAT_SLOTS).map(Number)].map((slot) => `feat_${slot}`)]);
 

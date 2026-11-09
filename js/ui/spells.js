@@ -21,8 +21,11 @@
 //    joueur reste telle qu'il l'a saisie. Chaque groupe donne le DD et l'attaque de la
 //    caractéristique du don ; les cases « lancer gratuit » sont des contrôles de JEU
 //    (utilisables verrouillé), vidées au repos long.
+//  - Sorts de sous-classe (js/rules/subclass-features.js, données js/data/subclass-spells.js) :
+//    bloc « Sorts de sous-classe » juste après, sur le même modèle (serments du Paladin…), jamais
+//    écrit dans dynamic_spells ; un sort que le joueur a aussi noté dans sa liste porte un repère.
 //  - Personnage sans magie (classe, sous-classe et niveau), sans aucun sort noté ni sort de
-//    don : le grimoire et les cases « Caractéristique d'incantation / DD / Bonus d'attaque » se
+//    don ni de sous-classe : le grimoire et les cases « Caractéristique d'incantation / DD / Bonus d'attaque » se
 //    replient en un court avis, avec un bouton pour l'ouvrir (sorts d'espèce...).
 //    Le choix ouvert / replié est mémorisé dans ce navigateur, hors de la fiche. Pour un
 //    personnage sans magie de classe, les cases d'incantation passent après le grimoire.
@@ -40,6 +43,7 @@ import {
 } from '../rules/spells.js';
 import { adeptElements, elementWord } from '../rules/feat-choices.js';
 import { featSpellGroups, setFeatSpellUsePatch } from '../rules/feat-spells.js';
+import { subclassSpells, subclassFeatures, markListedSpells } from '../rules/subclass-features.js';
 import { FEAT_SLOT_ORDER, HUMAN_FEAT_SLOT } from '../state/schema.js';
 import { ABILITY_IDS } from '../data/constants.js';
 import { loadSpells } from '../data/spells.js';
@@ -693,7 +697,8 @@ export function initSpells(ctx) {
         emptyHint.textContent = '';
         if (!anySpell) {
             // Sorts de dons affichés juste au-dessus : le message ne doit pas les contredire
-            const featSpells = featSpellGroups(character, deriveCharacter(character)).length > 0;
+            const derived = deriveCharacter(character);
+            const featSpells = featSpellGroups(character, derived).length > 0 || subclassSpells(derived).reached.length > 0;
             emptyMain.textContent = featSpells
                 ? 'Aucun autre sort noté.'
                 : locked ? 'Aucun sort dans le grimoire.' : 'Aucun sort pour l\'instant.';
@@ -774,7 +779,7 @@ export function initSpells(ctx) {
         const active = document.activeElement;
         const hadFocus = !body.hidden && body.contains(active);
         const typing = hadFocus && active.matches('textarea, input, select');
-        const hasFeatSpells = featSpellGroups(character, d).length > 0;
+        const hasFeatSpells = featSpellGroups(character, d).length > 0 || subclassSpells(d).reached.length > 0;
         const mode = grimoireView(status.casts, typing || hasFeatSpells || rows.some(hasSpellContent), grimoireOpen);
         const quiet = mode === 'quiet';
 
@@ -854,7 +859,8 @@ export function initSpells(ctx) {
             el('div', { class: 'feat-spell-head' },
                 name,
                 el('span', { class: 'feat-spell-level', text: spellLevelLabel(spell.level) }),
-                spell.ritual ? el('span', { class: 'feat-spell-tag', text: 'Rituel' }) : null),
+                spell.ritual ? el('span', { class: 'feat-spell-tag', text: 'Rituel' }) : null,
+            spell.listed ? el('span', { class: 'feat-spell-tag', 'data-kind': 'listed', text: 'Aussi dans votre liste' }) : null),
             free,
             details ? el('p', { class: 'feat-spell-note', text: details }) : null);
     }
@@ -897,6 +903,33 @@ export function initSpells(ctx) {
         }
     }
 
+    // -----------------------------------------------------------------------
+    // Sorts de sous-classe (lot 2 des sous-classes : serments du Paladin) : toujours préparés,
+    // hors du nombre de sorts préparés ; reconstruits seulement si leur contenu change
+    // -----------------------------------------------------------------------
+
+    const subclassBox = el('section', { class: 'feat-spells subclass-spells', 'aria-labelledby': 'subclass-spells-title', hidden: true });
+    let subclassSignature = null;
+
+    function renderSubclassSpells(character, d) {
+        const { reached, upcoming } = subclassSpells(d);
+        const name = subclassFeatures(d).subclass?.name ?? '';
+        const spells = markListedSpells(reached, character.dynamic_spells);
+        // Niveaux à venir : « niveau 9 : Hâte, Protection contre l'énergie »
+        const next = [...new Set(upcoming.map(spell => spell.classLevel))]
+            .map(level => `niveau ${level} : ${upcoming.filter(spell => spell.classLevel === level).map(spell => spell.name).join(', ')}`);
+        const signature = JSON.stringify([name, spells, next]);
+        subclassBox.hidden = spells.length === 0;
+        if (signature === subclassSignature) return;
+        subclassSignature = signature;
+        subclassBox.replaceChildren(...(spells.length ? [
+            el('h4', { class: 'feat-spells-title', id: 'subclass-spells-title' }, icon('star'), el('span', { text: 'Sorts de sous-classe' })),
+            el('p', { class: 'feat-spells-intro', text: `Donnés par votre sous-classe (${name}) : toujours préparés, ils ne comptent pas dans vos sorts préparés.` }),
+            el('ul', { class: 'feat-spells-list' }, spells.map(featSpellLine)),
+            next.length ? el('p', { class: 'feat-spells-extra' }, el('strong', { text: 'À venir : ' }), `${next.join(' ; ')}.`) : null
+        ].filter(Boolean) : []));
+    }
+
     function render(character, changedKeys, { structural = false } = {}) {
         if (changedKeys && !changedKeys.some(key => RELEVANT_KEYS.has(key))) return;
         const d = deriveCharacter(character);
@@ -905,6 +938,7 @@ export function initSpells(ctx) {
         renderRows(character, changedKeys === null && !structural, structural);
         renderSlots(character, d);
         renderFeatSpells(character, d);
+        renderSubclassSpells(character, d);
         renderGrimoire(character, d);
     }
 
@@ -1047,6 +1081,7 @@ export function initSpells(ctx) {
         toolbar,
         slotsBox,
         featBox,
+        subclassBox,
         tableScroll,
         emptyText,
         addBtn);

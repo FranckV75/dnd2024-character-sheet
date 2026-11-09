@@ -15,6 +15,7 @@ import {
 } from './logic.js';
 import { reachedFeatIds } from './feats.js';
 import { weaponReach, isUnarmedStrike } from './weapons.js';
+import { divineFuryDie } from './subclass-features.js';
 import {
     subclassId, auraOfProtectionBonus, jackOfAllTradesBonus, unarmoredDefenseOptions, weaponProficiency,
     shieldKeepsMartialArts, subclassFinesse
@@ -487,6 +488,10 @@ export function computeWeapon(weapon, stats, buffs = {}) {
 
     const extraDmg = [];
     if (buffs.rage && stat === 'FOR') extraDmg.push({ die: String(getRageBonus(level)), type: 'Rage' });
+    // Fureur divine (Voie du Zélote, PHB 2024) : pendant la Rage, avec toute arme ou la Frappe à mains
+    // nues, quelle que soit la caractéristique ; une fois par tour (première créature touchée)
+    const divineFury = buffs.rage ? divineFuryDie(stats) : '';
+    if (divineFury) extraDmg.push({ die: divineFury, type: 'Fureur divine 1/tour' });
     if (buffs.hunterMark) extraDmg.push({ die: hunterMarkDie({ level, classSlug: slug }), type: 'Force' });
     // Cogneur lourd (PHB 2024, « Expert en armes lourdes ») : arme Lourde, bonus de maîtrise
     if (buffs.heavyWeaponMaster && prop.toLowerCase().split(/[,;]/).some(p => p.trim().startsWith('lourde'))) {

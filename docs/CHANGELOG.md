@@ -2,6 +2,23 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.22.0] - 2026-11-09 (Sous-classes, lot 2 : Zélote et serments du Paladin)
+### Added
+- Voie du Zélote : cases dans l'onglet Combat pour la réserve de d12 de Guerrier des dieux (4 dés,
+  puis 5, 6 et 7 aux niveaux 6, 12 et 17), Focalisation fanatique, Présence zélée et Rage des dieux.
+  Elles se vident au repos long ; la Focalisation fanatique se vide aussi quand le bouton Rage s'éteint.
+- Fureur divine : avec le bouton Rage allumé, chaque arme et la Frappe à mains nues affichent
+  « +1d6+N (Fureur divine 1/tour) » (N = moitié du niveau de Barbare), quelle que soit la caractéristique.
+- Paladin : bloc « Sorts de sous-classe » dans l'onglet Magie, avec les sorts toujours préparés des
+  cinq serments (Dévotion, Gloire, Anciens, Vengeance, Seigneur Dragon) et ceux à venir. Un sort que
+  le joueur a aussi noté dans sa liste porte le repère « Aussi dans votre liste ».
+- Conduit divin et capacités de serment : chiffres calculés dans le bloc « Sous-classe » (DD des
+  sorts de Paladin, bonus d'Arme sacrée, PV temporaires du Châtiment inspirant, PV de Sentinelle
+  immortelle…) ; cases pour Défense glorieuse et les capacités du niveau 20. Serment du Seigneur
+  Dragon : DD de la règle 2024 (DD des sorts), le DD 14 du livre est rappelé (décision de Franck).
+- Sauvegarde : nouvelle clé facultative `subclass_uses` (cases cochées), absente des anciennes fiches
+  et protégée de l'ancien site comme `feat_uses`.
+
 ## [4.21.0] - 2026-11-09 (Sous-classes, lot 1 : capacités affichées)
 ### Added
 - Onglet Aptitudes & Traits, « Capacités de classe » : la liste des capacités de la sous-classe choisie

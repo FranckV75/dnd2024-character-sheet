@@ -19,6 +19,7 @@
 import { deriveCharacter, parseNumber } from './character.js';
 import { restFeatNotes } from './feat-effects.js';
 import { restFeatUses } from './feat-uses.js';
+import { restSubclassUses } from './subclass-uses.js';
 import { restFeatSpellUses } from './feat-spells.js';
 import { isHuman } from './feats.js';
 
@@ -221,7 +222,10 @@ export function planShortRest(character, { diceSpent = 0, healing = 0, sorcerous
     for (const i of toRestore) patch[`class_res_${i}`] = false;
 
     // --- Dons à usages limités qui reviennent aussi au repos court (Tueur de mages) ---
-    const featUses = restFeatUses(character, d, 'short');
+    // (et cases de sous-classe : celles du repos court, et celles d'une fois par Rage, finie)
+    const featCounts = restFeatUses(character, d, 'short');
+    const subclassUses = restSubclassUses(character, d, 'short');
+    const featUses = { patch: { ...featCounts.patch, ...subclassUses.patch }, restored: [...featCounts.restored, ...subclassUses.restored] };
     Object.assign(patch, featUses.patch);
 
     // --- Magie de pacte (Sorcier) : seuls les emplacements de pacte reviennent ---
@@ -309,9 +313,14 @@ export function planLongRest(character) {
 
     // Dons à usages limités : tous reviennent (Chanceux, Tueur de mages, Rituel rapide), puis les
     // lancers gratuits des sorts de dons (lus sur la fiche déjà mise à jour : même clé feat_uses)
+    // Cases des capacités de sous-classe (Guerrier des dieux du Zélote…) : toutes reviennent aussi
     const counters = restFeatUses(character, d, 'long');
     const spellUses = restFeatSpellUses({ ...character, ...counters.patch }, d);
-    const featUses = { patch: { ...counters.patch, ...spellUses.patch }, restored: [...counters.restored, ...spellUses.restored] };
+    const subclassUses = restSubclassUses(character, d, 'long');
+    const featUses = {
+        patch: { ...counters.patch, ...spellUses.patch, ...subclassUses.patch },
+        restored: [...counters.restored, ...spellUses.restored, ...subclassUses.restored]
+    };
     Object.assign(patch, featUses.patch);
 
     return {

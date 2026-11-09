@@ -17,6 +17,7 @@ import { stripHTML } from '../state/migrate.js';
 import { deriveCharacter, featSlotState, hitDieForClass, exhaustionSeverity } from '../rules/character.js';
 import { featEffects, AUTOMATED_FEATS } from '../rules/feat-effects.js';
 import { featCounters, setFeatUsesPatch } from '../rules/feat-uses.js';
+import { subclassCounters, setSubclassUsesPatch } from '../rules/subclass-uses.js';
 import { FEAT_CHOICE_RULES, slotChoice, setFeatChoicePatch, fieldOptions, fieldActive } from '../rules/feat-choices.js';
 import {
     featName, featSlotName, isHuman, classFeatSlot, featSlotCounts, featSlotLevelFor, STYLE_ALTERNATIVES
@@ -552,12 +553,18 @@ function renderFeats(root, character, d, effects, counters) {
 // Dons à usages limités : cases cochées = usages dépensés (js/rules/feat-uses.js)
 // Mêmes cases dans l'onglet Combat et dans l'encadré du don ; elles restent utilisables fiche
 // verrouillée (état de jeu, comme la ressource de classe) et se vident au repos.
+// Les capacités de sous-classe à usages limités (js/rules/subclass-uses.js, clé subclass_uses) ont
+// les mêmes cases, dans l'onglet Combat seulement.
 // ---------------------------------------------------------------------------
 
 /** Groupe de cases d'un compteur ; `where` distingue les deux endroits pour les identifiants */
 function counterGroup(counter, where) {
     const id = `feat-counter-${where}-${counter.key}`;
-    return el('div', { class: 'feat-counter', 'data-feat-counter': counter.key, 'data-max': String(counter.max) },
+    return el('div', {
+        class: 'feat-counter', 'data-feat-counter': counter.key, 'data-max': String(counter.max),
+        // Capacité de sous-classe : clé subclass_uses (sinon feat_uses)
+        'data-counter-source': counter.source === 'subclass' ? 'subclass' : 'feat'
+    },
         el('span', { class: 'feat-counter-name', id: `${id}-name` },
             el('span', { class: 'label accent', text: counter.label }),
             el('small', { class: 'feat-counter-meta', text: `${counter.featName} · ${counter.resetText}` })),
@@ -581,7 +588,7 @@ function syncCounterChecks(root, counters) {
     }
 }
 
-/** Bande « dons » de l'onglet Combat, masquée si aucun don atteint n'a de cases */
+/** Bande « dons » de l'onglet Combat (et capacités de sous-classe), masquée si rien n'a de cases */
 function renderFeatCounters(root, counters) {
     const box = root.querySelector('#feat-counters');
     const signature = JSON.stringify(counters.map(({ key, max, label }) => [key, max, label]));
@@ -603,7 +610,8 @@ function bindFeatCounters(root, store) {
         const boxes = [...group.querySelectorAll('input[data-feat-use]')];
         const index = boxes.indexOf(box);
         const used = box.checked ? index + 1 : index;
-        store.update(setFeatUsesPatch(store.get(), box.dataset.featUse, used, Number(group.dataset.max)));
+        const setPatch = group.dataset.counterSource === 'subclass' ? setSubclassUsesPatch : setFeatUsesPatch;
+        store.update(setPatch(store.get(), box.dataset.featUse, used, Number(group.dataset.max)));
     });
 }
 
@@ -929,8 +937,10 @@ function render(root, character, replaced = false) {
     const counters = featCounters(character, d);
     renderOutputs(root, character, d);
     renderFeats(root, character, d, effects, counters);
-    renderFeatCounters(root, counters);
-    syncCounterChecks(root, counters);
+    // Bande de l'onglet Combat : cases des dons, puis celles de la sous-classe
+    const combatCounters = [...counters, ...subclassCounters(character, d)];
+    renderFeatCounters(root, combatCounters);
+    syncCounterChecks(root, combatCounters);
     renderFeatMentions(root, effects);
     renderSkillRanks(root, d);
     applyLock(root);

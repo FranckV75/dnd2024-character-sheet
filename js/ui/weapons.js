@@ -23,6 +23,8 @@ import { deriveCharacter, computeWeapon, sneakAttackDice, hunterMarkDie } from '
 import { getRageBonus, parseWeaponConfig } from '../rules/logic.js';
 import { weaponFeatNotes } from '../rules/feat-effects.js';
 import { weaponProficiency } from '../rules/class-features.js';
+import { divineFuryDie } from '../rules/subclass-features.js';
+import { rageEndPatch } from '../rules/subclass-uses.js';
 import { findMastery, masteryDetails, masteryParagraphs, masteryAccessNote, weaponMasteryFeature } from '../rules/weapon-masteries.js';
 import {
     matchesWeaponFilter, rowFromRulebookWeapon, completeRowFromRulebook,
@@ -74,10 +76,11 @@ const DAMAGE_TYPE_LABELS = {
 
 /** Boutons des bonus de combat ; chaque définition reçoit deriveCharacter() (niveau, bonus de maîtrise) */
 const BUFF_DEFS = {
-    rage: ({ level }) => ({
+    rage: (derived) => ({
         icon: 'flame',
-        text: `Rage (+${getRageBonus(level)})`,
-        title: `Rage : +${getRageBonus(level)} aux dégâts des attaques utilisant la Force`
+        text: `Rage (+${getRageBonus(derived.level)})`,
+        title: `Rage : +${getRageBonus(derived.level)} aux dégâts des attaques utilisant la Force`
+            + (divineFuryDie(derived) ? ` ; Fureur divine : +${divineFuryDie(derived)} une fois par tour, avec toute arme` : '')
     }),
     sneakAttack: ({ level }) => ({
         icon: 'swords',
@@ -562,13 +565,20 @@ export function initWeapons(ctx) {
 
     function refreshBuffs(character, derived) {
         const defs = buffsForCharacter(derived.classSlug, character).map(key => ({ key, ...BUFF_DEFS[key](derived) }));
-        const signature = defs.map(d => `${d.key}:${d.text}`).join('|');
+        const signature = defs.map(d => `${d.key}:${d.text}:${d.title}`).join('|');
         if (signature !== buffsSignature) {
             buffsSignature = signature;
             buffsBox.replaceChildren(...defs.map(d => el('button', {
                 type: 'button', class: 'btn-chip weapons-buff', 'data-buff': d.key,
                 title: d.title, 'aria-pressed': 'false',
-                on: { click: () => store.update({ combat_buffs: toggleBuff(store.get().combat_buffs, d.key) }) }
+                on: {
+                    click: () => {
+                        const current = store.get();
+                        const combatBuffs = toggleBuff(current.combat_buffs, d.key);
+                        // Rage éteinte : les cases « une fois par Rage » se vident (Focalisation fanatique)
+                        store.update({ combat_buffs: combatBuffs, ...rageEndPatch(current, deriveCharacter(current), combatBuffs) });
+                    }
+                }
             }, icon(d.icon), el('span', { class: 'btn-label', text: d.text }))));
             buffsBox.hidden = defs.length === 0;
         }

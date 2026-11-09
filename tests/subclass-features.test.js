@@ -67,7 +67,7 @@ describe('Capacités atteintes et à venir', () => {
         assert.deepEqual(reached.map(f => f.level), [3, 3]);
         assert.ok(reached.some(f => /Fureur divine/.test(f.name)));
         assert.deepEqual(upcoming.map(f => f.level), [6, 10, 14]);
-        assert.equal(automationKind(reached[0]), 'reminder');
+        assert.equal(automationKind(reached[0]), 'calc');
     });
 
     test('niveau 2 : tout est à venir ; sans sous-classe : rien', () => {
