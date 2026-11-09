@@ -591,7 +591,8 @@ function syncCounterChecks(root, counters) {
 /** Bande « dons » de l'onglet Combat (et capacités de sous-classe), masquée si rien n'a de cases */
 function renderFeatCounters(root, counters) {
     const box = root.querySelector('#feat-counters');
-    const signature = JSON.stringify(counters.map(({ key, max, label }) => [key, max, label]));
+    // (le rechargement peut changer avec le niveau : Flash protecteur, repos court au niveau 6)
+    const signature = JSON.stringify(counters.map(({ key, max, label, resetText, featName, use }) => [key, max, label, resetText, featName, use]));
     if (renderedSignatures.get(box) !== signature) {
         renderedSignatures.set(box, signature);
         box.replaceChildren(...counters.map(counter => counterGroup(counter, 'combat')));

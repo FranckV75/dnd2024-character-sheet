@@ -106,8 +106,13 @@ function heavyOrVersatile(weapon) {
     return props.some(p => p.startsWith('lourde') || p.startsWith('polyvalente'));
 }
 
-/** Lance, trident ou javeline (Maître de la lance, L'Hoplite) */
-const SPEAR = /^(lance|trident|javeline)\b/i;
+/** Lance, trident ou javeline (Maître de la lance, L'Hoplite) ; pas la Lance d'arçon (déjà 1d10, Allonge) */
+const SPEAR = /^(lance|trident|javeline)\b/;
+const fold = (text) => String(text ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\u2018\u2019]/g, "'").trim().toLowerCase();
+const isSpear = (weapon) => {
+    const name = fold(weapon?.name);
+    return SPEAR.test(name) && !name.startsWith("lance d'arcon");
+};
 
 /**
  * Rappels sous une arme (zone weapon:<i> de featEffects).
@@ -124,7 +129,7 @@ export function subclassCombatWeaponNotes(weapon, derived) {
     if (has(derived, 'path_of_the_world_tree', 10) && weaponReach(weapon).melee && !isUnarmedStrike(weapon) && heavyOrVersatile(weapon)) {
         add('racines_percutantes', 'Racines percutantes', 'À votre tour : allonge +3 m, et Poussée ou Renversement en plus de la botte de l\'arme.');
     }
-    if (has(derived, 'odyssean_champion', 7) && SPEAR.test(String(weapon?.name ?? '').trim())) {
+    if (has(derived, 'odyssean_champion', 7) && isSpear(weapon)) {
         add('maitre_de_la_lance', 'Maître de la lance', 'Dé de dégâts d8 (d10 à deux mains) et allonge 3 m : à régler dans la configuration de l\'arme. Action Bonus après l\'attaque : talon de l\'arme, 1d4 contondants.');
     }
     return notes;

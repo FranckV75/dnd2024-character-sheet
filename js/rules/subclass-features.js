@@ -104,7 +104,9 @@ const MANUAL_AUTOMATION = {
     // Lot 4 : petits calculs (js/rules/subclass-calcs.js)
     champion: {
         style_de_combat_supplementaire: { text: 'Second emplacement « Style de combat » dans les dons (onglet Aptitudes & Traits).' },
-        critique_ameliore: { text: 'Sous chaque arme (onglet Combat) : « Coup critique sur 19 ou 20 ».' },
+        critique_ameliore: { text: (d) => (d.level >= 15
+            ? 'Remplacé par Critique supérieur (niveau 15) : « Coup critique sur 18 à 20 » sous chaque arme.'
+            : 'Sous chaque arme (onglet Combat) : « Coup critique sur 19 ou 20 ».') },
         critique_superieur: { text: 'Sous chaque arme (onglet Combat) : « Coup critique sur 18 à 20 ».' },
         athlete_remarquable: { text: 'Avantage rappelé près de l\'Initiative.', partial: true },
         survivant: { text: (d) => `Avantage rappelé près des jets contre la mort ; PV regagnés par tour : ${5 + mod(d, 'con')} (5 + Constitution).`, partial: true }
@@ -206,6 +208,11 @@ const MANUAL_AUTOMATION = {
     circle_of_the_sea: {
         affinite_aquatique: { text: 'Rappel « Nage = Vitesse » près de la Vitesse (onglet Combat).', partial: true }
     },
+    // Voie du Cœur sauvage : sorts lancés seulement en rituel, jamais préparés
+    path_of_the_wild_heart: {
+        langage_des_betes: { text: 'Bloc « Sorts de sous-classe » de l\'onglet Magie : lancés seulement en rituel, hors du nombre de sorts préparés.' },
+        langage_de_la_nature: { text: 'Bloc « Sorts de sous-classe » de l\'onglet Magie : lancé seulement en rituel, hors du nombre de sorts préparés.' }
+    },
     // Lot 5 : boutons du tableau des armes et dés des ressources (js/rules/subclass-combat.js)
     path_of_the_berserker: {
         frenesie: { text: (d) => `Bouton « Frénésie » du tableau des armes : +${frenzyDice(d.level)} au premier coup de Force du tour, compté quand la Rage est allumée aussi.` }
@@ -217,7 +224,9 @@ const MANUAL_AUTOMATION = {
         superiorite_martiale_des_de_superiorite: { text: (d) => `${countText(d, 'battle_master', 'superiorite_martiale_des_de_superiorite')} (dés de ${superiorityDie(d.level)}) ; bouton « Manœuvre » du tableau des armes pour ajouter le dé aux dégâts.` },
         superiorite_martiale_man_uvres: { text: 'Dé et DD rappelés sous chaque arme ; la liste de vos manœuvres est à noter vous-même.', partial: true },
         dd_des_man_uvres: { text: (d) => `DD des manœuvres : ${maneuverDC(d)} (8 + Force ou Dextérité + maîtrise), rappelé sous chaque arme.` },
-        superiorite_martiale_amelioree: { text: 'Dé de supériorité d10 compté (bouton et rappels).' },
+        superiorite_martiale_amelioree: { text: (d) => (d.level >= 18
+            ? 'Remplacé par le d12 de Supériorité martiale ultime (niveau 18).'
+            : 'Dé de supériorité d10 compté (bouton et rappels).') },
         superiorite_martiale_ultime: { text: 'Dé de supériorité d12 compté (bouton et rappels).' }
     },
     path_of_the_world_tree: {
@@ -302,10 +311,12 @@ for (const [subclass, list] of Object.entries(SUBCLASS_COUNTERS)) {
     }
 }
 for (const [subclass, , featId, , mention, , buff] of SUBCLASS_DEFENSES) {
-    (GENERATED_AUTOMATION[subclass] ??= {})[featId] = {
-        text: `Repère « ${mention} » près de la CA (onglet Combat)${buff === 'rage' ? ', allumé avec le bouton Rage' : ''}.`,
-        ...(PERMANENT_DEFENSES.includes(subclass) ? {} : { partial: true })
-    };
+    const marker = `Repère « ${mention} » près de la CA (onglet Combat)${buff === 'rage' ? ', allumé avec le bouton Rage' : ''}`;
+    const counter = GENERATED_AUTOMATION[subclass]?.[featId];
+    (GENERATED_AUTOMATION[subclass] ??= {})[featId] = counter
+        // Capacité à cases et à Résistance (Cri de guerre) : les deux
+        ? { text: (d) => `${countText(d, subclass, featId)} ; ${marker.charAt(0).toLowerCase()}${marker.slice(1)}.`, partial: true }
+        : { text: `${marker}.`, ...(PERMANENT_DEFENSES.includes(subclass) ? {} : { partial: true }) };
 }
 
 /**

@@ -430,7 +430,7 @@ describe('Vraies sauvegardes locales : dons', { skip: localFiles.length === 0 &&
             assert.deepEqual(effects.hpMax, []);
             assert.deepEqual(effects.initiative, []);
             // (les Résistances de la sous-classe, lot 5, sont des repères : rien de compté)
-            assert.deepEqual(effects.armorClass.filter(n => !n.classFeature), []);
+            assert.deepEqual(effects.armorClass.filter(n => !(n.classFeature && n.mention)), []);
 
             // Dons réellement atteints : rappels seulement
             for (const id of d.feats) assert.ok(FEATS_DATA[id], `don inconnu : ${id}`);

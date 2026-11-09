@@ -244,3 +244,29 @@ describe('Rappels sous les armes et textes', () => {
         assert.ok(weaponFeatNotes(SWORD, r, deriveCharacter(r)).some(n => n.featId === 'dd_des_man_uvres'));
     });
 });
+
+describe('Relecture finale (lots 0 à 6)', () => {
+    const text = (d, id) => subclassFeatures(d).reached.find(f => f.id === id).automation.text;
+
+    test('Maître de la lance : lance, trident, javeline, mais pas la Lance d\u2019arçon', () => {
+        const d = hero('Guerrier', "L'Hoplite", 7);
+        assert.equal(subclassCombatWeaponNotes({ name: 'Lance', prop: 'Lancer, Polyvalente' }, d)[0].featId, 'maitre_de_la_lance');
+        assert.deepEqual(subclassCombatWeaponNotes({ name: "Lance d'arçon", prop: 'Lourde, Allonge' }, d), []);
+        assert.deepEqual(subclassCombatWeaponNotes({ name: 'Lance d\u2019arçon', prop: 'Lourde, Allonge' }, d), []);
+    });
+
+    test('capacité dépassée : le texte renvoie à celle qui la remplace', () => {
+        assert.match(text(hero('Guerrier', 'Champion', 14), 'critique_ameliore'), /19 ou 20/);
+        assert.match(text(hero('Guerrier', 'Champion', 15), 'critique_ameliore'), /Remplacé par Critique supérieur/);
+        assert.match(text(hero('Guerrier', 'Maître de Guerre', 18), 'superiorite_martiale_amelioree'), /d12/);
+    });
+
+    test('Cri de guerre : cases et repère de Résistance dans le même texte', () => {
+        const d = hero('Rôdeur', 'Conclave des Amazones', 3, { wis_score: '16' });
+        assert.match(text(d, 'cri_de_guerre'), /3 cases dans l'onglet Combat.*repère « Résistance C\/P\/T \(Cri\) »/);
+    });
+
+    test('Voie du Cœur sauvage : sorts lancés seulement en rituel', () => {
+        assert.match(text(hero('Barbare', 'Voie du Cœur Sauvage', 3), 'langage_des_betes'), /seulement en rituel/);
+    });
+});

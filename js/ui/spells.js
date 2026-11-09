@@ -930,7 +930,10 @@ export function initSpells(ctx) {
         const list = (items) => el('ul', { class: 'feat-spells-list' }, items.map(featSpellLine));
         subclassBox.replaceChildren(...(spells.length ? [
             el('h4', { class: 'feat-spells-title', id: 'subclass-spells-title' }, icon('star'), el('span', { text: 'Sorts de sous-classe' })),
-            el('p', { class: 'feat-spells-intro', text: `Donnés par votre sous-classe (${name}) : toujours préparés, ils ne comptent ni dans vos sorts préparés ni dans vos sorts mineurs.`
+            el('p', { class: 'feat-spells-intro', text: (spells.every(spell => /^Seulement en rituel/.test(spell.note ?? ''))
+                // Voie du Cœur sauvage : rituels seulement
+                ? `Donnés par votre sous-classe (${name}) : lancés seulement en rituel, ils ne comptent pas dans vos sorts préparés.`
+                : `Donnés par votre sous-classe (${name}) : toujours préparés, ils ne comptent ni dans vos sorts préparés ni dans vos sorts mineurs.`)
                 + (groups[0] ? ' Seuls ceux du terrain choisi à votre dernier repos long sont préparés.' : '') }),
             ...(groups[0]
                 ? groups.map(group => el('div', { class: 'feat-spells-group' },
