@@ -2,6 +2,19 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.23.0] - 2026-11-09 (Sous-classes, lot 3 : sorts toujours préparés)
+### Added
+- Bloc « Sorts de sous-classe » de l'onglet Magie pour 26 sous-classes de plus : domaines du Clerc
+  (Vie, Lumière, Supercherie, Guerre, Prophétie), cercles du Druide (Lune, Mer, Étoiles, Terre,
+  Sacrifice), patrons du Sorcier (Archifée, Céleste, Fiélon, Grand Ancien), Ensorceleur (aberrant,
+  mécanique, draconique), Rôdeur (Errant féerique, Traqueur d'ombre), Collège du Glamour, Voie du
+  Cœur sauvage (rituels seulement), Magicien (Abjurateur, Illusionniste), Guerrier psi, Moine (Ombre,
+  Éléments). Cercle de la Terre : sorts rangés par terrain (seul celui choisi au dernier repos long
+  est préparé). Les sorts mineurs donnés par une sous-classe y sont aussi.
+- Bloc « Sous-classe » : ces capacités passent de « Rappel » à « Calculé » (ou « En partie »).
+### Changed
+- Voie du Cœur sauvage : « Sens animal » s'appelle « Perception bestiale », comme dans la liste des sorts.
+
 ## [4.22.0] - 2026-11-09 (Sous-classes, lot 2 : Zélote et serments du Paladin)
 ### Added
 - Voie du Zélote : cases dans l'onglet Combat pour la réserve de d12 de Guerrier des dieux (4 dés,

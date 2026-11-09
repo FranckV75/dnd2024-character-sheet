@@ -30,8 +30,9 @@ const COMBAT_BOXES = 'Case dans l\'onglet Combat, vidée au repos long.';
  * Ce que la fiche fait de chaque capacité qu'elle gère, par sous-classe puis identifiant :
  * { text, partial } — partial : seule une partie de la capacité est calculée, le reste est un rappel.
  * text peut être une fonction de deriveCharacter() quand il contient un nombre calculé (DD, bonus).
+ * Les capacités qui donnent des sorts (SPELL_FEATURES) sont ajoutées à la suite.
  */
-export const SUBCLASS_AUTOMATION = Object.freeze({
+const MANUAL_AUTOMATION = {
     draconic_sorcery: {
         resilience_draconique: { text: 'CA sans armure calculée (10 + Dex + Cha) ; « dont +X PV » sous les PV maximum, à reporter vous-même.' }
     },
@@ -64,34 +65,76 @@ export const SUBCLASS_AUTOMATION = Object.freeze({
     },
     // Lot 2 : serments du Paladin (Iria)
     oath_of_devotion: {
-        sorts_du_serment_de_devotion: { text: SPELLS_TEXT },
         arme_sacree: { text: (d) => `Bonus à l'attaque avec l'arme imprégnée : ${signed(Math.max(1, chaMod(d)))} (Charisme, minimum +1), à ajouter vous-même pendant les 10 minutes.`, partial: true },
         nimbe_sacre: { text: (d) => `Dégâts radiants de l'aura : ${chaMod(d) + (Number(d.pb) || 2)} (Charisme + maîtrise). ${COMBAT_BOXES}`, partial: true }
     },
     oath_of_glory: {
-        sorts_du_serment_de_gloire: { text: SPELLS_TEXT },
         chatiment_inspirant: { text: (d) => `PV temporaires à répartir : 2d8 + ${d.level}.`, partial: true },
         defense_glorieuse: { text: (d) => `Bonus à la CA : ${signed(Math.max(1, chaMod(d)))} ; ${Math.max(1, chaMod(d))} case${Math.max(1, chaMod(d)) > 1 ? 's' : ''} dans l'onglet Combat, vidée${Math.max(1, chaMod(d)) > 1 ? 's' : ''} au repos long.`, partial: true },
         legende_vivante: { text: COMBAT_BOXES, partial: true }
     },
     oath_of_the_ancients: {
-        sorts_du_serment_des_anciens: { text: SPELLS_TEXT },
         courroux_de_la_nature: { text: (d) => `Sauvegarde de Force DD ${paladinDC(d)} (DD de vos sorts de Paladin).`, partial: true },
         sentinelle_immortelle: { text: (d) => `PV regagnés : ${3 * d.level}. ${COMBAT_BOXES}`, partial: true },
         champion_antique: { text: COMBAT_BOXES, partial: true }
     },
     oath_of_vengeance: {
-        sorts_du_serment_de_vengeance: { text: SPELLS_TEXT },
         ange_vengeur: { text: COMBAT_BOXES, partial: true }
     },
     // Odyssée : DD 14 dans le livre (règles de 2014) ; décision de Franck : règle 2024, DD des sorts
     oath_of_the_dragonlords: {
-        sorts_du_serment: { text: SPELLS_TEXT },
         fureur_du_dragon: { text: (d) => `Sauvegarde de Sagesse DD ${paladinDC(d)} (DD de vos sorts de Paladin, règle 2024 ; le livre de l'Odyssée dit 14).`, partial: true },
         mepris_des_laches: { text: (d) => `Sauvegarde de Charisme DD ${paladinDC(d)} (DD de vos sorts de Paladin, règle 2024 ; le livre de l'Odyssée dit 14).`, partial: true },
         lien_indestructible: { text: COMBAT_BOXES, partial: true }
     }
-});
+};
+
+/**
+ * Capacités qui donnent des sorts du bloc « Sorts de sous-classe » (js/data/subclass-spells.js) :
+ * true = la capacité se résume à ces sorts (« Calculé ») ; un texte = le reste de la capacité, qui
+ * reste un rappel (« En partie »).
+ */
+const SPELL_FEATURES = {
+    path_of_the_wild_heart: { langage_des_betes: true, langage_de_la_nature: true },
+    college_of_glamour: { magie_enjoleuse_sorts_toujours_prepares: true, manteau_de_majeste: 'Injonction sans emplacement : rappel.' },
+    life_domain: { sorts_du_domaine_de_la_vie: true },
+    light_domain: { sorts_du_domaine_de_la_lumiere: true },
+    trickery_domain: { sorts_du_domaine_de_la_supercherie: true },
+    war_domain: { sorts_du_domaine_de_la_guerre: true },
+    prophecy_domain: { sorts_du_domaine_de_la_prophetie: true, conscience_etendue: 'Maîtrise de Perception : à cocher vous-même.' },
+    circle_of_the_moon: { sorts_du_cercle_de_la_lune: true },
+    circle_of_the_sea: { sorts_du_cercle_de_la_mer: true },
+    circle_of_the_stars: { carte_stellaire: 'Lancers gratuits de Rayon traçant : rappel.' },
+    circle_of_the_land: { sorts_du_cercle_de_la_terre: true },
+    circle_of_sacrifice: { rituel_de_sacrifice: 'Immolation et bonus aux dégâts : rappel.', sagesse_des_astres: 'Rameaux et Cercle de pierres : rappel.' },
+    psi_warrior: { maitre_telekinesiste: 'Lancer gratuit et attaque en action bonus : rappel.' },
+    warrior_of_shadow: { arts_de_l_ombre_tenebres: 'Vision dans les Ténèbres et déplacement de la zone : rappel.', arts_de_l_ombre_chimeres_d_ombre: true },
+    warrior_of_the_elements: { manipulation_des_elements: true },
+    fey_wanderer: { sorts_de_l_errant_feerique: true },
+    gloom_stalker: { sorts_du_traqueur_d_ombre: true },
+    aberrant_sorcery: { sorts_psioniques: true },
+    clockwork_sorcery: { sorts_mecaniques: true },
+    draconic_sorcery: { sorts_draconiques: true },
+    archfey_patron: { sorts_de_l_archifee: true },
+    celestial_patron: { sorts_celestes: true },
+    fiend_patron: { sorts_du_fielon: true },
+    great_old_one_patron: { sorts_du_grand_ancien: true, malefice_occulte: 'Désavantage aux sauvegardes de la cible : rappel.' },
+    abjurer: { briseur_de_sorts: 'Action bonus, maîtrise au test et emplacement gardé : rappel.' },
+    illusionist: { illusions_ameliorees: 'Composantes et portée des illusions : rappel.', creatures_fantasmagoriques: 'Lancers gratuits en illusion : rappel.' },
+    oath_of_devotion: { sorts_du_serment_de_devotion: true },
+    oath_of_glory: { sorts_du_serment_de_gloire: true },
+    oath_of_the_ancients: { sorts_du_serment_des_anciens: true },
+    oath_of_vengeance: { sorts_du_serment_de_vengeance: true },
+    oath_of_the_dragonlords: { sorts_du_serment: true }
+};
+
+export const SUBCLASS_AUTOMATION = Object.freeze(Object.fromEntries(
+    [...new Set([...Object.keys(MANUAL_AUTOMATION), ...Object.keys(SPELL_FEATURES)])].map(subclass => [subclass, {
+        ...Object.fromEntries(Object.entries(SPELL_FEATURES[subclass] ?? {}).map(([id, rest]) => [id, rest === true
+            ? { text: SPELLS_TEXT }
+            : { text: `${SPELLS_TEXT} ${rest}`, partial: true }])),
+        ...MANUAL_AUTOMATION[subclass]
+    }])));
 
 /**
  * Fureur divine (Voie du Zélote, PHB 2024, niveau 3) : 1d6 + la moitié du niveau de Barbare, une fois
@@ -105,15 +148,20 @@ export function divineFuryDie({ classSlug, subclass = '', level = 1 } = {}) {
 }
 
 /**
- * Sorts toujours préparés de la sous-classe (lot 2 : serments du Paladin ; lot 3 : les autres).
+ * Sorts toujours préparés (ou connus) donnés par la sous-classe (js/data/subclass-spells.js).
  * @param {{ subclass: string, level: number }} derived - deriveCharacter()
- * @returns {{ reached: Array<{ classLevel: number, vo: string, name: string, level: number, ritual: boolean }>,
- *             upcoming: Array<{ classLevel: number, vo: string, name: string, level: number, ritual: boolean }> }}
- *   reached : sorts déjà donnés ; upcoming : ceux des niveaux suivants
+ * @returns {{ reached: SubclassSpell[], upcoming: SubclassSpell[] }}
+ *   reached : sorts déjà donnés ; upcoming : ceux des niveaux suivants. SubclassSpell :
+ *   { classLevel, vo, name, level (niveau du sort, 0 = sort mineur), ritual, note?, group? } ;
+ *   group : terrain du Cercle de la Terre (un seul à la fois, choisi à chaque repos long)
  */
 export function subclassSpells({ subclass = '', level = 1 } = {}) {
     const rows = Object.hasOwn(SUBCLASS_SPELLS, subclass) ? SUBCLASS_SPELLS[subclass] : [];
-    const spells = rows.map(([classLevel, vo, name, spellLevel, flag]) => ({ classLevel, vo, name, level: spellLevel, ritual: flag === 'R' }));
+    const spells = rows.map(([classLevel, vo, name, spellLevel, flag, options]) => ({
+        classLevel, vo, name, level: spellLevel, ritual: flag === 'R',
+        ...(options?.note ? { note: options.note } : {}),
+        ...(options?.group ? { group: options.group } : {})
+    }));
     return {
         reached: spells.filter(spell => spell.classLevel <= level),
         upcoming: spells.filter(spell => spell.classLevel > level)

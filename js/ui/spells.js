@@ -916,16 +916,26 @@ export function initSpells(ctx) {
         const name = subclassFeatures(d).subclass?.name ?? '';
         const spells = markListedSpells(reached, character.dynamic_spells);
         // Niveaux à venir : « niveau 9 : Hâte, Protection contre l'énergie »
+        // (Cercle de la Terre : « Boule de feu (Aride) »)
         const next = [...new Set(upcoming.map(spell => spell.classLevel))]
-            .map(level => `niveau ${level} : ${upcoming.filter(spell => spell.classLevel === level).map(spell => spell.name).join(', ')}`);
+            .map(level => `niveau ${level} : ${upcoming.filter(spell => spell.classLevel === level)
+                .map(spell => (spell.group ? `${spell.name} (${spell.group})` : spell.name)).join(', ')}`);
+        // Sorts rangés par terrain (Cercle de la Terre), sinon une seule liste
+        const groups = [...new Set(spells.map(spell => spell.group ?? ''))];
         const signature = JSON.stringify([name, spells, next]);
         subclassBox.hidden = spells.length === 0;
         if (signature === subclassSignature) return;
         subclassSignature = signature;
+        const list = (items) => el('ul', { class: 'feat-spells-list' }, items.map(featSpellLine));
         subclassBox.replaceChildren(...(spells.length ? [
             el('h4', { class: 'feat-spells-title', id: 'subclass-spells-title' }, icon('star'), el('span', { text: 'Sorts de sous-classe' })),
-            el('p', { class: 'feat-spells-intro', text: `Donnés par votre sous-classe (${name}) : toujours préparés, ils ne comptent pas dans vos sorts préparés.` }),
-            el('ul', { class: 'feat-spells-list' }, spells.map(featSpellLine)),
+            el('p', { class: 'feat-spells-intro', text: `Donnés par votre sous-classe (${name}) : toujours préparés, ils ne comptent ni dans vos sorts préparés ni dans vos sorts mineurs.`
+                + (groups[0] ? ' Seuls ceux du terrain choisi à votre dernier repos long sont préparés.' : '') }),
+            ...(groups[0]
+                ? groups.map(group => el('div', { class: 'feat-spells-group' },
+                    el('div', { class: 'feat-spells-head' }, el('strong', { class: 'feat-spells-name', text: group })),
+                    list(spells.filter(spell => spell.group === group))))
+                : [list(spells)]),
             next.length ? el('p', { class: 'feat-spells-extra' }, el('strong', { text: 'À venir : ' }), `${next.join(' ; ')}.`) : null
         ].filter(Boolean) : []));
     }

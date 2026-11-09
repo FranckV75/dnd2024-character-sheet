@@ -184,7 +184,7 @@ describe('Serments du Paladin (Iria)', () => {
     test('chaque sort de serment existe dans la base de sorts, au bon niveau et avec le même nom', () => {
         const db = JSON.parse(readFileSync(new URL('../data/spells.json', import.meta.url), 'utf8'));
         const list = Array.isArray(db) ? db : db.spells;
-        for (const [subclass, rows] of Object.entries(SUBCLASS_SPELLS)) {
+        for (const [subclass, rows] of Object.entries(SUBCLASS_SPELLS).filter(([key]) => key.startsWith('oath_'))) {
             assert.ok(DD_RULES.subclasses[subclass]?.class === 'paladin', subclass);
             assert.equal(rows.length, 10, subclass);
             for (const [classLevel, vo, name, level, flag] of rows) {
