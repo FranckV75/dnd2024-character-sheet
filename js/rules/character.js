@@ -16,7 +16,8 @@ import {
 import { reachedFeatIds } from './feats.js';
 import { weaponReach, isUnarmedStrike } from './weapons.js';
 import {
-    subclassId, auraOfProtectionBonus, jackOfAllTradesBonus, unarmoredDefenseOptions, weaponProficiency
+    subclassId, auraOfProtectionBonus, jackOfAllTradesBonus, unarmoredDefenseOptions, weaponProficiency,
+    shieldKeepsMartialArts, subclassFinesse
 } from './class-features.js';
 
 /**
@@ -449,6 +450,15 @@ export function featSlotState(slotLevel, characterLevel, choice) {
 }
 
 /**
+ * Dé de la Marque du chasseur : 1d6 ; Rôdeur niveau 20, Tueur d'ennemis (PHB 2024 « Foe Slayer ») : 1d10.
+ * @param {{ level: number, classSlug: string }} stats
+ * @returns {string}
+ */
+export function hunterMarkDie({ level, classSlug }) {
+    return classSlug === 'ranger' && level >= 20 ? '1d10' : '1d6';
+}
+
+/**
  * Attaque et dégâts d'une arme du tableau, avec les bonus de combat actifs.
  * @param {Object} weapon - Ligne de `dynamic_weapons`
  * @param {{ mods: Object, pb: number, level: number, classSlug: string, subclass?: string, feats?: string[] }} stats - issu de deriveCharacter()
@@ -477,8 +487,7 @@ export function computeWeapon(weapon, stats, buffs = {}) {
 
     const extraDmg = [];
     if (buffs.rage && stat === 'FOR') extraDmg.push({ die: String(getRageBonus(level)), type: 'Rage' });
-    // Marque du chasseur : 1d6 de Force ; Rôdeur niveau 20, Tueur d'ennemis (PHB 2024 « Foe Slayer ») : 1d10
-    if (buffs.hunterMark) extraDmg.push({ die: slug === 'ranger' && level >= 20 ? '1d10' : '1d6', type: 'Force' });
+    if (buffs.hunterMark) extraDmg.push({ die: hunterMarkDie({ level, classSlug: slug }), type: 'Force' });
     // Cogneur lourd (PHB 2024, « Expert en armes lourdes ») : arme Lourde, bonus de maîtrise
     if (buffs.heavyWeaponMaster && prop.toLowerCase().split(/[,;]/).some(p => p.trim().startsWith('lourde'))) {
         extraDmg.push({ die: String(pb), type: 'Cogneur lourd' });
@@ -486,7 +495,8 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     // Attaque de charge (PHB 2024, « Charger » p. 202) : +1d8 à une attaque au corps à corps,
     // une fois par tour ; une arme de lancer reste une arme de corps à corps (weaponReach)
     if (buffs.charger && weaponReach(weapon).melee) extraDmg.push({ die: '1d8', type: 'Charge' });
-    if (buffs.sneakAttack && (prop.toLowerCase().includes('finesse') || isRanged)) {
+    // L'Odysséen (Odyssée, Soldat vagabond, niveau 3) : Lance et Trident comptent comme Finesse
+    if (buffs.sneakAttack && (prop.toLowerCase().includes('finesse') || isRanged || subclassFinesse(weapon, stats))) {
         extraDmg.push({ die: `${sneakAttackDice(level)}d6`, type: 'Sournoise' });
     }
     // Style Duel (PHB 2024 p. 209) : +2 aux dégâts, arme de corps à corps tenue à une main sans autre
@@ -521,11 +531,14 @@ export function computeWeapon(weapon, stats, buffs = {}) {
  * Frappe à mains nues ou arme de Moine, pour un Moine qui profite des Arts martiaux (PHB 2024
  * p. 101-102) : sans armure ni bouclier équipés ; armes de Moine = armes courantes de corps à corps
  * et armes de guerre de corps à corps Légères (pas la Fléchette, arme à distance).
+ * La Voie du bouclier (Odyssée, guide du joueur p. 46, Technique arésienne, niveau 3) garde les Arts
+ * martiaux avec un bouclier (shieldKeepsMartialArts, class-features.js).
  */
 function isMonkWeapon(weapon, stats) {
     if (stats.classSlug !== 'monk') return false;
     const worn = stats.wornArmor ?? {};
-    if (worn.light || worn.medium || worn.heavy || worn.shield) return false;
+    if (worn.light || worn.medium || worn.heavy) return false;
+    if (worn.shield && !shieldKeepsMartialArts(stats)) return false;
     const prop = (weapon?.prop || '').toString().replace(/<[^>]*>/g, '');
     return isUnarmedStrike(weapon) || isMartialArtsWeapon(weapon?.category || '', !weaponReach(weapon).melee, prop);
 }
@@ -541,7 +554,9 @@ function biggerDie(martialDie, baseDmg) {
 /**
  * Caractéristique d'attaque imposée à une arme du tableau : celle de sa configuration, sinon la
  * Dextérité pour un Moine avec une arme de Moine ou à mains nues, si elle est meilleure que la Force
- * (PHB 2024 p. 102, Arts martiaux « Dexterous Attacks »). '' : règle normale de l'arme.
+ * (PHB 2024 p. 102, Arts martiaux « Dexterous Attacks »), ou pour une Lance ou un Trident de L'Odysséen
+ * (Odyssée, Soldat vagabond : propriété Finesse, Dextérité si elle est au moins égale à la Force).
+ * '' : règle normale de l'arme.
  * Partagée avec les bottes d'armes (weapon-masteries.js) : mêmes chiffres que le tableau.
  * @param {Object} weapon - ligne de dynamic_weapons
  * @param {{ mods: Object, classSlug: string, wornArmor?: Object }} stats - issu de deriveCharacter()
@@ -550,7 +565,8 @@ function biggerDie(martialDie, baseDmg) {
 export function weaponStatOverride(weapon, stats) {
     const forced = parseWeaponConfig(weapon?.weaponConfig).statOverride;
     if (forced) return forced;
-    return isMonkWeapon(weapon, stats) && stats.mods.dex > stats.mods.str ? 'dex' : '';
+    if (isMonkWeapon(weapon, stats) && stats.mods.dex > stats.mods.str) return 'dex';
+    return subclassFinesse(weapon, stats) && stats.mods.dex >= stats.mods.str ? 'dex' : '';
 }
 
 /**

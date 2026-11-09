@@ -19,7 +19,7 @@ import { DD_RULES } from '../data/dd-rules.js';
 import { EMPTY_WEAPON } from '../state/schema.js';
 import { stripHTML, safeText, findRulebookWeapon } from '../state/migrate.js';
 import { locateRow } from '../state/other-tab.js';
-import { deriveCharacter, computeWeapon, sneakAttackDice } from '../rules/character.js';
+import { deriveCharacter, computeWeapon, sneakAttackDice, hunterMarkDie } from '../rules/character.js';
 import { getRageBonus, parseWeaponConfig } from '../rules/logic.js';
 import { weaponFeatNotes } from '../rules/feat-effects.js';
 import { weaponProficiency } from '../rules/class-features.js';
@@ -84,11 +84,15 @@ const BUFF_DEFS = {
         text: `Attaque sournoise (${sneakAttackDice(level)}d6)`,
         title: `Attaque sournoise : +${sneakAttackDice(level)}d6 avec une arme de finesse ou à distance (une fois par tour)`
     }),
-    hunterMark: () => ({
-        icon: 'target',
-        text: 'Marque du chasseur (+1d6)',
-        title: 'Marque du chasseur : +1d6 dégâts de force contre la cible marquée'
-    }),
+    // Rôdeur niveau 20, Tueur d'ennemis : 1d10 (même règle que computeWeapon)
+    hunterMark: ({ level, classSlug }) => {
+        const die = hunterMarkDie({ level, classSlug });
+        return {
+            icon: 'target',
+            text: `Marque du chasseur (+${die})`,
+            title: `Marque du chasseur : +${die} dégâts de force contre la cible marquée`
+        };
+    },
     heavyWeaponMaster: ({ pb }) => ({
         icon: 'fist',
         text: `Cogneur lourd (+${pb})`,

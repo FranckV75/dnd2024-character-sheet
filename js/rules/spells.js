@@ -531,7 +531,8 @@ export function slotLevels(spellSlots, classSlug = '', state = {}) {
 /**
  * Niveau de sort (1 à 9) proposé pour un suivi d'emplacements ajouté à la main : le premier
  * niveau sans suivi au-dessus des emplacements du manuel (Arcanum mystique d'un Occultiste
- * de niveau 11+, multiclasse, Chevalier occulte sans emplacement au manuel…).
+ * de niveau 11+, multiclasse, Chevalier occulte ou Escroc arcanique dont la fiche ne calcule pas encore les
+ * emplacements…).
  * @param {Array<{ level: string, rulebook?: number }>} shown - résultat de slotLevels()
  * @returns {string} - '' si aucun niveau n'est disponible
  */

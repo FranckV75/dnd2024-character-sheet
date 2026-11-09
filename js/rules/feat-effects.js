@@ -29,7 +29,7 @@ import {
     FEAT_CHOICE_RULES, featChoiceGrants, REPEATABLE_CHOICE_FEATS, abilityName, skillName, elementWord, slotChoice, ENERGY_TYPES
 } from './feat-choices.js';
 import { FEAT_SPELL_FEATS, featSpellGroups, featSpellSummary } from './feat-spells.js';
-import { classFeatureNotes, weaponProficiency, weaponProficiencyNote } from './class-features.js';
+import { classFeatureNotes, weaponProficiency, weaponProficiencyNote, shieldKeepsMartialArts } from './class-features.js';
 import { findMastery } from './weapon-masteries.js';
 
 /**
@@ -109,6 +109,8 @@ export const AUTOMATED_FEATS = Object.freeze([
     // Lot 4 : styles de combat (et ce qui peut les remplacer au niveau 2)
     'defense', 'archerie', 'duel', 'arme_a_deux_mains', 'arme_de_lancer', 'combat_a_deux_armes',
     'combat_a_mains_nues', 'combat_en_aveugle', 'interception', 'protection', 'guerrier_beni', 'guerrier_druidique',
+    // Sous-classes, lot 0 : style de combat de l'Odyssée
+    'hoplite',
     // Lot 7 : Frappe à mains nues, armes et rappels
     'athlete', 'bagarreur_de_tavernes', 'combattant_a_deux_armes', 'combattant_monte', 'comedien', 'discret',
     'empoigneur', 'faconneur', 'formation_aux_armes_de_guerre', 'maitre_d_armes', 'maitre_arbaletrier', 'tireur_d_elite',
@@ -671,6 +673,14 @@ const FEAT_RULES = {
         if (!wornArmor.shield) add('featSlot', 'Aucun bouclier équipé (tableau des armures) : ce style demande de tenir un bouclier.', { inactive: true });
     },
 
+    // Hoplite (Odyssée, guide du joueur p. 43, avec la sous-classe L'Hoplite) : Réaction, bouclier porté,
+    // attaque d'opportunité contre une créature qui attaque un allié à 1,50 m
+    hoplite: ({ derived: { wornArmor }, add }) => {
+        add('weapons', "Hoplite : Réaction (bouclier porté) quand une créature attaque au corps à corps un allié à 1,50 m de vous : attaque d'opportunité au corps à corps contre elle.");
+        add('featSlot', "Réaction quand une créature attaque au corps à corps un allié à 1,50 m de vous : vous lui portez une attaque d'opportunité au corps à corps. Il faut porter un bouclier.");
+        if (!wornArmor.shield) add('featSlot', 'Aucun bouclier équipé (tableau des armures) : ce style demande de porter un bouclier.', { inactive: true });
+    },
+
     // À la place du style de combat (niveau 2) : deux sorts mineurs (PHB 2024, Paladin et Rôdeur)
     guerrier_beni: ({ record, add }) => alternativeNotes('guerrier_beni', 'Clerc', 'Assistance et Flamme sacrée', 'le Charisme', record, add),
     guerrier_druidique: ({ record, add }) => alternativeNotes('guerrier_druidique', 'Druide', "Assistance et Poussière d'étoile", 'la Sagesse', record, add)
@@ -714,12 +724,14 @@ export function actorDC(derived) {
 
 /**
  * DD de la Lutte à mains nues (PHB 2024 p. 377) : 8 + mod. Force + bonus de maîtrise ; le Moine
- * sans armure ni bouclier peut prendre la Dextérité (Arts martiaux, p. 102).
+ * sans armure ni bouclier peut prendre la Dextérité (Arts martiaux, p. 102) ; le bouclier est permis
+ * à La Voie du bouclier (Odyssée).
  */
 export function grappleDC(derived) {
     const { str, dex } = derived.mods;
     const worn = derived.wornArmor ?? {};
-    const martialArts = derived.classSlug === 'monk' && !(worn.light || worn.medium || worn.heavy || worn.shield);
+    const martialArts = derived.classSlug === 'monk' && !(worn.light || worn.medium || worn.heavy)
+        && (!worn.shield || shieldKeepsMartialArts(derived));
     return 8 + (martialArts ? Math.max(str, dex) : str) + derived.pb;
 }
 
@@ -1163,8 +1175,8 @@ export function featEffects(character, derived = deriveCharacter(character || {}
         });
     }
 
-    // Capacités de classe qui changent une valeur calculée (Aura de protection, Touche-à-tout)
-    for (const [zone, notes] of Object.entries(classFeatureNotes(derived))) {
+    // Capacités de classe et de sous-classe (Aura de protection, Touche-à-tout, Résilience draconique…)
+    for (const [zone, notes] of Object.entries(classFeatureNotes(derived, record))) {
         (effects[zone] ??= []).push(...notes);
     }
 

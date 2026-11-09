@@ -2,6 +2,22 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.20.0] - 2026-11-09 (Sous-classes, lot 0 : corrections)
+### Added
+- Inventaire des 333 capacités de sous-classe (Manuel des joueurs 2024 et Odyssée) : `docs/SOUS_CLASSES.md`.
+- Style de combat « Hoplite (Odyssée) » dans la liste des styles, avec son rappel de Réaction et
+  l'alerte « bouclier demandé ».
+- Résilience draconique : « dont +X PV » sous les PV maximum (X = niveau d'Ensorceleur), à reporter soi-même.
+- Collège de la Vaillance (niveau 3) et Collège de poésie épique (niveau 6) : rappel « À vérifier »
+  près de la CA tant que les cases de formation aux armures (et aux boucliers) ne sont pas cochées.
+### Fixed
+- Moine de La Voie du bouclier (Odyssée) : avec un bouclier, il garde ses Arts martiaux (Dextérité,
+  dé d'Arts martiaux, bottes d'armes, DD de Lutte), comme le dit le livre.
+- Roublard L'Odysséen (Odyssée) : la Lance et le Trident comptent comme Finesse pour l'attaque
+  (Dextérité si elle est au moins égale à la Force) et pour l'Attaque sournoise.
+- Bouton « Marque du chasseur » : il affiche +1d10 au niveau 20 du Rôdeur, comme le calcul.
+- Collège de la Danse : une sous-classe saisie à la main contenant le mot « dans » n'est plus prise pour la Danse.
+
 ## [4.19.0] - 2026-11-09 (Sécurité)
 ### Security
 - Règle de sécurité de la page (Content-Security-Policy) : la fiche n'exécute que ses propres scripts

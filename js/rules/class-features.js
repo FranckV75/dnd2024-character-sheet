@@ -39,7 +39,8 @@ const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
  */
 const SUBCLASS_KEYWORDS = {
     draconic_sorcery: { class: 'sorcerer', pattern: /draconi/ },
-    college_of_dance: { class: 'bard', pattern: /\bdans?e\b|\bdance\b/ },
+    // « danse », pas « dans » (une saisie libre contenant « dans » n'est pas la Danse)
+    college_of_dance: { class: 'bard', pattern: /\bdanse\b|\bdance\b/ },
     college_of_valor: { class: 'bard', pattern: /vaillance|valou?r/ }
 };
 
@@ -97,6 +98,17 @@ export function jackOfAllTradesBonus({ classSlug, level, pb }) {
 // -----------------------------------------------------------------------------
 
 /**
+ * Moine de La Voie du bouclier (Odyssée, guide du joueur p. 46, Technique arésienne, niveau 3) :
+ * « le port du bouclier ne vous empêche pas d'utiliser les aptitudes Arts martiaux, Défense sans
+ * armure et Déplacement sans armure ». Sert à la CA, aux armes de Moine et au DD de Lutte.
+ * @param {{ classSlug: string, subclass?: string, level?: number }} stats
+ * @returns {boolean}
+ */
+export function shieldKeepsMartialArts({ classSlug, subclass = '', level = 1 }) {
+    return classSlug === 'monk' && subclass === 'way_of_the_shield_dancer' && level >= 3;
+}
+
+/**
  * Formules de CA « sans armure » de la classe et de la sous-classe :
  *  - Barbare (p. 51) : 10 + Dex + Con, bouclier permis ;
  *  - Moine (p. 102) : 10 + Dex + Sag, ni armure ni bouclier ;
@@ -104,9 +116,8 @@ export function jackOfAllTradesBonus({ classSlug, level, pb }) {
  *    10 + Dex + Cha sans armure, bouclier permis ;
  *  - Barde, Collège de la Danse niveau 3, Jeu de jambes éblouissant (« Dazzling Footwork ») :
  *    10 + Dex + Cha sans armure ni bouclier ;
- *  - Moine, La Voie du bouclier (Odyssée, guide du joueur) niveau 3 : le bouclier n'empêche pas
- *    la Défense sans armure (« le port du bouclier ne vous empêche pas d'utiliser les aptitudes
- *    Arts martiaux, Défense sans armure et Déplacement sans armure »).
+ *  - Moine, La Voie du bouclier (Odyssée, guide du joueur p. 46) niveau 3 : le bouclier n'empêche pas
+ *    la Défense sans armure (shieldKeepsMartialArts).
  * @param {{ classSlug: string, subclass?: string, level?: number, mods: Object }} params
  * @returns {Array<{ value: number, label: string, short: string, stat: string, statMod: number, shieldAllowed: boolean }>}
  *   short : nom court pour les phrases (« Défense sans armure (Moine) »)
@@ -117,8 +128,7 @@ export function unarmoredDefenseOptions({ classSlug, subclass = '', level = 1, m
     const list = [];
     if (classSlug === 'barbarian') list.push(option('Défense sans armure (Barbare)', 'Con', Number(mods?.con) || 0, true));
     if (classSlug === 'monk') {
-        const shieldDancer = subclass === 'way_of_the_shield_dancer' && level >= 3;
-        list.push(option('Défense sans armure (Moine)', 'Sag', Number(mods?.wis) || 0, shieldDancer));
+        list.push(option('Défense sans armure (Moine)', 'Sag', Number(mods?.wis) || 0, shieldKeepsMartialArts({ classSlug, subclass, level })));
     }
     if (classSlug === 'sorcerer' && subclass === 'draconic_sorcery' && level >= 3) {
         list.push(option('Résilience draconique (Ensorceleur)', 'Cha', Number(mods?.cha) || 0, true));
@@ -169,9 +179,10 @@ function weaponProperties(weapon) {
  * Armes qui comptent comme ayant la propriété Finesse pour une sous-classe : Roublard L'Odysséen
  * (Odyssée, guide du joueur), Soldat vagabond niveau 3 : « les lances et les tridents comptent comme
  * ayant la propriété finesse ». La Lance est une arme courante ; le Trident (arme de guerre) devient
- * donc une arme maîtrisée par ce Roublard (armes de guerre Finesse ou Légères).
+ * donc une arme maîtrisée par ce Roublard (armes de guerre Finesse ou Légères). Sert aussi au calcul
+ * de l'attaque (Dextérité) et à l'Attaque sournoise (weaponStatOverride, computeWeapon).
  */
-function subclassFinesse(weapon, { classSlug, subclass, level }) {
+export function subclassFinesse(weapon, { classSlug, subclass, level }) {
     if (classSlug !== 'rogue' || subclass !== 'the_odyssean' || level < 3) return false;
     const name = fold(weapon?.name);
     return /^(lance|trident)\b/.test(name) && !name.startsWith("lance d'arcon");
@@ -273,16 +284,36 @@ export function weaponProficiencyNote(proficiency, pb, hasMastery = false) {
 // -----------------------------------------------------------------------------
 
 /**
- * Notes des capacités de classe qui changent une valeur calculée, rangées par zone de la fiche
- * ('saves.<id>', 'skills.<id>'), au format FeatNote (feat-effects.js) avec classFeature: true.
- * La valeur est déjà comptée par deriveCharacter (applied: true).
+ * Formations d'armure données par une sous-classe (la fiche ne coche jamais les cases elle-même) :
+ *  - Collège de la Vaillance niveau 3 (PHB 2024 « Martial Training ») : armures intermédiaires et boucliers ;
+ *  - Collège de poésie épique niveau 6 (Odyssée, Égide du poète ; « armures moyennes » dans le livre) :
+ *    armures intermédiaires.
+ * [sous-classe, niveau, nom de la capacité, formations]
+ */
+const SUBCLASS_ARMOR_TRAINING = Object.freeze([
+    ['college_of_valor', 3, 'Collège de la Vaillance', 'Formation martiale', ['medium', 'shield']],
+    ['college_of_epic_muse', 6, 'Collège de poésie épique', 'Égide du poète', ['medium']]
+]);
+
+/** Formation d'armure : [clé de sauvegarde, mots, case de l'onglet Combat] */
+const TRAINING_FIELDS = Object.freeze({
+    medium: ['prof_armor_med', 'armures intermédiaires', 'Intermédiaires'],
+    shield: ['prof_armor_shield', 'boucliers', 'Boucliers']
+});
+
+/**
+ * Notes des capacités de classe et de sous-classe, rangées par zone de la fiche ('saves.<id>',
+ * 'skills.<id>', 'hpMax', 'armorClass'), au format FeatNote (feat-effects.js) avec classFeature: true.
+ * Par défaut la valeur est déjà comptée par deriveCharacter (applied: true) ; une valeur saisie à la
+ * main (PV max) n'est jamais modifiée : la note dit « dont +X » (manual: true).
  * @param {Object} derived - deriveCharacter()
+ * @param {Object} [record] - personnage (cases de formation aux armures)
  * @returns {Object<string, Object[]>}
  */
-export function classFeatureNotes(derived) {
+export function classFeatureNotes(derived, record = {}) {
     const zones = {};
-    const add = (zone, featId, featName, text, value) => {
-        (zones[zone] ??= []).push({ featId, featName, text, value, applied: true, classFeature: true });
+    const add = (zone, featId, featName, text, value, extra = { applied: true }) => {
+        (zones[zone] ??= []).push({ featId, featName, text, value, ...extra, classFeature: true });
     };
     const aura = Number(derived?.auraOfProtection) || 0;
     if (aura > 0) {
@@ -302,6 +333,23 @@ export function classFeatureNotes(derived) {
                 `Barde niveau 2 : ${signed(jack)} (moitié du bonus de maîtrise) déjà compté, car vous ne maîtrisez pas cette compétence${skill.id === 'perception' ? ' (aussi dans la Perception passive)' : ''}.`,
                 jack);
         }
+    }
+    // Résilience draconique (PHB 2024 p. 148, Ensorceleur niveau 3) : PV max +3, puis +1 par niveau
+    // d'Ensorceleur (= niveau) ; la CA est calculée par unarmoredDefenseOptions
+    if (derived?.classSlug === 'sorcerer' && derived.subclass === 'draconic_sorcery' && derived.level >= 3) {
+        add('hpMax', 'resilience_draconique', 'Résilience draconique',
+            `dont +${derived.level} PV grâce à Résilience draconique (Ensorceleur niveau 3 : +3, puis +1 par niveau d'Ensorceleur) : à compter vous-même dans les PV max saisis, la fiche ne les ajoute pas.`,
+            derived.level, { manual: true });
+    }
+    for (const [subclass, minLevel, name, feature, kinds] of SUBCLASS_ARMOR_TRAINING) {
+        if (derived?.subclass !== subclass || derived.level < minLevel) continue;
+        const missing = kinds.filter(kind => record?.[TRAINING_FIELDS[kind][0]] !== true);
+        if (!missing.length) continue;
+        const words = kinds.map(kind => TRAINING_FIELDS[kind][1]).join(' et aux ');
+        const boxes = missing.map(kind => `« ${TRAINING_FIELDS[kind][2]} »`).join(' et ');
+        add('armorClass', subclass, name,
+            `${feature} (niveau ${minLevel}) : vous êtes formé aux ${words}. Case ${boxes} des maîtrises d'armures (onglet Combat) à cocher : la fiche ne coche rien elle-même${missing.includes('shield') ? ', et sans elle le bouclier ne compte pas dans la CA' : ''}.`,
+            undefined, { check: true });
     }
     return zones;
 }

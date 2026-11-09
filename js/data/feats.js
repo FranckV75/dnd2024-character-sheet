@@ -328,6 +328,13 @@ const FEATS_DATA = {
         "asi": "Aucune",
         "desc": "Vous bénéficiez des avantages suivants. <br><strong>Médecin de combat</strong>. Si vous possédez une trousse de soins, vous pouvez dépenser une utilisation et soigner une créature à 1,50 m ou moins de vous par une action Utilisation. Cette créature peut dépenser un de ses Dés de vie, puis vous lancez ce dé. La créature récupère un nombre de points de vie égal au résultat du jet plus votre bonus de maîtrise. <br><strong>Retirage des soins</strong>. Chaque fois que vous lancez un dé pour déterminer le nombre de points de vie que vous restaurez avec un sort ou avec l'avantage Médecin de combat de ce don, vous pouvez relancer le dé si vous avez obtenu un 1, et devez utiliser le nouveau résultat."
     },
+    "hoplite": {
+        "name": "Hoplite (Odyssée)",
+        "type": "Style de combat",
+        "prereq": "capacité Style de combat",
+        "asi": "Aucune",
+        "desc": "Style de combat de L'Odyssée des Seigneurs Dragons (guide du joueur, présenté avec la sous-classe L'Hoplite du Guerrier). Tant que vous portez un bouclier, lorsqu'une créature attaque au corps à corps un allié situé à 1,50 mètre ou moins de vous, vous pouvez prendre une Réaction pour effectuer contre elle une attaque d'opportunité au corps à corps."
+    },
     "incantateur_d_elite": {
         "name": "Incantateur d'élite",
         "type": "Général",

@@ -50,8 +50,8 @@ describe('Dons', () => {
         }
     });
 
-    test('Les 10 styles de combat sont classés « Style de combat »', () => {
-        assert.equal(feats.filter(([, f]) => f.type === 'Style de combat').length, 10);
+    test('Les 10 styles de combat du PHB et le style Hoplite (Odyssée) sont classés « Style de combat »', () => {
+        assert.equal(feats.filter(([, f]) => f.type === 'Style de combat').length, 11);
     });
 
     test('Aucun nom de don ne contient de séparateur « | » (anciens noms dans `aliases`)', () => {
