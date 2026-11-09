@@ -2,6 +2,17 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.21.0] - 2026-11-09 (Sous-classes, lot 1 : capacités affichées)
+### Added
+- Onglet Aptitudes & Traits, « Capacités de classe » : la liste des capacités de la sous-classe choisie
+  (332 capacités des 60 sous-classes), avec leur niveau et la règle résumée en français. Celles du
+  niveau atteint sont affichées ; les suivantes sont repliées sous « À venir ». Une étiquette dit ce
+  que la fiche en fait : « Calculé », « En partie » ou « Rappel ». Le texte libre du joueur reste dessous, inchangé.
+- Odyssée : une capacité prévue au niveau 1 ou 2 par le livre (règles de 2014) s'obtient au niveau 3,
+  comme la sous-classe en 2024 (décision de Franck) ; le niveau du livre est rappelé.
+- Textes relus deux fois dans les manuels (inventaire, puis relecture indépendante : 17 précisions,
+  dont le nombre de manœuvres du Maître de guerre et la table de sorts de l'Escroc arcanique).
+
 ## [4.20.0] - 2026-11-09 (Sous-classes, lot 0 : corrections)
 ### Added
 - Inventaire des 333 capacités de sous-classe (Manuel des joueurs 2024 et Odyssée) : `docs/SOUS_CLASSES.md`.

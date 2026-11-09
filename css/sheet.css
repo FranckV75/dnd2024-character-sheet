@@ -2038,3 +2038,159 @@ fieldset.inline-checks {
         transition: none;
     }
 }
+
+/* ---------- Capacités de sous-classe (js/ui/subclass.js), au-dessus du texte libre ----------
+   Même filet doré que l'encadré « Dans la fiche » des dons ; textes longs en Alegreya. */
+.subclass-features {
+    margin: 0 0 8px;
+    padding: 6px 10px 8px;
+    border-left: 3px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+    background: var(--feat-invite-bg);
+}
+
+.subclass-features[hidden] {
+    display: none;
+}
+
+.subclass-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin: 0;
+    font-family: var(--font-title);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+}
+
+.subclass-title .icon,
+.subclass-upcoming summary .icon,
+.subclass-feature-auto .icon {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    color: var(--gold);
+}
+
+.subclass-source {
+    font-size: var(--label-min);
+    font-weight: 400;
+    color: var(--quiet-ink);
+}
+
+.subclass-list,
+.subclass-options {
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.subclass-feature + .subclass-feature {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border-soft);
+}
+
+.subclass-feature-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 8px;
+}
+
+.subclass-level {
+    flex: none;
+    padding: 0 6px;
+    border: 1px solid var(--gold-soft);
+    border-radius: 4px;
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.subclass-feature-name {
+    font-family: var(--font-title);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent-ink);
+}
+
+.subclass-feature .feat-tag {
+    margin-left: auto;
+}
+
+.subclass-feature .feat-tag[data-kind="reminder"] {
+    border-style: dashed;
+    color: var(--quiet-ink);
+}
+
+.subclass-feature-text,
+.subclass-option-text,
+.subclass-empty {
+    margin: 2px 0 0;
+    font-family: var(--font-text);
+    font-size: 1rem;
+}
+
+.subclass-feature-note,
+.subclass-empty {
+    font-style: italic;
+    color: var(--quiet-ink);
+}
+
+.subclass-feature-note {
+    margin: 2px 0 0;
+    font-family: var(--font-text);
+    font-size: 0.92rem;
+}
+
+.subclass-feature-auto {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 3px 0 0;
+    font-family: var(--font-text);
+    font-size: 0.95rem;
+    color: var(--accent);
+}
+
+.subclass-options {
+    margin: 4px 0 0 12px;
+}
+
+.subclass-options li + li {
+    margin-top: 3px;
+}
+
+.subclass-options .subclass-feature-name {
+    font-size: 0.78rem;
+}
+
+.subclass-upcoming {
+    margin-top: 8px;
+}
+
+.subclass-upcoming summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-family: var(--font-title);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--quiet-ink);
+}
+
+.subclass-upcoming .subclass-feature {
+    color: var(--quiet-ink);
+}
+
+@media print {
+    .subclass-upcoming {
+        display: none;
+    }
+}

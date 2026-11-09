@@ -18,6 +18,7 @@ import { initWeapons } from './ui/weapons.js';
 import { initArmors } from './ui/armors.js';
 import { initSpells } from './ui/spells.js';
 import { initRest } from './ui/rest.js';
+import { initSubclassFeatures } from './ui/subclass.js';
 import { initStyleEditor } from './ui/style-editor.js';
 import { initMotion } from './ui/motion.js';
 import { initFeedback } from './ui/feedback.js';
@@ -146,7 +147,7 @@ for (const [label, step] of [
         console.error(`Échec de ${label} :`, error);
     }
 }
-for (const init of [initToolbar, initAccount, initGallery, initWeapons, initArmors, initSpells, initRest, initStyleEditor, initMotion, initFeedback]) {
+for (const init of [initToolbar, initAccount, initGallery, initWeapons, initArmors, initSpells, initRest, initSubclassFeatures, initStyleEditor, initMotion, initFeedback]) {
     try {
         init(ctx);
     } catch (error) {
