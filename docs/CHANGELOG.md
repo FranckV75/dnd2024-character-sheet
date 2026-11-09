@@ -2,6 +2,21 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.25.0] - 2026-11-09 (Sous-classes, lot 5 : combat et ressources)
+### Added
+- Tableau des armes : boutons de sous-classe qui ajoutent leurs dés aux dégâts — Frénésie du
+  Berserker (avec la Rage), Frappe effroyable du Traqueur d'ombre, Frappes redoutables de l'Errant
+  féerique, Tueur de colosses du Chasseur, Manœuvre (dé de supériorité) du Maître de guerre, Frappe
+  psionique du Guerrier psi.
+- Bande des capacités (onglet Combat) : cases pour les ressources de 32 sous-classes — dés de
+  supériorité, dés psioniques (un rendu au repos court, tous au repos long), réserve de Lumière
+  guérisseuse, Flash protecteur, Prêtre de guerre, Chance du Ténébreux, Présage, Foulées féeriques…
+- Près de la CA : Résistances données par la sous-classe (Avatar de bataille, Protection de la
+  nature, Défenses psychiques, Âme radieuse, Aura de garde…) ; celles de la Rage (Ours du Cœur
+  sauvage, Rage d'Hercule, Rage aveugle) s'affichent quand le bouton Rage est allumé.
+- Sous les armes : dé et DD des manœuvres, Racines percutantes, Maître de la lance (L'Hoplite).
+- Bloc « Sous-classe » : chaque capacité à cases ou à bouton dit ce que la fiche en fait.
+
 ## [4.24.0] - 2026-11-09 (Sous-classes, lot 4 : petits calculs)
 ### Added
 - Initiative calculée : + Sagesse pour le Traqueur d'ombre, + Charisme pour L'Odysséen (niveau 13) ;

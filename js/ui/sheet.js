@@ -627,7 +627,8 @@ const MENTION_LABELS = {
     initiative: (note) => ['athlete_remarquable', 'assassinat'].includes(note.featId) ? `Avantage (${note.featName})` : note.featName,
     // espaces insécables : le chiffre ne reste jamais seul en bout de ligne
     hpMax: (note) => `dont\u00a0+${note.value} grâce à ${note.featName}`,
-    armorClass: (note) => ({
+    // Résistance de sous-classe : mention courte fournie avec la note (subclass-combat.js)
+    armorClass: (note) => note.mention ?? ({
         // C/P/T : seuls les dégâts contondants, perforants et tranchants d'une attaque sont réduits
         maitre_des_armures_lourdes: `Dégâts C/P/T\u00a0−${note.value}`,
         maitre_des_armures_intermediaires: 'Dex max 3',

@@ -39,7 +39,9 @@ describe('Données des sorts de sous-classe', () => {
     test('chaque liste est annoncée par une capacité « Calculé » ou « En partie » qui renvoie au bloc', () => {
         for (const subclass of Object.keys(SUBCLASS_SPELLS)) {
             const entries = Object.values(SUBCLASS_AUTOMATION[subclass] ?? {});
-            assert.ok(entries.some(entry => /Sorts de sous-classe/.test(typeof entry.text === 'function' ? '' : entry.text)), subclass);
+            // (texte calculé : lu pour un personnage de niveau 20)
+            const read = (entry) => (typeof entry.text === 'function' ? entry.text({ subclass, level: 20, pb: 6, mods: {} }) : entry.text);
+            assert.ok(entries.some(entry => /Sorts de sous-classe/.test(read(entry))), subclass);
         }
     });
 

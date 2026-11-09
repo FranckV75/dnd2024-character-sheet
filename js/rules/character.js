@@ -17,6 +17,7 @@ import { reachedFeatIds } from './feats.js';
 import { weaponReach, isUnarmedStrike } from './weapons.js';
 import { divineFuryDie } from './subclass-features.js';
 import { subclassInitiativeBonuses, subclassSkillBonus, subclassWeaponStat, danceUnarmedDie } from './subclass-calcs.js';
+import { subclassBuffDamage } from './subclass-combat.js';
 import {
     subclassId, auraOfProtectionBonus, jackOfAllTradesBonus, unarmoredDefenseOptions, weaponProficiency,
     shieldKeepsMartialArts, subclassFinesse
@@ -494,6 +495,8 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     const divineFury = buffs.rage ? divineFuryDie(stats) : '';
     if (divineFury) extraDmg.push({ die: divineFury, type: 'Fureur divine 1/tour' });
     if (buffs.hunterMark) extraDmg.push({ die: hunterMarkDie({ level, classSlug: slug }), type: 'Force' });
+    // Boutons de sous-classe (lot 5) : Frénésie, Frappe effroyable, Tueur de colosses… (subclass-combat.js)
+    extraDmg.push(...subclassBuffDamage(weapon, stats, buffs, stat));
     // Cogneur lourd (PHB 2024, « Expert en armes lourdes ») : arme Lourde, bonus de maîtrise
     if (buffs.heavyWeaponMaster && prop.toLowerCase().split(/[,;]/).some(p => p.trim().startsWith('lourde'))) {
         extraDmg.push({ die: String(pb), type: 'Cogneur lourd' });

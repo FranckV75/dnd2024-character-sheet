@@ -39,7 +39,7 @@ describe('Cases de sous-classe : données', () => {
             assert.ok(DD_RULES.subclasses[subclass], subclass);
             for (const def of list) {
                 assert.ok(SUBCLASS_FEATURES[subclass].some(f => f.id === def.feature), `${subclass}.${def.feature}`);
-                assert.ok(['long', 'short', 'rage'].includes(def.reset));
+                assert.ok(typeof def.reset === 'function' || ['long', 'short', 'rage', 'shortOne'].includes(def.reset));
                 assert.ok(def.label && def.inText && def.use);
             }
         }

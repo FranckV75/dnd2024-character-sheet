@@ -16,6 +16,7 @@ import { ABILITY_IDS, SKILLS } from '../data/constants.js';
 import { parseWeaponConfig } from './logic.js';
 import { isUnarmedStrike } from './weapons.js';
 import { subclassNotes } from './subclass-calcs.js';
+import { subclassDefenseNotes } from './subclass-combat.js';
 
 /** Texte brut (les anciennes sauvegardes peuvent contenir du HTML), sans accents ni majuscules */
 function fold(value) {
@@ -357,5 +358,7 @@ export function classFeatureNotes(derived, record = {}) {
     }
     // Petits calculs des sous-classes (lot 4) : Initiative, compétences, maîtrises à cocher, vitesses…
     for (const [zone, notes] of Object.entries(subclassNotes(derived, record))) (zones[zone] ??= []).push(...notes);
+    // Résistances de la sous-classe (lot 5) : repères près de la CA
+    for (const [zone, notes] of Object.entries(subclassDefenseNotes(derived, record))) (zones[zone] ??= []).push(...notes);
     return zones;
 }

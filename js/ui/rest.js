@@ -57,7 +57,10 @@ function recoveryLines(summary, done) {
     }
     // Dons à usages limités qui reviennent au repos court (Tueur de mages : Esprit préservé)
     for (const use of summary.featUsesRestored ?? []) {
-        lines.push(`${use.label} (${use.featName}) : de nouveau ${use.count > 1 ? `disponibles (${use.count})` : 'disponible'}`);
+        lines.push(use.remaining
+            // Dés psioniques au repos court : un seul revient
+            ? `${use.label} (${use.featName}) : ${use.count} de nouveau disponible, ${use.remaining} encore dépensé${use.remaining > 1 ? 's' : ''}`
+            : `${use.label} (${use.featName}) : de nouveau ${use.count > 1 ? `disponibles (${use.count})` : 'disponible'}`);
     }
     return lines;
 }

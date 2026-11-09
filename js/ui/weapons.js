@@ -25,6 +25,9 @@ import { weaponFeatNotes } from '../rules/feat-effects.js';
 import { weaponProficiency } from '../rules/class-features.js';
 import { divineFuryDie } from '../rules/subclass-features.js';
 import { rageEndPatch } from '../rules/subclass-uses.js';
+import {
+    frenzyDice, dreadfulStrikeDice, feyStrikesDie, superiorityDie, maneuverDC, psionicDice
+} from '../rules/subclass-combat.js';
 import { findMastery, masteryDetails, masteryParagraphs, masteryAccessNote, weaponMasteryFeature } from '../rules/weapon-masteries.js';
 import {
     matchesWeaponFilter, rowFromRulebookWeapon, completeRowFromRulebook,
@@ -124,6 +127,37 @@ const BUFF_DEFS = {
         icon: 'moon',
         text: "Dans l'ombre",
         title: "Faveur de l'esprit nocturne : dans une lumière faible ou les ténèbres, Résistance à tous les dégâts sauf psychiques et radiants (repère près de la CA), et Invisible en action Bonus. Allumez-le quand vous y êtes."
+    }),
+    // Boutons de sous-classe (lot 5, js/rules/subclass-combat.js)
+    frenzy: ({ level }) => ({
+        icon: 'flame',
+        text: `Frénésie (+${frenzyDice(level)})`,
+        title: `Frénésie (Berserker) : avec l'Attaque téméraire pendant la Rage, +${frenzyDice(level)} au premier coup du tour avec une attaque de Force. Compté seulement si le bouton Rage est allumé aussi.`
+    }),
+    dreadfulStrike: ({ level }) => ({
+        icon: 'moon',
+        text: `Frappe effroyable (+${dreadfulStrikeDice(level)})`,
+        title: `Frappe effroyable (Traqueur d'ombre) : +${dreadfulStrikeDice(level)} psychiques avec une arme, une fois par tour ; cochez une case dans la bande des capacités.`
+    }),
+    feyStrikes: ({ level }) => ({
+        icon: 'sparkle',
+        text: `Frappes redoutables (+${feyStrikesDie(level)})`,
+        title: `Frappes redoutables (Errant féerique) : +${feyStrikesDie(level)} psychiques avec une arme, une fois par tour pour une même cible.`
+    }),
+    colossusSlayer: () => ({
+        icon: 'target',
+        text: 'Tueur de colosses (+1d8)',
+        title: "Tueur de colosses (Proie du chasseur) : +1d8 avec une arme contre une créature qui a perdu des PV, une fois par tour. Allumez-le si vous avez choisi cette option et que la cible est blessée."
+    }),
+    superiority: (derived) => ({
+        icon: 'swords',
+        text: `Manœuvre (+1${superiorityDie(derived.level)})`,
+        title: `Manœuvre (Maître de guerre) : dé de supériorité ${superiorityDie(derived.level)} ajouté aux dégâts ; DD des manœuvres ${maneuverDC(derived)}. Cochez un dé dans la bande des capacités.`
+    }),
+    psionicStrike: (derived) => ({
+        icon: 'star',
+        text: `Frappe psionique (+1${psionicDice(derived.level).die})`,
+        title: `Frappe psionique (Guerrier psionique) : +1${psionicDice(derived.level).die} + Intelligence de dégâts de force, une fois par tour, cible à 9 m ou moins. Cochez un dé psionique dans la bande des capacités.`
     })
 };
 
@@ -564,7 +598,7 @@ export function initWeapons(ctx) {
     // ---------------------------------------------------------------------
 
     function refreshBuffs(character, derived) {
-        const defs = buffsForCharacter(derived.classSlug, character).map(key => ({ key, ...BUFF_DEFS[key](derived) }));
+        const defs = buffsForCharacter(derived.classSlug, character, derived).map(key => ({ key, ...BUFF_DEFS[key](derived) }));
         const signature = defs.map(d => `${d.key}:${d.text}:${d.title}`).join('|');
         if (signature !== buffsSignature) {
             buffsSignature = signature;
@@ -597,7 +631,7 @@ export function initWeapons(ctx) {
         const weapon = weapons()[index];
         const derived = deriveCharacter(character);
         // Bonus de combat actifs (Rage) : mêmes que ceux du tableau
-        const buffs = effectiveBuffs(derived.classSlug, character.combat_buffs, character);
+        const buffs = effectiveBuffs(derived.classSlug, character.combat_buffs, character, derived);
         const details = weapon ? masteryDetails(weapon, character, derived, buffs) : null;
         if (!details) return;
         const { mastery, values, note } = details;
@@ -768,7 +802,7 @@ export function initWeapons(ctx) {
 
     function refresh(character) {
         const derived = deriveCharacter(character);
-        const buffs = effectiveBuffs(derived.classSlug, character.combat_buffs, character);
+        const buffs = effectiveBuffs(derived.classSlug, character.combat_buffs, character, derived);
         refreshBuffs(character, derived);
         refreshRows(weapons(), derived, buffs, character);
     }

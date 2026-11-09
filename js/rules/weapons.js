@@ -10,7 +10,7 @@
 // =============================================================================
 
 import { parseWeaponConfig } from './logic.js';
-import { reachedFeatIds } from './feats.js';
+import { reachedFeatIds, subclassOf, characterLevel } from './feats.js';
 
 export const WEAPON_FILTERS = ['all', 'simple', 'martial', 'melee', 'ranged'];
 
@@ -53,6 +53,25 @@ const FEAT_BUFFS = {
     // Faveur de l'esprit nocturne (« Boon of the Night Spirit », p. 211) : dans une lumière faible ou
     // les ténèbres ; allumé = repère de Résistance près de la CA (js/rules/feat-effects.js)
     nightSpirit: 'faveur_de_l_esprit_nocturne'
+};
+
+/**
+ * Boutons ouverts par la sous-classe (lot 5) : clé de combat_buffs → [sous-classe, niveau].
+ * Dégâts : subclassBuffDamage (js/rules/subclass-combat.js).
+ */
+const SUBCLASS_BUFFS = {
+    // Berserker (PHB 2024) : Frénésie, avec l'Attaque téméraire pendant la Rage
+    frenzy: ['path_of_the_berserker', 3],
+    // Traqueur d'ombre : Frappe effroyable (usages en cases, onglet Combat)
+    dreadfulStrike: ['gloom_stalker', 3],
+    // Errant féerique : Frappes redoutables
+    feyStrikes: ['fey_wanderer', 3],
+    // Chasseur : Proie du chasseur, option Tueur de colosses
+    colossusSlayer: ['hunter', 3],
+    // Maître de guerre : dé de supériorité ajouté aux dégâts par une manœuvre
+    superiority: ['battle_master', 3],
+    // Guerrier psionique : Frappe psionique
+    psionicStrike: ['psi_warrior', 3]
 };
 
 /** Début du type de dégâts écrit dans le manuel (« 1d8 tran. ») → abréviation v3 (WEAPON_DAMAGE_TYPES) */
@@ -302,14 +321,30 @@ export function buffsForClass(slug) {
  * @returns {{ rage: boolean, sneakAttack: boolean, hunterMark: boolean, heavyWeaponMaster: boolean, charger: boolean,
  *   dueling: boolean, peerlessAim: boolean, nightSpirit: boolean }}
  */
-export function effectiveBuffs(slug, buffs, character) {
-    const allowed = character ? buffsForCharacter(slug, character) : buffsForClass(slug);
+export function effectiveBuffs(slug, buffs, character, derived) {
+    const allowed = character ? buffsForCharacter(slug, character, derived) : buffsForClass(slug);
     const on = (key) => allowed.includes(key) && buffs?.[key] === true;
     return {
         rage: on('rage'), sneakAttack: on('sneakAttack'), hunterMark: on('hunterMark'),
         heavyWeaponMaster: on('heavyWeaponMaster'), charger: on('charger'), dueling: on('dueling'),
-        peerlessAim: on('peerlessAim'), nightSpirit: on('nightSpirit')
+        peerlessAim: on('peerlessAim'), nightSpirit: on('nightSpirit'),
+        ...Object.fromEntries(Object.keys(SUBCLASS_BUFFS).map(key => [key, on(key)]))
     };
+}
+
+/**
+ * Bonus de combat ouverts par la sous-classe du personnage, une fois son niveau atteint.
+ * @param {Object} character
+ * @param {{ subclass: string, level: number }} [derived] - deriveCharacter(character) : sous-classe
+ *        reconnue comme partout ailleurs (accents, apostrophes) ; sinon lue dans character
+ * @returns {string[]} clés de combat_buffs
+ */
+export function subclassBuffs(character, derived) {
+    const subclass = derived?.subclass ?? subclassOf(character);
+    const level = derived?.level ?? characterLevel(character?.char_level);
+    return Object.entries(SUBCLASS_BUFFS)
+        .filter(([, [id, minLevel]]) => id === subclass && level >= minLevel)
+        .map(([key]) => key);
 }
 
 /**
@@ -332,8 +367,8 @@ export function featBuffs(character) {
  * @param {Object} character
  * @returns {string[]}
  */
-export function buffsForCharacter(slug, character) {
-    return [...buffsForClass(slug), ...featBuffs(character)];
+export function buffsForCharacter(slug, character, derived) {
+    return [...buffsForClass(slug), ...subclassBuffs(character, derived), ...featBuffs(character)];
 }
 
 /**

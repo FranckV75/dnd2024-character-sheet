@@ -220,7 +220,8 @@ describe('bonus de combat', () => {
     test("un bonus hors de la classe actuelle n'est pas appliqué", () => {
         const buffs = { rage: true, sneakAttack: true, hunterMark: true };
         const none = { rage: false, sneakAttack: false, hunterMark: false, heavyWeaponMaster: false, charger: false, dueling: false,
-            peerlessAim: false, nightSpirit: false };
+            peerlessAim: false, nightSpirit: false, frenzy: false, dreadfulStrike: false, feyStrikes: false, colossusSlayer: false,
+            superiority: false, psionicStrike: false };
         assert.deepEqual(effectiveBuffs('barbarian', buffs), { ...none, rage: true });
         assert.deepEqual(effectiveBuffs('fighter', buffs), none);
         assert.deepEqual(effectiveBuffs('rogue', undefined), none);

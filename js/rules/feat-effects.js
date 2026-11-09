@@ -31,6 +31,7 @@ import {
 import { FEAT_SPELL_FEATS, featSpellGroups, featSpellSummary } from './feat-spells.js';
 import { classFeatureNotes, weaponProficiency, weaponProficiencyNote, shieldKeepsMartialArts } from './class-features.js';
 import { subclassWeaponNotes } from './subclass-calcs.js';
+import { subclassCombatWeaponNotes } from './subclass-combat.js';
 import { findMastery } from './weapon-masteries.js';
 
 /**
@@ -1072,7 +1073,9 @@ export function weaponFeatNotes(weapon, character, derived = deriveCharacter(cha
             return note(rule.featId, rule.text(ctx), value === undefined ? {} : { value });
         }),
         // Coup critique élargi (Champion, L'Hoplite) : capacité de sous-classe
-        ...subclassWeaponNotes(weapon, derived)];
+        ...subclassWeaponNotes(weapon, derived),
+        // Manœuvres, Racines percutantes, Maître de la lance (lot 5)
+        ...subclassCombatWeaponNotes(weapon, derived)];
 }
 
 /**
