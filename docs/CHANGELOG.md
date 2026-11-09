@@ -2,6 +2,12 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.17.0] - 2026-11-09 (Vitesse de l'onglet Combat)
+### Changed
+- Saisie plus fluide sur l'onglet Combat : la hauteur des cases des tableaux (armes, armures, sorts)
+  est recalculée en une seule passe (tout lire, puis tout écrire) au lieu d'une case après l'autre,
+  environ 7 fois plus rapide sur une grosse fiche. Hauteurs identiques à avant.
+
 ## [4.16.0] - 2026-11-09 (Protection des données)
 ### Fixed
 - Fiche piégée : un texte long contenant des attributs cachés (`data-out="__proto__"`…) bloquait le

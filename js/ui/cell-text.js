@@ -21,9 +21,17 @@ export function fitCellText(textarea) {
     textarea.style.height = `${textarea.scrollHeight}px`;
 }
 
-/** Ajuste toutes les cases de `root` */
+/**
+ * Ajuste toutes les cases de `root`, par lots : on lit tout, puis on écrit tout.
+ * Alterner lecture et écriture case par case forçait le navigateur à recalculer
+ * la mise en page à chaque case (environ 7 fois plus lent sur l'onglet Combat).
+ */
 export function fitCellTexts(root = document) {
-    for (const textarea of root.querySelectorAll(`textarea.${CLASS}`)) fitCellText(textarea);
+    const visible = [...root.querySelectorAll(`textarea.${CLASS}`)]
+        .filter((textarea) => textarea.isConnected && textarea.offsetWidth !== 0);
+    for (const textarea of visible) textarea.style.height = 'auto';
+    const heights = visible.map((textarea) => textarea.scrollHeight);
+    visible.forEach((textarea, i) => { textarea.style.height = `${heights[i]}px`; });
 }
 
 const widths = new WeakMap();
