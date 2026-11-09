@@ -18,7 +18,7 @@ import { deriveCharacter, featSlotState, hitDieForClass, exhaustionSeverity } fr
 import { featEffects, AUTOMATED_FEATS } from '../rules/feat-effects.js';
 import { featCounters, setFeatUsesPatch } from '../rules/feat-uses.js';
 import { FEAT_CHOICE_RULES, slotChoice, setFeatChoicePatch, fieldOptions, fieldActive } from '../rules/feat-choices.js';
-import { featName, featSlotName, isHuman } from '../rules/feats.js';
+import { featName, featSlotName, isHuman, classFeatSlot, featSlotCounts } from '../rules/feats.js';
 import { sanitizeRich, sanitizeRulesText } from './sanitize.js';
 import { el, fillSelect, icon, signed } from './dom.js';
 import { applyLock, isLocked } from './lock.js';
@@ -183,10 +183,12 @@ function bindFeatFolding(root) {
 function buildFeats(root) {
     root.querySelector('#feats').replaceChildren(...FEAT_SLOT_ORDER.map(level => {
         const human = level === HUMAN_FEAT_SLOT;
+        const reserved = classFeatSlot(level);
         // Second don de l'Humain (trait Polyvalent) : un don d'origine seulement
         const select = el('select', {
             id: `f-feat_${level}`, class: 'input', 'data-field': `feat_${level}`,
-            'aria-label': human ? "Second don d'origine (Humain, trait Polyvalent)" : `Don du niveau ${level}`,
+            'aria-label': human ? "Second don d'origine (Humain, trait Polyvalent)"
+                : reserved ? `Don en plus du niveau ${level} (${reserved.name})` : `Don du niveau ${level}`,
             'aria-describedby': `feat-when-${level}`
         }, el('option', { value: '', text: human ? "— Choisir un don d'origine —" : '— Choisir un don —' }),
         featOptions(human ? ['Origine'] : FEAT_TYPE_ORDER));
@@ -194,14 +196,15 @@ function buildFeats(root) {
         // la légende (« À venir », « Actif au niveau 12 ») ne s'affiche que pour les niveaux pas encore atteints ;
         // celle de l'emplacement de l'Humain dit d'où il vient (« Humain : Polyvalent »)
         // La pastille replie le don (bindFeatFolding) ; sans don choisi, rien à replier
-        return el('div', { class: 'feat', 'data-feat-slot': String(level), hidden: human },
+        // Emplacements réservés (Humain, Guerrier, Roublard) : masqués jusqu'au premier rendu
+        return el('div', { class: 'feat', 'data-feat-slot': String(level), hidden: human || Boolean(reserved) },
             el('div', { class: 'feat-head' },
                 el('button', { type: 'button', class: 'feat-badge', disabled: true },
                     el('span', { text: `Niv. ${featSlotLevel(level)}` }), icon('chevron')),
                 select,
                 el('output', { class: 'feat-asi', 'data-out': `featAsi:${level}` }),
                 el('span', { class: 'feat-when', id: `feat-when-${level}`, hidden: true },
-                    icon(human ? 'user' : 'hourglass'), el('span', { class: 'feat-when-text' }))),
+                    icon(human || reserved ? 'user' : 'hourglass'), el('span', { class: 'feat-when-text' }))),
             el('div', { class: 'feat-desc', id: `feat-desc-${level}`, 'data-feat-desc': String(level), hidden: true }),
             // Ce que la fiche fait de ce don (calculs, rappels) : renderFeatSheet
             el('div', { class: 'feat-sheet', id: `feat-sheet-${level}`, 'data-feat-sheet': String(level), hidden: true }));
@@ -470,17 +473,21 @@ function renderFeats(root, character, d, effects, counters) {
     for (const level of FEAT_SLOT_ORDER) {
         const slot = root.querySelector(`[data-feat-slot="${level}"]`);
         const humanSlot = level === HUMAN_FEAT_SLOT;
+        const reserved = classFeatSlot(level);
+        const counts = featSlotCounts(level, character);
         const chosen = stripHTML(String(character[`feat_${level}`] ?? '')) !== '';
-        // Emplacement de l'Humain : affiché pour un Humain, ou s'il garde un don (espèce changée
-        // ensuite : le don est montré, ne compte pas, et la valeur saisie n'est pas effacée)
-        if (humanSlot) slot.hidden = !human && !chosen;
+        // Emplacement de l'Humain ou d'une classe : affiché s'il compte, ou s'il garde un don (espèce
+        // ou classe changée ensuite : le don est montré, ne compte pas, la valeur saisie n'est pas effacée)
+        if (humanSlot || reserved) slot.hidden = !counts && !chosen;
         let state = featSlotState(featSlotLevel(level), d.level, character[`feat_${level}`]);
-        if (humanSlot && !human && chosen) state = 'planned';
+        if (!counts && chosen) state = 'planned';
         if (slot.dataset.featState !== state) slot.dataset.featState = state;
         const when = slot.querySelector('.feat-when');
+        // Don de classe : « À venir » / « Actif au niveau 14 » tant qu'il n'est pas atteint
         const caption = humanSlot
             ? (human ? 'Humain : Polyvalent' : 'Réservé aux Humains')
-            : FEAT_WHEN[state]?.(level) ?? '';
+            : reserved && !counts ? `Réservé aux ${reserved.plural}`
+            : FEAT_WHEN[state]?.(level) ?? (reserved ? `${reserved.name} : don en plus` : '');
         const text = when.querySelector('.feat-when-text');
         if (text.textContent !== caption) text.textContent = caption;
         when.hidden = !caption;

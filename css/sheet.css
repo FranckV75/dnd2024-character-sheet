@@ -1131,8 +1131,10 @@ fieldset.inline-checks {
     display: none;
 }
 
-/* Don prévu en avance : la légende, puis le gain de caractéristique juste dessous */
-.feat[data-feat-state="planned"] .feat-head > .feat-asi {
+/* Don prévu en avance, ou don de classe en plus (« Guerrier : don en plus ») : la légende, puis
+   le gain de caractéristique juste dessous */
+.feat[data-feat-state="planned"] .feat-head > .feat-asi,
+.feat-head:has(> .feat-when:not([hidden])) > .feat-asi {
     grid-row: 2;
 }
 

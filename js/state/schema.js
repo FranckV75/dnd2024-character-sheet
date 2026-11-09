@@ -41,8 +41,16 @@ export const FEAT_LEVELS = [1, 4, 8, 12, 16, 19];
  */
 export const HUMAN_FEAT_SLOT = 0;
 
-/** Emplacements de dons dans l'ordre de la fiche : celui de l'Humain juste après le niveau 1 */
-export const FEAT_SLOT_ORDER = [1, HUMAN_FEAT_SLOT, 4, 8, 12, 16, 19];
+/**
+ * Dons de classe en plus (PHB 2024, « Ability Score Improvement » répété) : Guerrier aux niveaux 6
+ * et 14, Roublard au niveau 10. Clés feat_6, feat_14, feat_10 ajoutées par la v4 seulement quand
+ * on les remplit (absentes de la fiche vierge) ; elles ne comptent que pour cette classe.
+ */
+export const CLASS_FEAT_SLOTS = Object.freeze({ 6: 'fighter', 10: 'rogue', 14: 'fighter' });
+
+/** Emplacements de dons dans l'ordre de la fiche : celui de l'Humain juste après le niveau 1,
+ *  ceux de classe à leur niveau */
+export const FEAT_SLOT_ORDER = [1, HUMAN_FEAT_SLOT, 4, 6, 8, 10, 12, 14, 16, 19];
 
 /**
  * Niveau auquel un emplacement est acquis (feat_0 : niveau 1)

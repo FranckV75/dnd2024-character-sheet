@@ -2,6 +2,17 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.10.0] - 2026-11-09 (Dons en plus du Guerrier et du Roublard)
+### Added
+- Guerrier : emplacements de don en plus aux niveaux 6 et 14 ; Roublard : au niveau 10 (PHB 2024,
+  Amélioration de caractéristique ou autre don). Mention « Guerrier : don en plus », mêmes calculs, cases,
+  choix et alertes que les autres dons. Autre classe : la ligne n'apparaît pas, ou, si un don y est noté,
+  il reste affiché « Réservé aux Guerriers » sans compter (rien n'est effacé).
+### Changed
+- Format de sauvegarde : nouvelles clés facultatives `feat_6`, `feat_10`, `feat_14`, absentes tant qu'on ne
+  les remplit pas ; aucune clé renommée ni supprimée. La synchronisation les traite comme les autres clés
+  propres à la v4.
+
 ## [4.9.0] - 2026-11-09 (Dons : vitesse, PV temporaires, armures, armes d'hast, poison)
 ### Added
 - Mobile : repère « dont +3 m grâce à Mobile » sous la Vitesse (la vitesse saisie n'est pas modifiée).

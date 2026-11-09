@@ -126,7 +126,7 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
 - Les clés inconnues sont conservées par la v4 : une fiche enregistrée par la v4 reste lisible par
   la v3, et inversement. Attention : la v3, elle, reconstruit la fiche à partir de sa page et perd en
   enregistrant les clés qu'elle ne connaît pas (`combat_buffs`, `spell_slots_state`, `feat_uses`,
-  `feat_choices`, `feat_0`) : `V4_ONLY_KEYS`, `js/cloud/sync.js`.
+  `feat_choices`, `feat_0`, `feat_6`, `feat_10`, `feat_14`) : `V4_ONLY_KEYS`, `js/cloud/sync.js`.
 - Clés propres à la v4 : `combat_buffs` (bonus de combat actifs), `spell_slots_state` (emplacements
   de sorts) et `feat_uses` (usages dépensés des dons à cases, `{ idDuDon: nombre }`, facultative :
   absente = rien de dépensé ; `js/rules/feat-uses.js`) et `feat_choices` (choix des dons : caractéristique,
@@ -140,6 +140,10 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   est Humain (`isHuman`, `js/rules/feats.js`) et n'est jamais effacée si l'espèce change. Son numéro 0
   sert aussi de clé dans `feat_choices` (`"0"`) et `feat_uses` (`"idDuDon@0:partie"`) ; ordre de la fiche
   et niveau d'acquisition : `FEAT_SLOT_ORDER` et `featSlotLevel` (`js/state/schema.js`).
+- `feat_6`, `feat_14` (Guerrier) et `feat_10` (Roublard) : dons de classe en plus (PHB 2024, Amélioration
+  de caractéristique répétée). Absentes d'une fiche vierge, ajoutées quand on les remplit ; elles ne comptent
+  que pour leur classe (`CLASS_FEAT_SLOTS`, `js/state/schema.js` ; `featSlotCounts`, `js/rules/feats.js`) et
+  ne sont jamais effacées si la classe change (la fiche montre « Réservé aux Guerriers »).
 - Dons repliés (pastille du niveau, onglet Aptitudes & Traits) : retenus sur l'appareil seulement
   (`localStorage` `dd2024_feats_folded`, liste « emplacement:don »), jamais dans la fiche.
 - Effets des dons (`featEffects`, `js/rules/feat-effects.js`) : des notes rangées par zone de la fiche

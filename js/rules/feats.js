@@ -4,7 +4,8 @@
 //    est atteint (N ≤ niveau du personnage) ; un don prévu pour plus tard ne change rien ;
 //  - les valeurs enregistrées sont nettoyées du HTML des anciennes sauvegardes.
 //  - seuls les emplacements de la fiche comptent (FEAT_SLOT_ORDER : 1, 4, 8, 12, 16, 19, plus
-//    feat_0, second don d'origine de l'Humain, qui ne compte que si l'espèce est Humain) ; une
+//    feat_0, second don d'origine de l'Humain, qui ne compte que si l'espèce est Humain, et les
+//    dons de classe en plus, feat_6 et feat_14 pour le Guerrier, feat_10 pour le Roublard) ; une
 //    clé feat_2 (sauvegarde retouchée à la main) n'est jamais affichée, donc ignorée.
 //  - « level » d'un emplacement = son numéro (clé feat_<N>, feat_choices, feat_uses) ; le niveau
 //    où il est acquis est featSlotLevel(N) (feat_0 : niveau 1) ; featSlotName le nomme.
@@ -13,7 +14,8 @@
 // =============================================================================
 
 import { FEATS_DATA } from '../data/feats.js';
-import { FEAT_SLOT_ORDER, HUMAN_FEAT_SLOT, featSlotLevel } from '../state/schema.js';
+import { DD_RULES } from '../data/dd-rules.js';
+import { FEAT_SLOT_ORDER, HUMAN_FEAT_SLOT, CLASS_FEAT_SLOTS, featSlotLevel } from '../state/schema.js';
 
 const FEAT_KEY = /^feat_(\d+)$/;
 
@@ -52,6 +54,52 @@ export function isHuman(character) {
     return /^(humain|human)$/i.test(plain(character?.char_species));
 }
 
+/** Noms des classes qui ont des dons en plus (légende de l'emplacement) */
+const CLASS_SLOT_NAMES = Object.freeze({
+    fighter: { name: 'Guerrier', plural: 'Guerriers' },
+    rogue: { name: 'Roublard', plural: 'Roublards' }
+});
+
+/**
+ * Classe du personnage, lue comme classSlug (character.js) : identifiant anglais, nom anglais ou
+ * français (« Guerrier », « Fighter »), sans HTML.
+ * @param {Object} character
+ * @returns {string} ex. 'fighter' ; '' si inconnue
+ */
+function classOf(character) {
+    const clean = plain(character?.char_class).toLowerCase();
+    if (!clean) return '';
+    for (const [slug, cls] of Object.entries(DD_RULES.classes)) {
+        if (slug === clean || cls.name.toLowerCase() === clean || cls.nameFr.toLowerCase() === clean) return slug;
+    }
+    return '';
+}
+
+/**
+ * Emplacement réservé à une classe (don en plus du Guerrier ou du Roublard) ?
+ * @param {number|string} slot - numéro de l'emplacement
+ * @returns {{ classId: string, name: string, plural: string } | null}
+ */
+export function classFeatSlot(slot) {
+    const key = String(Number(slot));
+    const classId = Object.hasOwn(CLASS_FEAT_SLOTS, key) ? CLASS_FEAT_SLOTS[key] : '';
+    return classId ? { classId, ...CLASS_SLOT_NAMES[classId] } : null;
+}
+
+/**
+ * L'emplacement compte-t-il pour ce personnage ? feat_0 : Humain seulement ; feat_6 et feat_14 :
+ * Guerrier ; feat_10 : Roublard ; les autres : tout le monde. Un don noté dans un emplacement qui
+ * ne compte pas n'est jamais effacé (la fiche le montre « réservé »).
+ * @param {number|string} slot
+ * @param {Object} character
+ * @returns {boolean}
+ */
+export function featSlotCounts(slot, character) {
+    if (Number(slot) === HUMAN_FEAT_SLOT) return isHuman(character);
+    const reserved = classFeatSlot(slot);
+    return reserved ? classOf(character) === reserved.classId : true;
+}
+
 /**
  * Nom d'un emplacement dans les phrases (« niveau 4 », « niveau 1 (Humain) »)
  * @param {number|string} slot - numéro de l'emplacement
@@ -73,7 +121,6 @@ export function featSlotName(slot) {
 export function featSlots(character) {
     if (!character || typeof character !== 'object') return [];
     const level = characterLevel(character.char_level);
-    const human = isHuman(character);
     const slots = [];
     for (const [key, value] of Object.entries(character)) {
         const match = key.match(FEAT_KEY);
@@ -81,7 +128,7 @@ export function featSlots(character) {
         if (!featId) continue;
         const slotLevel = Number(match[1]);
         if (!FEAT_SLOT_ORDER.includes(slotLevel)) continue;
-        if (slotLevel === HUMAN_FEAT_SLOT && !human) continue;
+        if (!featSlotCounts(slotLevel, character)) continue;
         slots.push({ level: slotLevel, featId, reached: featSlotLevel(slotLevel) <= level });
     }
     return slots.sort((a, b) => FEAT_SLOT_ORDER.indexOf(a.level) - FEAT_SLOT_ORDER.indexOf(b.level));

@@ -414,7 +414,7 @@ export function sneakAttackDice(level) {
 }
 
 /**
- * État d'un emplacement de don (niveaux 1, 4, 8, 12, 16, 19) selon le niveau du personnage.
+ * État d'un emplacement de don (niveaux 1, 4, 8, 12, 16, 19, et 6, 10, 14 de classe) selon le niveau du personnage.
  * Seuls les dons « actifs » (niveau atteint) comptent dans les calculs de la fiche
  * (reachedFeatIds, js/rules/feats.js) : un don prévu en avance ne change rien aux statistiques.
  * Les valeurs saisies à la main (caractéristiques, PV max, vitesse) ne sont jamais modifiées.
