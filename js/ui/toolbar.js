@@ -204,7 +204,7 @@ function openImportModal(store, setStatus) {
     let close = () => {};
     const load = (text, sourceLabel) => {
         const { character, report } = parseCharacterFile(text);
-        store.replace(character);
+        store.replace(character, { source: 'file' });
         setStatus(report.length
             ? `${sourceLabel} chargée (${report.length} conversion(s) d'ancien format).`
             : `${sourceLabel} chargée.`);

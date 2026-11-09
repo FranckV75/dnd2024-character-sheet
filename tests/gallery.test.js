@@ -20,7 +20,8 @@ import {
     legacySiteImage,
     needsObjectUrl,
     dataImageBytes,
-    CSS_VARIABLE_SAFE_CHARS
+    CSS_VARIABLE_SAFE_CHARS,
+    isExternalBackground
 } from '../js/rules/gallery.js';
 import { DEFAULT_BGS } from '../js/data/constants.js';
 
@@ -183,5 +184,22 @@ describe("Très grande image de l'appareil (enregistrée par la v3)", () => {
         assert.deepEqual([...out.bytes.slice(0, 4)], [0x89, 0x50, 0x4e, 0x47]);
         assert.equal(dataImageBytes('https://exemple.fr/a.png'), null);
         assert.equal(dataImageBytes('data:image/png;base64,A'), null, 'base64 invalide');
+    });
+});
+
+describe('isExternalBackground (fiche importée : image d\'un autre site)', () => {
+    test('adresse d\'un autre site → externe', () => {
+        assert.equal(isExternalBackground('https://exemple.com/fond.jpg', opts), true);
+        assert.equal(isExternalBackground('http://exemple.com/fond.jpg', opts), true);
+    });
+    test('image fournie, ancienne adresse v3 d\'une image fournie, image de l\'appareil, vide → non', () => {
+        assert.equal(isExternalBackground('Fond_Equipe.webp', opts), false);
+        assert.equal(isExternalBackground('https://franckv75.github.io/dnd2024-character-sheet/Fond_Fafnir.webp', opts), false);
+        assert.equal(isExternalBackground('data:image/png;base64,iVBORw0KGgo=', opts), false);
+        assert.equal(isExternalBackground('', opts), false);
+        assert.equal(isExternalBackground(undefined, opts), false);
+    });
+    test('adresse refusée (javascript:) → non (elle ne serait pas chargée de toute façon)', () => {
+        assert.equal(isExternalBackground('javascript:alert(1)', opts), false);
     });
 });

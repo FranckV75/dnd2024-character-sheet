@@ -125,6 +125,17 @@ docs/archive-v3/        Documents de la v3
 - DOMPurify non chargé (connexion coupée au premier chargement) : les textes longs s'affichent sans
   mise en forme (retours à la ligne gardés), en lecture seule, avec un bandeau ; ils ne sont jamais
   réenregistrés à partir de cet affichage simplifié.
+- Règle de sécurité de la page (Content-Security-Policy, balise `<meta>` de index.html, car GitHub
+  Pages ne permet pas d'en-têtes) : scripts du site et des deux bibliothèques figées seulement
+  (DOMPurify, Supabase), échanges réseau avec la base Supabase du projet seulement, polices Google,
+  images du site, de l'appareil (data:, blob:) ou d'une adresse http(s) (fond saisi par le joueur). Ajouter une bibliothèque ou un service
+  oblige à compléter cette règle (sinon : erreur console « violates the following Content Security
+  Policy directive »).
+- Fond d'écran d'une fiche importée depuis un fichier : une image d'un autre site n'est pas chargée
+  (sauf si l'appareil la connaît déjà) et la fiche prend le fond de l'appareil, pour que l'adresse ne
+  soit pas chargée plus tard (autre onglet, fiche en ligne) ; le joueur peut l'ajouter depuis « Fonds ».
+- Le contrôle automatique `.github/workflows/supabase-keepalive.yml` vérifie aussi, tous les
+  3 jours, qu'une lecture sans connexion ne voit aucune fiche (règles RLS actives).
 
 ## Plusieurs onglets dans le même navigateur
 

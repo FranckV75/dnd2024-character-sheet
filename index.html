@@ -5,6 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
+    <!-- Sécurité : la page n'exécute que ses propres scripts et les deux bibliothèques ci-dessous
+         (DOMPurify, Supabase), et ne communique qu'avec la base Supabase du projet.
+         'unsafe-inline' pour les styles seulement : couleurs du texte riche (style="…"). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net/npm/dompurify@3.1.5/ https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src https://fonts.gstatic.com;
+        img-src 'self' data: blob: https: http:;
+        connect-src 'self' https://yhblszojptpcyrmyogvo.supabase.co wss://yhblszojptpcyrmyogvo.supabase.co;
+        object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'">
     <title>Feuille de Personnage D&amp;D 2024</title>
     <link rel="icon" href="data:,">
     <!-- Thème mémorisé posé avant tout affichage (évite un flash clair en thème sombre) -->

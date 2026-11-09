@@ -149,6 +149,19 @@ export function resolveBackground(value, { assetBase, defaults = [] }) {
 }
 
 /**
+ * Fond hébergé sur un autre site (adresse http(s) qui n'est pas une image fournie) ?
+ * Une fiche importée depuis un fichier ne doit pas faire charger une telle image sans l'accord du
+ * joueur (le site qui l'héberge verrait l'adresse IP de la tablette).
+ * @param {unknown} value - valeur mémorisée (galleryBg)
+ * @param {{assetBase: string|URL, defaults?: string[]}} options - comme resolveBackground
+ * @returns {boolean}
+ */
+export function isExternalBackground(value, options) {
+    const url = resolveBackground(value, options);
+    return url !== null && /^https?:/i.test(url) && !url.startsWith(new URL(options.assetBase).href);
+}
+
+/**
  * Nom lisible d'une image ('Fond_La_Team.webp' → 'La Team', 'https://x/a%20b.jpg' → 'a b').
  * @param {string} value
  * @returns {string}

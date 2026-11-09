@@ -33,6 +33,7 @@ import {
     needsObjectUrl,
     dataImageBytes,
     resolveBackground as resolveRaw,
+    isExternalBackground,
     displayName,
     parseSavedBackgrounds,
     backgroundSize,
@@ -68,6 +69,7 @@ let sessionOnlyBg = null;
 
 const resolveBackground = (value) => resolveRaw(value, { assetBase: ASSET_BASE, defaults: DEFAULT_BGS });
 const isValidBackground = (value) => resolveBackground(value) !== null;
+const isExternal = (value) => isExternalBackground(value, { assetBase: ASSET_BASE, defaults: DEFAULT_BGS });
 
 // ---------------------------------------------------------------------------
 // Stockage du navigateur (toujours protégé : navigation privée, quota dépassé)
@@ -235,13 +237,23 @@ function loadInitialPrefs(character) {
 
 /**
  * Personnage remplacé (import, chargement) : ses préférences visuelles s'appliquent (comme la v3).
+ * Fiche importée d'un fichier : un fond hébergé sur un autre site n'est pas chargé, sauf s'il est
+ * déjà connu de l'appareil (fond actuel ou fond enregistré dans la galerie). onBlocked remplace
+ * ensuite ce fond, dans la fiche, par celui de l'appareil : sinon l'adresse serait chargée plus tard
+ * par un autre chemin (autre onglet, fiche en ligne relue sur une autre tablette, démarrage).
  * @param {unknown} vp
+ * @param {{ fromFile?: boolean, onBlocked?: () => void }} [options]
  * @returns {boolean} true si des préférences ont été appliquées
  */
-function applyCharacterPrefs(vp) {
+function applyCharacterPrefs(vp, { fromFile = false, onBlocked } = {}) {
     const next = fromVisualPrefs(vp, isValidBackground);
     if (!next) return false;
     const { theme, ...values } = next;
+    if (fromFile && 'bg' in values && isExternal(values.bg) && values.bg !== prefs.bg
+        && !getSavedBackgrounds().includes(values.bg)) {
+        delete values.bg;
+        onBlocked?.();
+    }
     Object.assign(prefs, values);
     if (theme && theme !== currentTheme()) setTheme(theme);
     applyAll();
@@ -401,9 +413,18 @@ export function initGallery(ctx) {
     buttonGroup?.append(galleryButton);
     container.replaceChildren(...(buttonGroup ? [] : [galleryButton]), posY.control, zoom.control, opacity.control);
 
-    store.subscribe((state, changedKeys) => {
+    store.subscribe((state, changedKeys, meta) => {
         if (changedKeys !== null) return;
-        if (applyCharacterPrefs(state._visual_prefs)) syncSliders();
+        const options = {
+            fromFile: meta?.source === 'file',
+            // Après la fin de l'import (hors de la notification en cours) : la fiche prend le fond de
+            // l'appareil, puis le message s'affiche après « … chargée »
+            onBlocked: () => setTimeout(() => {
+                mirrorToCharacter(store);
+                setStatus("⚠️ Fond d'écran de la fiche non chargé (image d'un autre site) : ajoutez-le depuis « Fonds » si vous lui faites confiance.");
+            }, 0)
+        };
+        if (applyCharacterPrefs(state._visual_prefs, options)) syncSliders();
     });
 
     // Le thème fait partie de _visual_prefs (v3) : le garder à jour quand il change

@@ -2,6 +2,20 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.19.0] - 2026-11-09 (Sécurité)
+### Security
+- Règle de sécurité de la page (Content-Security-Policy) : la fiche n'exécute que ses propres scripts
+  et les deux bibliothèques figées (DOMPurify, Supabase), et ne communique qu'avec la base Supabase
+  du projet. Un code glissé dans une fiche ne pourrait ni charger un script d'un autre site, ni
+  envoyer les données ailleurs.
+- Fiche importée depuis un fichier : un fond d'écran hébergé sur un autre site n'est plus chargé
+  automatiquement (le site qui l'héberge aurait vu l'adresse IP de la tablette). Message : « Fond
+  d'écran de la fiche non chargé (image d'un autre site) : ajoutez-le depuis « Fonds » si vous lui
+  faites confiance. » La fiche importée prend le fond de l'appareil (l'adresse n'est donc chargée ni
+  par un autre onglet ni par une autre tablette) ; fonds fournis et images de l'appareil inchangés.
+- Contrôle automatique de Supabase (tous les 3 jours) : il vérifie aussi qu'une lecture sans
+  connexion ne voit aucune fiche, et échoue (courriel de GitHub) si les fiches devenaient publiques.
+
 ## [4.18.0] - 2026-11-09 (Ménage)
 ### Fixed
 - Réglage d'une arme : le type de dégâts s'appelle « Perforant » (et non « Perçant »), comme partout ailleurs.

@@ -1,5 +1,6 @@
 # Empêche la mise en pause du projet Supabase gratuit (après ~7 jours sans activité).
-# Tous les 3 jours, une lecture anonyme (sans rien modifier) est envoyée à la base.
+# Tous les 3 jours, une lecture anonyme (sans rien modifier) est envoyée à la base ;
+# elle vérifie aussi que cette lecture ne voit aucune fiche (fiches privées, règles RLS).
 # La clé utilisée est la clé publique, déjà présente dans js/cloud/client.js (v4).
 name: Supabase keep-alive
 
@@ -30,6 +31,14 @@ jobs:
             echo "::error::Supabase ne répond pas (projet en pause ?). Le relancer depuis le tableau de bord Supabase."
             exit 1
           fi
+          # Sans connexion, la lecture doit renvoyer une liste vide « [] » : les règles RLS
+          # (supabase/policies.sql) réservent chaque fiche à son propriétaire. Une fiche visible
+          # ici voudrait dire que n'importe qui peut lire les fiches avec la clé publique.
+          if [ "$(tr -d '[:space:]' < response.txt)" != "[]" ]; then
+            echo "::error::ALERTE : des fiches sont lisibles sans connexion. Vérifier que la sécurité RLS de la table characters est activée dans Supabase (supabase/policies.sql)."
+            exit 1
+          fi
+          echo "Fiches privées : aucune fiche lisible sans connexion."
 
       # GitHub désactive les tâches programmées d'un dépôt public resté 60 jours sans commit.
       # Réactiver le workflow à chaque passage remet ce compteur à zéro.
