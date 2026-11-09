@@ -617,11 +617,14 @@ const MENTION_LABELS = {
     deathSaves: (note) => `Avantage (${note.featName})`,
     saves: (note) => ({
         mage_de_guerre: 'Avantage Concentration',
-        maitre_des_boucliers: 'Interposition'
+        maitre_des_boucliers: 'Interposition',
+        // Capacité de classe (Paladin niveau 6), déjà comptée dans le jet
+        aura_de_protection: `dont\u00a0+${note.value} Aura`
     })[note.featId] ?? note.featName,
     // Augmentation d'un don à choix : « +2 don niv. 4 » (la valeur saisie n'est pas modifiée)
     scores: (note) => `+${note.value}\u00a0don ${Number(note.slot) === HUMAN_FEAT_SLOT ? 'humain' : `niv.\u00a0${note.slot}`}`,
-    skills: (note) => note.featName
+    // Touche-à-tout (Barde niveau 2), déjà compté : « +1 Touche-à-tout »
+    skills: (note) => note.featId === 'touche_a_tout' ? `+${note.value}\u00a0Touche-à-tout` : note.featName
 };
 
 /** Titre de la fenêtre de détail d'une zone */
@@ -679,14 +682,24 @@ const mentionNotes = new WeakMap();
 /** Signature du contenu déjà affiché (évite de reconstruire à chaque saisie) */
 const renderedSignatures = new WeakMap();
 
+/** Phrase d'introduction de la fenêtre de détail : dons, capacités de classe, ou les deux */
+function featNotesIntro(notes) {
+    const classNotes = notes.some(note => note.classFeature);
+    const featNotes = notes.some(note => !note.classFeature);
+    if (classNotes && featNotes) return 'Effets des dons et des capacités de classe du personnage :';
+    if (classNotes) return 'Capacité de classe du personnage :';
+    return 'Effets des dons atteints par le personnage :';
+}
+
 function openFeatNotes(button) {
     const zone = button.dataset.featZone;
+    const notes = mentionNotes.get(button) ?? [];
     openModal({
         title: zoneTitle(zone),
         icon: 'star',
         body: [
-            el('p', { class: 'feat-notes-intro', text: 'Effets des dons atteints par le personnage :' }),
-            featNotesList(mentionNotes.get(button) ?? [])
+            el('p', { class: 'feat-notes-intro', text: featNotesIntro(notes) }),
+            featNotesList(notes)
         ],
         actions: [{ label: 'Fermer', primary: true }]
     });
@@ -715,7 +728,8 @@ function renderFeatMentions(root, effects) {
         ...(check ? [el('span', { class: 'feat-mention-line feat-mention-check' }, icon('warning'), el('span', { text: 'À vérifier' }))] : []));
         button.title = notes.map(note => `${note.featName} : ${note.text}`).join('\n');
         button.setAttribute('aria-haspopup', 'dialog');
-        button.setAttribute('aria-label', `${labels.join(', ')}${check ? ', à vérifier' : ''} : détail des dons (${zoneTitle(zone)})`);
+        const what = notes.every(note => note.classFeature) ? 'de la capacité de classe' : 'des dons';
+        button.setAttribute('aria-label', `${labels.join(', ')}${check ? ', à vérifier' : ''} : détail ${what} (${zoneTitle(zone)})`);
     }
 }
 

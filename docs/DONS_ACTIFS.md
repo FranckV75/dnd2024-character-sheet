@@ -107,7 +107,7 @@ Dans la colonne « Pour qui », le mot entre parenthèses est l'intérêt du don
 | Athlète | personne (faible) | Affiche « Escalade = vitesse ». Rappels pour se relever et sauter. | calcul | S |
 | Combattant à deux armes | Iria, Cephalus (faible) | Rappel de l'attaque en plus, avec ses dégâts sans modificateur. | texte | S |
 | Empoigneur | faible pour tous ; Fafnir non | Rappels sur la Frappe à mains nues. | texte | S |
-| Formation aux armes de guerre | Hedera, Fafnir, Cephalus (faible) | Ajoute « Armes de guerre » aux maîtrises affichées. Rien d'autre ne change, car la fiche ajoute déjà toujours le bonus de maîtrise. | calcul | S |
+| Formation aux armes de guerre | Hedera, Fafnir, Cephalus (faible) | Ajoute « Armes de guerre » aux maîtrises affichées. Depuis la 4.15.0, la fiche n'ajoute le bonus de maîtrise qu'aux armes maîtrisées : ce don rend maîtrisées les armes de guerre (attaque calculée en conséquence). | calcul | S |
 | Maître des armures intermédiaires ✅ | Korgul, Iria (faible) | Bonus de Dextérité jusqu'à +3 en armure intermédiaire, si la Dextérité vaut au moins 16. Fait le 05/11/2026 avec la colonne CA calculée. | calcul | S |
 | Maître-arbalétrier | faible | Rappel ; propriété Chargement barrée sur les arbalètes. | texte | S |
 | Protection lourde | personne | Formation aux armures lourdes cochée « par don ». | calcul | S |

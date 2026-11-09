@@ -2,6 +2,33 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.15.0] - 2026-11-09 (Règles de classe et maîtrise des armes)
+### Added
+- Paladin niveau 6 : Aura de protection (+ mod. de Charisme, minimum +1) comptée dans les six jets de
+  sauvegarde calculés, avec le repère « dont +X Aura » et le rappel « inactive si Neutralisé ».
+- Barde niveau 2 : Touche-à-tout (moitié du bonus de maîtrise) compté dans les compétences non maîtrisées et
+  la Perception passive (pas l'Initiative), avec un repère sur chaque compétence concernée.
+- Défense sans armure 10 + Dex + Cha : Sorcellerie draconique (Ensorceleur niveau 3, bouclier permis) et
+  Collège de la Danse (Barde niveau 3, ni armure ni bouclier), détaillée dans la bulle de la CA.
+- Odyssée, Moine La Voie du bouclier (niveau 3) : la Défense sans armure reste comptée avec un bouclier
+  (cocher la formation aux boucliers, que donne cette voie).
+- Configuration d'une arme : réglage « Arme maîtrisée » (Auto / Oui / Non), avec ce que « Auto » décide.
+### Changed
+- Attaque des armes : le bonus de maîtrise n'est ajouté qu'avec une arme maîtrisée (décision de Franck,
+  PHB 2024). Maîtrise déduite de la classe, du don Formation aux armes de guerre et du Collège de la
+  Vaillance (et, pour le Roublard L'Odysséen de l'Odyssée, le trident qui compte comme Finesse) ; Frappe à mains nues toujours maîtrisée ; classe non reconnue ou arme hors catalogue : comptée
+  comme avant ; Clerc, Druide et Sorcier : maîtrise des armes de guerre supposée (Protecteur, Gardien, Pacte
+  de la lame), rappelée sous l'arme. Une arme non maîtrisée l'indique par une pastille ⚠ orange sous son bonus
+  d'attaque (elle ouvre le rappel « Sans maîtrise »), dans l'infobulle et dans la fenêtre de sa botte d'arme.
+- Format de sauvegarde : propriété facultative `proficiency` (« yes » ou « no ») dans le JSON `weaponConfig`
+  d'une arme, absente en « Auto » ; aucune clé renommée ni supprimée. La v3 l'ignore (et l'efface si l'on
+  y réenregistre la configuration de l'arme : retour à « Auto »).
+### Fixed
+- Maîtrises d'armes des classes : Moine (armes de guerre Légères) et Roublard (armes de guerre Finesse ou
+  Légères), comme le PHB 2024.
+- Rôdeur niveau 20 (Tueur d'ennemis) : la Marque du chasseur fait 1d10 au lieu de 1d6.
+- Historique Marin : Acrobaties et Perception (au lieu d'Athlétisme et Perception).
+
 ## [4.14.0] - 2026-11-09 (Boutons des faveurs épiques)
 ### Added
 - Boutons de combat « Visée infaillible » (Faveur de prouesse martiale : mémo « utilisée ce tour », aucun

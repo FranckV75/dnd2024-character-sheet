@@ -63,7 +63,8 @@ const DD_RULES = {
             primaryAbility: ["dex", "wis"],
             savingThrows: ["str", "dex"],
             armorProf: [],
-            weaponProf: ["simple"]
+            // PHB 2024 : armes courantes et armes de guerre qui ont la propriété Légère
+            weaponProf: ["simple", "martial-light"]
         },
         paladin: {
             name: "Paladin",
@@ -90,7 +91,8 @@ const DD_RULES = {
             primaryAbility: ["dex"],
             savingThrows: ["dex", "int"],
             armorProf: ["light"],
-            weaponProf: ["simple"]
+            // PHB 2024 : armes courantes et armes de guerre qui ont la propriété Finesse ou Légère
+            weaponProf: ["simple", "martial-finesse", "martial-light"]
         },
         sorcerer: {
             name: "Sorcerer",
@@ -464,7 +466,7 @@ const DD_RULES = {
             nameFr: "Marin",
             abilityScores: ["str", "dex", "wis"],
             feat: "Tavern Brawler",
-            skillProfs: ["athletics", "perception"],
+            skillProfs: ["acrobatics", "perception"],
             toolProfs: ["Navigator's Tools"],
             startingGold: 50
         },

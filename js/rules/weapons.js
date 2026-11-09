@@ -23,6 +23,13 @@ export const WEAPON_DAMAGE_TYPES = [
     'PSYCH', 'POISON', 'ACIDE', 'FOUDRE', 'TONNERRE'
 ];
 
+/**
+ * Réglage « Maîtrisée » de la configuration (propriété facultative `proficiency` de weaponConfig,
+ * ajoutée en 4.15.0) : 'auto' (la fiche décide, rien n'est écrit), 'yes', 'no'. La v3 lit
+ * weaponConfig sans regarder les autres propriétés : elle l'ignore.
+ */
+export const WEAPON_PROFICIENCY_CHOICES = ['auto', 'yes', 'no'];
+
 const DIE_SIZES = new Set([4, 6, 8, 10, 12, 20]);
 const MAX_MAGIC_BONUS = 3;
 
@@ -207,7 +214,8 @@ function legacyText(value) {
  * validation stricte refuse est rendu tel quel, pour ne jamais l'effacer en silence
  * (computeWeapon l'utilise toujours et buildWeaponConfig le conserve s'il n'est pas modifié).
  * @param {string|Object} raw - champ weaponConfig (chaîne JSON en v3)
- * @returns {{ statOverride: string, magicBonus: number, dmgDieOverride: string, dmgTypeOverride: string }}
+ * @returns {{ statOverride: string, magicBonus: number, dmgDieOverride: string, dmgTypeOverride: string,
+ *             proficiency: 'auto'|'yes'|'no' }}
  */
 export function readWeaponConfig(raw) {
     const config = parseWeaponConfig(raw);
@@ -217,13 +225,15 @@ export function readWeaponConfig(raw) {
         statOverride: WEAPON_STAT_OVERRIDES.includes(config.statOverride) ? config.statOverride : '',
         magicBonus: Number.isFinite(magic) ? Math.max(0, Math.min(MAX_MAGIC_BONUS, magic)) : 0,
         dmgDieOverride: die.ok ? die.value : legacyText(config.dmgDieOverride),
-        dmgTypeOverride: WEAPON_DAMAGE_TYPES.includes(config.dmgTypeOverride) ? config.dmgTypeOverride : ''
+        dmgTypeOverride: WEAPON_DAMAGE_TYPES.includes(config.dmgTypeOverride) ? config.dmgTypeOverride : '',
+        proficiency: WEAPON_PROFICIENCY_CHOICES.includes(config.proficiency) ? config.proficiency : 'auto'
     };
 }
 
 /**
  * Valide le formulaire de configuration et produit la chaîne JSON à enregistrer (format v3 :
- * {statOverride, magicBonus, dmgDieOverride, dmgTypeOverride}). Les autres clés éventuellement
+ * {statOverride, magicBonus, dmgDieOverride, dmgTypeOverride}, plus `proficiency` : 'yes' ou 'no'
+ * seulement si le joueur a choisi ; « Auto » n'écrit rien et efface un ancien choix). Les autres clés éventuellement
  * présentes dans l'ancienne configuration sont conservées, de même qu'un ancien dé de dégâts
  * libre (format v3) laissé tel quel dans le formulaire.
  * @param {Object} input - valeurs du formulaire
@@ -253,16 +263,22 @@ export function buildWeaponConfig(input, previous = '') {
     if (dmgTypeOverride && !WEAPON_DAMAGE_TYPES.includes(dmgTypeOverride)) {
         errors.dmgTypeOverride = 'Type de dégâts inconnu.';
     }
+    const proficiency = (input?.proficiency ?? 'auto').toString() || 'auto';
+    if (!WEAPON_PROFICIENCY_CHOICES.includes(proficiency)) {
+        errors.proficiency = 'Réglage de maîtrise inconnu.';
+    }
     if (Object.keys(errors).length) return { ok: false, errors };
 
+    const { proficiency: _previousProficiency, ...kept } = previousConfig;
     return {
         ok: true,
         value: JSON.stringify({
-            ...previousConfig,
+            ...kept,
             statOverride,
             magicBonus,
             dmgDieOverride: die.value,
-            dmgTypeOverride
+            dmgTypeOverride,
+            ...(proficiency === 'auto' ? {} : { proficiency })
         })
     };
 }

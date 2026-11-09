@@ -15,6 +15,9 @@ import {
 } from './logic.js';
 import { reachedFeatIds } from './feats.js';
 import { weaponReach, isUnarmedStrike } from './weapons.js';
+import {
+    subclassId, auraOfProtectionBonus, jackOfAllTradesBonus, unarmoredDefenseOptions, weaponProficiency
+} from './class-features.js';
 
 /**
  * Extrait le premier entier d'une valeur saisie librement ("19", "+3", "<b>19</b>", "3?").
@@ -215,18 +218,21 @@ export function armorLine(armor, { mods, pb, mediumDexMax = 2 }) {
  * - Une seule armure portée compte (la meilleure) et un seul bouclier (le meilleur), seulement si le
  *   personnage est formé aux boucliers (PHB 2024) ; « Bonus » : s'ajoute ; « Maîtrise » : ajoute le
  *   bonus de maîtrise
- * - Sans armure : 10 + DEX, ou Barbare 10 + DEX + CON (bouclier autorisé),
- *   ou Moine 10 + DEX + SAG (uniquement sans bouclier)
+ * - Sans armure : 10 + DEX, ou la meilleure Défense sans armure de la classe ou de la sous-classe
+ *   (unarmoredDefenseOptions, class-features.js) : Barbare 10 + DEX + CON (bouclier autorisé),
+ *   Moine 10 + DEX + SAG (uniquement sans bouclier), Sorcellerie draconique niveau 3 10 + DEX + CHA
+ *   (bouclier autorisé), Collège de la Danse niveau 3 10 + DEX + CHA (uniquement sans bouclier)
  * - Armure ou bouclier magique (+1, +2, +3 : clé facultative « magic » de la ligne) : le bonus
  *   s'ajoute à la CA de cette armure ou de ce bouclier (DMG 2024, « Armor, +1, +2, or +3 » et
  *   « Shield, +1, +2, or +3 »)
  * rows : pour chaque ligne du tableau (même index), son calcul (armorLine) et son état :
  * 'counted' (comptée), 'unequipped' (non équipée), 'outdone' (une autre armure ou un autre bouclier
  * compte davantage), 'untrained' (bouclier non maîtrisé), 'none' (ne compte pas), avec une note.
- * @param {{ armors: Array, className: string, mods: Object, pb: number, shieldTrained?: boolean, mediumDexMax?: number }} params
+ * @param {{ armors: Array, className: string, mods: Object, pb: number, shieldTrained?: boolean, mediumDexMax?: number,
+ *           defense?: boolean, subclass?: string, level?: number }} params - subclass : identifiant (subclassId)
  * @returns {{ value: number, source: string, rows: Array<{ line: Object, status: string, note: string }> }}
  */
-export function computeArmorClass({ armors = [], className = '', mods, pb, shieldTrained = true, mediumDexMax = 2, defense = false }) {
+export function computeArmorClass({ armors = [], className = '', mods, pb, shieldTrained = true, mediumDexMax = 2, defense = false, subclass = '', level = 1 }) {
     const list = Array.isArray(armors) ? armors : [];
     const rows = list.map(armor => ({
         line: armorLine(armor && typeof armor === 'object' ? armor : {}, { mods, pb, mediumDexMax }),
@@ -288,7 +294,9 @@ export function computeArmorClass({ armors = [], className = '', mods, pb, shiel
 
     let bodyAC;
     let bodySource;
-    let monkLost = null;
+    // Défense sans armure perdue à cause du bouclier (Moine, Collège de la Danse) : { value, short }
+    let shieldLost = null;
+    const unarmored = unarmoredDefenseOptions({ classSlug: classSlug(className), subclass, level, mods });
     // Détail de l'addition (bulle de l'écusson CA) : une part par élément compté, et des remarques
     const parts = [];
     const notes = [];
@@ -298,38 +306,40 @@ export function computeArmorClass({ armors = [], className = '', mods, pb, shiel
         bodySource = (plainName(list[body]) || 'Armure') + (line.magic ? ` (+${line.magic} magique)` : '');
         parts.push({ label: plainName(list[body]) || 'Armure', value: line.display, formula: line.formula });
         // Défense sans armure plus forte que l'armure portée : on le signale (elle ne marche pas en armure)
-        const slug = classSlug(className);
-        const unarmored = slug === 'barbarian' ? { value: 10 + mods.dex + mods.con, name: 'Barbare' }
-            : slug === 'monk' ? { value: 10 + mods.dex + mods.wis, name: 'Moine' } : null;
-        if (unarmored && unarmored.value > bodyAC) {
-            notes.push(`Défense sans armure (${unarmored.name}) : ${unarmored.value} sans armure, mais elle ne compte pas quand on porte une armure.`);
+        for (const option of unarmored) {
+            if (option.value > bodyAC) {
+                notes.push(`${option.short} : ${option.value} sans armure, mais elle ne compte pas quand on porte une armure.`);
+            }
         }
     } else {
-        const slug = classSlug(className);
         const dexTerm = `10 ${term(mods.dex)} Dex`;
         bodyAC = 10 + mods.dex;
         bodySource = 'Sans armure';
         let label = 'Sans armure';
         let formula = `${dexTerm} = ${bodyAC}`;
-        if (slug === 'barbarian' && 10 + mods.dex + mods.con > bodyAC) {
-            bodyAC = 10 + mods.dex + mods.con;
-            bodySource = label = 'Défense sans armure (Barbare)';
-            formula = `${dexTerm} ${term(mods.con)} Con = ${bodyAC}`;
-        } else if (slug === 'monk' && 10 + mods.dex + mods.wis > bodyAC) {
-            if (hasShield) {
-                // PHB 2024 : la Défense sans armure du Moine ne marche ni en armure ni avec un bouclier
-                monkLost = 10 + mods.dex + mods.wis;
-                bodySource = 'Sans armure — Défense sans armure (Moine) perdue : bouclier en main';
-            } else {
-                bodyAC = 10 + mods.dex + mods.wis;
-                bodySource = label = 'Défense sans armure (Moine)';
-                formula = `${dexTerm} ${term(mods.wis)} Sag = ${bodyAC}`;
+        // La meilleure formule utilisable ; celle du Moine ou de la Danse ne marche pas avec un bouclier
+        // (PHB 2024 : ni armure ni bouclier)
+        let best = null;
+        for (const option of unarmored) {
+            if (option.value <= bodyAC) continue;
+            if (hasShield && !option.shieldAllowed) {
+                if (!shieldLost || option.value > shieldLost.value) shieldLost = option;
+                continue;
             }
+            if (!best || option.value > best.value) best = option;
         }
+        if (best) {
+            bodyAC = best.value;
+            bodySource = label = best.label;
+            formula = `${dexTerm} ${term(best.statMod)} ${best.stat} = ${bodyAC}`;
+        }
+        // Perdue seulement si elle aurait donné plus que la formule retenue
+        if (shieldLost && shieldLost.value <= bodyAC) shieldLost = null;
+        if (shieldLost && !best) bodySource = `Sans armure — ${shieldLost.short} perdue : bouclier en main`;
         parts.push({ label, value: String(bodyAC), formula });
     }
-    if (monkLost !== null) {
-        const lost = `Défense sans armure (Moine) perdue avec un bouclier : ${monkLost} sans le bouclier.`;
+    if (shieldLost !== null) {
+        const lost = `${shieldLost.short} perdue avec un bouclier : ${shieldLost.value} sans le bouclier.`;
         notes.push(lost);
         rows.forEach((row, i) => {
             if (row.line.kind === 'shield' && list[i]?.equipped) row.note = row.note ? `${row.note} ${lost}` : lost;
@@ -338,7 +348,7 @@ export function computeArmorClass({ armors = [], className = '', mods, pb, shiel
 
     let source = bodySource;
     if (hasShield && !shieldTrained) {
-        source = monkLost !== null ? `${bodySource}, bouclier non maîtrisé : aucun bonus` : `${bodySource} — bouclier non maîtrisé : sans effet`;
+        source = shieldLost !== null ? `${bodySource}, bouclier non maîtrisé : aucun bonus` : `${bodySource} — bouclier non maîtrisé : sans effet`;
         notes.push("Bouclier non maîtrisé (formation aux boucliers non cochée) : il n'ajoute rien.");
     } else if (shield !== -1) {
         const { line } = rows[shield];
@@ -441,10 +451,13 @@ export function featSlotState(slotLevel, characterLevel, choice) {
 /**
  * Attaque et dégâts d'une arme du tableau, avec les bonus de combat actifs.
  * @param {Object} weapon - Ligne de `dynamic_weapons`
- * @param {{ mods: Object, pb: number, level: number, classSlug: string }} stats - issu de deriveCharacter()
+ * @param {{ mods: Object, pb: number, level: number, classSlug: string, subclass?: string, feats?: string[] }} stats - issu de deriveCharacter()
  * @param {{ rage?: boolean, sneakAttack?: boolean, hunterMark?: boolean, heavyWeaponMaster?: boolean, charger?: boolean, dueling?: boolean, thrownWeapon?: boolean }} [buffs]
  *        thrownWeapon : pas un bouton ; attaque lancée avec le style Arme de lancer (+2, rappel sous l'arme)
- * @returns {{ attack: {text: string, tooltip: string}, damage: {text: string, tooltip: string} } | null}
+ * @returns {{ attack: {text: string, tooltip: string}, damage: {text: string, tooltip: string},
+ *             proficiency: { proficient: boolean, source: string, text: string } } | null}
+ *          proficiency : maîtrise de l'arme (weaponProficiency, class-features.js) ; sans elle, pas de
+ *          bonus de maîtrise à l'attaque
  *          null si l'arme n'est pas rattachée au manuel (pas de calcul possible)
  */
 export function computeWeapon(weapon, stats, buffs = {}) {
@@ -459,10 +472,13 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     const monkWeapon = isMonkWeapon(weapon, stats);
     const statOverride = weaponStatOverride(weapon, stats);
     const { stat } = resolveWeaponAttackStat(weapon.atkKey, prop, mods, statOverride);
+    // Bonus de maîtrise à l'attaque seulement avec une arme maîtrisée (décision de Franck, PHB 2024)
+    const proficiency = weaponProficiency(weapon, stats);
 
     const extraDmg = [];
     if (buffs.rage && stat === 'FOR') extraDmg.push({ die: String(getRageBonus(level)), type: 'Rage' });
-    if (buffs.hunterMark) extraDmg.push({ die: '1d6', type: 'Force' });
+    // Marque du chasseur : 1d6 de Force ; Rôdeur niveau 20, Tueur d'ennemis (PHB 2024 « Foe Slayer ») : 1d10
+    if (buffs.hunterMark) extraDmg.push({ die: slug === 'ranger' && level >= 20 ? '1d10' : '1d6', type: 'Force' });
     // Cogneur lourd (PHB 2024, « Expert en armes lourdes ») : arme Lourde, bonus de maîtrise
     if (buffs.heavyWeaponMaster && prop.toLowerCase().split(/[,;]/).some(p => p.trim().startsWith('lourde'))) {
         extraDmg.push({ die: String(pb), type: 'Cogneur lourd' });
@@ -494,9 +510,10 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     if (unarmed && !config.dmgDieOverride) dieOverride = unarmedDie(dieOverride, stats.feats ?? []);
 
     return {
-        attack: calcWeaponAttack(weapon.atkKey, prop, mods, pb, config.magicBonus || 0, statOverride, attackBonuses),
+        attack: calcWeaponAttack(weapon.atkKey, prop, mods, pb, config.magicBonus || 0, statOverride, attackBonuses, proficiency.proficient),
         damage: calcWeaponDamage(weapon.baseDmg || '', prop, mods, config.magicBonus || 0, statOverride,
-            dieOverride, config.dmgTypeOverride || '', weapon.atkKey, extraDmg)
+            dieOverride, config.dmgTypeOverride || '', weapon.atkKey, extraDmg),
+        proficiency
     };
 }
 
@@ -566,6 +583,8 @@ export function deriveCharacter(record = {}) {
     const level = Math.max(1, Math.min(20, parseNumber(record.char_level, 1)));
     const pb = calculateProficiencyBonus(level);
     const className = (record.char_class || '').toString();
+    const slug = classSlug(className);
+    const subclass = subclassId(record.char_subclass, slug);
 
     const scores = {};
     const mods = {};
@@ -573,20 +592,28 @@ export function deriveCharacter(record = {}) {
     for (const id of ABILITY_IDS) {
         scores[id] = parseNumber(record[`${id}_score`], 10);
         mods[id] = calcMod(scores[id]);
-        const proficient = record[`${id}_save_prof`] === true;
-        saves[id] = { proficient, bonus: mods[id] + (proficient ? pb : 0) };
     }
+    // Aura de protection (Paladin niveau 6) : à toutes les sauvegardes (class-features.js)
+    const aura = auraOfProtectionBonus({ classSlug: slug, level, mods });
+    for (const id of ABILITY_IDS) {
+        const proficient = record[`${id}_save_prof`] === true;
+        saves[id] = { proficient, aura, bonus: mods[id] + (proficient ? pb : 0) + aura };
+    }
+    // Touche-à-tout (Barde niveau 2) : aux compétences non maîtrisées (pas à l'Initiative)
+    const jack = jackOfAllTradesBonus({ classSlug: slug, level, pb });
 
     const skills = {};
     for (const skill of SKILLS) {
         const expertise = record[`skill_exp_${skill.id}`] === true;
         // Règle D&D : l'Expertise implique la maîtrise
         const proficient = expertise || record[`skill_prof_${skill.id}`] === true;
+        const jackBonus = proficient ? 0 : jack;
         skills[skill.id] = {
             stat: skill.stat,
             proficient,
             expertise,
-            bonus: calculateSkillBonus(mods[skill.stat], proficient, expertise, pb)
+            jack: jackBonus,
+            bonus: calculateSkillBonus(mods[skill.stat], proficient, expertise, pb) + jackBonus
         };
     }
 
@@ -605,7 +632,10 @@ export function deriveCharacter(record = {}) {
         level,
         pb,
         className,
-        classSlug: classSlug(className),
+        classSlug: slug,
+        subclass,
+        auraOfProtection: aura,
+        jackOfAllTrades: jack,
         scores,
         mods,
         saves,
@@ -622,7 +652,8 @@ export function deriveCharacter(record = {}) {
             armors, className, mods, pb,
             shieldTrained: record.prof_armor_shield === true,
             mediumDexMax: mediumArmorDexMax(feats, scores.dex),
-            defense: feats.includes('defense')
+            defense: feats.includes('defense'),
+            subclass, level
         }),
         spellcasting: computeSpellcasting(record.spell_ability, mods, pb),
         spellSlots: spellSlotsFor(className, level),

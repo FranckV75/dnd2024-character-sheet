@@ -35,6 +35,8 @@ js/
 │   ├── logic.js        Calculs élémentaires (modificateurs, maîtrise, armes, ressources)
 │   ├── character.js    Statistiques dérivées d'une fiche complète (deriveCharacter, computeWeapon)
 │   ├── weapons.js      Tableau des armes (filtres, bonus de combat, configuration)
+│   ├── class-features.js  Capacités de classe calculées (Aura de protection, Touche-à-tout,
+│   │                   Défense sans armure de sous-classe) et maîtrise des armes
 │   ├── armors.js       Armures (CA, bouclier, armure équipée)
 │   ├── spells.js       Grimoire (recherche, tri, filtres, emplacements de sorts)
 │   ├── feats.js · feat-effects.js · feat-uses.js · feat-choices.js
@@ -172,6 +174,18 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   martiaux (Moine sans armure ni bouclier, armes de Moine de corps à corps et mains nues) : dé seulement
   s'il est plus gros que celui de l'arme, Dextérité par `weaponStatOverride` (`js/rules/character.js`),
   partagée avec les bottes d'armes.
+- Capacités de classe et maîtrise des armes (`js/rules/class-features.js`, lot A) : Aura de protection
+  (Paladin 6) et Touche-à-tout (Barde 2) sont comptées par `deriveCharacter` (`saves[id].aura`,
+  `skills[id].jack`) et expliquées par des notes `classFeature: true` mêlées aux notes des dons
+  (`classFeatureNotes`, zones `saves.<id>` et `skills.<id>`). La sous-classe est lue par `subclassId`
+  (nom du menu, nom anglais, saisie libre sans accents). `computeArmorClass` prend la meilleure Défense sans
+  armure de `unarmoredDefenseOptions` (Barbare, Moine — bouclier permis pour La Voie du bouclier de l'Odyssée —,
+  Sorcellerie draconique, Collège de la Danse).
+  `weaponProficiency` dit si une arme est maîtrisée (réglage `proficiency` de `weaponConfig`, puis classe
+  — `weaponProf` de `dd-rules.js` : `martial`, `martial-light`, `martial-finesse` —, don, sous-classe :
+  Collège de la Vaillance, Roublard L'Odysséen dont le trident compte comme Finesse) ;
+  sans maîtrise, `computeWeapon` n'ajoute pas le bonus de maîtrise à l'attaque et `weaponFeatNotes` met
+  le rappel « Sans maîtrise » en tête des notes de l'arme (pastille ⚠ orange sous le bonus d'attaque).
 - Le +1 des dons généraux sans autre choix vient du champ « asi » de `js/data/feats.js`
   (`GENERAL_ASI_RULES`, `js/rules/feat-choices.js`) : un menu « Caractéristique +1 » s'il y a un choix,
   sinon une caractéristique fixe sans menu (Gaillard : Constitution). Rien n'est ajouté à la valeur saisie.

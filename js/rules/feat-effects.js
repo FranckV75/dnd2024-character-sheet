@@ -29,6 +29,8 @@ import {
     FEAT_CHOICE_RULES, featChoiceGrants, REPEATABLE_CHOICE_FEATS, abilityName, skillName, elementWord, slotChoice, ENERGY_TYPES
 } from './feat-choices.js';
 import { FEAT_SPELL_FEATS, featSpellGroups, featSpellSummary } from './feat-spells.js';
+import { classFeatureNotes, weaponProficiency, weaponProficiencyNote } from './class-features.js';
+import { findMastery } from './weapon-masteries.js';
 
 /**
  * Note de don affichée dans une zone de la fiche.
@@ -51,6 +53,9 @@ import { FEAT_SPELL_FEATS, featSpellGroups, featSpellSummary } from './feat-spel
  * @property {number} [slot] - niveau de l'emplacement du don (dons à choix : un même don peut être
  *   pris dans deux emplacements, chacun avec son choix)
  * @property {'short'|'long'} [restKind] - rappel de fin de repos court seulement, ou long seulement (zone 'rest')
+ * @property {boolean} [classFeature] - note d'une capacité de classe, pas d'un don (Aura de protection,
+ *   Touche-à-tout, arme non maîtrisée : js/rules/class-features.js) ; featId est alors un identifiant
+ *   propre à la capacité (absent de js/data/feats.js)
  */
 
 /**
@@ -586,7 +591,7 @@ const FEAT_RULES = {
 
     // Formation aux armes de guerre — PHB 2024 « Martial Weapon Training », p. 205
     formation_aux_armes_de_guerre: ({ add }) => {
-        add('featSlot', "Maîtrise des armes de guerre : la fiche compte déjà le bonus de maîtrise dans l'attaque de toutes les armes du tableau.", { applied: true });
+        add('featSlot', "Maîtrise des armes de guerre : la fiche ajoute le bonus de maîtrise à l'attaque des armes de guerre du tableau.", { applied: true });
     },
 
     // Maître d'armes : botte d'un type d'arme en plus (bottes d'armes, js/rules/weapon-masteries.js)
@@ -1041,12 +1046,18 @@ export function weaponFeatNotes(weapon, character, derived = deriveCharacter(cha
     const ctx = { derived, record: character || {}, weapon, buffs: buffs || {}, melee: weaponReach(weapon).melee, type: weaponDamageType(weapon) };
     // La Frappe à mains nues n'est pas une arme : pas les rappels réservés aux armes
     const unarmed = isUnarmedStrike(weapon);
-    return WEAPON_RULES
+    // Arme non maîtrisée (ou maîtrise supposée) : rappel en tête, avant ceux des dons
+    const proficiency = weaponProficiency(weapon, derived);
+    const proficiencyText = weaponProficiencyNote(proficiency, derived.pb, Boolean(findMastery(weapon.prof)));
+    const first = proficiencyText ? [proficiency.proficient
+        ? { featId: 'maitrise_supposee', featName: 'Maîtrise supposée', text: proficiencyText, classFeature: true }
+        : { featId: 'sans_maitrise', featName: 'Sans maîtrise', text: proficiencyText, value: derived.pb, check: true, classFeature: true }] : [];
+    return [...first, ...WEAPON_RULES
         .filter(rule => feats.has(rule.featId) && !(unarmed && WEAPON_ONLY_FEATS.has(rule.featId)) && rule.applies(ctx))
         .map(rule => {
             const value = typeof rule.value === 'function' ? rule.value(ctx) : rule.value;
             return note(rule.featId, rule.text(ctx), value === undefined ? {} : { value });
-        });
+        })];
 }
 
 /**
@@ -1150,6 +1161,11 @@ export function featEffects(character, derived = deriveCharacter(character || {}
                 list.push(note(grant.featId, text, { ...extra, slot: grant.level }));
             }
         });
+    }
+
+    // Capacités de classe qui changent une valeur calculée (Aura de protection, Touche-à-tout)
+    for (const [zone, notes] of Object.entries(classFeatureNotes(derived))) {
+        (effects[zone] ??= []).push(...notes);
     }
 
     // Rappels sur chaque ligne d'arme

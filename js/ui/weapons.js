@@ -21,6 +21,7 @@ import { stripHTML, findRulebookWeapon } from '../state/migrate.js';
 import { deriveCharacter, computeWeapon, sneakAttackDice } from '../rules/character.js';
 import { getRageBonus, parseWeaponConfig } from '../rules/logic.js';
 import { weaponFeatNotes } from '../rules/feat-effects.js';
+import { weaponProficiency } from '../rules/class-features.js';
 import { findMastery, masteryDetails, masteryParagraphs, masteryAccessNote, weaponMasteryFeature } from '../rules/weapon-masteries.js';
 import {
     matchesWeaponFilter, rowFromRulebookWeapon, completeRowFromRulebook,
@@ -414,26 +415,35 @@ export function initWeapons(ctx) {
         refresh(store.get());
     }
 
-    /** Rappels des dons d'une arme : bouton (étoile + nombre), ligne repliable, infobulle des dégâts */
+    /**
+     * Rappels d'une arme (dons, arme non maîtrisée) : bouton (étoile + nombre), ligne repliable,
+     * infobulle des dégâts. Arme non maîtrisée : même pastille compacte (elle tient dans la colonne
+     * Attaque sans rehausser la ligne), en couleur d'avertissement avec le panneau ⚠ au lieu de
+     * l'étoile ; « Sans maîtrise » est dit par son infobulle et en tête de la ligne de rappels.
+     */
     function writeFeatNotes(row, notes, label, shown) {
+        const unproficient = notes.some(note => note.featId === 'sans_maitrise');
         const signature = JSON.stringify(notes);
         if (row.notesSignature !== signature) {
             row.notesSignature = signature;
-            row.notesList.replaceChildren(...notes.map(note => el('li', {},
+            row.notesList.replaceChildren(...notes.map(note => el('li', { class: note.check ? 'is-check' : null },
                 el('strong', { text: note.featName }), el('span', { text: note.text }))));
-            row.notesBtn.replaceChildren(icon('star'), el('span', { text: String(notes.length) }));
+            row.notesBtn.replaceChildren(icon(unproficient ? 'warning' : 'star'),
+                el('span', { text: String(notes.length) }));
         }
         const has = notes.length > 0;
         if (!has) row.notesOpen = false;
         row.notesBtn.hidden = !has;
+        row.notesBtn.toggleAttribute('data-check', unproficient);
         row.notesBtn.setAttribute('aria-expanded', String(row.notesOpen));
         const names = [...new Set(notes.map(note => note.featName))].join(', ');
         const action = row.notesOpen ? 'Masquer' : 'Afficher';
-        row.notesBtn.setAttribute('aria-label', `${action} les rappels des dons pour l'arme ${label} (${names})`);
-        row.notesBtn.title = `Rappels des dons : ${names}`;
+        const warning = unproficient ? "Sans maîtrise : pas de bonus de maîtrise à l'attaque. " : '';
+        row.notesBtn.setAttribute('aria-label', `${warning}${action} les rappels pour l'arme ${label} (${names})`);
+        row.notesBtn.title = `${warning}Rappels : ${names}`;
         row.notesTr.hidden = !(has && row.notesOpen && shown);
         row.tr.classList.toggle('has-feat-notes', has && row.notesOpen && shown);
-        if (has && row.dmg.title) row.dmg.title += `\nRappels des dons : ${names}`;
+        if (has && row.dmg.title) row.dmg.title += `\nRappels : ${names}`;
     }
 
     /** Pastille de la botte : visible seulement pour une botte reconnue (la saisie n'est pas touchée) */
@@ -590,6 +600,12 @@ export function initWeapons(ctx) {
                 el('p', { class: 'weapons-mastery-calc-none', text: note }));
         }
 
+        // Arme non maîtrisée : la capacité Maîtrise des armes (et le don Maître d'armes) ne vaut qu'avec une arme maîtrisée
+        const proficiency = computeWeapon(weapon, derived)?.proficiency;
+        const unproficient = proficiency && !proficiency.proficient
+            ? el('p', { class: 'weapons-mastery-unproficient', text: "Vous ne maîtrisez pas cette arme : sa botte ne s'utilise qu'avec une arme maîtrisée (réglage « Arme maîtrisée » de la configuration de l'arme)." })
+            : null;
+
         const pages = [`p. ${mastery.page}`];
         if (feature) pages.push(`capacité Maîtrise des armes (${feature.className}) : p. ${feature.page}`);
 
@@ -601,6 +617,7 @@ export function initWeapons(ctx) {
                 el('div', { class: 'weapons-mastery-desc' },
                     masteryParagraphs(mastery).map(text => el('p', { text }))),
                 weaponBox,
+                unproficient,
                 el('div', { class: 'weapons-mastery-access' },
                     el('p', { class: 'weapons-mastery-access-title', text: 'Maîtrise des armes' }),
                     el('p', { text: masteryAccessNote(character, derived) })),
@@ -612,6 +629,15 @@ export function initWeapons(ctx) {
     // ---------------------------------------------------------------------
     // Configuration d'une arme
     // ---------------------------------------------------------------------
+
+    /** Aide du réglage « Arme maîtrisée » : ce que « Auto » décide, et pourquoi */
+    function proficiencyHelp(auto) {
+        const why = auto.source === 'unarmed' ? 'la Frappe à mains nues est toujours maîtrisée.'
+            : auto.source === 'class' ? 'arme maîtrisée par votre classe.'
+            : auto.source === 'none' ? `non maîtrisée (${auto.text.replace(/\.$/, '')}).`
+            : auto.text.charAt(0).toLowerCase() + auto.text.slice(1);
+        return `Auto : ${why} Oui ou Non : si un don, une capacité ou votre MJ en décide autrement.`;
+    }
 
     function openConfig(index) {
         if (isLocked()) return;
@@ -635,6 +661,13 @@ export function initWeapons(ctx) {
         const typeSelect = select('type',
             [['', "Auto (selon les données de l'arme)"], ...WEAPON_DAMAGE_TYPES.map(t => [t, DAMAGE_TYPE_LABELS[t] || t])],
             config.dmgTypeOverride);
+        // Maîtrise de l'arme : ce que la fiche déduit seule (classe, dons), et le choix du joueur
+        const auto = weaponProficiency({ ...weapon, weaponConfig: '' }, deriveCharacter(store.get()));
+        const profSelect = select('prof', [
+            ['auto', `Auto (${auto.proficient ? 'maîtrisée' : 'non maîtrisée'})`],
+            ['yes', 'Oui : bonus de maîtrise compté'],
+            ['no', 'Non : sans bonus de maîtrise']
+        ], config.proficiency);
         const error = el('p', { class: 'weapons-config-error', id: `${id}-error`, role: 'alert', hidden: true });
 
         const field = (key, label, control, ...extra) => el('div', { class: 'weapons-config-field' },
@@ -656,7 +689,10 @@ export function initWeapons(ctx) {
                         : "Remplace le dé de l'arme ; vide = dé de l'arme."
                 }),
                 error),
-            field('type', 'Type de dégâts', typeSelect));
+            field('type', 'Type de dégâts', typeSelect),
+            field('prof', 'Arme maîtrisée', profSelect,
+                el('small', { id: `${id}-prof-help`, class: 'weapons-config-help', text: proficiencyHelp(auto) })));
+        profSelect.setAttribute('aria-describedby', `${id}-prof-help`);
 
         openModal({
             title: "Configuration de l'arme",
@@ -673,7 +709,8 @@ export function initWeapons(ctx) {
                             statOverride: statSelect.value,
                             magicBonus: Number(magicSelect.value),
                             dmgDieOverride: dieInput.value,
-                            dmgTypeOverride: typeSelect.value
+                            dmgTypeOverride: typeSelect.value,
+                            proficiency: profSelect.value
                         }, current.weaponConfig);
                         if (!result.ok) {
                             error.textContent = Object.values(result.errors).join(' ');

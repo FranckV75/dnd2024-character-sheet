@@ -147,11 +147,15 @@ describe('deriveCharacter : dons', () => {
             feat_1: 'sauvagerie_martiale', feat_4: 'maitre_des_armes_lourdes_cogneur_lourd', feat_8: 'vigilant'
         };
         const now = deriveCharacter(record);
-        const NEW_FIELDS = ['feats', 'initiativeDetail', 'wornArmor'];
+        // Lot A (4.15.0) : sous-classe, Aura de protection et Touche-à-tout (0 pour ce Guerrier)
+        const NEW_FIELDS = ['feats', 'initiativeDetail', 'wornArmor', 'subclass', 'auraOfProtection', 'jackOfAllTrades'];
         // Aller-retour JSON, comme le relevé (-0 de l'Épuisement au niveau 0 devient 0)
         const kept = Object.fromEntries(Object.entries(now).filter(([key]) => !NEW_FIELDS.includes(key)));
         // Détail par ligne du tableau des armures (ajouté avec la colonne CA calculée) : même valeur et même source
         kept.armorClass = { value: now.armorClass.value, source: now.armorClass.source };
+        kept.saves = Object.fromEntries(Object.entries(now.saves).map(([id, { aura, ...save }]) => [id, save]));
+        kept.skills = Object.fromEntries(Object.entries(now.skills).map(([id, { jack, ...skill }]) => [id, skill]));
+        assert.ok(Object.values(now.saves).every(save => save.aura === 0) && Object.values(now.skills).every(skill => skill.jack === 0));
         assert.deepEqual(JSON.parse(JSON.stringify(kept)), before);
         assert.deepEqual(Object.keys(now).filter(key => !(key in before)).sort(), [...NEW_FIELDS].sort());
     });

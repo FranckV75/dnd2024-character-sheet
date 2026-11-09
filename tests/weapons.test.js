@@ -154,10 +154,10 @@ describe('normalizeDamageDie', () => {
 describe('readWeaponConfig', () => {
     test('chaîne JSON v3', () => {
         assert.deepEqual(readWeaponConfig('{"statOverride":"cha","magicBonus":2,"dmgDieOverride":"1d10","dmgTypeOverride":"RADI"}'),
-            { statOverride: 'cha', magicBonus: 2, dmgDieOverride: '1d10', dmgTypeOverride: 'RADI' });
+            { statOverride: 'cha', magicBonus: 2, dmgDieOverride: '1d10', dmgTypeOverride: 'RADI', proficiency: 'auto' });
     });
     test('vide, invalide ou valeurs inconnues → Auto', () => {
-        const auto = { statOverride: '', magicBonus: 0, dmgDieOverride: '', dmgTypeOverride: '' };
+        const auto = { statOverride: '', magicBonus: 0, dmgDieOverride: '', dmgTypeOverride: '', proficiency: 'auto' };
         assert.deepEqual(readWeaponConfig(''), auto);
         assert.deepEqual(readWeaponConfig('{oops'), auto);
         assert.deepEqual(readWeaponConfig({ statOverride: 'con', magicBonus: 'x', dmgDieOverride: null, dmgTypeOverride: 'LAVE' }), auto);

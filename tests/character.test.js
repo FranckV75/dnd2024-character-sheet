@@ -211,8 +211,8 @@ describe('deriveCharacter : fiche complète à partir d\'une sauvegarde', () => 
     });
 
     test('Jets de sauvegarde', () => {
-        assert.deepEqual(d.saves.str, { proficient: true, bonus: 7 });
-        assert.deepEqual(d.saves.dex, { proficient: false, bonus: 3 });
+        assert.deepEqual(d.saves.str, { proficient: true, aura: 0, bonus: 7 });
+        assert.deepEqual(d.saves.dex, { proficient: false, aura: 0, bonus: 3 });
     });
 
     test('Compétences : maîtrise, Expertise (qui implique la maîtrise)', () => {

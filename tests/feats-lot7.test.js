@@ -213,8 +213,8 @@ describe('Rappels des dons (lot 7)', () => {
         assert.ok(!planShortRest(c, {}).summary.featNotes.some(n => n.featId === 'faconneur'));
     });
 
-    test('Formation aux armes de guerre : maîtrise déjà comptée', () => {
+    test('Formation aux armes de guerre : maîtrise des armes de guerre comptée', () => {
         const [note] = slotTexts(hero({ feat_4: 'formation_aux_armes_de_guerre' }), 4);
-        assert.match(note, /déjà le bonus de maîtrise/);
+        assert.match(note, /bonus de maîtrise à l'attaque des armes de guerre/);
     });
 });

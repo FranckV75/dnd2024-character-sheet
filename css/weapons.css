@@ -282,6 +282,13 @@
     background: var(--feat-invite-bg);
 }
 
+/* Arme non maîtrisée (pas de bonus de maîtrise à l'attaque) : avertissement, comme « À vérifier » */
+.weapons-feat-toggle[data-check],
+.weapons-feat-toggle[data-check] .icon {
+    border-color: var(--warn);
+    color: var(--warn);
+}
+
 /* Tactile : 44 px sous le doigt (zone élargie invisible, au-dessus du bonus d'attaque qui
    n'est pas un contrôle) ; la pastille visible reste fine pour ne pas rehausser la ligne */
 @media (pointer: coarse) {
@@ -328,6 +335,10 @@
     font-size: 0.72rem;
     letter-spacing: 0.03em;
     color: var(--accent);
+}
+
+.weapons-feat-notes li.is-check strong {
+    color: var(--warn);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -516,6 +527,14 @@
 .weapons-mastery-calc-none {
     font-size: 0.92rem;
     color: var(--text-muted);
+}
+
+/* Arme non maîtrisée : la botte ne s'utilise pas */
+.weapons-mastery-unproficient {
+    margin: 0;
+    padding: 6px 10px;
+    border-left: 3px solid var(--warn);
+    font-size: 0.92rem;
 }
 
 .weapons-mastery-access {

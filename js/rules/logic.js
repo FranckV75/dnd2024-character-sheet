@@ -178,16 +178,20 @@ export function resolveWeaponAttackStat(atkKey, prop, mods, statOverride) {
  * @param {number} pb
  * @param {number} magicBonus
  * @param {string} statOverride
+ * @param {Array<{ value: number, label: string }>} [bonuses] - bonus nommés (Archerie)
+ * @param {boolean} [proficient] - arme maîtrisée (sinon pas de bonus de maîtrise)
  * @returns {{ text: string, tooltip: string }}
  */
-export function calcWeaponAttack(atkKey, prop, mods, pb, magicBonus, statOverride, bonuses = []) {
+export function calcWeaponAttack(atkKey, prop, mods, pb, magicBonus, statOverride, bonuses = [], proficient = true) {
     const { stat, mod } = resolveWeaponAttackStat(atkKey, prop, mods, statOverride);
     const magic = parseInt(magicBonus) || 0;
     // Bonus nommés (Archerie : +2), ajoutés au total et détaillés dans l'infobulle
     const extra = (bonuses || []).reduce((sum, b) => sum + (Number(b.value) || 0), 0);
-    const total = mod + pb + magic + extra;
+    // Arme non maîtrisée : pas de bonus de maîtrise (PHB 2024)
+    const total = mod + (proficient ? pb : 0) + magic + extra;
     const sign = total >= 0 ? '+' : '';
-    let tooltip = stat + ' (' + (mod >= 0 ? '+' : '') + mod + ') + Maitrise (+' + pb + ')';
+    let tooltip = stat + ' (' + (mod >= 0 ? '+' : '') + mod + ')'
+        + (proficient ? ' + Maitrise (+' + pb + ')' : ' ; sans maîtrise (bonus de maîtrise +' + pb + ' non compté)');
     if (magic > 0) tooltip += ' + Magie (+' + magic + ')';
     for (const b of bonuses || []) tooltip += ' + ' + b.label + ' (+' + b.value + ')';
     return { text: stat + ' : ' + sign + total, tooltip };
