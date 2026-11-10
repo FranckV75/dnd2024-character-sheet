@@ -150,6 +150,31 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
       étendre si elle est bonne à d'autres compteurs (Rage, points de Ki…).
     - Encadré Armes : un filtre « Magiques », et les filtres (Toutes, Courantes, Guerre, Corps à
       corps, Distance) dans un menu déroulant pour gagner de la place.
+  - Idées proposées par Claude le 10/11/2026 (survol du projet, retenues par Franck pour plus tard) :
+    - Préférées :
+      1. Assistant de montée de niveau : un bouton « Passer au niveau N » qui liste ce qui change
+         (PV, don à choisir, emplacements de sorts, nouvelles capacités).
+      2. Suivi des états (Empoisonné, À terre, Effrayé…) : pastilles à cocher avec le rappel de
+         l'effet au toucher (aujourd'hui seul l'Épuisement est suivi).
+      3. Sauvegardes de secours datées : la fiche garde ses 5 à 10 derniers états, avec un bouton
+         pour revenir en arrière.
+      4. Lanceur de dés (demande de janvier 2026, voir « Décisions en attente ») : toucher un bonus
+         d'attaque ou une compétence lance le dé et affiche le total.
+      5. Fiche utilisable sans wifi, installée comme une application sur la tablette (attention aux
+         mises à jour, qui doivent toujours arriver).
+    - Autres pistes :
+      - Bilan des capacités pour les autres joueurs (Iria, personnage de Catherine), comme pour Korgul.
+      - Vue du groupe (demande « synergies entre joueurs ») : PV, CA et perception passive de chaque
+        personnage ; gros chantier, il faut décider qui voit quoi.
+      - Journal de campagne : notes datées par séance, suivi propre à l'Odyssée (serments, quêtes).
+      - Concentration : sort en cours et DD de la sauvegarde quand on prend des dégâts (vérifier
+        d'abord ce que la fiche suit déjà).
+      - Poids porté : total du matériel comparé à la capacité de charge.
+      - Vérification des noms français, classe par classe, d'après les photos du manuel (dossier
+        privé « Photos Manuel des joueurs FR » des ressources).
+      - Mode consultation sur téléphone (lecture seule).
+    - Technique : audit de santé (`/audit-fiche`) après les lots de novembre ; découper les plus gros
+      fichiers (`css/sheet.css`, `js/rules/feat-effects.js`, `js/ui/spells.js`).
 
 ## Corrections de règles apportées (vérifiées dans le Manuel du joueur 2024)
 
