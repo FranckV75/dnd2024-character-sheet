@@ -20,6 +20,7 @@ import { initSpells } from './ui/spells.js';
 import { initRest } from './ui/rest.js';
 import { initConditions } from './ui/conditions.js';
 import { initLevelUp } from './ui/level-up.js';
+import { initHitPoints } from './ui/hit-points.js';
 import { initSubclassFeatures } from './ui/subclass.js';
 import { initCompanions } from './ui/companions.js';
 import { initWildMagic } from './ui/wild-magic.js';
@@ -178,7 +179,7 @@ for (const [label, step] of [
         console.error(`Échec de ${label} :`, error);
     }
 }
-for (const init of [initToolbar, initSnapshots, initAccount, initGallery, initWeapons, initArmors, initSpells, initRest, initConditions, initLevelUp, initSubclassFeatures, initCompanions, initWildMagic, initBoxFolding, initStyleEditor, initMotion, initFeedback]) {
+for (const init of [initToolbar, initSnapshots, initAccount, initGallery, initWeapons, initArmors, initSpells, initRest, initConditions, initLevelUp, initHitPoints, initSubclassFeatures, initCompanions, initWildMagic, initBoxFolding, initStyleEditor, initMotion, initFeedback]) {
     try {
         init(ctx);
     } catch (error) {

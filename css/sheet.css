@@ -444,11 +444,16 @@ fieldset.inline-checks {
 }
 
 .sheet-header .field-name {
-    grid-column: span 5;
+    grid-column: span 4;
 }
 
 .sheet-header .field-narrow {
     grid-column: span 1;
+}
+
+/* Niveau : liste (molette sur iPad) et bouton « Passer au niveau » : deux colonnes */
+.sheet-header .field-narrow:nth-of-type(3) {
+    grid-column: span 2;
 }
 
 .sheet-header .field-wide {

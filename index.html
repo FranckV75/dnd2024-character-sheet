@@ -36,6 +36,7 @@
     <link rel="stylesheet" href="css/rest.css">
     <link rel="stylesheet" href="css/conditions.css">
     <link rel="stylesheet" href="css/level-up.css">
+    <link rel="stylesheet" href="css/hit-points.css">
     <link rel="stylesheet" href="css/style-editor.css">
     <link rel="stylesheet" href="css/account.css">
     <link rel="stylesheet" href="css/motion.css">
@@ -77,8 +78,29 @@
             </div>
             <div class="field field-narrow">
                 <label for="f-char_level">Niveau</label>
-                <input id="f-char_level" data-field="char_level" class="input input-title center" inputmode="numeric"
-                    autocomplete="off">
+                <!-- Liste de 1 à 20 : la molette du système sur iPad, une liste sur Android -->
+                <select id="f-char_level" data-field="char_level" class="input input-title center">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="15">15</option>
+                    <option value="16">16</option>
+                    <option value="17">17</option>
+                    <option value="18">18</option>
+                    <option value="19">19</option>
+                    <option value="20">20</option>
+                </select>
             </div>
             <div class="field">
                 <label for="f-char_background">Historique</label>

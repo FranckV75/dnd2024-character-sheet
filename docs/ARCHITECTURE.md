@@ -49,6 +49,7 @@ js/
 │   ├── feat-spells.js  Sorts donnés par un don (lot 6) : DD du don, lancers gratuits
 │   ├── rest.js         Repos court et repos long
 │   ├── conditions.js   États cochés (clé facultative « conditions ») et rappel de leurs effets
+│   ├── hit-points.js   PV en jeu : dégâts, soins, PV temporaires, boutons − / + (écran : ui/hit-points.js)
 │   ├── level-up.js     Assistant « Passer au niveau N » : ce qui change, PV gagnés, modification
 │   │                   appliquée (niveau, PV max, PV actuels sur demande ; écran : ui/level-up.js)
 │   └── gallery.js      Réglages d'apparence (validation des fonds, _visual_prefs)

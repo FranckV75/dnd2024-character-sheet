@@ -343,7 +343,11 @@ function writeField(field, value, force = false) {
         return;
     }
     if (field.tagName === 'SELECT') {
-        const text = String(value ?? '');
+        const raw = String(value ?? '');
+        // Ancienne sauvegarde avec un peu de HTML (« <font …>4</font> ») : l'option du même texte est
+        // choisie, sans réécrire la valeur enregistrée
+        const plain = stripHTML(raw).trim();
+        const text = plain !== raw && [...field.options].some(o => o.value === plain && !o.dataset.legacy) ? plain : raw;
         ensureOption(field, text);
         field.value = text;
         return;

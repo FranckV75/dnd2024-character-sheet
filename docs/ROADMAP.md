@@ -144,10 +144,10 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
       faire un relevé de ce qui manque et qui serait utile.
     - Grimoire : comme les objets magiques, un aspect qui monte en puissance avec le niveau du sort
       (plus le sort est haut, plus l'effet est spectaculaire).
-    - Niveau : saisie à la main ou molette / liste ? Points d'expérience : afficher les PX restants
+    - ✅ (4.32.0, 10/11/2026) Niveau : liste de 1 à 20 (molette sur iPad). Reste : points d'expérience : afficher les PX restants
       avant le niveau suivant.
-    - PV en cours de partie : une saisie plus pratique (molette façon cadenas, ou engrenage), à
-      étendre si elle est bonne à d'autres compteurs (Rage, points de Ki…).
+    - ✅ (4.32.0, 10/11/2026) PV en cours de partie : boutons − / + (appui long) et pavé « Dégâts /
+      Soins ». Reste : l'étendre si elle est bonne à d'autres compteurs (Rage, points de Ki…).
     - Encadré Armes : un filtre « Magiques », et les filtres (Toutes, Courantes, Guerre, Corps à
       corps, Distance) dans un menu déroulant pour gagner de la place.
   - Idées proposées par Claude le 10/11/2026 (survol du projet, retenues par Franck pour plus tard) :

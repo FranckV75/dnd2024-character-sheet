@@ -2,6 +2,24 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.32.0] - 2026-11-10 (Saisie des PV et du niveau)
+### Added
+- PV actuels et PV temporaires : un bouton − et un bouton + de chaque côté ; un appui long fait
+  défiler, de plus en plus vite. Les PV actuels restent entre 0 et le maximum ; des PV actuels déjà
+  au-dessus du maximum (saisis à la main) ne sont jamais baissés par +.
+- Bouton « Dégâts / Soins » sous les PV actuels : un pavé de gros chiffres, puis Dégâts, Soins ou
+  PV temp. (`js/rules/hit-points.js`). Les dégâts retirent d'abord les PV temporaires ; les soins
+  s'arrêtent au maximum ; les PV temporaires ne se cumulent pas (on garde les plus élevés). Chaque
+  résultat rappelle ce qui en découle : jet de Constitution de concentration (DD 10 ou moitié des
+  dégâts), 0 PV (Inconscient coché dans États), mort instantanée, dégâts à 0 PV (échec au jet
+  contre la mort) ; soigné à 0 PV : Inconscient décoché (À terre reste), jets contre la mort remis
+  à zéro. La fenêtre reste ouverte pour enchaîner ; tout reste utilisable fiche verrouillée.
+### Changed
+- Niveau : une liste de 1 à 20 (la molette du système sur iPad) au lieu d'une case à taper ; la
+  case occupe deux colonnes de l'en-tête au-delà de 900 px. Les anciennes sauvegardes dont le
+  niveau contient un peu de mise en forme (« <font …>6</font> ») affichent leur niveau sans être
+  réécrites.
+
 ## [4.31.0] - 2026-11-10 (Montée de niveau)
 ### Added
 - Petit bouton « + » à droite du niveau (masqué fiche verrouillée et au niveau 20) : il ouvre
