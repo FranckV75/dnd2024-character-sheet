@@ -659,7 +659,7 @@ function bindFeatCounters(root, store) {
 
 /** Libellé court d'une mention, par famille de zone ; le détail s'ouvre au toucher */
 const MENTION_LABELS = {
-    initiative: (note) => ['athlete_remarquable', 'assassinat'].includes(note.featId) ? `Avantage (${note.featName})` : note.featName,
+    initiative: (note) => note.mention ?? (['athlete_remarquable', 'assassinat'].includes(note.featId) ? `Avantage (${note.featName})` : note.featName),
     // espaces insécables : le chiffre ne reste jamais seul en bout de ligne
     hpMax: (note) => `dont\u00a0+${note.value} grâce à ${note.featName}`,
     // Résistance de sous-classe : mention courte fournie avec la note (subclass-combat.js)
@@ -678,19 +678,19 @@ const MENTION_LABELS = {
         monte_en_l_air: 'Escalade\u00a0= Vitesse',
         affinite_aquatique: 'Nage\u00a0= Vitesse'
     })[note.featId] ?? (note.value === undefined ? note.featName : `dont\u00a0+${note.value}\u00a0m grâce à ${note.featName}`),
-    deathSaves: (note) => `Avantage (${note.featName})`,
+    deathSaves: (note) => note.mention ?? `Avantage (${note.featName})`,
     // Près des cases de la ressource de classe (lot 7) : « Poème rang 2 · min. 2 », « Hasard ±1d4 »
     classResource: (note) => note.mention ?? note.featName,
-    saves: (note) => ({
+    saves: (note) => note.mention ?? ({
         mage_de_guerre: 'Avantage Concentration',
         maitre_des_boucliers: 'Interposition',
         // Capacité de classe (Paladin niveau 6), déjà comptée dans le jet
         aura_de_protection: `dont\u00a0+${note.value} Aura`
     })[note.featId] ?? note.featName,
     // Augmentation d'un don à choix : « +2 don niv. 4 » (la valeur saisie n'est pas modifiée)
-    scores: (note) => `+${note.value}\u00a0don ${Number(note.slot) === HUMAN_FEAT_SLOT ? 'humain' : `niv.\u00a0${note.slot}`}`,
+    scores: (note) => note.mention ?? `+${note.value}\u00a0don ${Number(note.slot) === HUMAN_FEAT_SLOT ? 'humain' : `niv.\u00a0${note.slot}`}`,
     // Touche-à-tout (Barde niveau 2), déjà compté : « +1 Touche-à-tout »
-    skills: (note) => note.featId === 'touche_a_tout' ? `+${note.value}\u00a0Touche-à-tout` : note.featName
+    skills: (note) => note.mention ?? (note.featId === 'touche_a_tout' ? `+${note.value}\u00a0Touche-à-tout` : note.featName)
 };
 
 /** Titre de la fenêtre de détail d'une zone */

@@ -109,7 +109,11 @@ export function initBoxFolding({ root }) {
         const title = box.querySelector(':scope > h3');
         if (!title) continue;
         box.dataset.foldKey = `box:${box.dataset.foldBox}`;
-        title.append(foldButton(title.textContent.trim()));
+        // Nom de l'encadré : texte propre du titre, sans ce que d'autres modules y ajoutent
+        // (pastille « Concentration : … » de l'encadré États)
+        const label = [...title.childNodes].filter((node) => node.nodeType === Node.TEXT_NODE)
+            .map((node) => node.textContent).join('').trim() || title.textContent.trim();
+        title.append(foldButton(label));
         // Un écouteur par encadré (les blocs qu'il contient, sous-classe ou compagnons, ont le leur)
         bindFolding(box);
         applyFold(box);

@@ -139,9 +139,10 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
     traits de personnage, Odyssée, apparence, histoire. Magie sauvage laissée dépliée (une ligne,
     rappels utiles au moment d'agir).
   - Idées du 10/11/2026, à traiter plus tard :
-    - Bilan de toutes les capacités de Korgul pour qu'elles apparaissent sur la fiche (exemple :
-      Sens du danger, un rappel « avantage aux sauvegardes de Dextérité » près de la Dextérité) :
-      faire un relevé de ce qui manque et qui serait utile.
+    - ✅ (4.37.0, 10/11/2026) Bilan des capacités de classe et de sous-classe : rappels près des
+      valeurs (« Avantage (Sens du danger) » près de la sauvegarde de Dextérité, Esquive totale,
+      Savoir-faire, Rage…), `js/rules/class-reminders.js`. Les capacités à déclencher (réactions,
+      relances) restent dans le texte des aptitudes.
     - Grimoire : comme les objets magiques, un aspect qui monte en puissance avec le niveau du sort
       (plus le sort est haut, plus l'effet est spectaculaire).
     - ✅ (4.32.0, 10/11/2026) Niveau : liste de 1 à 20 (molette sur iPad). ✅ (4.34.0) PX restants
@@ -151,12 +152,10 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
       (bouton « Bourse ») ; les Rages restent des cases à cocher.
     - ✅ (4.34.0, 10/11/2026) Capacités de base des 12 classes, sorts préparés / mineurs permis,
       noms du Manuel des joueurs français (Occultiste…), numéro de version affiché.
-    - À faire plus tard (relevés pendant le chantier 4.34.0) : vitesse du Moine (Déplacement sans
-      armure) pas ajoutée ; utilisations de Fougue, Inflexible et Coup de chance pas comptées ;
-      historiques sans effet sur la fiche (dons et outils) ; options d'espèce absentes (lignées,
-      ascendances draconiques, portée de la vision dans le noir).
-    - Encadré Armes : un filtre « Magiques », et les filtres (Toutes, Courantes, Guerre, Corps à
-      corps, Distance) dans un menu déroulant pour gagner de la place.
+    - ✅ Relevés pendant le chantier 4.34.0 : vitesse du Moine et cases de Fougue, Inflexible et
+      Coup de chance (4.35.0) ; options d'espèce, sorts d'espèce et historiques (4.36.0).
+    - ✅ (4.35.0) Encadré Armes : filtre « Magiques ». Les filtres restent des pastilles sur une
+      ligne (pas de menu déroulant : ils tiennent à 820 px).
   - Idées proposées par Claude le 10/11/2026 (survol du projet, retenues par Franck pour plus tard) :
     - Préférées :
       1. ✅ (4.31.0, 10/11/2026) Assistant de montée de niveau : un bouton « Passer au niveau N » qui liste ce qui change
@@ -174,8 +173,8 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
       - Vue du groupe (demande « synergies entre joueurs ») : PV, CA et perception passive de chaque
         personnage ; gros chantier, il faut décider qui voit quoi.
       - Journal de campagne : notes datées par séance, suivi propre à l'Odyssée (serments, quêtes).
-      - Concentration : sort en cours et DD de la sauvegarde quand on prend des dégâts (vérifier
-        d'abord ce que la fiche suit déjà).
+      - ✅ (4.37.0) Concentration : sort en cours en tête de l'encadré « États » (et dans son
+        titre), jet de Constitution chiffré dans le pavé « Dégâts / Soins », fin à 0 PV.
       - Poids porté : total du matériel comparé à la capacité de charge.
       - Vérification des noms français, classe par classe, d'après les photos du manuel (dossier
         privé « Photos Manuel des joueurs FR » des ressources).

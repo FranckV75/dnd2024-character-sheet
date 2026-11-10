@@ -1,20 +1,16 @@
-# Point pour la prochaine session (mis à jour le 10/11/2026)
+# Point pour la prochaine session (mis à jour le 10/11/2026, soir)
 
 Ce fichier passe le relais à une nouvelle session de Claude. Franck le fait lire en début de session.
 
 ## Où en est le projet
 
-- En ligne : version **4.34.0** (`master` = `v4` = `3f52d88`), publiée le 10/11/2026 avec
-  l'accord de Franck. Sur `v4` seulement, pas publié : « Formes du cercle améliorées » (faute
-  d'accord du livre corrigée, choix de Franck), à publier avec la prochaine version.
-- La 4.34.0 regroupe :
-  - les PX restants avant le niveau suivant, avec le bouton « + PX » ;
-  - les boutons − / + sur Épuisement, Inspiration, renommée et PV des compagnons, et la « Bourse » ;
-  - le numéro de version affiché dans la barre ;
-  - les aptitudes de base des 12 classes et les sorts préparés / mineurs permis ;
-  - les noms du Manuel des joueurs français (le Sorcier devient l'Occultiste ; sous-classes et
-    aptitudes renommées). Les anciens noms restent lus : `aliasesFr` et `DD_RULES.namesOf` dans
-    `js/data/dd-rules.js`.
+- En ligne : version **4.34.0** (`master` = `3f52d88`). Sur `v4`, pas encore publié (attend le
+  « Publie » de Franck) :
+  - 4.35.0 : vitesse du Moine et du Barbare, cases Fougue / Inflexible / Coup de chance, filtre
+    « Magiques » des armes, pages françaises des Bottes d'arme, « Formes du cercle améliorées » ;
+  - 4.36.0 : encadré « Espèce & historique » (traits et options d'espèce, sorts d'espèce, Souffle,
+    historique avec « À vérifier » et bouton « Appliquer ») ;
+  - 4.37.0 : rappels des capacités de classe près des valeurs, Concentration.
 
   Détails dans `docs/CHANGELOG.md`.
 - Franck possède le Manuel des joueurs 2024 en français (livre papier). Ses photos font foi pour
@@ -23,30 +19,28 @@ Ce fichier passe le relais à une nouvelle session de Claude. Franck le fait lir
   Ce dossier est privé et ne va jamais dans le dépôt. Les textes de la fiche sont des résumés,
   jamais le texte du livre (le dépôt est public).
 
-## À vérifier par Franck (tablette Android, iPad de Catherine)
+## À vérifier par Franck (tablette Android, iPad de Catherine), après publication
 
-- Le numéro « Version 4.34.0 » s'affiche en haut à droite après la mise à jour.
-- PX :
-  - vérifier la ligne « Encore X PX avant le niveau N » ;
-  - le bouton « + PX » ;
-  - le « + » du niveau qui s'allume au seuil.
-  - Le bouton « + PX » écrit les PX en nombre seul (« 4990/6500 » devient « 5090 »).
-- Boutons − / + : Épuisement, Inspiration, PV d'un compagnon. Bourse : gagner, puis dépenser plus
-  que ce qu'on a (refusé).
-- Fiche d'un Occultiste enregistrée avant la mise à jour : elle doit s'afficher « Occultiste »
-  et « Protecteur … », sans rien perdre ; l'ancien site doit toujours l'ouvrir.
-- Onglet Magie : « Préparés : x / y » ; rouge seulement si l'on a vraiment préparé trop de sorts.
+- Onglet Aptitudes & Traits, encadré « Espèce & historique » : choisir l'option de l'espèce (fiche
+  déverrouillée), voir la Vision dans le noir et les Résistances ; bouton « Appliquer à la fiche »
+  de l'historique sur une fiche de test.
+- Onglet Magie : bloc « Sorts d'espèce » (Drow, Tieffelin, Aasimar…) ; les sorts préparés ne
+  changent pas.
+- Onglet Combat : cases des traits d'espèce (Souffle, Poussée d'adrénaline…) vidées au repos ;
+  Fougue et Inflexible pour un Guerrier.
+- Encadré « États » : menu « Concentration », puis « Dégâts / Soins » → jet de Constitution chiffré.
+- Rappels près des valeurs (Korgul : Sens du danger, Instinct sauvage ; Rage allumée : Avantage
+  aux tests de Force, Résistance C/P/T).
+- Une fiche enregistrée avant la mise à jour s'ouvre sans rien perdre ; l'ancien site l'ouvre
+  toujours (nouvelles clés facultatives `species_choices` et `concentration`).
 
 ## Points relevés, non traités (à proposer à Franck)
 
-- Vitesse du Moine (Déplacement sans armure) pas ajoutée à la vitesse.
-- Utilisations de Fougue, Inflexible (Guerrier) et Coup de chance (Roublard) non comptées.
-- Historiques : ils n'appliquent rien à la fiche (dons et outils). Les noms français des dons et
-  outils n'existent qu'en anglais dans les données.
-- Espèces : options absentes (lignées elfiques, ascendances draconiques, portée de la vision dans
-  le noir).
-- Pages des Bottes d'arme (`js/data/weapon-masteries.js`) : numéros du livre anglais.
+- Bottes d'arme : la page 214 (liste des bottes) et la page 209 (Maître d'armes) citent encore le
+  livre anglais ; il faudrait les photos du chapitre Équipement du livre français.
+- Espèces de l'Odyssée (Centaure, Méduse, Minotaure, Satyre, Sirène, Nymphe) : pas de traits repris.
 - Dragonnets du Seigneur Dragon : blocs à vérifier sur le Manuel des monstres 2024 (plus tard).
+- Poids porté : gardé en tête par Franck, pas utile pour le moment.
 
 ## Ensuite, sur demande de Franck seulement
 

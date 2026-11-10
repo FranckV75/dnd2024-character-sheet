@@ -22,6 +22,7 @@ import { formNotes } from './subclass-forms.js';
 import { epicPoemNotes } from './epic-poem.js';
 import { wildMagicNotes } from './wild-magic.js';
 import { speciesNotes } from './species.js';
+import { classReminderNotes } from './class-reminders.js';
 
 /** Texte brut (les anciennes sauvegardes peuvent contenir du HTML), sans accents ni majuscules */
 function fold(value) {
@@ -321,6 +322,10 @@ export function classSpeedBonus({ classSlug, level } = {}) {
         return { featId: 'deplacement_rapide', name: 'Déplacement rapide', value: 3,
             text: 'Barbare niveau 5, sans armure lourde', short: 'sans armure lourde' };
     }
+    if (classSlug === 'ranger' && lvl >= 6) {
+        return { featId: 'arpenteur', name: 'Arpenteur', value: 3,
+            text: 'Rôdeur niveau 6, sans armure lourde', short: 'sans armure lourde' };
+    }
     return null;
 }
 
@@ -401,6 +406,8 @@ export function classFeatureNotes(derived, record = {}) {
     // (Poésie épique), Comme par hasard (Sorcellerie sauvage)
     for (const [zone, notes] of Object.entries(epicPoemNotes(derived))) (zones[zone] ??= []).push(...notes);
     for (const [zone, notes] of Object.entries(wildMagicNotes(derived))) (zones[zone] ??= []).push(...notes);
+    // Rappels des capacités de classe près des valeurs (4.37.0) : Sens du danger, Esquive totale…
+    for (const [zone, notes] of Object.entries(classReminderNotes(derived, record))) (zones[zone] ??= []).push(...notes);
     // Espèce (4.36.0) : Résistances près de la CA, Vitesse de l'Elfe sylvestre
     for (const [zone, notes] of Object.entries(speciesNotes(derived, record))) (zones[zone] ??= []).push(...notes);
     return zones;

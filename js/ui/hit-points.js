@@ -5,7 +5,8 @@
 //    un appui long répète, de plus en plus vite (js/ui/stepper.js ; règle : stepHitPoints).
 //  - Bouton « Dégâts / Soins » sous les PV actuels : un pavé de chiffres (js/ui/number-pad.js),
 //    puis Dégâts, Soins ou PV temporaires (applyDamage, applyHealing, applyTemporary). Chaque
-//    résultat rappelle ce qui en découle (concentration, 0 PV, jets contre la mort).
+//    résultat rappelle ce qui en découle (concentration : jet chiffré sur le sort noté dans « États »,
+//    fin à 0 PV ; 0 PV, jets contre la mort).
 // Champs de jeu : tout reste utilisable fiche verrouillée. Masqué à l'impression.
 // =============================================================================
 
@@ -13,8 +14,13 @@ import { el, icon } from './dom.js';
 import { wrapWithSteppers } from './stepper.js';
 import { openNumberPad } from './number-pad.js';
 import {
-    hitPointState, applyDamage, applyHealing, applyTemporary, stepHitPoints, MAX_AMOUNT
+    hitPointState, applyHealing, applyTemporary, stepHitPoints, MAX_AMOUNT
 } from '../rules/hit-points.js';
+import { damageWithConcentration } from '../rules/concentration.js';
+import { deriveCharacter } from '../rules/character.js';
+
+/** Dégâts, avec le jet de Concentration chiffré si un sort est noté (js/rules/concentration.js) */
+const applyDamageHere = (record, amount) => damageWithConcentration(record, deriveCharacter(record), amount);
 
 /**
  * @param {{ root: HTMLElement, store: Object }} ctx
@@ -81,7 +87,7 @@ function openPad(store) {
         summary: summaryText,
         max: MAX_AMOUNT,
         actions: [
-            padAction('Dégâts', 'Dégâts', 'is-damage', applyDamage),
+            padAction('Dégâts', 'Dégâts', 'is-damage', applyDamageHere),
             padAction('Soins', 'Soins', 'is-heal', applyHealing),
             padAction('PV temp.', 'PV temporaires', 'is-temp', applyTemporary)
         ]

@@ -59,6 +59,8 @@ js/
 │   ├── species.js      Espèce : option choisie (clé facultative « species_choices »), Vision dans
 │   │                   le noir, Résistances, Souffle, sorts d'espèce, cases des traits limités
 │   ├── background.js   Historique : ce qu'il donne, ce qui manque (« À vérifier »), bouton Appliquer
+│   ├── class-reminders.js  Rappels des capacités de classe près des valeurs (Sens du danger…)
+│   ├── concentration.js  Sort de concentration (clé facultative « concentration »), jet après dégâts
 │   ├── hit-points.js   PV en jeu : dégâts, soins, PV temporaires, boutons − / + (écran : ui/hit-points.js)
 │   ├── class-progression.js  Aptitudes atteintes / à venir, sorts mineurs et préparés permis
 │   ├── experience.js   PX : seuils de niveau, PX restants, PX gagnés
@@ -96,6 +98,7 @@ js/
     ├── calc-bubble.js  Bulle de calcul : détail d'une valeur calculée (CA d'une armure, écusson CA)
     ├── class-progression.js · experience.js · counters.js · companions.js · subclass.js
     ├── species.js · background.js   Encadré « Espèce & historique » (css/origins.css)
+    ├── concentration.js  Ligne « Concentration » de l'encadré États (css/conditions.css)
     ├── stepper.js · number-pad.js   Boutons − / + à appui long et pavé de chiffres (partagés)
     ├── modal.js · autocomplete.js · cell-text.js · dom.js   (briques partagées)
     ├── boot-notices.js Avis du démarrage (mise en forme indisponible, sauvegarde illisible)

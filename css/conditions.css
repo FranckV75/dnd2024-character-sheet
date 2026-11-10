@@ -87,8 +87,84 @@
         display: none;
     }
 
-    /* Aucun état en cours : l'encadré ne s'imprime pas (titre seul) */
-    .box.conditions:not(:has(.condition-reminders:not([hidden]))) {
+    /* Aucun état ni Concentration en cours : l'encadré ne s'imprime pas (titre seul) */
+    .box.conditions:not(:has(.condition-reminders:not([hidden]))):not(:has(.concentration.is-active)) {
         display: none;
     }
+}
+
+/* Ligne « Concentration » en tête de l'encadré (js/ui/concentration.js) */
+.concentration {
+    margin: 0 0 10px;
+}
+
+.concentration-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+}
+
+.concentration-row .label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.concentration-row select {
+    flex: 1 1 14rem;
+    max-width: 24rem;
+}
+
+.concentration-info {
+    margin: 6px 0 0;
+    padding: 6px 10px;
+    border-left: 3px solid var(--accent);
+    font-family: var(--font-text);
+}
+
+.concentration-info[hidden] {
+    display: none;
+}
+
+.concentration-info p {
+    margin: 2px 0;
+}
+
+.concentration-broken {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    color: var(--warn);
+}
+
+@media print {
+    .concentration:not(.is-active) {
+        display: none;
+    }
+}
+
+/* Sort de concentration dans le titre « États » (visible encadré replié) */
+.concentration-badge {
+    /* après le losange, avant le filet d'or (css/sheet.css, .box > h3) */
+    order: 3;
+    flex: 0 0 auto;
+    min-width: 0;
+    padding: 1px 8px;
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 16rem;
+}
+
+.concentration-badge[hidden] {
+    display: none;
 }

@@ -2,6 +2,23 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.37.0] - 2026-11-10 (Rappels des capacités, Concentration)
+### Added
+- Rappels des capacités de classe et de sous-classe près des valeurs concernées, comme ceux des
+  dons : « Avantage (Sens du danger) » près de la sauvegarde de Dextérité, « Avantage (Instinct
+  sauvage) » près de l'Initiative, Esquive totale, Savoir-faire (compétences maîtrisées), Aura de
+  courage, Charmantes défenses, Résistance aux sorts… Ceux de la Rage s'allument avec le bouton
+  Rage. Survivant discipliné et Esprit fuyant signalent les cases de maîtrise à cocher.
+- Rôdeur niveau 6 (Arpenteur) : « dont +3 m » et « Escalade et nage = Vitesse » près de la Vitesse.
+- Concentration : menu du sort en cours en tête de l'encadré « États » (sorts « C » du grimoire et
+  sorts donnés qui la demandent), rappelé dans le titre de l'encadré même replié. Le pavé
+  « Dégâts / Soins » donne le jet de Constitution chiffré (DD, bonus, Avantage du Mage de guerre)
+  et met fin à la Concentration à 0 PV. Un état Neutralisé (ou qui l'entraîne) et la Rage du
+  Barbare la signalent avec un bouton « Terminer » ; Chasseur implacable (Rôdeur 13) : aucun jet
+  pour marque du chasseur. Clé de sauvegarde facultative `concentration`, ignorée par la v3.
+### Fixed
+- Nom des boutons de repli des encadrés : seul le titre, sans ce qu'un module y ajoute.
+
 ## [4.36.0] - 2026-11-10 (Espèces et historiques)
 ### Added
 - Onglet Aptitudes & Traits : encadré « Espèce & historique ».
