@@ -1,0 +1,259 @@
+/* =============================================================================
+   STEPPER.CSS - Boutons − / + autour d'une case de nombre (js/ui/stepper.js), pavé de
+   chiffres (js/ui/number-pad.js : Dégâts / Soins, PX, bourse), PX (js/ui/experience.js),
+   compteurs et bourse (js/ui/counters.js), numéro de version (js/ui/update.js).
+   ============================================================================= */
+
+/* Case et boutons − / + sur une ligne ; la case garde la police des valeurs voisines */
+.stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.stepper .input {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 5em;
+}
+
+.step-btn {
+    flex: 0 0 auto;
+    padding: 0;
+    border-radius: 50%;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Tablette : boutons de 36 px, zone de toucher de 44 px (components.css) ; l'écart de 10 px
+   l'empêche de recouvrir la case */
+@media (pointer: coarse) {
+    .stepper {
+        gap: 10px;
+    }
+}
+
+/* ---------- Pavé de chiffres ---------- */
+
+.num-pad {
+    display: grid;
+    gap: 12px;
+    max-width: 22rem;
+    margin: 0 auto;
+}
+
+.modal-body .num-pad-summary {
+    margin: 0;
+    font-family: var(--font-title);
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.num-pad-display {
+    display: block;
+    padding: 4px 12px;
+    border-bottom: 1px solid var(--border-soft);
+    font-family: var(--font-title);
+    font-size: 2.05rem;
+    font-weight: 700;
+    font-variant-numeric: lining-nums;
+    text-align: center;
+    color: var(--number);
+}
+
+.num-pad-display.is-empty {
+    color: var(--text-muted);
+}
+
+.num-pad-keys,
+.num-pad-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.num-pad-actions.count-1 {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.num-pad-actions.count-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.modal .num-pad-key {
+    min-height: 48px;
+    padding: 0;
+    font-family: var(--font-title);
+    font-size: 1.3rem;
+    touch-action: manipulation;
+}
+
+.modal .num-pad-action {
+    min-height: 48px;
+    padding: 0 6px;
+    touch-action: manipulation;
+}
+
+.modal .num-pad-action.is-damage {
+    border-color: var(--ko);
+    color: var(--ko);
+}
+
+.modal .num-pad-action.is-heal {
+    border-color: var(--ok);
+    color: var(--ok);
+}
+
+.num-pad-result:empty {
+    display: none;
+}
+
+.modal-body .num-pad-line,
+.modal-body .num-pad-note {
+    margin: 0 0 4px;
+    font-family: var(--font-text);
+}
+
+.modal-body .num-pad-line {
+    font-weight: 600;
+}
+
+.modal-body .num-pad-line.is-damage,
+.modal-body .num-pad-result .is-error {
+    color: var(--ko);
+}
+
+.modal-body .num-pad-line.is-heal {
+    color: var(--ok);
+}
+
+/* ---------- PX : bouton + à côté de la case, PX restants en dessous ---------- */
+
+.xp-input-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.xp-input-row .input {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.xp-add-btn {
+    flex: 0 0 auto;
+    padding: 0;
+    border-radius: 50%;
+}
+
+/* Sous la case, hors du flux : la rangée de l'en-tête garde sa hauteur et ses soulignements
+   alignés ; le texte, calé à droite, peut déborder sous la case voisine (vide à cet endroit) */
+.xp-progress {
+    position: absolute;
+    top: calc(100% + 1px);
+    right: 0;
+    margin: 0;
+    font-family: var(--font-text);
+    font-size: 0.8rem;
+    line-height: 1.15;
+    white-space: nowrap;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.xp-progress:empty {
+    display: none;
+}
+
+/* Place sous l'en-tête pour cette ligne : le losange de l'onglet actif ne la recouvre pas
+   (écran seulement : la ligne n'est pas imprimée) */
+@media screen {
+    .sheet-header:has(.xp-progress:not(:empty)) {
+        margin-bottom: 24px;
+    }
+}
+
+.xp-progress.is-ready {
+    color: var(--gold);
+    font-weight: 700;
+}
+
+/* Assez de PX pour le niveau suivant : le + du Niveau s'illumine */
+.level-up-btn.is-ready {
+    border-color: var(--gold);
+    color: var(--gold);
+    box-shadow: 0 0 0 3px var(--gold-glow);
+}
+
+/* ---------- Compteurs (Épuisement, Inspiration, renommée) et PV des compagnons ---------- */
+
+.counter-stepper .input {
+    max-width: 4em;
+}
+
+/* Inspiration héroïque : case étroite (cellule de 100 à 150 px) : la valeur sur toute la largeur,
+   les boutons − / + en dessous, comme les PV au-delà de 1100 px */
+.stat-cell .counter-stepper {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    justify-content: center;
+    gap: 6px 14px;
+}
+
+.stat-cell .counter-stepper .input {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    max-width: none;
+    width: 100%;
+}
+
+.companion-hp .stepper {
+    gap: 6px;
+}
+
+.companion-hp .stepper .input {
+    max-width: 4.5em;
+}
+
+/* ---------- Bourse ---------- */
+
+.purse-btn {
+    margin: 10px auto 0;
+    display: flex;
+}
+
+.purse-coins {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+.modal .purse-coin {
+    min-height: 44px;
+    padding: 2px 8px;
+}
+
+.modal .purse-coin[aria-pressed="true"] {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px var(--gold-glow);
+}
+
+/* ---------- Numéro de version (barre du haut) ---------- */
+
+.app-version {
+    font-size: 0.75rem;
+}
+
+@media print {
+    .step-btn,
+    .xp-add-btn,
+    .xp-progress,
+    .purse-btn {
+        display: none;
+    }
+}

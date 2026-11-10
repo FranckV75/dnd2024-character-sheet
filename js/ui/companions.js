@@ -12,6 +12,7 @@ import { el, signed } from './dom.js';
 import { deriveCharacter } from '../rules/character.js';
 import { companionCards, setCompanionHpPatch } from '../rules/subclass-companions.js';
 import { foldButton, bindFolding, applyFolds } from './fold.js';
+import { wrapWithSteppers } from './stepper.js';
 
 /** Case de la ligne CA / PV / Vitesse / Initiative */
 function stat(label, value, detail, extraClass = '') {
@@ -21,16 +22,17 @@ function stat(label, value, detail, extraClass = '') {
         detail ? el('span', { class: 'companion-stat-detail', text: detail }) : null);
 }
 
-/** PV : saisie des PV actuels (0 à max) puis « / max » */
-function hpStat(card) {
+/** PV : boutons − / + autour de la saisie des PV actuels (0 à max), puis « / max » */
+function hpStat(card, stepHp) {
     const id = `companion-hp-${card.key.replace(/[^a-z0-9]+/gi, '-')}`;
-    const value = el('span', { class: 'companion-stat-value companion-hp' },
-        el('input', {
-            id, type: 'number', class: 'input companion-hp-input', inputmode: 'numeric', min: '0', max: String(card.hp.max),
-            value: String(card.hp.current), 'data-companion-hp': card.key, 'data-hp-max': String(card.hp.max),
-            'aria-label': `PV actuels : ${card.name} (maximum ${card.hp.max})`
-        }),
+    const input = el('input', {
+        id, type: 'number', class: 'input companion-hp-input', inputmode: 'numeric', min: '0', max: String(card.hp.max),
+        value: String(card.hp.current), 'data-companion-hp': card.key, 'data-hp-max': String(card.hp.max),
+        'aria-label': `PV actuels : ${card.name} (maximum ${card.hp.max})`
+    });
+    const value = el('span', { class: 'companion-stat-value companion-hp' }, input,
         el('span', { class: 'companion-hp-max', text: `/ ${card.hp.max}` }));
+    wrapWithSteppers(input, { noun: `PV (${card.name})`, rowClass: 'companion-hp-stepper', onStep: (delta) => stepHp(card.key, delta) });
     return stat('PV', value, card.hp.dice, ' is-hp');
 }
 
@@ -61,7 +63,7 @@ function entryList(title, entries) {
     ];
 }
 
-function cardNode(card) {
+function cardNode(card, stepHp) {
     // Pastille à chevron : replie la carte (seuls le nom et le type restent), retenu sur cet appareil
     return el('article', { class: 'companion-card', 'aria-label': card.name, 'data-fold-key': `companion:${card.key}` },
         el('div', { class: 'companion-head' },
@@ -71,7 +73,7 @@ function cardNode(card) {
         card.missing ? el('p', { class: 'companion-missing', text: card.missing }) : null,
         el('div', { class: 'companion-stats' },
             card.ac ? stat('CA', String(card.ac.value), card.ac.detail) : null,
-            card.hp ? hpStat(card) : null,
+            card.hp ? hpStat(card, stepHp) : null,
             card.speed ? stat('Vitesse', card.speed) : null,
             card.initiative ? stat('Initiative', card.initiative) : null),
         abilityTable(card),
@@ -99,6 +101,17 @@ export function initCompanions({ root, store }) {
             if (input && input !== document.activeElement && input.value !== String(card.hp.current)) input.value = String(card.hp.current);
         }
     };
+    // Boutons − / + : un PV de plus ou de moins, entre 0 et le maximum ; false à une borne
+    const stepHp = (key, delta) => {
+        const card = companionCards(deriveCharacter(store.get()), store.get()).find((c) => c.key === key);
+        if (!card?.hp) return false;
+        const next = Math.max(0, Math.min(card.hp.max, card.hp.current + delta));
+        if (next === card.hp.current) return false;
+        const patch = setCompanionHpPatch(store.get(), key, String(next), card.hp.max);
+        if (!Object.keys(patch).length) return false;
+        store.update(patch);
+        return true;
+    };
     const render = (character) => {
         const cards = companionCards(deriveCharacter(character), character);
         const signature = JSON.stringify(cards.map(card => (card.hp ? { ...card, hp: { ...card.hp, current: null } } : card)));
@@ -109,7 +122,7 @@ export function initCompanions({ root, store }) {
         rendered = signature;
         // Saisie des PV qui avait le focus : elle le retrouve après la reconstruction
         const focused = container.contains(document.activeElement) ? document.activeElement?.dataset?.companionHp : null;
-        container.replaceChildren(...cards.map(cardNode));
+        container.replaceChildren(...cards.map((card) => cardNode(card, stepHp)));
         container.hidden = cards.length === 0;
         applyFolds(container);
         if (focused) container.querySelector(`[data-companion-hp="${focused}"]`)?.focus();

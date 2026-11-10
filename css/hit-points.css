@@ -1,39 +1,7 @@
 /* =============================================================================
-   HIT-POINTS.CSS - PV en jeu (js/ui/hit-points.js) : boutons − / + autour des PV actuels
-   et temporaires, bouton « Dégâts / Soins » et son pavé de chiffres.
+   HIT-POINTS.CSS - PV en jeu (js/ui/hit-points.js) : place des boutons − / + dans les cases
+   PV et bouton « Dégâts / Soins ». Boutons et pavé : css/stepper.css.
    ============================================================================= */
-
-/* Case et boutons − / + sur une ligne ; la case garde la police des valeurs voisines */
-.hp-stepper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.hp-stepper .input {
-    flex: 1 1 auto;
-    min-width: 0;
-    max-width: 5em;
-}
-
-.hp-step {
-    flex: 0 0 auto;
-    padding: 0;
-    border-radius: 50%;
-    touch-action: manipulation;
-    -webkit-user-select: none;
-    user-select: none;
-    -webkit-touch-callout: none;
-}
-
-/* Tablette : boutons de 36 px, zone de toucher de 44 px (components.css) ; l'écart de 10 px
-   l'empêche de recouvrir la case */
-@media (pointer: coarse) {
-    .hp-stepper {
-        gap: 10px;
-    }
-}
 
 /* Marge du bas : la jauge des PV (feedback.css, en bas de la case) passe sous le bouton.
    Libellé sur deux lignes si la case est étroite */
@@ -63,99 +31,7 @@
     }
 }
 
-/* ---------- Pavé « Dégâts / Soins » ---------- */
-
-.hp-pad {
-    display: grid;
-    gap: 12px;
-    max-width: 22rem;
-    margin: 0 auto;
-}
-
-.modal-body .hp-pad-summary {
-    margin: 0;
-    font-family: var(--font-title);
-    text-align: center;
-    color: var(--text-muted);
-}
-
-.hp-pad-display {
-    display: block;
-    padding: 4px 12px;
-    border-bottom: 1px solid var(--border-soft);
-    font-family: var(--font-title);
-    font-size: 2.05rem;
-    font-weight: 700;
-    font-variant-numeric: lining-nums;
-    text-align: center;
-    color: var(--number);
-}
-
-.hp-pad-display.is-empty {
-    color: var(--text-muted);
-}
-
-.hp-pad-keys {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-}
-
-.modal .hp-pad-key {
-    min-height: 48px;
-    padding: 0;
-    font-family: var(--font-title);
-    font-size: 1.3rem;
-    touch-action: manipulation;
-}
-
-.hp-pad-actions {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-}
-
-.modal .hp-pad-actions .btn {
-    min-height: 48px;
-    padding: 0 6px;
-    touch-action: manipulation;
-}
-
-.modal .hp-pad-damage {
-    border-color: var(--ko);
-    color: var(--ko);
-}
-
-.modal .hp-pad-heal {
-    border-color: var(--ok);
-    color: var(--ok);
-}
-
-.hp-pad-result:empty {
-    display: none;
-}
-
-.modal-body .hp-pad-line,
-.modal-body .hp-pad-note {
-    margin: 0 0 4px;
-    font-family: var(--font-text);
-}
-
-.modal-body .hp-pad-line {
-    font-weight: 600;
-}
-
-.modal-body .hp-pad-line.is-damage,
-.modal-body .is-error {
-    color: var(--ko);
-}
-
-.modal-body .hp-pad-line.is-heal {
-    color: var(--ok);
-}
-
 @media print {
-    .hp-step,
     .hp-pad-btn {
         display: none;
     }

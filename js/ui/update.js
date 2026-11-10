@@ -48,6 +48,13 @@ async function onlineVersion() {
  * @param {{ setStatus: (message: string) => void, saveNow: () => void }} ctx
  */
 export function initUpdates({ setStatus, saveNow }) {
+    // Numéro de version en haut à droite, sous les états du compte et de l'enregistrement
+    const version = document.getElementById('app-version');
+    if (version) {
+        version.textContent = `Version ${APP_VERSION}`;
+        version.title = 'Version de la fiche installée sur cet appareil';
+    }
+
     // Rechargement fait par une mise à jour : on le dit, une fois
     const tried = readSession(TRIED_KEY);
     if (tried && tried === APP_VERSION) {

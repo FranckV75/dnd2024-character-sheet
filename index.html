@@ -36,6 +36,7 @@
     <link rel="stylesheet" href="css/rest.css">
     <link rel="stylesheet" href="css/conditions.css">
     <link rel="stylesheet" href="css/level-up.css">
+    <link rel="stylesheet" href="css/stepper.css">
     <link rel="stylesheet" href="css/hit-points.css">
     <link rel="stylesheet" href="css/style-editor.css">
     <link rel="stylesheet" href="css/account.css">
@@ -49,7 +50,8 @@
          - #toolbar-feature : bouton de repli, titre et commandes de la fiche (js/ui/toolbar.js)
          - #view-group : thème et cinéma (toolbar.js), fonds et curseurs (js/ui/gallery.js)
          - #account-group : connexion et « Mes personnages » (js/ui/account.js)
-         - .app-bar-statuses : état du compte (account.js) et de l'enregistrement (main.js) -->
+         - .app-bar-statuses : état du compte (account.js), de l'enregistrement (main.js)
+             et numéro de version (update.js) -->
     <div class="app-bar" id="app-bar" role="region" aria-label="Gestion de la fiche">
         <div id="toolbar-feature" class="toolbar-feature"></div>
         <div id="view-group" class="app-bar-group app-bar-view" role="group" aria-label="Affichage">
@@ -62,6 +64,7 @@
         <div class="app-bar-statuses">
             <span id="account-status-host" class="account-status-host"></span>
             <span id="save-status" class="app-bar-status" role="status" aria-live="polite"></span>
+            <span id="app-version" class="app-bar-status app-version"></span>
         </div>
     </div>
 
