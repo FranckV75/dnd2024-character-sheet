@@ -304,6 +304,25 @@ const SUBCLASS_ARMOR_TRAINING = Object.freeze([
     ['way_of_the_shield_dancer', 3, 'La Voie du bouclier', 'Technique arésienne', ['shield']]
 ]);
 
+/**
+ * Bonus de Vitesse d'une capacité de base de la classe, en mètres.
+ * @param {{ classSlug: string, level: number }} derived
+ * @returns {null | { featId: string, name: string, value: number, text: string, short: string }}
+ */
+export function classSpeedBonus({ classSlug, level } = {}) {
+    const lvl = Number(level) || 1;
+    if (classSlug === 'monk' && lvl >= 2) {
+        const value = lvl >= 18 ? 9 : lvl >= 14 ? 7.5 : lvl >= 10 ? 6 : lvl >= 6 ? 4.5 : 3;
+        return { featId: 'deplacement_sans_armure', name: 'Déplacement sans armure', value,
+            text: `Moine niveau ${lvl}, sans armure ni bouclier`, short: 'sans armure ni bouclier' };
+    }
+    if (classSlug === 'barbarian' && lvl >= 5) {
+        return { featId: 'deplacement_rapide', name: 'Déplacement rapide', value: 3,
+            text: 'Barbare niveau 5, sans armure lourde', short: 'sans armure lourde' };
+    }
+    return null;
+}
+
 /** Formation d'armure : [clé de sauvegarde, mots, case de l'onglet Combat] */
 const TRAINING_FIELDS = Object.freeze({
     medium: ['prof_armor_med', 'armures intermédiaires', 'Intermédiaires'],
@@ -349,6 +368,15 @@ export function classFeatureNotes(derived, record = {}) {
         add('hpMax', 'resilience_draconique', 'Résistance draconique',
             `dont +${derived.level} PV grâce à Résistance draconique (Ensorceleur niveau 3 : +3, puis +1 par niveau d'Ensorceleur) : à compter vous-même dans les PV max saisis, la fiche ne les ajoute pas.`,
             derived.level, { manual: true });
+    }
+    // Vitesse (valeur saisie jamais modifiée) : Déplacement sans armure du Moine (niveau 2 : +3 m,
+    // +4,50 m au 6, +6 m au 10, +7,50 m au 14, +9 m au 18), Déplacement rapide du Barbare (niveau 5)
+    const speedBonus = classSpeedBonus(derived);
+    if (speedBonus) {
+        const meters = String(speedBonus.value).replace('.', ',');
+        add('speed', speedBonus.featId, speedBonus.name,
+            `+${meters} m grâce à ${speedBonus.name} (${speedBonus.text}). La Vitesse saisie n'est pas modifiée : ajoutez-les vous-même s'ils n'y sont pas déjà.`,
+            speedBonus.value, { manual: true, mention: `dont +${meters} m (${speedBonus.short})` });
     }
     for (const [subclass, minLevel, name, feature, kinds] of SUBCLASS_ARMOR_TRAINING) {
         if (derived?.subclass !== subclass || derived.level < minLevel) continue;

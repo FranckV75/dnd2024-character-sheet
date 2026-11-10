@@ -344,6 +344,28 @@ export const SUBCLASS_COUNTERS = Object.freeze({
     ]
 });
 
+/**
+ * Capacités de base à cases (classe, pas sous-classe), même forme que SUBCLASS_COUNTERS avec le
+ * niveau où elles arrivent ; enregistrées dans la même clé (« fighter.fougue »). Manuel des joueurs
+ * français : Fougue (Guerrier 2, deux utilisations au niveau 17), Inflexible (Guerrier 9 : 1, 2 au
+ * niveau 13, 3 au niveau 17), Coup de chance (Roublard 20).
+ */
+export const CLASS_COUNTERS = Object.freeze({
+    fighter: [
+        { feature: 'fougue', name: 'Fougue', level: 2, label: 'Fougue', inText: 'Fougue',
+            max: ({ level }) => (level >= 17 ? 2 : 1), reset: 'short',
+            use: "Une action de plus pendant votre tour (pas l'action Magie)." },
+        { feature: 'inflexible', name: 'Inflexible', level: 9, label: 'Inflexible', inText: 'Inflexible',
+            max: ({ level }) => (level >= 17 ? 3 : level >= 13 ? 2 : 1), reset: 'long',
+            use: 'Sauvegarde ratée : relancez-la avec un bonus égal à votre niveau de Guerrier.' }
+    ],
+    rogue: [
+        { feature: 'coup_de_chance', name: 'Coup de chance', level: 20, label: 'Coup de chance', inText: 'Coup de chance',
+            max: once, reset: 'short',
+            use: 'Test d20 raté : il devient un 20.' }
+    ]
+});
+
 /** Texte du rechargement, Rage comprise */
 export const SUBCLASS_RESET_TEXT = Object.freeze({
     ...RESET_TEXT, rage: 'fin de la Rage', shortOne: '1 au repos court, toutes au repos long'
@@ -368,44 +390,64 @@ function clampUses(value, max) {
 const resetOf = (def, derived) => (typeof def.reset === 'function' ? def.reset(derived ?? {}) : def.reset);
 
 /** Toutes les définitions, avec leur clé d'enregistrement */
-const ALL_COUNTERS = Object.entries(SUBCLASS_COUNTERS)
-    .flatMap(([subclass, list]) => list.map(def => ({ ...def, subclass, key: subclassUseKey(subclass, def.feature) })));
+const ALL_COUNTERS = [
+    ...Object.entries(CLASS_COUNTERS)
+        .flatMap(([classSlug, list]) => list.map(def => ({ ...def, classSlug, key: subclassUseKey(classSlug, def.feature) }))),
+    ...Object.entries(SUBCLASS_COUNTERS)
+        .flatMap(([subclass, list]) => list.map(def => ({ ...def, subclass, key: subclassUseKey(subclass, def.feature) })))
+];
+
+/** Cases d'une définition atteinte, au format de subclassCounters */
+function counterView(def, derived, state, { featName, level }) {
+    const max = Math.max(0, Math.trunc(def.max(derived)) || 0);
+    if (max === 0) return [];
+    return [{
+        key: def.key,
+        source: def.classSlug ? 'class' : 'subclass',
+        feature: def.feature,
+        featName,
+        level,
+        label: def.label,
+        max,
+        used: clampUses(state[def.key], max),
+        reset: resetOf(def, derived),
+        resetText: SUBCLASS_RESET_TEXT[resetOf(def, derived)],
+        use: typeof def.use === 'function' ? def.use(derived) : def.use
+    }];
+}
 
 /**
  * Cases des capacités atteintes de la sous-classe, dans l'ordre de SUBCLASS_COUNTERS.
  * Même forme que featCounters (js/rules/feat-uses.js), avec source 'subclass' ; featName est le nom
- * de la sous-classe (« Voie du Zélote »), affiché sous les cases et dans le résumé des repos.
+ * de la sous-classe (« Voie du Zélateur »), affiché sous les cases et dans le résumé des repos.
+ * Les capacités de base de la classe (CLASS_COUNTERS, source 'class') viennent en premier.
  * @param {Object} character
  * @param {{ subclass: string, level: number, pb: number, mods: Object }} derived - deriveCharacter(character)
  * @returns {Array<{ key: string, source: 'subclass', feature: string, featName: string, level: number, label: string,
  *   max: number, used: number, reset: 'long'|'short'|'rage'|'shortOne', resetText: string, use: string }>}
  */
 export function subclassCounters(character, derived) {
-    const subclass = derived?.subclass ?? '';
-    if (!Object.hasOwn(SUBCLASS_COUNTERS, subclass)) return [];
-    const features = SUBCLASS_FEATURES[subclass] ?? [];
     const state = subclassUsesState(character);
-    return ALL_COUNTERS.filter(def => def.subclass === subclass).flatMap(def => {
+    // Capacités de base de la classe (Fougue, Inflexible, Coup de chance), d'abord
+    const classSlug = derived?.classSlug ?? '';
+    const classCounters = Object.hasOwn(CLASS_COUNTERS, classSlug)
+        ? ALL_COUNTERS.filter(def => def.classSlug === classSlug && def.level <= (derived.level ?? 1))
+            .flatMap(def => counterView(def, derived, state, {
+                featName: DD_RULES.classes[classSlug]?.nameFr ?? def.name, level: def.level
+            }))
+        : [];
+    const subclass = derived?.subclass ?? '';
+    if (!Object.hasOwn(SUBCLASS_COUNTERS, subclass)) return classCounters;
+    const features = SUBCLASS_FEATURES[subclass] ?? [];
+    return [...classCounters, ...ALL_COUNTERS.filter(def => def.subclass === subclass).flatMap(def => {
         const feature = features.find(f => f.id === def.feature);
         if (!feature || feature.level > (derived.level ?? 1)) return [];
         // École du Philosophe : seulement l'école (ou la seconde école) choisie
         if (def.school && !philosopherSchools(derived).includes(def.school)) return [];
-        const max = Math.max(0, Math.trunc(def.max(derived)) || 0);
-        if (max === 0) return [];
-        return [{
-            key: def.key,
-            source: 'subclass',
-            feature: def.feature,
-            featName: DD_RULES.subclasses[subclass]?.nameFr ?? feature.name,
-            level: feature.level,
-            label: def.label,
-            max,
-            used: clampUses(state[def.key], max),
-            reset: resetOf(def, derived),
-            resetText: SUBCLASS_RESET_TEXT[resetOf(def, derived)],
-            use: typeof def.use === 'function' ? def.use(derived) : def.use
-        }];
-    });
+        return counterView(def, derived, state, {
+            featName: DD_RULES.subclasses[subclass]?.nameFr ?? feature.name, level: feature.level
+        });
+    })];
 }
 
 /**

@@ -2,10 +2,11 @@
 // WEAPON-MASTERIES.JS - Bottes d'armes (« Weapon Mastery Properties ») D&D 2024
 // Traduction fidèle du Player's Handbook 2024 (édition anglaise) :
 //  - les huit bottes : chapitre 6, « Mastery Properties », p. 214 ;
-//  - la capacité de classe « Weapon Mastery » (Bottes d'arme) : Barbare p. 52,
-//    Guerrier p. 91, Paladin p. 110, Rôdeur p. 120, Roublard p. 129 ;
-//  - Botte tactique (Guerrier niveau 9) : p. 92 ; don Maître d'armes : p. 209.
-// Numéros de page : ceux imprimés dans le manuel (la page du PDF est décalée de 1).
+//  - Maître d'armes : p. 209 ;
+//  - pages du Manuel des joueurs français (photos de Franck) pour la capacité de classe Bottes
+//    d'arme : Barbare p. 51, Guerrier p. 105, Paladin p. 147, Rôdeur p. 157, Roublard p. 167 ;
+//    Botte tactique (Guerrier niveau 9) : p. 106.
+// Numéros de page de l'édition anglaise : ceux imprimés dans le manuel (la page du PDF est décalée de 1).
 // Distances converties en mètres et écrites en toutes lettres comme dans feats.js (5 ft = 1,50 mètre,
 // 10 ft = 3 mètres), avec une espace insécable (\u00A0) entre le nombre et l'unité pour qu'ils ne
 // soient jamais séparés en fin de ligne ; termes repris de feats.js (action Attaque, action Bonus,
@@ -80,35 +81,35 @@ export const WEAPON_MASTERIES = {
  */
 export const WEAPON_MASTERY_CLASSES = {
     barbarian: {
-        page: 52,
+        page: 51,
         counts: [[1, 2], [4, 3], [10, 4]],
         kinds: "armes de corps à corps courantes ou de guerre",
         rest: "Après chaque Repos long, vous pouvez changer l'un de ces types d'armes.",
         desc: "Votre entraînement aux armes vous permet d'utiliser les bottes de deux types d'armes de corps à corps courantes ou de guerre de votre choix, comme la hache à deux mains et la hachette. Chaque fois que vous terminez un Repos long, vous pouvez vous exercer au maniement des armes et changer l'un de ces choix. <br>À certains niveaux de Barbare, vous pouvez utiliser les bottes de davantage de types d'armes, comme l'indique la colonne Bottes d'arme de la table Aptitudes du Barbare."
     },
     fighter: {
-        page: 91,
+        page: 105,
         counts: [[1, 3], [4, 4], [10, 5], [16, 6]],
         kinds: "armes courantes ou de guerre",
         rest: "Après chaque Repos long, vous pouvez changer l'un de ces types d'armes.",
         desc: "Votre entraînement aux armes vous permet d'utiliser les bottes de trois types d'armes courantes ou de guerre de votre choix. Chaque fois que vous terminez un Repos long, vous pouvez vous exercer au maniement des armes et changer l'un de ces choix. <br>À certains niveaux de Guerrier, vous pouvez utiliser les bottes de davantage de types d'armes, comme l'indique la colonne Bottes d'arme de la table Aptitudes du Guerrier."
     },
     paladin: {
-        page: 110,
+        page: 147,
         counts: [[1, 2]],
         kinds: "armes que vous maîtrisez",
         rest: "Après chaque Repos long, vous pouvez changer les types d'armes choisis.",
         desc: "Votre entraînement aux armes vous permet d'utiliser les bottes de deux types d'armes de votre choix que vous maîtrisez, comme l'épée longue et la javeline. <br>Chaque fois que vous terminez un Repos long, vous pouvez changer les types d'armes choisis. Par exemple, vous pourriez passer aux bottes de la hallebarde et du fléau d'armes."
     },
     ranger: {
-        page: 120,
+        page: 157,
         counts: [[1, 2]],
         kinds: "armes que vous maîtrisez",
         rest: "Après chaque Repos long, vous pouvez changer les types d'armes choisis.",
         desc: "Votre entraînement aux armes vous permet d'utiliser les bottes de deux types d'armes de votre choix que vous maîtrisez, comme l'arc long et l'épée courte. <br>Chaque fois que vous terminez un Repos long, vous pouvez changer les types d'armes choisis. Par exemple, vous pourriez passer aux bottes du cimeterre et de l'épée longue."
     },
     rogue: {
-        page: 129,
+        page: 167,
         counts: [[1, 2]],
         kinds: "armes que vous maîtrisez",
         rest: "Après chaque Repos long, vous pouvez changer les types d'armes choisis.",
@@ -116,12 +117,12 @@ export const WEAPON_MASTERY_CLASSES = {
     }
 };
 
-/** Guerrier niveau 9 : Botte tactique (« Tactical Master », p. 92) */
+/** Guerrier niveau 9 : Botte tactique (« Tactical Master », p. 106 du Manuel des joueurs français) */
 export const TACTICAL_MASTER = {
     name: 'Botte tactique',
     en: 'Tactical Master',
     level: 9,
-    page: 92,
+    page: 106,
     desc: "Lorsque vous attaquez avec une arme dont vous pouvez utiliser la botte, vous pouvez remplacer cette botte par Poussée, Sape ou Ralentissement pour cette attaque."
 };
 

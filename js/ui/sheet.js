@@ -594,8 +594,8 @@ function counterGroup(counter, where) {
     const id = `feat-counter-${where}-${counter.key}`;
     return el('div', {
         class: 'feat-counter', 'data-feat-counter': counter.key, 'data-max': String(counter.max),
-        // Capacité de sous-classe : clé subclass_uses (sinon feat_uses)
-        'data-counter-source': counter.source === 'subclass' ? 'subclass' : 'feat'
+        // Capacité de classe ou de sous-classe : clé subclass_uses (sinon feat_uses)
+        'data-counter-source': counter.source === 'subclass' || counter.source === 'class' ? 'subclass' : 'feat'
     },
         el('span', { class: 'feat-counter-name', id: `${id}-name` },
             el('span', { class: 'label accent', text: counter.label }),

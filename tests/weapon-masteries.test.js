@@ -328,7 +328,7 @@ describe("weaponMasteryFeature : capacité de classe Bottes d'arme", () => {
         assert.equal(feature.className, 'Barbare');
         assert.equal(feature.level, 4);
         assert.equal(feature.count, 3);
-        assert.equal(feature.page, 52);
+        assert.equal(feature.page, 51);
         assert.equal(feature.tacticalMaster, null);
     });
 

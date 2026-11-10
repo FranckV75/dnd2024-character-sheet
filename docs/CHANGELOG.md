@@ -2,6 +2,21 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.35.0] - 2026-11-10 (Restes des classes, filtre Magiques)
+### Added
+- Vitesse : repère « dont +4,5 m (sans armure ni bouclier) » pour le Déplacement sans armure du
+  Moine (+3 m au niveau 2 jusqu'à +9 m au niveau 18) et « dont +3 m » pour le Déplacement rapide du
+  Barbare (niveau 5). La Vitesse saisie n'est jamais modifiée.
+- Cases à cocher dans l'onglet Combat : Fougue (Guerrier, 2 au niveau 17, repos court), Inflexible
+  (Guerrier, 1 / 2 / 3 aux niveaux 9 / 13 / 17, repos long), Coup de chance (Roublard 20, repos
+  court). Enregistrées dans la clé facultative `subclass_uses` existante (« fighter.fougue »).
+- Armes : filtre « Magiques » (armes avec un bonus magique de +1 à +3).
+### Changed
+- Bottes d'arme : pages du Manuel des joueurs français pour la capacité de classe (Barbare p. 51,
+  Guerrier p. 105, Paladin p. 147, Rôdeur p. 157, Roublard p. 167, Botte tactique p. 106) ; la
+  fenêtre précise quelle édition cite chaque page.
+- « Formes du cercle améliorées » (faute d'accord du livre corrigée).
+
 ## [4.34.0] - 2026-11-10 (Classes du Manuel français, PX et compteurs)
 ### Added
 - Capacités de classe : les aptitudes de base des 12 classes (résumés, pas le texte du livre) en

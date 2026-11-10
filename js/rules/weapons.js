@@ -1,6 +1,6 @@
 // =============================================================================
 // WEAPONS.JS (règles) - Tableau des armes : fonctions pures, sans DOM
-//  - filtres d'affichage (Courantes / Guerre / Corps à corps / Distance)
+//  - filtres d'affichage (Courantes / Guerre / Corps à corps / Distance / Magiques)
 //  - ligne d'arme remplie à partir du manuel (DD_RULES.weapons)
 //  - configuration personnalisée d'une arme (champ weaponConfig, format v3)
 //  - bonus de combat proposés selon la classe (Rage, Attaque sournoise, Marque du chasseur)
@@ -12,7 +12,7 @@
 import { parseWeaponConfig } from './logic.js';
 import { reachedFeatIds, subclassOf, characterLevel } from './feats.js';
 
-export const WEAPON_FILTERS = ['all', 'simple', 'martial', 'melee', 'ranged'];
+export const WEAPON_FILTERS = ['all', 'simple', 'martial', 'melee', 'ranged', 'magic'];
 
 /** Caractéristiques d'attaque proposées dans la configuration (clé v3 → libellé) */
 export const WEAPON_STAT_OVERRIDES = ['str', 'dex', 'cha', 'wis', 'int'];
@@ -152,7 +152,7 @@ export function weaponDamageType(weapon) {
  * La ligne doit-elle être affichée avec ce filtre ?
  * Une ligne sans nom reste toujours visible (ligne qu'on est en train d'ajouter).
  * @param {Object} weapon - ligne de dynamic_weapons
- * @param {string} filter - 'all' | 'simple' | 'martial' | 'melee' | 'ranged'
+ * @param {string} filter - 'all' | 'simple' | 'martial' | 'melee' | 'ranged' | 'magic' (bonus magique +1 à +3)
  * @returns {boolean}
  */
 export function matchesWeaponFilter(weapon, filter) {
@@ -164,6 +164,7 @@ export function matchesWeaponFilter(weapon, filter) {
         case 'martial': return category.includes('guerre');
         case 'melee': return weaponReach(weapon).melee;
         case 'ranged': return weaponReach(weapon).ranged;
+        case 'magic': return readWeaponConfig(weapon?.weaponConfig).magicBonus > 0;
         default: return true;
     }
 }

@@ -48,7 +48,8 @@ const FILTERS = [
     ['simple', 'Courantes'],
     ['martial', 'Guerre'],
     ['melee', 'Corps à corps'],
-    ['ranged', 'Distance']
+    ['ranged', 'Distance'],
+    ['magic', 'Magiques']
 ];
 
 /** Colonnes de texte libre, dans l'ordre du tableau */
@@ -665,8 +666,9 @@ export function initWeapons(ctx) {
             ? el('p', { class: 'weapons-mastery-unproficient', text: "Vous ne maîtrisez pas cette arme : sa botte ne s'utilise qu'avec une arme maîtrisée (réglage « Arme maîtrisée » de la configuration de l'arme)." })
             : null;
 
-        const pages = [`p. ${mastery.page}`];
-        if (feature) pages.push(`capacité Bottes d'arme (${feature.className}) : p. ${feature.page}`);
+        // Bottes : page de l'édition anglaise ; capacité de classe : page du manuel français
+        const source = [`Manuel des joueurs 2024 (anglais), p. ${mastery.page}`];
+        if (feature) source.push(`Manuel des joueurs français, capacité Bottes d'arme (${feature.className}) : p. ${feature.page}`);
 
         openModal({
             title: mastery.name,
@@ -680,7 +682,7 @@ export function initWeapons(ctx) {
                 el('div', { class: 'weapons-mastery-access' },
                     el('p', { class: 'weapons-mastery-access-title', text: "Bottes d'arme" }),
                     el('p', { text: masteryAccessNote(character, derived) })),
-                el('p', { class: 'weapons-mastery-source', text: `Manuel des joueurs 2024, ${pages.join(' ; ')}.` })),
+                el('p', { class: 'weapons-mastery-source', text: `${source.join(' ; ')}.` })),
             actions: [{ label: 'Fermer', primary: true }]
         });
     }
