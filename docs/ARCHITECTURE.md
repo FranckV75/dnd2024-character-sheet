@@ -37,6 +37,8 @@ js/
 │   ├── equipment.js    Armures
 │   ├── feats.js        Dons (Origine, Général, Style de combat, Épique)
 │   ├── feat-spells.js  Sorts permis par les dons à sorts (tirés de data/spells.json, testés)
+│   ├── species-traits.js  Traits des 10 espèces du Manuel des joueurs (résumés), options
+│   │                   (lignages, ascendances, héritages) et sorts d'espèce
 │   ├── weapon-masteries.js  Bottes d'armes (Weapon Mastery, PHB 2024) : textes et règles
 │   └── spells.js       Chargement à la demande de data/spells.json
 ├── rules/              Règles D&D 2024 : fonctions pures, testées
@@ -54,6 +56,9 @@ js/
 │   ├── feat-spells.js  Sorts donnés par un don (lot 6) : DD du don, lancers gratuits
 │   ├── rest.js         Repos court et repos long
 │   ├── conditions.js   États cochés (clé facultative « conditions ») et rappel de leurs effets
+│   ├── species.js      Espèce : option choisie (clé facultative « species_choices »), Vision dans
+│   │                   le noir, Résistances, Souffle, sorts d'espèce, cases des traits limités
+│   ├── background.js   Historique : ce qu'il donne, ce qui manque (« À vérifier »), bouton Appliquer
 │   ├── hit-points.js   PV en jeu : dégâts, soins, PV temporaires, boutons − / + (écran : ui/hit-points.js)
 │   ├── class-progression.js  Aptitudes atteintes / à venir, sorts mineurs et préparés permis
 │   ├── experience.js   PX : seuils de niveau, PX restants, PX gagnés
@@ -90,6 +95,7 @@ js/
     ├── magic.js        Aspect des armes et armures magiques (pastille, décors, enchantement)
     ├── calc-bubble.js  Bulle de calcul : détail d'une valeur calculée (CA d'une armure, écusson CA)
     ├── class-progression.js · experience.js · counters.js · companions.js · subclass.js
+    ├── species.js · background.js   Encadré « Espèce & historique » (css/origins.css)
     ├── stepper.js · number-pad.js   Boutons − / + à appui long et pavé de chiffres (partagés)
     ├── modal.js · autocomplete.js · cell-text.js · dom.js   (briques partagées)
     ├── boot-notices.js Avis du démarrage (mise en forme indisponible, sauvegarde illisible)

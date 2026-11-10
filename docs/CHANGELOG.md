@@ -2,6 +2,29 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.36.0] - 2026-11-10 (Espèces et historiques)
+### Added
+- Onglet Aptitudes & Traits : encadré « Espèce & historique ».
+  - Espèce : les traits des 10 espèces du Manuel des joueurs (résumés), ceux des niveaux suivants
+    sous « À venir ». Menu de l'option (lignage elfique ou gnome, ascendance draconique ou gigante,
+    héritage fiélon) et de la caractéristique de ses sorts, verrouillés avec la fiche. Repères
+    calculés : Vision dans le noir (36 m pour le Drow), Résistances, Souffle du Drakéide (dés selon
+    le niveau, DD de Constitution). Les espèces de l'Odyssée renvoient au livre.
+  - Historique : ce qu'il donne (caractéristiques, don d'origine, compétences, outil, équipement),
+    avec un repère « À vérifier » pour ce qui manque sur la fiche. Bouton « Appliquer à la fiche »
+    (fiche déverrouillée, après confirmation) : coche les deux compétences et choisit le don de
+    niveau 1 s'il est vide. Les caractéristiques et les outils ne sont jamais modifiés.
+- Onglet Magie : bloc « Sorts d'espèce » (Lumière de l'Aasimar, sorts des lignages et héritages),
+  avec DD, attaque et cases de lancer gratuit ; ils ne comptent ni dans les sorts préparés ni dans
+  les sorts mineurs.
+- Onglet Combat : cases des traits d'espèce à usages limités (Souffle, Poussée d'adrénaline,
+  Acharnement, Mains guérisseuses…) et des lancers gratuits de sorts d'espèce, vidées au repos.
+- Repères près des valeurs : Résistances de l'espèce près de la CA, « dont +1,5 m » de l'Elfe
+  sylvestre près de la Vitesse (valeur saisie jamais modifiée).
+- Clé de sauvegarde facultative `species_choices` (option et caractéristique), ignorée par la v3.
+### Changed
+- Menus Espèce et Historique triés par ordre alphabétique français.
+
 ## [4.35.0] - 2026-11-10 (Restes des classes, filtre Magiques)
 ### Added
 - Vitesse : repère « dont +4,5 m (sans armure ni bouclier) » pour le Déplacement sans armure du

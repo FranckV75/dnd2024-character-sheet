@@ -30,6 +30,7 @@ import { superiorityDiceCount, psionicDice } from './subclass-combat.js';
 import { CREATURE_TYPES, DIVINE_DOMAINS } from '../data/subclass-choices.js';
 import { SUBCLASS_SPELLS } from '../data/subclass-spells.js';
 import { philosopherSchools } from './subclass-choices.js';
+import { speciesCounterDefs } from './species.js';
 
 export const SUBCLASS_USES_KEY = 'subclass_uses';
 
@@ -403,7 +404,7 @@ function counterView(def, derived, state, { featName, level }) {
     if (max === 0) return [];
     return [{
         key: def.key,
-        source: def.classSlug ? 'class' : 'subclass',
+        source: def.classSlug ? 'class' : def.species ? 'species' : 'subclass',
         feature: def.feature,
         featName,
         level,
@@ -436,10 +437,13 @@ export function subclassCounters(character, derived) {
                 featName: DD_RULES.classes[classSlug]?.nameFr ?? def.name, level: def.level
             }))
         : [];
+    // Traits d'espèce à usages limités et lancers gratuits de sorts d'espèce (clé « species.… »)
+    const speciesCounters = speciesCounterDefs(character, derived).flatMap(def => counterView(
+        { ...def, max: () => def.max, species: true }, derived, state, { featName: def.name, level: def.level }));
     const subclass = derived?.subclass ?? '';
-    if (!Object.hasOwn(SUBCLASS_COUNTERS, subclass)) return classCounters;
+    if (!Object.hasOwn(SUBCLASS_COUNTERS, subclass)) return [...classCounters, ...speciesCounters];
     const features = SUBCLASS_FEATURES[subclass] ?? [];
-    return [...classCounters, ...ALL_COUNTERS.filter(def => def.subclass === subclass).flatMap(def => {
+    return [...classCounters, ...speciesCounters, ...ALL_COUNTERS.filter(def => def.subclass === subclass).flatMap(def => {
         const feature = features.find(f => f.id === def.feature);
         if (!feature || feature.level > (derived.level ?? 1)) return [];
         // École du Philosophe : seulement l'école (ou la seconde école) choisie
@@ -479,19 +483,28 @@ export function restSubclassUses(character, derived, kind) {
     // Dés psioniques : un seul dé rendu au repos court
     const regained = (reset, used) => (kind === 'short' && reset === 'shortOne' ? Math.min(1, used) : used);
     const counters = subclassCounters(character, derived);
+    // Définitions connues : capacités de classe et de sous-classe, et traits de l'espèce actuelle
+    const defs = [...ALL_COUNTERS, ...speciesCounterDefs(character, derived).map(def => ({ ...def, max: () => def.max }))];
     const restored = counters
         .filter(counter => counter.used > 0 && recharges(counter.reset))
         .map(({ feature, featName, label, used, key, reset }) => ({
-            featId: feature, featName, label, inText: ALL_COUNTERS.find(def => def.key === key).inText, count: regained(reset, used),
+            featId: feature, featName, label, inText: defs.find(def => def.key === key)?.inText ?? label, count: regained(reset, used),
             // Dés psioniques au repos court : ceux qui restent dépensés
             ...(regained(reset, used) < used ? { remaining: used - regained(reset, used) } : {})
         }));
     const state = subclassUsesState(character);
     // Valeur enregistrée, ramenée au maximum actuel pour une capacité atteinte (niveau baissé)
     const usedOf = (def) => clampUses(state[def.key], counters.find(c => c.key === def.key)?.max ?? Infinity);
-    const stale = ALL_COUNTERS.filter(def => recharges(resetOf(def, derived)) && clampUses(state[def.key], Infinity) > 0);
-    if (!stale.length) return { patch: {}, restored };
+    const stale = defs.filter(def => recharges(resetOf(def, derived)) && clampUses(state[def.key], Infinity) > 0);
+    // Repos long : cases d'espèce qui ne s'appliquent plus (niveau baissé, autre option ou autre
+    // espèce) vidées aussi, sans annonce, pour qu'elles ne reviennent pas cochées
+    const known = new Set(defs.map(def => def.key));
+    const orphans = kind === 'long'
+        ? Object.keys(state).filter(key => key.startsWith('species.') && !known.has(key) && clampUses(state[key], Infinity) > 0)
+        : [];
+    if (!stale.length && !orphans.length) return { patch: {}, restored };
     const next = { ...state };
+    for (const key of orphans) next[key] = 0;
     for (const def of stale) {
         const used = usedOf(def);
         next[def.key] = used - regained(resetOf(def, derived), used);

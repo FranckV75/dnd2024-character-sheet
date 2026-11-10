@@ -128,6 +128,8 @@ export const V4_ONLY_KEYS = Object.freeze(['combat_buffs', 'spell_slots_state', 
     'subclass_companions',
     // États cochés (Empoisonné, À terre…, js/rules/conditions.js)
     'conditions',
+    // Option de l'espèce (lignage, ascendance…) et caractéristique de ses sorts (js/rules/species.js)
+    'species_choices',
     // Emplacements de dons propres à la v4, déduits de schema.js (un nouvel emplacement y est ajouté tout seul)
     ...[HUMAN_FEAT_SLOT, ...Object.keys(CLASS_FEAT_SLOTS).map(Number)].map((slot) => `feat_${slot}`)]);
 

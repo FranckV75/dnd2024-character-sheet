@@ -229,10 +229,12 @@ function buildStaticOptions(root) {
     fillSelect(root.querySelector('#f-char_class'),
         Object.values(DD_RULES.classes).map(c => [c.nameFr, c.nameFr]));
     markAliases(root.querySelector('#f-char_class'), Object.values(DD_RULES.classes));
+    // Espèces et historiques dans l'ordre alphabétique français, comme le manuel
+    const byName = (a, b) => a.nameFr.localeCompare(b.nameFr, 'fr');
     fillSelect(root.querySelector('#f-char_species'),
-        Object.values(DD_RULES.species).map(s => [s.nameFr, s.nameFr]));
+        Object.values(DD_RULES.species).sort(byName).map(s => [s.nameFr, s.nameFr]));
     fillSelect(root.querySelector('#f-char_background'),
-        Object.values(DD_RULES.backgrounds).map(b => [b.nameFr, b.nameFr]));
+        Object.values(DD_RULES.backgrounds).sort(byName).map(b => [b.nameFr, b.nameFr]));
     root.querySelector('#f-heroic_destiny').replaceChildren(
         ...DD_RULES.heroicDestinies.map(h => el('option', { value: h.value, text: h.value ? h.name : '— Aucun —' })));
     root.querySelector('#f-spell_ability').replaceChildren(
@@ -595,7 +597,7 @@ function counterGroup(counter, where) {
     return el('div', {
         class: 'feat-counter', 'data-feat-counter': counter.key, 'data-max': String(counter.max),
         // Capacité de classe ou de sous-classe : clé subclass_uses (sinon feat_uses)
-        'data-counter-source': counter.source === 'subclass' || counter.source === 'class' ? 'subclass' : 'feat'
+        'data-counter-source': ['subclass', 'class', 'species'].includes(counter.source) ? 'subclass' : 'feat'
     },
         el('span', { class: 'feat-counter-name', id: `${id}-name` },
             el('span', { class: 'label accent', text: counter.label }),
@@ -755,6 +757,7 @@ function featNotesIntro(notes) {
     const classNotes = notes.some(note => note.classFeature);
     const featNotes = notes.some(note => !note.classFeature);
     if (classNotes && featNotes) return 'Effets des dons et des capacités de classe du personnage :';
+    if (notes.every(note => note.species)) return "Trait d'espèce du personnage :";
     if (classNotes) return 'Capacité de classe du personnage :';
     return 'Effets des dons atteints par le personnage :';
 }
@@ -796,7 +799,8 @@ function renderFeatMentions(root, effects) {
         ...(check ? [el('span', { class: 'feat-mention-line feat-mention-check' }, icon('warning'), el('span', { text: 'À vérifier' }))] : []));
         button.title = notes.map(note => `${note.featName} : ${note.text}`).join('\n');
         button.setAttribute('aria-haspopup', 'dialog');
-        const what = notes.every(note => note.classFeature) ? 'de la capacité de classe' : 'des dons';
+        const what = notes.every(note => note.species) ? "du trait d'espèce"
+            : notes.every(note => note.classFeature) ? 'de la capacité de classe' : 'des dons';
         button.setAttribute('aria-label', `${labels.join(', ')}${check ? ', à vérifier' : ''} : détail ${what} (${zoneTitle(zone)})`);
     }
 }

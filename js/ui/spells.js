@@ -44,6 +44,8 @@ import {
 import { adeptElements, elementWord } from '../rules/feat-choices.js';
 import { featSpellGroups, setFeatSpellUsePatch } from '../rules/feat-spells.js';
 import { subclassSpells, subclassFeatures, markListedSpells } from '../rules/subclass-features.js';
+import { speciesView, speciesSpellNames, speciesCounterDefs } from '../rules/species.js';
+import { subclassUsesState, setSubclassUsesPatch } from '../rules/subclass-uses.js';
 import { FEAT_SLOT_ORDER, HUMAN_FEAT_SLOT } from '../state/schema.js';
 import { ABILITY_IDS } from '../data/constants.js';
 import { loadSpells } from '../data/spells.js';
@@ -62,7 +64,7 @@ const GRIMOIRE_STORAGE_KEY = 'dd2024_grimoire_open';
 // Dons et leurs choix : repère « Adepte » (Adepte élémentaire) sur les sorts du type choisi
 // Sorts de dons : leurs choix, leurs lancers gratuits (feat_uses) et la caractéristique du DD
 const RELEVANT_KEYS = new Set(['dynamic_spells', 'spell_slots_state', 'spell_class_filter', 'char_class', 'char_subclass', 'char_level',
-    'feat_choices', 'feat_uses', 'char_species', 'subclass_choices', ...FEAT_SLOT_ORDER.map(level => `feat_${level}`), ...ABILITY_IDS.map(id => `${id}_score`)]);
+    'feat_choices', 'feat_uses', 'char_species', 'subclass_choices', 'species_choices', 'subclass_uses', ...FEAT_SLOT_ORDER.map(level => `feat_${level}`), ...ABILITY_IDS.map(id => `${id}_score`)]);
 
 /** « Adepte (feu) » : types d'Adepte élémentaire infligés par ce sort */
 function adeptTypes(spell, elements) {
@@ -704,7 +706,8 @@ export function initSpells(ctx) {
         if (!anySpell) {
             // Sorts de dons affichés juste au-dessus : le message ne doit pas les contredire
             const derived = deriveCharacter(character);
-            const featSpells = featSpellGroups(character, derived).length > 0 || subclassSpells(derived).reached.length > 0;
+            const featSpells = featSpellGroups(character, derived).length > 0 || subclassSpells(derived).reached.length > 0
+                || speciesSpellNames(character, derived).length > 0;
             emptyMain.textContent = featSpells
                 ? 'Aucun autre sort noté.'
                 : locked ? 'Aucun sort dans le grimoire.' : 'Aucun sort pour l\'instant.';
@@ -798,7 +801,8 @@ export function initSpells(ctx) {
         const active = document.activeElement;
         const hadFocus = !body.hidden && body.contains(active);
         const typing = hadFocus && active.matches('textarea, input, select');
-        const hasFeatSpells = featSpellGroups(character, d).length > 0 || subclassSpells(d).reached.length > 0;
+        const hasFeatSpells = featSpellGroups(character, d).length > 0 || subclassSpells(d).reached.length > 0
+            || speciesSpellNames(character, d).length > 0;
         const mode = grimoireView(status.casts, typing || hasFeatSpells || rows.some(hasSpellContent), grimoireOpen);
         const quiet = mode === 'quiet';
 
@@ -986,6 +990,69 @@ export function initSpells(ctx) {
         applyFolds(subclassBox);
     }
 
+    // -----------------------------------------------------------------------
+    // Sorts d'espèce (4.36.0) : Lumière de l'Aasimar, sorts des lignages elfiques, des héritages
+    // fiélons… Toujours préparés, hors du compte ; lancers gratuits cochés dans subclass_uses
+    // (mêmes cases que dans l'onglet Combat, clé « species.sort_… »)
+    // -----------------------------------------------------------------------
+
+    const speciesBox = el('section', { class: 'feat-spells species-spells', 'aria-labelledby': 'species-spells-title', 'data-fold-key': 'species-spells', hidden: true });
+    bindFolding(speciesBox);
+    let speciesSignature = null;
+
+    function speciesFreeBoxes(def, used) {
+        return el('span', { class: 'feat-spell-free species-spell-free' },
+            ...Array.from({ length: def.max }, (_, index) => el('input', {
+                type: 'checkbox', class: 'round-check', 'data-play': 'true', 'data-species-use': def.key, 'data-index': String(index),
+                checked: index < used,
+                'aria-label': `${def.label} : lancer gratuit ${def.max > 1 ? `${index + 1} ` : ''}utilisé`,
+                // Même règle que les cases de l'onglet Combat : toucher la 3e coche les 3 premières,
+                // décocher la 1re les vide toutes
+                on: { change: (event) => {
+                    store.update(setSubclassUsesPatch(store.get(), def.key, event.target.checked ? index + 1 : index, def.max));
+                } }
+            })),
+            el('span', { text: `${def.max > 1 ? `${def.max} lancers` : '1 lancer'} sans emplacement, de nouveau après un repos long` }));
+    }
+
+    function renderSpeciesSpells(character, d) {
+        const view = speciesView(character, d);
+        const spells = (view?.spells ?? []).filter(spell => spell.reached);
+        const upcoming = (view?.spells ?? []).filter(spell => !spell.reached);
+        const defs = speciesCounterDefs(character, d);
+        const signature = JSON.stringify([view?.name, spells, upcoming.map(spell => spell.name), defs.map(def => [def.key, def.max])]);
+        speciesBox.hidden = spells.length === 0;
+        if (signature !== speciesSignature) {
+            speciesSignature = signature;
+            const abilityName = { int: 'Intelligence', wis: 'Sagesse', cha: 'Charisme' };
+            const line = (spell) => {
+                const item = featSpellLine({ name: spell.name, vo: spell.vo, level: spell.spellLevel });
+                const def = defs.find(entry => entry.feature === spell.vo);
+                const stats = spell.dc === null
+                    ? el('p', { class: 'feat-spells-missing', text: 'Caractéristique à choisir dans « Espèce & historique » (onglet Aptitudes & Traits).' })
+                    : el('p', { class: 'feat-spell-note', text: `${spell.source} · ${abilityName[spell.ability]} · DD ${spell.dc} · attaque ${signedText(spell.attack)}` });
+                item.append(...[def ? speciesFreeBoxes(def, 0) : null, stats].filter(Boolean));
+                return item;
+            };
+            speciesBox.replaceChildren(...(spells.length ? [
+                el('h4', { class: 'feat-spells-title', id: 'species-spells-title' }, icon('star'), el('span', { text: "Sorts d'espèce" }),
+                    foldButton("Sorts d'espèce")),
+                el('p', { class: 'feat-spells-intro', text: `Donnés par votre espèce (${view.name}) : toujours préparés, ils ne comptent ni dans vos sorts préparés ni dans vos sorts mineurs.` }),
+                el('ul', { class: 'feat-spells-list' }, spells.map(line)),
+                upcoming.length ? el('p', { class: 'feat-spells-extra' }, el('strong', { text: 'À venir : ' }),
+                    `${upcoming.map(spell => `${spell.name} (niveau ${spell.level})`).join(', ')}.`) : null
+            ].filter(Boolean) : []));
+            applyFolds(speciesBox);
+        }
+        // Cases cochées ici ou dans l'onglet Combat : seul leur état change
+        const state = subclassUsesState(character);
+        for (const box of speciesBox.querySelectorAll('input[data-species-use]')) {
+            const def = defs.find(entry => entry.key === box.dataset.speciesUse);
+            const checked = Number(box.dataset.index) < Math.min(Number(state[box.dataset.speciesUse]) || 0, def?.max ?? 0);
+            if (box.checked !== checked) box.checked = checked;
+        }
+    }
+
     function render(character, changedKeys, { structural = false } = {}) {
         if (changedKeys && !changedKeys.some(key => RELEVANT_KEYS.has(key))) return;
         const d = deriveCharacter(character);
@@ -995,6 +1062,7 @@ export function initSpells(ctx) {
         renderSlots(character, d);
         renderFeatSpells(character, d);
         renderSubclassSpells(character, d);
+        renderSpeciesSpells(character, d);
         renderGrimoire(character, d);
     }
 
@@ -1139,6 +1207,7 @@ export function initSpells(ctx) {
         slotsBox,
         featBox,
         subclassBox,
+        speciesBox,
         tableScroll,
         emptyText,
         addBtn);
@@ -1183,5 +1252,6 @@ function grantedSpellKeys(character, derived) {
     for (const group of featSpellGroups(character, derived)) {
         for (const spell of group.spells) names.push(spell.name, spell.vo);
     }
+    names.push(...speciesSpellNames(character, derived));
     return new Set(names.filter(Boolean).map(spellNameKey));
 }

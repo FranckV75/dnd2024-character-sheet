@@ -1,0 +1,104 @@
+/* =============================================================================
+   ORIGINS.CSS - Encadré « Espèce & historique » (onglet Aptitudes & Traits)
+   Traits et option de l'espèce (js/ui/species.js), historique (js/ui/background.js).
+   Même présentation que les aptitudes de classe (css/sheet.css, .subclass-*).
+   ============================================================================= */
+
+.origins .origin-block:not([hidden]) ~ .origin-block:not([hidden]) {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid var(--gold-soft);
+}
+
+/* Message tant qu'aucune espèce ni aucun historique n'est choisi */
+.origins:has(.origin-block:not([hidden])) .origin-empty {
+    display: none;
+}
+
+.origin-lines {
+    display: grid;
+    gap: 6px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.origin-line {
+    display: grid;
+    grid-template-columns: minmax(7.5rem, max-content) 1fr;
+    gap: 2px 10px;
+    align-items: baseline;
+}
+
+.origin-line-label {
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+}
+
+.origin-line-text {
+    font-family: var(--font-text);
+    font-size: 1rem;
+}
+
+.origin-check {
+    grid-column: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    font-family: var(--font-text);
+    font-size: 0.9rem;
+    color: var(--warn);
+}
+
+.origin-check .icon {
+    color: var(--warn);
+}
+
+.origin-check .feat-tag {
+    border-color: var(--warn);
+    color: var(--warn);
+}
+
+.origin-apply {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    margin: 10px 0 0;
+}
+
+.origin-apply small {
+    font-family: var(--font-text);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* Repères calculés de l'espèce (Vision dans le noir, Résistance, Souffle) */
+.origin-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+@media (max-width: 900px) {
+    .origin-line {
+        grid-template-columns: 1fr;
+    }
+    .origin-check {
+        grid-column: 1;
+    }
+}
+
+@media print {
+    .origin-apply,
+    .origin-empty {
+        display: none;
+    }
+}

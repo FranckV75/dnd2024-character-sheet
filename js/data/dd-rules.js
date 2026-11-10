@@ -362,7 +362,12 @@ const DD_RULES = {
             feat: "Magic Initiate (Cleric)",
             skillProfs: ["insight", "religion"],
             toolProfs: ["Calligrapher's Supplies"],
-            startingGold: 50
+            startingGold: 50,
+            // Noms du Manuel des joueurs français (photos Origines_02 à 09, p. 178-185)
+            featId: "initie_a_la_magie",
+            featList: "cleric",
+            toolFr: "Matériel de calligraphe",
+            kitGold: 8
         },
         artisan: {
             name: "Artisan",
@@ -371,7 +376,12 @@ const DD_RULES = {
             feat: "Crafter",
             skillProfs: ["investigation", "persuasion"],
             toolProfs: ["Artisan's Tools"],
-            startingGold: 50
+            startingGold: 50,
+            // Noms du Manuel des joueurs français (photos Origines_02 à 09, p. 178-185)
+            featId: "faconneur",
+            toolFr: "Un type d'outils d'artisan au choix",
+            toolChoice: true,
+            kitGold: 32
         },
         charlatan: {
             name: "Charlatan",
@@ -380,7 +390,11 @@ const DD_RULES = {
             feat: "Skilled",
             skillProfs: ["deception", "sleight_of_hand"],
             toolProfs: ["Forgery Kit"],
-            startingGold: 50
+            startingGold: 50,
+            // Noms du Manuel des joueurs français (photos Origines_02 à 09, p. 178-185)
+            featId: "doue",
+            toolFr: "Matériel de contrefaçon",
+            kitGold: 15
         },
         criminal: {
             name: "Criminal",
@@ -389,7 +403,11 @@ const DD_RULES = {
             feat: "Alert",
             skillProfs: ["sleight_of_hand", "stealth"],
             toolProfs: ["Thieves' Tools"],
-            startingGold: 50
+            startingGold: 50,
+            // Noms du Manuel des joueurs français (photos Origines_02 à 09, p. 178-185)
+            featId: "vigilant",
+            toolFr: "Outils de voleur",
+            kitGold: 16
         },
         entertainer: {
             name: "Entertainer",
@@ -398,7 +416,12 @@ const DD_RULES = {
             feat: "Musician",
             skillProfs: ["acrobatics", "performance"],
             toolProfs: ["Musical Instrument"],
-            startingGold: 50
+            startingGold: 50,
+            // Noms du Manuel des joueurs français (photos Origines_02 à 09, p. 178-185)
+            featId: "musicien",
+            toolFr: "Un instrument de musique au choix",
+            toolChoice: true,
+            kitGold: 11
         },
         farmer: {
             name: "Farmer",
@@ -407,7 +430,11 @@ const DD_RULES = {
             feat: "Tough",
             skillProfs: ["animal_handling", "nature"],
             toolProfs: ["Carpenter's Tools"],
-            startingGold: 50
+            startingGold: 50,
+            // Noms du Manuel des joueurs français (photos Origines_02 à 09, p. 178-185)
+            featId: "robuste",
+            toolFr: "Outils de charpentier",
+            kitGold: 30
         },
         guard: {
             name: "Guard",
@@ -416,7 +443,12 @@ const DD_RULES = {
             feat: "Alert",
             skillProfs: ["athletics", "perception"],
             toolProfs: ["Gaming Set"],
-            startingGold: 50
+            startingGold: 50,
+            // Noms du Manuel des joueurs français (photos Origines_02 à 09, p. 178-185)
+            featId: "vigilant",
+            toolFr: "Un type de boîte de jeux au choix",
+            toolChoice: true,
+            kitGold: 12
         },
         guide: {
             name: "Guide",
@@ -425,7 +457,12 @@ const DD_RULES = {
             feat: "Magic Initiate (Druid)",
             skillProfs: ["stealth", "survival"],
             toolProfs: ["Cartographer's Tools"],
-            startingGold: 50
+            startingGold: 50,
+            // Noms du Manuel des joueurs français (photos Origines_02 à 09, p. 178-185)
+            featId: "initie_a_la_magie",
+            featList: "druid",
+            toolFr: "Outils de cartographe",
+            kitGold: 3
         },
         hermit: {
             name: "Hermit",
@@ -434,7 +471,11 @@ const DD_RULES = {
             feat: "Healer",
             skillProfs: ["medicine", "religion"],
             toolProfs: ["Herbalism Kit"],
-            startingGold: 50
+            startingGold: 50,
+            // Noms du Manuel des joueurs français (photos Origines_02 à 09, p. 178-185)
+            featId: "guerisseur",
+            toolFr: "Matériel d'herboriste",
+            kitGold: 16
         },
         merchant: {
             name: "Merchant",
@@ -443,7 +484,11 @@ const DD_RULES = {
             feat: "Lucky",
             skillProfs: ["animal_handling", "persuasion"],
             toolProfs: ["Navigator's Tools"],
-            startingGold: 50
+            startingGold: 50,
+            // Noms du Manuel des joueurs français (photos Origines_02 à 09, p. 178-185)
+            featId: "chanceux",
+            toolFr: "Instruments de navigateur",
+            kitGold: 22
         },
         noble: {
             name: "Noble",
@@ -452,7 +497,12 @@ const DD_RULES = {
             feat: "Skilled",
             skillProfs: ["history", "persuasion"],
             toolProfs: ["Gaming Set"],
-            startingGold: 50
+            startingGold: 50,
+            // Noms du Manuel des joueurs français (photos Origines_02 à 09, p. 178-185)
+            featId: "doue",
+            toolFr: "Un type de boîte de jeux au choix",
+            toolChoice: true,
+            kitGold: 29
         },
         sage: {
             name: "Sage",
@@ -461,7 +511,12 @@ const DD_RULES = {
             feat: "Magic Initiate (Wizard)",
             skillProfs: ["arcana", "history"],
             toolProfs: ["Calligrapher's Supplies"],
-            startingGold: 50
+            startingGold: 50,
+            // Noms du Manuel des joueurs français (photos Origines_02 à 09, p. 178-185)
+            featId: "initie_a_la_magie",
+            featList: "wizard",
+            toolFr: "Matériel de calligraphe",
+            kitGold: 8
         },
         sailor: {
             name: "Sailor",
@@ -470,7 +525,11 @@ const DD_RULES = {
             feat: "Tavern Brawler",
             skillProfs: ["acrobatics", "perception"],
             toolProfs: ["Navigator's Tools"],
-            startingGold: 50
+            startingGold: 50,
+            // Noms du Manuel des joueurs français (photos Origines_02 à 09, p. 178-185)
+            featId: "bagarreur_de_tavernes",
+            toolFr: "Instruments de navigateur",
+            kitGold: 20
         },
         scribe: {
             name: "Scribe",
@@ -479,7 +538,11 @@ const DD_RULES = {
             feat: "Skilled",
             skillProfs: ["investigation", "perception"],
             toolProfs: ["Calligrapher's Supplies"],
-            startingGold: 50
+            startingGold: 50,
+            // Noms du Manuel des joueurs français (photos Origines_02 à 09, p. 178-185)
+            featId: "doue",
+            toolFr: "Matériel de calligraphe",
+            kitGold: 23
         },
         soldier: {
             name: "Soldier",
@@ -488,7 +551,12 @@ const DD_RULES = {
             feat: "Savage Attacker",
             skillProfs: ["athletics", "intimidation"],
             toolProfs: ["Gaming Set"],
-            startingGold: 50
+            startingGold: 50,
+            // Noms du Manuel des joueurs français (photos Origines_02 à 09, p. 178-185)
+            featId: "sauvagerie_martiale",
+            toolFr: "Un type de boîte de jeux au choix",
+            toolChoice: true,
+            kitGold: 14
         },
         wayfarer: {
             name: "Wayfarer",
@@ -497,7 +565,11 @@ const DD_RULES = {
             feat: "Lucky",
             skillProfs: ["insight", "stealth"],
             toolProfs: ["Thieves' Tools"],
-            startingGold: 50
+            startingGold: 50,
+            // Noms du Manuel des joueurs français (photos Origines_02 à 09, p. 178-185)
+            featId: "chanceux",
+            toolFr: "Outils de voleur",
+            kitGold: 16
         }
     },
 

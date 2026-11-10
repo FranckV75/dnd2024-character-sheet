@@ -21,6 +21,7 @@ import { subclassChoiceNotes } from './subclass-choices.js';
 import { formNotes } from './subclass-forms.js';
 import { epicPoemNotes } from './epic-poem.js';
 import { wildMagicNotes } from './wild-magic.js';
+import { speciesNotes } from './species.js';
 
 /** Texte brut (les anciennes sauvegardes peuvent contenir du HTML), sans accents ni majuscules */
 function fold(value) {
@@ -400,5 +401,7 @@ export function classFeatureNotes(derived, record = {}) {
     // (Poésie épique), Comme par hasard (Sorcellerie sauvage)
     for (const [zone, notes] of Object.entries(epicPoemNotes(derived))) (zones[zone] ??= []).push(...notes);
     for (const [zone, notes] of Object.entries(wildMagicNotes(derived))) (zones[zone] ??= []).push(...notes);
+    // Espèce (4.36.0) : Résistances près de la CA, Vitesse de l'Elfe sylvestre
+    for (const [zone, notes] of Object.entries(speciesNotes(derived, record))) (zones[zone] ??= []).push(...notes);
     return zones;
 }

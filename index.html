@@ -37,6 +37,7 @@
     <link rel="stylesheet" href="css/conditions.css">
     <link rel="stylesheet" href="css/level-up.css">
     <link rel="stylesheet" href="css/stepper.css">
+    <link rel="stylesheet" href="css/origins.css">
     <link rel="stylesheet" href="css/hit-points.css">
     <link rel="stylesheet" href="css/style-editor.css">
     <link rel="stylesheet" href="css/account.css">
@@ -306,6 +307,13 @@
                 <section class="box">
                     <h3 data-icon="scale"><label for="f-alignment">Alignement</label></h3>
                     <input id="f-alignment" data-field="alignment" class="input input-title center" autocomplete="off">
+                </section>
+                <section class="box origins" data-fold-box="origins">
+                    <h3 data-icon="user">Espèce &amp; historique</h3>
+                    <!-- Traits et option de l'espèce (js/ui/species.js), puis historique (js/ui/background.js) -->
+                    <div class="subclass-features origin-block" id="species-traits" hidden></div>
+                    <div class="subclass-features origin-block" id="background-info" hidden></div>
+                    <p class="empty origin-empty">Choisissez une espèce et un historique en haut de la fiche.</p>
                 </section>
                 <section class="box" data-fold-box="traits">
                     <h3 id="h-traits" data-icon="sparkle">Traits de personnage</h3>
