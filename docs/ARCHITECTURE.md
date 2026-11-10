@@ -25,6 +25,8 @@ js/
 │                       affichage (pas de flash clair)
 ├── main.js             Démarrage de l'application (une étape en échec n'empêche ni la barre
 │                       Gestion ni l'enregistrement), branchement de l'enregistrement automatique
+├── version.js          Version de la page, toujours égale à celle de package.json (testé) :
+│                       ui/update.js la compare au site en ligne pour installer une mise à jour
 ├── data/               Données du jeu (objets exportés ; seul spells.js charge un fichier)
 │   ├── constants.js    Caractéristiques, compétences, fonds par défaut
 │   ├── dd-rules.js     Classes, sous-classes (dont Odyssée), espèces, historiques,
@@ -69,6 +71,7 @@ js/
 │   │                   enregistrée par un autre onglet (sans DOM, testé avec plusieurs onglets)
 │   ├── snapshots.js    Sauvegardes de secours datées (10 derniers états, sur l'appareil seulement ;
 │   │                   écran « Revenir à… » : ui/snapshots.js)
+│   ├── update-check.js Comparaison de versions et fichiers à redemander (mises à jour : ui/update.js)
 │   └── other-tab.js    Fiche enregistrée par un autre onglet : reprise et fusion (pure)
 └── ui/                 Interface (un module par fonctionnalité, initialisé par main.js)
     ├── sheet.js        Construit la fiche, relie chaque champ data-field au store,

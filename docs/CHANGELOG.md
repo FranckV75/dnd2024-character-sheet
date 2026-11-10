@@ -2,6 +2,19 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.33.0] - 2026-11-10 (Mises à jour fiables)
+### Added
+- Mises à jour installées d'elles-mêmes : à l'ouverture et à chaque retour sur la fiche (au plus
+  une fois par minute), la version en ligne est comparée à celle de la page. Plus récente : la fiche
+  est enregistrée, chaque fichier de l'application est redemandé au site (et non pris dans la
+  mémoire du navigateur), puis la page se recharge et l'annonce (« Fiche mise à jour »). Une seule
+  tentative par version : si elle ne suffit pas, un message demande de fermer puis rouvrir la fiche.
+  Jamais pendant qu'une fenêtre est ouverte ; hors ligne, rien ne se passe (`js/ui/update.js`).
+- `js/version.js` : version de la page, testée égale à celle de `package.json` (à changer ensemble).
+### Notes
+- Les tablettes encore en 4.32.0 ou avant reçoivent cette version comme avant (fermer puis rouvrir
+  la fiche si besoin) ; les suivantes arriveront d'elles-mêmes.
+
 ## [4.32.0] - 2026-11-10 (Saisie des PV et du niveau)
 ### Added
 - PV actuels et PV temporaires : un bouton − et un bouton + de chaque côté ; un appui long fait

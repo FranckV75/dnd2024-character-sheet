@@ -27,6 +27,8 @@ ne jamais publier (push, déploiement) sans son accord explicite.
 - `npm run dev` → serveur local sur http://localhost:8080
 - `npm test` → tests unitaires (Node test runner)
 - `npm run check` → syntaxe + imports + règles HTML + encodage + tests. **Doit passer avant tout commit.**
+- Nouvelle version : changer ensemble `package.json` et `js/version.js` (testé) ; c'est ce numéro
+  qui fait installer la mise à jour sur les tablettes (`js/ui/update.js`).
 
 ## Règles d'architecture
 
