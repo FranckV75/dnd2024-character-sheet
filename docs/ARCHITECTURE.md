@@ -48,6 +48,9 @@ js/
 │   │                   Dons : emplacements atteints, effets, usages dépensés, choix mémorisés
 │   ├── feat-spells.js  Sorts donnés par un don (lot 6) : DD du don, lancers gratuits
 │   ├── rest.js         Repos court et repos long
+│   ├── conditions.js   États cochés (clé facultative « conditions ») et rappel de leurs effets
+│   ├── level-up.js     Assistant « Passer au niveau N » : ce qui change, PV gagnés, modification
+│   │                   appliquée (niveau, PV max, PV actuels sur demande ; écran : ui/level-up.js)
 │   └── gallery.js      Réglages d'apparence (validation des fonds, _visual_prefs)
 ├── cloud/              Sauvegarde en ligne (Supabase, même table que la v3)
 │   ├── client.js       Client Supabase (clé publique ; sécurité par RLS)

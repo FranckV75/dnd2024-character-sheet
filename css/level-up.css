@@ -1,0 +1,81 @@
+/* =============================================================================
+   LEVEL-UP.CSS - Bouton « Passer au niveau N » (à droite du libellé Niveau) et sa fenêtre
+   (js/ui/level-up.js)
+   ============================================================================= */
+
+/* Case du niveau et bouton + sur une même ligne (le bouton ne recouvre rien) */
+.level-input-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.level-input-row .input {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.level-up-btn {
+    flex: 0 0 auto;
+    padding: 0;
+    border-radius: 50%;
+}
+
+.level-up-btn[hidden] {
+    display: none;
+}
+
+.modal-body .level-up-section + .level-up-section {
+    margin-top: 12px;
+}
+
+.modal-body .level-up-title {
+    margin: 0 0 4px;
+    font-family: var(--font-title);
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+}
+
+.modal-body .level-up-section ul {
+    margin: 0;
+    padding-left: 18px;
+    font-family: var(--font-text);
+}
+
+/* Choix des PV : phrases (police des textes longs), pas des libellés de champ en capitales */
+.modal-body .level-up-option {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0;
+    font-family: var(--font-text);
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--text);
+}
+
+.level-up-roll {
+    width: 4.5em;
+    text-align: center;
+}
+
+.modal-body .level-up-result {
+    margin: 6px 0 0;
+    font-family: var(--font-text);
+    font-weight: 600;
+    color: var(--accent-ink);
+}
+
+.modal-body .level-up-result:empty {
+    display: none;
+}
+
+@media print {
+    .level-up-btn {
+        display: none;
+    }
+}

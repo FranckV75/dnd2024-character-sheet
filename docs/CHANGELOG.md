@@ -2,6 +2,24 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.31.0] - 2026-11-10 (Montée de niveau)
+### Added
+- Petit bouton « + » à droite du niveau (masqué fiche verrouillée et au niveau 20) : il ouvre
+  « Passer au niveau N », qui liste ce qui change au niveau suivant d'après la fiche : dés de vie,
+  bonus de maîtrise, don à choisir (ou déjà noté qui devient actif), ressources et dés de classe
+  (Second Souffle, Rage, Attaque sournoise…), sous-classe à choisir ou nouvelles capacités de
+  sous-classe et choix à faire, emplacements de sorts (Magie de pacte comprise), sorts de
+  sous-classe toujours préparés (`js/rules/level-up.js`).
+- Points de vie : valeur fixe du manuel (moitié du dé + 1) ou jet du joueur, plus la Constitution
+  (au moins 1), plus les bonus que la fiche connaît (Robuste, Résilience draconique, Nain, Faveur
+  de vigueur) ; option « Ajouter aussi ces PV aux PV actuels ». L'assistant écrit le niveau et les
+  PV max ; des PV max avec du texte (« 80 (Robuste) ») ne sont jamais réécrits.
+- Une sauvegarde de secours est prise avant (« Revenir à… »). Si la fiche change pendant que la
+  fenêtre est ouverte (autre onglet, compte), rien n'est appliqué : il faut la rouvrir.
+### Notes
+- Pas encore listés (le manuel fait foi) : capacités de base des classes par niveau, nombre de sorts
+  préparés et de sorts mineurs ; classe non reconnue (multiclasse) : seuls le niveau et les PV.
+
 ## [4.30.0] - 2026-11-10 (Suivi des états)
 ### Added
 - Encadré repliable « États » dans l'onglet Combat, sous les PV : une pastille par état du Manuel

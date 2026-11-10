@@ -33,6 +33,7 @@ export const MAX_TOTAL_CHARS = 500_000;
 export const SNAPSHOT_REASONS = Object.freeze({
     open: 'Ouverture de la fiche',
     'long-rest': 'Avant un repos long',
+    'level-up': 'Avant une montée de niveau',
     import: 'Avant un import',
     new: 'Avant une nouvelle fiche',
     cloud: 'Avant un chargement depuis le compte',

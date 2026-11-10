@@ -152,7 +152,7 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
       corps, Distance) dans un menu déroulant pour gagner de la place.
   - Idées proposées par Claude le 10/11/2026 (survol du projet, retenues par Franck pour plus tard) :
     - Préférées :
-      1. Assistant de montée de niveau : un bouton « Passer au niveau N » qui liste ce qui change
+      1. ✅ (4.31.0, 10/11/2026) Assistant de montée de niveau : un bouton « Passer au niveau N » qui liste ce qui change
          (PV, don à choisir, emplacements de sorts, nouvelles capacités).
       2. ✅ (4.30.0, 10/11/2026) Suivi des états (Empoisonné, À terre, Effrayé…) : pastilles à
          cocher dans l'onglet Combat avec le rappel de l'effet.
