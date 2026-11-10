@@ -338,12 +338,12 @@ export function subclassChoiceNotes(derived = {}, record = {}) {
     const choice = derived.subclassChoices ?? {};
     const rage = record?.combat_buffs?.rage === true;
     if (derived.subclass === 'path_of_the_wild_heart') {
-        // Aspect sauvage (niveau 6), changé à chaque repos long
-        if (choice.aspect === 'panther') add('speed', 'aspect_sauvage', 'Aspect sauvage (Panthère)', "Vitesse d'escalade égale à votre Vitesse.", { mention: 'Escalade\u00a0= Vitesse' });
-        if (choice.aspect === 'salmon') add('speed', 'aspect_sauvage', 'Aspect sauvage (Saumon)', 'Vitesse de nage égale à votre Vitesse.', { mention: 'Nage\u00a0= Vitesse' });
-        // Puissance sauvage (niveau 14) : Faucon, seulement pendant la Rage et sans armure
+        // Aspect de faune (niveau 6), changé à chaque repos long
+        if (choice.aspect === 'panther') add('speed', 'aspect_sauvage', 'Aspect de faune (Panthère)', "Vitesse d'escalade égale à votre Vitesse.", { mention: 'Escalade\u00a0= Vitesse' });
+        if (choice.aspect === 'salmon') add('speed', 'aspect_sauvage', 'Aspect de faune (Saumon)', 'Vitesse de nage égale à votre Vitesse.', { mention: 'Nage\u00a0= Vitesse' });
+        // Puissance de la faune (niveau 14) : Faucon, seulement pendant la Rage et sans armure
         if (choice.power === 'falcon') {
-            add('speed', 'puissance_sauvage', 'Puissance sauvage (Faucon)',
+            add('speed', 'puissance_sauvage', 'Puissance de la faune (Faucon)',
                 "Pendant la Rage, si vous ne portez pas d'armure : vitesse de vol égale à votre Vitesse.",
                 { mention: 'Vol\u00a0= Vitesse (Rage)', ...(rage && !derived.wornArmor?.light && !derived.wornArmor?.medium && !derived.wornArmor?.heavy ? {} : { inactive: true }) });
         }
@@ -362,11 +362,11 @@ export function subclassChoiceNotes(derived = {}, record = {}) {
                     zone === 'armorClass' ? { mention: maneuver.id === 'parry' ? 'Parade' : `+${die} CA` } : {});
             }
         }
-        // Disciple de la guerre : compétence choisie, à cocher par le joueur
+        // Disciple martial : compétence choisie, à cocher par le joueur
         const skill = choice.student_skill;
         if (skill && record?.[`skill_prof_${skill}`] !== true && record?.[`skill_exp_${skill}`] !== true) {
-            add(`skills.${skill}`, 'disciple_de_la_guerre', 'Disciple de la guerre',
-                'Disciple de la guerre (Maître de guerre niveau 3) vous donne cette maîtrise : case à cocher vous-même, la fiche ne coche rien.',
+            add(`skills.${skill}`, 'disciple_de_la_guerre', 'Disciple martial',
+                'Disciple martial (Maître de guerre niveau 3) vous donne cette maîtrise : case à cocher vous-même, la fiche ne coche rien.',
                 { check: true });
         }
     }
@@ -374,16 +374,16 @@ export function subclassChoiceNotes(derived = {}, record = {}) {
     if (derived.subclass === 'diviner' && choice.eye === 'darkvision') {
         add('speed', 'troisieme_il', 'Troisième œil', 'Vision dans le noir à 36 m jusqu\'au début de votre prochain repos court ou long.', { mention: 'Vision dans le noir 36\u00a0m' });
     }
-    // Révélation dans la chair (Sorcellerie aberrante, niveau 14) : nage et vol pendant 10 minutes
+    // Révélation incarnée (Sorcellerie aberrante, niveau 14) : nage et vol pendant 10 minutes
     if (derived.subclass === 'aberrant_sorcery') {
         const meters = speedMeters(record?.speed);
         if (choice.rev_aquatic === 'on') {
-            add('speed', 'revelation_dans_la_chair', 'Révélation dans la chair',
+            add('speed', 'revelation_dans_la_chair', 'Révélation incarnée',
                 `Vitesse de nage égale à 2 × votre Vitesse${meters ? ` (${metersText(2 * meters)})` : ''} et respiration sous l'eau, pendant 10 minutes.`,
                 { mention: 'Nage\u00a0= 2 × Vitesse' });
         }
         if (choice.rev_flight === 'on') {
-            add('speed', 'revelation_dans_la_chair', 'Révélation dans la chair',
+            add('speed', 'revelation_dans_la_chair', 'Révélation incarnée',
                 `Vitesse de vol égale à votre Vitesse${meters ? ` (${metersText(meters)})` : ''}, avec vol stationnaire, pendant 10 minutes.`,
                 { mention: 'Vol\u00a0= Vitesse' });
         }

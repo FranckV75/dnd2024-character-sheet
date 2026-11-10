@@ -42,7 +42,7 @@ export const CONDITIONS = Object.freeze([
     {
         id: 'charmed', nameFr: 'Charmé',
         effects: [
-            'Vous ne pouvez pas attaquer celui qui vous a charmé, ni le cibler avec une capacité ou un effet magique nuisible.',
+            'Vous ne pouvez pas attaquer celui qui vous a charmé, ni le cibler avec une capacité ou un effet magique qui lui inflige des dégâts.',
             'Il a l\'avantage à ses tests de caractéristique pour interagir socialement avec vous.'
         ]
     },
@@ -68,7 +68,7 @@ export const CONDITIONS = Object.freeze([
     {
         id: 'exhaustion', nameFr: 'Épuisement', tracked: 'fatigue_level',
         effects: [
-            'Par niveau : -2 aux tests de d20 et -1,5 m de vitesse ; mort au niveau 6.',
+            'Par niveau : -2 aux Tests d20 et -1,5 m de vitesse ; mort au niveau 6.',
             'Les niveaux se cumulent ; un repos long en retire un. Niveau réglé dans l\'encadré Repos.'
         ]
     },

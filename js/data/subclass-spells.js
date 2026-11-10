@@ -3,15 +3,16 @@
 // sous-classe
 //
 // Par sous-classe (clé de DD_RULES.subclasses) : lignes [niveau de classe, nom anglais, nom français,
-// niveau du sort (0 = sort mineur), 'R' si rituel, { note, group }]. Les noms sont ceux de
-// data/spells.json (vérifiés par un test). note : précision affichée sous le sort (rituel seulement,
+// niveau du sort (0 = sort mineur), 'R' si rituel, { note, group, aka }]. Les noms sont ceux du
+// Manuel des joueurs français ; aka : nom(s) de data/spells.json quand il diffère (premier nom de
+// la base, vérifié par un test), pour reconnaître le sort déjà noté dans le grimoire. note : précision affichée sous le sort (rituel seulement,
 // caractéristique…) ; group : terrain du Cercle de la Terre (un seul préparé à la fois), domaine
 // de l'Ancêtre divin (un seul, choisi une fois pour toutes) ou école du Philosophe de l'Académie.
 // Sources : Player's Handbook 2024 anglais, tables de sorts des sous-classes (« … Spells ») et
 // capacités qui donnent un sort ; Odyssée des Seigneurs Dragons : Serment des Seigneurs Dragons
 // (« Lien télépathique » : sort de Rary), Domaine de la Prophétie (sorts des niveaux 1 et 3 du livre
 // ramenés au niveau 3, décision de Franck), Cercle du Sacrifice.
-// Pas ici : sorts au choix du joueur (Découvertes magiques du Savoir, Escroc arcanique, Chevalier
+// Pas ici : sorts au choix du joueur (Découvertes magiques du Savoir, Arnaqueur arcanique, Chevalier
 // occulte) et sorts ajoutés à une liste sans être préparés (patron des Destinées).
 // =============================================================================
 
@@ -42,7 +43,7 @@ export const SUBCLASS_SPELLS = Object.freeze({
         [13, 'Compulsion', 'Compulsion', 4],
         [13, 'Freedom of Movement', 'Liberté de mouvement', 4],
         [17, 'Legend Lore', 'Mythes et légendes', 5],
-        [17, "Yolande's Regal Presence", 'Présence royale de Yolande', 5]
+        [17, "Yolande's Regal Presence", 'Présence royale de Yolane', 5, '', { aka: ['Présence royale de Yolande'] }]
     ],
     oath_of_the_ancients: [
         [3, 'Ensnaring Strike', 'Frappe piégeuse', 1],
@@ -112,7 +113,7 @@ export const SUBCLASS_SPELLS = Object.freeze({
         [3, 'See Invisibility', "Détection de l'invisibilité", 2],
         [5, 'Daylight', 'Lumière du jour', 3],
         [5, 'Fireball', 'Boule de feu', 3],
-        [7, 'Arcane Eye', 'Oeil du mage', 4],
+        [7, 'Arcane Eye', 'Œil du mage', 4, '', { aka: ['Oeil du mage'] }],
         [7, 'Wall of Fire', 'Mur de feu', 4],
         [9, 'Flame Strike', 'Colonne de flamme', 5],
         [9, 'Scrying', 'Scrutation', 5]
@@ -199,7 +200,7 @@ export const SUBCLASS_SPELLS = Object.freeze({
         [5, 'Lightning Bolt', 'Éclair', 3, '', { group: 'Tempérée' }],
         [7, 'Freedom of Movement', 'Liberté de mouvement', 4, '', { group: 'Tempérée' }],
         [9, 'Tree Stride', 'Passage par les arbres', 5, '', { group: 'Tempérée' }],
-        [3, 'Acid Splash', "Aspersion d'acide", 0, '', { group: 'Tropicale' }],
+        [3, 'Acid Splash', 'Aspersion acide', 0, '', { group: 'Tropicale', aka: ["Aspersion d'acide"] }],
         [3, 'Ray of Sickness', 'Rayon empoisonné', 1, '', { group: 'Tropicale' }],
         [3, 'Web', "Toile d'araignée", 2, '', { group: 'Tropicale' }],
         [5, 'Stinking Cloud', 'Nuage nauséabond', 3, '', { group: 'Tropicale' }],
@@ -216,7 +217,7 @@ export const SUBCLASS_SPELLS = Object.freeze({
     ],
     // Moine
     warrior_of_shadow: [
-        [3, 'Darkness', 'Ténèbres', 2, '', { note: '1 point de ki, sans composantes.' }],
+        [3, 'Darkness', 'Ténèbres', 2, '', { note: '1 point de Credo, sans composantes.' }],
         [3, 'Minor Illusion', 'Illusion mineure', 0, '', { note: 'Sort mineur ; Sagesse.' }]
     ],
     warrior_of_the_elements: [
@@ -233,7 +234,7 @@ export const SUBCLASS_SPELLS = Object.freeze({
     gloom_stalker: [
         [3, 'Disguise Self', 'Déguisement', 1],
         [5, 'Rope Trick', 'Corde enchantée', 2],
-        [9, 'Fear', 'Peur', 3],
+        [9, 'Fear', 'Terreur', 3, '', { aka: ['Peur'] }],
         [13, 'Greater Invisibility', 'Invisibilité suprême', 4],
         [17, 'Seeming', 'Apparence trompeuse', 5]
     ],
@@ -268,9 +269,9 @@ export const SUBCLASS_SPELLS = Object.freeze({
         [3, 'Chromatic Orb', 'Orbe chromatique', 1],
         [3, 'Command', 'Injonction', 1],
         [3, "Dragon's Breath", 'Souffle du dragon', 2],
-        [5, 'Fear', 'Peur', 3],
+        [5, 'Fear', 'Terreur', 3, '', { aka: ['Peur'] }],
         [5, 'Fly', 'Vol', 3],
-        [7, 'Arcane Eye', 'Oeil du mage', 4],
+        [7, 'Arcane Eye', 'Œil du mage', 4, '', { aka: ['Oeil du mage'] }],
         [7, 'Charm Monster', 'Charme-monstre', 4],
         [9, 'Legend Lore', 'Mythes et légendes', 5],
         [9, 'Summon Dragon', 'Convocation de dragon', 5]
@@ -297,7 +298,7 @@ export const SUBCLASS_SPELLS = Object.freeze({
         [3, 'Bless', 'Bénédiction', 1, '', { group: 'Vie', note: FREE_CAST }],
         [3, 'Cure Wounds', 'Soins', 1, '', { group: 'Vie', note: FREE_CAST }]
     ],
-    // Sorcier
+    // Occultiste
     archfey_patron: [
         [3, 'Calm Emotions', 'Apaisement des émotions', 2],
         [3, 'Faerie Fire', 'Lueurs féeriques', 1],

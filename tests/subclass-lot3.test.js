@@ -28,11 +28,13 @@ describe('Données des sorts de sous-classe', () => {
                 assert.ok(Number.isInteger(classLevel) && classLevel >= 3 && classLevel <= 20, `${subclass} ${vo}`);
                 const entry = db.find(s => s.vo === vo);
                 assert.ok(entry, `${vo} absent de data/spells.json`);
-                assert.equal(entry.name.split('|')[0], name, vo);
+                // Nom du Manuel des joueurs français ; s'il diffère du premier nom de la base (celui
+                // que le grimoire enregistre), ce dernier est dans aka pour reconnaître le sort noté
+                assert.ok([name, ...(options?.aka ?? [])].includes(entry.name.split('|')[0]), `${vo} : ${name}`);
                 assert.equal(entry.level, level, vo);
                 assert.equal(entry.ritual === true, flag === 'R', `${vo} : rituel`);
                 assert.ok(['', 'R'].includes(flag), `${vo} : repère ${flag}`);
-                if (options) assert.deepEqual(Object.keys(options).filter(k => !['note', 'group'].includes(k)), [], vo);
+                if (options) assert.deepEqual(Object.keys(options).filter(k => !['note', 'group', 'aka'].includes(k)), [], vo);
             }
         }
     });
@@ -90,7 +92,7 @@ describe('Sorts de sous-classe atteints', () => {
         const goo = subclassFeatures(hero('Sorcier', 'Patron Grand Ancien', 10)).reached;
         assert.equal(automationKind(goo.find(f => f.id === 'sorts_du_grand_ancien')), 'calc');
         assert.equal(automationKind(goo.find(f => f.id === 'malefice_occulte')), 'partial');
-        // Ensorceleur draconique : la Résilience draconique (lot 0) est gardée à côté des sorts
+        // Ensorceleur draconique : la Résistance draconique (lot 0) est gardée à côté des sorts
         const draconic = subclassFeatures(hero('Ensorceleur', 'Sorcellerie Draconique', 3)).reached;
         assert.equal(automationKind(draconic.find(f => f.id === 'resilience_draconique')), 'calc');
         assert.equal(automationKind(draconic.find(f => f.id === 'sorts_draconiques')), 'calc');

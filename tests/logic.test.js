@@ -79,20 +79,20 @@ describe('4. Ressources de classe D&D 2024 (getClassResourceInfo)', () => {
     });
 
     test('Barde : Inspiration basée sur CHA, reset tous pts au niv 5 (Font of Inspiration)', () => {
-        assert.deepEqual(getClassResourceInfo(3, 'Barde', mods), { count: 4, label: 'Inspiration Bardique', reset: 'none' });
-        assert.deepEqual(getClassResourceInfo(5, 'Barde', mods), { count: 4, label: 'Inspiration Bardique', reset: 'all' });
+        assert.deepEqual(getClassResourceInfo(3, 'Barde', mods), { count: 4, label: 'Inspiration bardique', reset: 'none' });
+        assert.deepEqual(getClassResourceInfo(5, 'Barde', mods), { count: 4, label: 'Inspiration bardique', reset: 'all' });
     });
 
     test('Clerc : Conduit Divin à partir du niveau 2 (Manuel du joueur 2024)', () => {
         assert.equal(getClassResourceInfo(1, 'Clerc', mods).count, 0);
-        assert.deepEqual(getClassResourceInfo(2, 'Clerc', mods), { count: 2, label: 'Conduit Divin', reset: 'one' });
-        assert.deepEqual(getClassResourceInfo(6, 'Cleric', mods), { count: 3, label: 'Conduit Divin', reset: 'one' });
+        assert.deepEqual(getClassResourceInfo(2, 'Clerc', mods), { count: 2, label: 'Conduit divin', reset: 'one' });
+        assert.deepEqual(getClassResourceInfo(6, 'Cleric', mods), { count: 3, label: 'Conduit divin', reset: 'one' });
     });
 
     test('Moine : Points de Discipline (Ki) = niveau à partir du niveau 2 & reset "all"', () => {
         assert.equal(getClassResourceInfo(1, 'Moine', mods).count, 0);
-        assert.deepEqual(getClassResourceInfo(2, 'Moine', mods), { count: 2, label: 'Points de Discipline (Ki)', reset: 'all' });
-        assert.deepEqual(getClassResourceInfo(10, 'Monk', mods), { count: 10, label: 'Points de Discipline (Ki)', reset: 'all' });
+        assert.deepEqual(getClassResourceInfo(2, 'Moine', mods), { count: 2, label: 'Points de Credo', reset: 'all' });
+        assert.deepEqual(getClassResourceInfo(10, 'Monk', mods), { count: 10, label: 'Points de Credo', reset: 'all' });
     });
 
     test('Druide : Formes Sauvages 2 (niv 2), 3 (niv 6), 4 (niv 17)', () => {
@@ -109,9 +109,9 @@ describe('4. Ressources de classe D&D 2024 (getClassResourceInfo)', () => {
     });
 
     test('Guerrier : Second Souffle paliers D&D 2024', () => {
-        assert.deepEqual(getClassResourceInfo(1, 'Guerrier', mods), { count: 2, label: 'Second Souffle', reset: 'one' });
-        assert.deepEqual(getClassResourceInfo(4, 'Fighter', mods), { count: 3, label: 'Second Souffle', reset: 'one' });
-        assert.deepEqual(getClassResourceInfo(10, 'Guerrier', mods), { count: 4, label: 'Second Souffle', reset: 'one' });
+        assert.deepEqual(getClassResourceInfo(1, 'Guerrier', mods), { count: 2, label: 'Second souffle', reset: 'one' });
+        assert.deepEqual(getClassResourceInfo(4, 'Fighter', mods), { count: 3, label: 'Second souffle', reset: 'one' });
+        assert.deepEqual(getClassResourceInfo(10, 'Guerrier', mods), { count: 4, label: 'Second souffle', reset: 'one' });
     });
 });
 

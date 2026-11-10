@@ -46,7 +46,7 @@ export function classSlug(className) {
     if (!className) return '';
     const clean = className.toString().trim().toLowerCase();
     for (const [slug, cls] of Object.entries(DD_RULES.classes)) {
-        if (slug === clean || cls.name.toLowerCase() === clean || cls.nameFr.toLowerCase() === clean) {
+        if (slug === clean || DD_RULES.namesOf(cls).some((name) => name.toLowerCase() === clean)) {
             return slug;
         }
     }
@@ -67,7 +67,7 @@ export function hitDieForClass(className) {
  * Emplacements de sorts par niveau de sort.
  * @param {string} className
  * @param {number} level
- * @param {string} [subclass] - identifiant de sous-classe : Chevalier occulte et Escroc arcanique
+ * @param {string} [subclass] - identifiant de sous-classe : Chevalier occulte et Arnaqueur arcanique
  *        (tiers de lanceur, lot 6 des sous-classes)
  * @returns {Object} - ex. { 1: 4, 2: 2 } ; {} pour un non-lanceur
  */
@@ -390,7 +390,7 @@ export function computeSpellcasting(ability, mods, pb) {
 }
 
 /**
- * Effets de l'Épuisement (D&D 2024) : -2 par niveau aux tests de d20, -1,5 m de vitesse par niveau,
+ * Effets de l'Épuisement (D&D 2024) : -2 par niveau aux Tests d20, -1,5 m de vitesse par niveau,
  * mort au niveau 6.
  * @param {number} level - 0 à 6
  * @returns {{ level: number, d20Penalty: number, speedPenaltyM: number, dead: boolean }}
@@ -456,7 +456,7 @@ export function featSlotState(slotLevel, characterLevel, choice) {
 }
 
 /**
- * Dé de la Marque du chasseur : 1d6 ; Rôdeur niveau 20, Tueur d'ennemis (PHB 2024 « Foe Slayer ») : 1d10.
+ * Dé de la Marque du chasseur : 1d6 ; Rôdeur niveau 20, Tueur implacable (PHB 2024 « Foe Slayer ») : 1d10.
  * @param {{ level: number, classSlug: string }} stats
  * @returns {string}
  */
@@ -498,7 +498,7 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     const divineFury = buffs.rage ? divineFuryDie(stats) : '';
     if (divineFury) extraDmg.push({ die: divineFury, type: 'Fureur divine 1/tour' });
     if (buffs.hunterMark) extraDmg.push({ die: hunterMarkDie({ level, classSlug: slug }), type: 'Force' });
-    // Boutons de sous-classe (lot 5) : Frénésie, Frappe effroyable, Tueur de colosses… (subclass-combat.js)
+    // Boutons de sous-classe (lot 5) : Frénésie, Frappe effroyable, Goût du sang… (subclass-combat.js)
     extraDmg.push(...subclassBuffDamage(weapon, stats, buffs, stat));
     // Cogneur lourd (PHB 2024, « Expert en armes lourdes ») : arme Lourde, bonus de maîtrise
     if (buffs.heavyWeaponMaster && prop.toLowerCase().split(/[,;]/).some(p => p.trim().startsWith('lourde'))) {

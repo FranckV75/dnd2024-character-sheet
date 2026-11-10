@@ -8,14 +8,14 @@
 // qui n'est plus atteinte (niveau baissé, autre sous-classe) reste enregistrée telle quelle.
 //
 // Règles du Player's Handbook 2024 anglais (vérifiées dans le manuel, chapitre des classes) :
-//  - Voie du Zélote (« Path of the Zealot ») : Guerrier des dieux (« Warrior of the Gods »), réserve
+//  - Voie du Zélote (« Path of the Zealot ») : Soldat des dieux (« Warrior of the Gods »), réserve
 //    de d12 : 4, 5 au niveau 6, 6 au niveau 12, 7 au niveau 17, toute rendue au Repos long ;
-//    Focalisation fanatique (« Fanatical Focus »), une fois par Rage active ; Présence zélée
+//    Détermination fanatique (« Fanatical Focus »), une fois par Rage active ; Présence zélée
 //    (« Zealous Presence »), une fois par Repos long, ou rendue en dépensant une Rage (le joueur
 //    décoche alors la case lui-même) ; Rage des dieux (« Rage of the Gods »), une fois par Repos long ;
 //  - Serments du Paladin : Défense glorieuse (Gloire, niveau 15), Charisme fois (minimum 1) par Repos
-//    long ; Sentinelle immortelle (Anciens, niveau 15) ; capacités du niveau 20 (Nimbe sacré, Légende
-//    vivante, Champion antique, Ange vengeur), une fois par Repos long ;
+//    long ; Sentinelle impérissable (Anciens, niveau 15) ; capacités du niveau 20 (Nimbe sacré, Légende
+//    vivante, Champion des Anciens, Ange vengeur), une fois par Repos long ;
 //  - Serment des Seigneurs Dragons (Odyssée) : Lien indestructible, une fois par Repos long ;
 //  - lot 5 : ressources de combat de 32 sous-classes (dés de supériorité, dés psioniques qui reviennent
 //    un par un au repos court, Lumière guérisseuse, usages « Sagesse/Charisme fois »…), d'après les
@@ -52,7 +52,7 @@ const intMod = ({ mods }) => Math.max(0, Number(mods?.int) || 0);
  *  - label : nom des cases ; inText : le même au milieu d'une phrase ; max(derived) : nombre de cases ;
  *  - reset : 'long' (repos long), 'short' (repos court ou long), 'rage' (fin de la Rage ou tout repos),
  *    'shortOne' (une case au repos court, toutes au repos long : dés psioniques), ou une fonction
- *    (derived) qui renvoie l'un d'eux (Flash protecteur : repos court à partir du niveau 6) ;
+ *    (derived) qui renvoie l'un d'eux (Éclat protecteur : repos court à partir du niveau 6) ;
  *  - use : à quoi sert une case (phrase courte), ou une fonction (derived) qui la donne selon un choix
  *    de sous-classe (lot 7 : présage tiré, type de monstre, domaine, d20 noté…) ;
  *  - school : école du Philosophe de l'Académie qui donne la case (absente sans ce choix).
@@ -61,16 +61,16 @@ export const SUBCLASS_COUNTERS = Object.freeze({
     path_of_the_zealot: [
         {
             feature: 'guerrier_des_dieux',
-            label: 'Guerrier des dieux (d12)',
-            inText: 'dés de Guerrier des dieux',
+            label: 'Soldat des dieux (d12)',
+            inText: 'dés de Soldat des dieux',
             max: ({ level }) => (level >= 17 ? 7 : level >= 12 ? 6 : level >= 6 ? 5 : 4),
             reset: 'long',
             use: 'Action Bonus : lancez autant de ces d12 que vous voulez et regagnez le total en PV.'
         },
         {
             feature: 'focalisation_fanatique',
-            label: 'Focalisation fanatique',
-            inText: 'Focalisation fanatique',
+            label: 'Détermination fanatique',
+            inText: 'Détermination fanatique',
             max: once,
             reset: 'rage',
             use: 'Sauvegarde ratée pendant la Rage : relancez-la avec votre bonus de dégâts de Rage en plus.'
@@ -104,9 +104,9 @@ export const SUBCLASS_COUNTERS = Object.freeze({
             use: 'Action Bonus, 10 minutes. Un emplacement de niveau 5 la rend (décochez).' }
     ],
     oath_of_the_ancients: [
-        { feature: 'sentinelle_immortelle', label: 'Sentinelle immortelle', inText: 'Sentinelle immortelle', max: once, reset: 'long',
+        { feature: 'sentinelle_immortelle', label: 'Sentinelle impérissable', inText: 'Sentinelle impérissable', max: once, reset: 'long',
             use: 'Tombé à 0 PV sans mourir : restez à 1 PV et regagnez 3 fois votre niveau de Paladin en PV.' },
-        { feature: 'champion_antique', label: 'Champion antique', inText: 'Champion antique', max: once, reset: 'long',
+        { feature: 'champion_antique', label: 'Champion des Anciens', inText: 'Champion des Anciens', max: once, reset: 'long',
             use: 'Action Bonus, 1 minute. Un emplacement de niveau 5 la rend (décochez).' }
     ],
     oath_of_vengeance: [
@@ -128,19 +128,19 @@ export const SUBCLASS_COUNTERS = Object.freeze({
             use: "Action Bonus : sauvegarde de Sagesse ou Effrayé 1 minute. Dépenser une Rage la rend (décochez)." }
     ],
     college_of_glamour: [
-        { feature: 'magie_enjoleuse_charme_ou_effroi', label: "Magie enjôleuse", inText: "Magie enjôleuse", max: once, reset: 'long',
+        { feature: 'magie_enjoleuse_charme_ou_effroi', label: "Magie envoûtante", inText: "Magie envoûtante", max: once, reset: 'long',
             use: "Après un sort d'Enchantement ou d'Illusion : Charmé ou Effrayé. Une Inspiration bardique la rend (décochez)." },
-        { feature: 'majeste_inebranlable', label: "Majesté inébranlable", inText: "Majesté inébranlable", max: once, reset: 'short',
+        { feature: 'majeste_inebranlable', label: "Majesté souveraine", inText: "Majesté souveraine", max: once, reset: 'short',
             use: "Action Bonus, 1 minute : qui vous touche fait une sauvegarde de Charisme ou rate." },
-        { feature: 'manteau_de_majeste', label: "Manteau de majesté", inText: "Manteau de majesté", max: once, reset: 'long',
+        { feature: 'manteau_de_majeste', label: "Mante de majesté", inText: "Mante de majesté", max: once, reset: 'long',
             use: "Action Bonus : Injonction sans emplacement, 1 minute. Un emplacement de niveau 3+ la rend (décochez)." }
     ],
     light_domain: [
-        { feature: 'flash_protecteur', label: "Flash protecteur", inText: "Flash protecteur", max: wisMin1,
-            // Flash protecteur amélioré (niveau 6) : rendu aussi au repos court
+        { feature: 'flash_protecteur', label: "Éclat protecteur", inText: "Éclat protecteur", max: wisMin1,
+            // Éclat protecteur amélioré (niveau 6) : rendu aussi au repos court
             reset: ({ level }) => (level >= 6 ? 'short' : 'long'),
             use: "Réaction : Désavantage à une attaque à 9 m." },
-        { feature: 'couronne_de_lumiere', label: "Couronne de lumière", inText: "Couronne de lumière", max: wisMin1, reset: 'long',
+        { feature: 'couronne_de_lumiere', label: "Auréole", inText: "Auréole", max: wisMin1, reset: 'long',
             use: "Action Magie, 1 minute : Désavantage aux sauvegardes contre le feu et le radiant." }
     ],
     war_domain: [
@@ -154,20 +154,20 @@ export const SUBCLASS_COUNTERS = Object.freeze({
             use: "Effet de Nappe de brouillard ajouté à un sort de soins, sur l'une des cibles." }
     ],
     circle_of_the_land: [
-        { feature: 'recuperation_naturelle', label: "Récupération naturelle", inText: "Récupération naturelle", max: () => 2, reset: 'long',
+        { feature: 'recuperation_naturelle', label: "Ressourcement", inText: "Ressourcement", max: () => 2, reset: 'long',
             use: "Une case pour le sort du Cercle sans emplacement, une pour les emplacements regagnés après un repos court." }
     ],
     circle_of_the_moon: [
-        { feature: 'pas_de_lune', label: "Pas de lune", inText: "Pas de lune", max: wisMin1, reset: 'long',
+        { feature: 'pas_de_lune', label: "Foulée sélène", inText: "Foulée sélène", max: wisMin1, reset: 'long',
             use: "Action Bonus : téléportation de 9 m, Avantage à la prochaine attaque. Un emplacement de niveau 2+ en rend une (décochez)." }
     ],
     circle_of_the_stars: [
         { feature: 'presage_cosmique', label: "Présage cosmique", inText: "Présage cosmique", max: wisMin1, reset: 'long',
             // Lot 7 : selon le présage tiré au repos long (menu « omen »)
             use: ({ subclassChoices: c } = {}) => ({
-                weal: "Réaction : +1d6 (Bienfait) au test d20 d'une créature visible à 9 m.",
-                woe: "Réaction : −1d6 (Malheur) au test d20 d'une créature visible à 9 m."
-            })[c?.omen] ?? "Réaction : +1d6 (Bienfait) ou −1d6 (Malheur) à un test d20 à 9 m." },
+                weal: "Réaction : +1d6 (Fortune) au test d20 d'une créature visible à 9 m.",
+                woe: "Réaction : −1d6 (Péril) au test d20 d'une créature visible à 9 m."
+            })[c?.omen] ?? "Réaction : +1d6 (Fortune) ou −1d6 (Péril) à un test d20 à 9 m." },
         { feature: 'carte_stellaire', label: "Carte stellaire", inText: "Carte stellaire", max: wisMin1, reset: 'long',
             use: "Rayon traçant sans emplacement (carte en main)." }
     ],
@@ -180,13 +180,13 @@ export const SUBCLASS_COUNTERS = Object.freeze({
     psi_warrior: [
         { feature: 'pouvoir_psionique_des_d_energie_psionique', label: "Dés psioniques", inText: "dés psioniques", max: ({ level }) => psionicDice(level).count, reset: 'shortOne',
             use: "Champ protecteur, Frappe psionique… : une case par dé dépensé." },
-        { feature: 'mouvement_telekinesique', label: "Mouvement télékinésique", inText: "Mouvement télékinésique", max: once, reset: 'short',
+        { feature: 'mouvement_telekinesique', label: "Déplacement télékinétique", inText: "Déplacement télékinétique", max: once, reset: 'short',
             use: "Action Magie : déplacer un objet ou une créature consentante de 9 m. Un dé psionique la rend (décochez)." },
-        { feature: 'adepte_telekinesique_bond_psionique', label: "Bond psionique", inText: "Bond psionique", max: once, reset: 'short',
+        { feature: 'adepte_telekinesique_bond_psionique', label: "Bond psi", inText: "Bond psi", max: once, reset: 'short',
             use: "Action Bonus : vol au double de la Vitesse jusqu'à la fin du tour. Un dé psionique la rend (décochez)." },
         { feature: 'rempart_de_force', label: "Rempart de force", inText: "Rempart de force", max: once, reset: 'long',
             use: "Action Bonus, 1 minute : abri partiel pour des alliés. Un dé psionique la rend (décochez)." },
-        { feature: 'maitre_telekinesiste', label: "Maître télékinésiste", inText: "Maître télékinésiste", max: once, reset: 'long',
+        { feature: 'maitre_telekinesiste', label: "Maître télékinétique", inText: "Maître télékinétique", max: once, reset: 'long',
             use: "Télékinésie sans emplacement. Un dé psionique la rend (décochez)." }
     ],
     soulknife: [
@@ -194,7 +194,7 @@ export const SUBCLASS_COUNTERS = Object.freeze({
             use: "Savoir-faire, Murmures psychiques… : une case par dé dépensé." },
         { feature: 'voile_psychique', label: "Voile psychique", inText: "Voile psychique", max: once, reset: 'long',
             use: "Action Magie : Invisible 1 heure. Un dé psionique la rend (décochez)." },
-        { feature: 'dechirure_mentale', label: "Déchirure mentale", inText: "Déchirure mentale", max: once, reset: 'long',
+        { feature: 'dechirure_mentale', label: "Rupture spirituelle", inText: "Rupture spirituelle", max: once, reset: 'long',
             use: "Sauvegarde de Sagesse ou Étourdi. 3 dés psioniques la rendent (décochez)." }
     ],
     odyssean_champion: [
@@ -202,15 +202,15 @@ export const SUBCLASS_COUNTERS = Object.freeze({
             use: "Action Bonus, 1 minute : +2 à la CA près d'un allié avec bouclier, +1 de plus avec un bouclier." }
     ],
     warrior_of_mercy: [
-        { feature: 'deluge_de_soins_et_de_blessures', label: "Déluge de soins et de blessures", inText: "Déluge de soins et de blessures", max: wisMin1, reset: 'long',
-            use: "Pendant un Déluge de coups : Main qui soigne et Main qui blesse sans ki." },
+        { feature: 'deluge_de_soins_et_de_blessures', label: "Déluge de soins et de meurtrissures", inText: "Déluge de soins et de meurtrissures", max: wisMin1, reset: 'long',
+            use: "Pendant un Déluge de coups : Main guérisseuse et Main meurtrissante sans point de Credo." },
         { feature: 'main_de_l_ultime_misericorde', label: "Main de l'ultime miséricorde", inText: "Main de l'ultime miséricorde", max: once, reset: 'long',
-            use: "Action Magie et 5 points de ki : ramène à la vie une créature morte depuis moins de 24 h." }
+            use: "Action Magie et 5 points de Credo : ramène à la vie une créature morte depuis moins de 24 h." }
     ],
     fey_wanderer: [
         { feature: 'renforts_feeriques', label: "Renforts féeriques", inText: "Renforts féeriques", max: once, reset: 'long',
             use: "Convocation de fée sans emplacement." },
-        { feature: 'errant_des_brumes', label: "Errant des brumes", inText: "Errant des brumes", max: wisMin1, reset: 'long',
+        { feature: 'errant_des_brumes', label: "Vagabond des brumes", inText: "Vagabond des brumes", max: wisMin1, reset: 'long',
             use: "Foulée brumeuse sans emplacement, avec un passager." }
     ],
     gloom_stalker: [
@@ -235,28 +235,28 @@ export const SUBCLASS_COUNTERS = Object.freeze({
             use: "Réaction : volez un sort qui vous cible." }
     ],
     aberrant_sorcery: [
-        { feature: 'implosion_distordante', label: "Implosion distordante", inText: "Implosion distordante", max: once, reset: 'long',
+        { feature: 'implosion_distordante', label: "Distorsion implosive", inText: "Distorsion implosive", max: once, reset: 'long',
             use: "Action Magie : téléportation et 3d10 de force. 5 points de sorcellerie la rendent (décochez)." }
     ],
     clockwork_sorcery: [
-        { feature: 'retablissement_de_l_equilibre', label: "Rétablissement de l'équilibre", inText: "Rétablissement de l'équilibre", max: chaMin1, reset: 'long',
+        { feature: 'retablissement_de_l_equilibre', label: "Équilibre restauré", inText: "Équilibre restauré", max: chaMin1, reset: 'long',
             use: "Réaction : annule l'Avantage et le Désavantage d'un jet à 18 m." },
-        { feature: 'transe_de_l_ordre', label: "Transe de l'ordre", inText: "Transe de l'ordre", max: once, reset: 'long',
+        { feature: 'transe_de_l_ordre', label: "Transe harmonique", inText: "Transe harmonique", max: once, reset: 'long',
             use: "Action Bonus, 1 minute : vos d20 de 9 ou moins comptent comme 10. 5 points de sorcellerie la rendent (décochez)." },
-        { feature: 'cavalcade_mecanique', label: "Cavalcade mécanique", inText: "Cavalcade mécanique", max: once, reset: 'long',
+        { feature: 'cavalcade_mecanique', label: "Chevauchée mécanique", inText: "Chevauchée mécanique", max: once, reset: 'long',
             use: "Action Magie : 100 PV à répartir, réparations, fin des sorts. 7 points de sorcellerie la rendent (décochez)." }
     ],
     draconic_sorcery: [
-        { feature: 'ailes_de_dragon', label: "Ailes de dragon", inText: "Ailes de dragon", max: once, reset: 'long',
+        { feature: 'ailes_de_dragon', label: "Ailes draconiques", inText: "Ailes draconiques", max: once, reset: 'long',
             use: "Action Bonus : vol de 18 m pendant 1 heure. 3 points de sorcellerie la rendent (décochez)." },
         { feature: 'compagnon_draconique', label: "Compagnon draconique", inText: "Compagnon draconique", max: once, reset: 'long',
             use: "Convocation de dragon sans emplacement." }
     ],
     wild_magic_sorcery: [
-        { feature: 'marees_du_chaos', label: "Marées du chaos", inText: "Marées du chaos", max: once, reset: 'long',
-            use: "Avantage à un test d20. Lancer un sort d'Ensorceleur avec un emplacement la rend (décochez, et lancez la Déferlante)." },
-        { feature: 'deferlante_domptee', label: "Déferlante domptée", inText: "Déferlante domptée", max: once, reset: 'long',
-            use: "Après un sort avec emplacement : effet de Déferlante choisi au lieu d'être tiré." }
+        { feature: 'marees_du_chaos', label: "Marée du chaos", inText: "Marée du chaos", max: once, reset: 'long',
+            use: "Avantage à un test d20. Lancer un sort d'Ensorceleur avec un emplacement la rend (décochez, et lancez la Bouffée)." },
+        { feature: 'deferlante_domptee', label: "Bouffée domptée", inText: "Bouffée domptée", max: once, reset: 'long',
+            use: "Après un sort avec emplacement : effet de Bouffée choisi au lieu d'être tiré." }
     ],
     demigod_bloodline: [
         { feature: 'ancetre_divin', label: "Sorts de l'ancêtre divin", inText: "Sorts de l'ancêtre divin", max: () => 2, reset: 'short',
@@ -270,21 +270,21 @@ export const SUBCLASS_COUNTERS = Object.freeze({
             use: "Une sauvegarde ratée devient réussie." }
     ],
     archfey_patron: [
-        { feature: 'foulees_feeriques', label: "Foulées féeriques", inText: "Foulées féeriques", max: chaMin1, reset: 'long',
+        { feature: 'foulees_feeriques', label: "Foulée des fées", inText: "Foulée des fées", max: chaMin1, reset: 'long',
             use: "Foulée brumeuse sans emplacement, avec un effet en plus." },
-        { feature: 'defenses_envoutantes', label: "Défenses envoûtantes", inText: "Défenses envoûtantes", max: once, reset: 'long',
+        { feature: 'defenses_envoutantes', label: "Charmantes défenses", inText: "Charmantes défenses", max: once, reset: 'long',
             use: "Réaction quand on vous touche : dégâts divisés par deux, renvoyés en psychique. Un emplacement de pacte la rend (décochez)." }
     ],
     celestial_patron: [
         { feature: 'lumiere_guerisseuse', label: "Lumière guérisseuse (d6)", inText: "dés de Lumière guérisseuse", max: ({ level }) => 1 + level, reset: 'long',
             use: "Action Bonus : lancez des d6 de la réserve (Charisme au maximum à la fois) et rendez le total en PV." },
-        { feature: 'vengeance_brulante', label: "Vengeance brûlante", inText: "Vengeance brûlante", max: once, reset: 'long',
+        { feature: 'vengeance_brulante', label: "Vengeance aveuglante", inText: "Vengeance aveuglante", max: once, reset: 'long',
             use: "Jet contre la mort : moitié des PV maximum, et 2d8 + Charisme radiants autour." }
     ],
     fiend_patron: [
         { feature: 'chance_du_tenebreux', label: "Chance du Ténébreux", inText: "Chance du Ténébreux", max: chaMin1, reset: 'long',
             use: "+1d10 à un test de caractéristique ou une sauvegarde." },
-        { feature: 'traversee_des_enfers', label: "Traversée des Enfers", inText: "Traversée des Enfers", max: once, reset: 'long',
+        { feature: 'traversee_des_enfers', label: "Traversée des enfers", inText: "Traversée des enfers", max: once, reset: 'long',
             use: "Sur une attaque qui touche : sauvegarde de Charisme ou 8d10 psychiques. Un emplacement de pacte la rend (décochez)." }
     ],
     great_old_one_patron: [
@@ -310,14 +310,14 @@ export const SUBCLASS_COUNTERS = Object.freeze({
                 darkvision: "Vision dans le noir à 36 m jusqu'au prochain repos.",
                 comprehension: "Lire toutes les langues jusqu'au prochain repos.",
                 see: "Détection de l'invisibilité sans emplacement."
-            })[c?.eye] ?? "Action Bonus : vision dans le noir 36 m, lire les langues, ou Voir l'invisible." }
+            })[c?.eye] ?? "Action Bonus : vision dans le noir 36 m, lire les langues, ou Détection de l'invisibilité." }
     ],
     evoker: [
-        { feature: 'surcharge', label: "Surcharge (sans contrepartie)", inText: "Surcharge (sans contrepartie)", max: once, reset: 'long',
+        { feature: 'surcharge', label: "Surcharge magique (sans contrepartie)", inText: "Surcharge magique (sans contrepartie)", max: once, reset: 'long',
             use: "Dégâts maximum d'un sort de niveau 1 à 5. Les fois suivantes avant le repos long : 2d12 nécrotiques par niveau, puis plus." }
     ],
     illusionist: [
-        { feature: 'double_illusoire', label: "Double illusoire", inText: "Double illusoire", max: once, reset: 'short',
+        { feature: 'double_illusoire', label: "Calque illusoire", inText: "Calque illusoire", max: once, reset: 'short',
             use: "Réaction : une attaque vous rate. Un emplacement de niveau 2+ la rend (décochez)." },
         { feature: 'creatures_fantasmagoriques', label: "Créatures fantasmagoriques", inText: "Créatures fantasmagoriques", max: () => 2, reset: 'long',
             use: "Une case par sort lancé sans emplacement (chacun une fois par repos long)." }
@@ -459,7 +459,7 @@ export function restSubclassUses(character, derived, kind) {
 
 /**
  * Le bouton Rage s'éteint (onglet Combat) : les cases « une fois par Rage » se vident
- * (Focalisation fanatique du Zélote). Rien si la Rage n'était pas allumée ou le reste.
+ * (Détermination fanatique du Zélote). Rien si la Rage n'était pas allumée ou le reste.
  * @param {Object} character - fiche avant le changement (combat_buffs actuel)
  * @param {Object} derived - deriveCharacter(character)
  * @param {Object} nextBuffs - combat_buffs après le changement

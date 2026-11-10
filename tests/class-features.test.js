@@ -155,17 +155,17 @@ describe('Défense sans armure de sous-classe (10 + Dex + Cha)', () => {
         assert.deepEqual(unarmoredDefenseOptions({ classSlug: 'bard', subclass: 'college_of_lore', level: 3, mods }), []);
     });
 
-    test('Résilience draconique : 10 + Dex + Cha, bouclier permis', () => {
+    test('Résistance draconique : 10 + Dex + Cha, bouclier permis', () => {
         const draconic = ac({ className: 'Ensorceleur', subclass: 'draconic_sorcery' });
         assert.equal(draconic.value, 15);
-        assert.equal(draconic.parts[0].label, 'Résilience draconique (Ensorceleur)');
+        assert.equal(draconic.parts[0].label, 'Résistance draconique (Ensorceleur)');
         assert.equal(draconic.parts[0].formula, '10 + 2 Dex + 3 Cha = 15');
         const withShield = ac({ className: 'Ensorceleur', subclass: 'draconic_sorcery', armors: [armor('Bouclier')] });
         assert.equal(withShield.value, 17);
         // En armure : ne compte pas, signalée si elle donnait plus
         const armored = ac({ className: 'Ensorceleur', subclass: 'draconic_sorcery', armors: [armor('Armure matelassée')] });
         assert.equal(armored.value, 13); // 11 + 2 Dex
-        assert.match(armored.notes.join(' '), /Résilience draconique \(Ensorceleur\) : 15 sans armure/);
+        assert.match(armored.notes.join(' '), /Résistance draconique \(Ensorceleur\) : 15 sans armure/);
     });
 
     test('Collège de la Danse : 10 + Dex + Cha, ni armure ni bouclier', () => {

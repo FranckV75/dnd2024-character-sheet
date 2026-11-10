@@ -51,7 +51,7 @@ describe('Données : les huit bottes du manuel', () => {
             assert.equal(mastery.page, 214);
             assert.ok(mastery.desc.length > 80, `${name} : texte trop court`);
         }
-        assert.ok(WEAPON_MASTERY_INTRO.includes('Maîtrise des armes'));
+        assert.ok(WEAPON_MASTERY_INTRO.includes("Bottes d'arme"));
     });
 
     test('distances en mètres écrits en toutes lettres (comme feats.js), jamais en pieds', () => {
@@ -297,7 +297,7 @@ describe('masteryDetails : valeurs calculées pour l\'arme', () => {
     });
 });
 
-describe('weaponMasteryFeature : capacité de classe Maîtrise des armes', () => {
+describe("weaponMasteryFeature : capacité de classe Bottes d'arme", () => {
     const count = (className, level) => weaponMasteryFeature({ char_class: className, char_level: level })?.count;
 
     test('Barbare : 2, puis 3 au niveau 4, 4 au niveau 10', () => {
@@ -332,7 +332,7 @@ describe('weaponMasteryFeature : capacité de classe Maîtrise des armes', () =>
         assert.equal(feature.tacticalMaster, null);
     });
 
-    test('Guerrier niveau 9 : Maître tacticien (Poussée, Sape ou Ralentissement)', () => {
+    test('Guerrier niveau 9 : Botte tactique (Poussée, Sape ou Ralentissement)', () => {
         assert.equal(weaponMasteryFeature({ char_class: 'Guerrier', char_level: 8 }).tacticalMaster, null);
         assert.match(weaponMasteryFeature({ char_class: 'Guerrier', char_level: 9 }).tacticalMaster.desc, /Poussée, Sape ou Ralentissement/);
     });
@@ -345,7 +345,7 @@ describe('masteryAccessNote et don Maître d\'armes', () => {
     });
 
     test('classe sans la capacité : un don peut l\'accorder', () => {
-        assert.match(masteryAccessNote({ char_class: 'Magicien', char_level: 3 }), /n'a pas la capacité Maîtrise des armes/);
+        assert.match(masteryAccessNote({ char_class: 'Magicien', char_level: 3 }), /n'a pas la capacité Bottes d'arme/);
     });
 
     test('classe non reconnue (vide, autre orthographe, multiclasse) : phrase neutre, aucune interdiction', () => {
@@ -404,6 +404,6 @@ describe('Rien n\'est modifié', () => {
         assert.equal(WEAPON_MASTERIES.sap.name, 'Sape');
         const feature = weaponMasteryFeature({ char_class: 'Guerrier', char_level: 9 });
         feature.tacticalMaster.name = 'modifié';
-        assert.equal(weaponMasteryFeature({ char_class: 'Guerrier', char_level: 9 }).tacticalMaster.name, 'Maître tacticien');
+        assert.equal(weaponMasteryFeature({ char_class: 'Guerrier', char_level: 9 }).tacticalMaster.name, 'Botte tactique');
     });
 });

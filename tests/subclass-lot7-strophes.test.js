@@ -1,7 +1,7 @@
 // =============================================================================
 // Sous-classes, lot 7 : Collège de poésie épique (strophes, rang du poème, minimum du dé
 // d'Inspiration, effets) avec le compteur des choix (kind: 'number'), et Sorcellerie sauvage
-// (tirages d20 / d100 avec hasard injecté, rappels des Marées du chaos et de la Déferlante domptée).
+// (tirages d20 / d100 avec hasard injecté, rappels de Marée du chaos et de la Bouffée domptée).
 // =============================================================================
 
 import { test, describe } from 'node:test';
@@ -280,7 +280,7 @@ describe('Sorcellerie sauvage : tirages (hasard injecté)', () => {
         assert.deepEqual(surgeCheck(3, () => face(19, 20)), { d20: 19, surge: false, table: null });
     });
 
-    test('niveau 13 : un tirage ; 14 : deux (égaux possibles) ; 18 : Déferlante domptée', () => {
+    test('niveau 13 : un tirage ; 14 : deux (égaux possibles) ; 18 : Bouffée domptée', () => {
         assert.equal(surgeTableRoll(13, () => 0.5).rolls.length, 1);
         assert.equal(surgeTableRoll(13, () => 0.5).keepOne, false);
         const two = surgeTableRoll(14, sequence(face(47, 100), face(82, 100)));
@@ -295,9 +295,9 @@ describe('Sorcellerie sauvage : tirages (hasard injecté)', () => {
     });
 
     test('textes du résultat : la ligne de la table, sans ses effets', () => {
-        assert.equal(surgeResultText(surgeCheck(3, () => face(13, 20))), 'd20 : 13 → pas de Déferlante (il faut un 20).');
-        assert.match(surgeResultText(surgeTableRoll(3, () => face(47, 100))), /^d100 : 47 → ligne 45-48 de la table de Déferlante de magie sauvage \(Wild Magic Surge, PHB 2024 p\. 150-151\)\.$/);
-        assert.match(surgeResultText(surgeCheck(3, sequence(0.9999, face(5, 100)))), /^d20 : 20 → Déferlante ! d100 : 5 → ligne 05-08/);
+        assert.equal(surgeResultText(surgeCheck(3, () => face(13, 20))), 'd20 : 13 → pas de Bouffée (il faut un 20).');
+        assert.match(surgeResultText(surgeTableRoll(3, () => face(47, 100))), /^d100 : 47 → ligne 45-48 de la table de Bouffée de Sorcellerie sauvage \(Wild Magic Surge, PHB 2024 p\. 150-151\)\.$/);
+        assert.match(surgeResultText(surgeCheck(3, sequence(0.9999, face(5, 100)))), /^d20 : 20 → Bouffée ! d100 : 5 → ligne 05-08/);
         assert.match(surgeResultText(surgeTableRoll(14, sequence(face(47, 100), face(82, 100)))),
             /d100 : 47 et 82 → lignes 45-48 ou 81-84 .*gardez celle de votre choix/);
         assert.match(surgeResultText(surgeTableRoll(14, sequence(face(45, 100), face(48, 100)))), /ligne 45-48 \(deux fois\)/);
@@ -322,32 +322,32 @@ describe('Sorcellerie sauvage : bloc des tirages, rappels et textes', () => {
         assert.equal(panel(sorcerer(14)).keepTwo, true);
     });
 
-    test('Marées du chaos cochée : Déferlante automatique en attente ; Déferlante domptée au niveau 18', () => {
+    test('Marée du chaos cochée : Bouffée automatique en attente ; Bouffée domptée au niveau 18', () => {
         const tides = { subclass_uses: { [`${WILD}.marees_du_chaos`]: 1 } };
-        assert.match(panel(sorcerer(3, tides)).reminders[0], /Déferlante automatique .*Table \(d100\).*décochez Marées du chaos/);
+        assert.match(panel(sorcerer(3, tides)).reminders[0], /Bouffée automatique .*Table \(d100\).*décochez Marée du chaos/);
         assert.equal(panel(sorcerer(17)).reminders.length, 0);
-        assert.match(panel(sorcerer(18)).reminders[0], /Déferlante domptée disponible .*sauf 97-00/);
+        assert.match(panel(sorcerer(18)).reminders[0], /Bouffée domptée disponible .*sauf 97-00/);
         assert.deepEqual(panel(sorcerer(18, { subclass_uses: { [`${WILD}.deferlante_domptee`]: 1 } })).reminders, []);
-        // La fiche ne décoche jamais Marées du chaos elle-même
+        // La fiche ne décoche jamais Marée du chaos elle-même
         const c = sorcerer(3, { ...tides, spell_slots_state: { 1: 1 } });
         assert.equal(panel(c).reminders.length, 1);
     });
 
-    test('Influence sur la chance : repère près des points de sorcellerie à partir du niveau 6', () => {
+    test('Comme par hasard : repère près des points de sorcellerie à partir du niveau 6', () => {
         assert.deepEqual(wildMagicNotes(deriveCharacter(sorcerer(5))), {});
         const notes = featEffects(sorcerer(6)).classResource;
         assert.equal(notes.length, 1);
-        assert.equal(notes[0].mention, 'Influence ±1d4');
+        assert.equal(notes[0].mention, 'Hasard ±1d4');
         assert.match(notes[0].text, /1 point de sorcellerie .*1d4/);
     });
 
-    test('« Dans la fiche » : boutons, rappels, deux tirages ; cases de Marées et de Déferlante domptée', () => {
+    test('« Dans la fiche » : boutons, rappels, deux tirages ; cases de Marée et de Bouffée domptée', () => {
         const c = sorcerer(18);
-        assert.match(auto(c, 'deferlante_de_magie_sauvage').text, /Déferlante \? \(d20\).*Table \(d100\)/);
+        assert.match(auto(c, 'deferlante_de_magie_sauvage').text, /Bouffée \? \(d20\).*Table \(d100\)/);
         assert.equal(auto(c, 'deferlante_de_magie_sauvage').partial, true);
-        assert.match(auto(c, 'marees_du_chaos').text, /rappel de la Déferlante automatique.*1 case dans l'onglet Combat, rendue au repos long/);
+        assert.match(auto(c, 'marees_du_chaos').text, /rappel de la Bouffée automatique.*1 case dans l'onglet Combat, rendue au repos long/);
         assert.match(auto(c, 'chaos_maitrise').text, /deux résultats/);
         assert.match(auto(c, 'deferlante_domptee').text, /1 case dans l'onglet Combat/);
-        assert.match(auto(c, 'influence_sur_la_chance').text, /Influence ±1d4/);
+        assert.match(auto(c, 'influence_sur_la_chance').text, /Hasard ±1d4/);
     });
 });

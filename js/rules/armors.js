@@ -113,7 +113,7 @@ export function strengthRequirement(value) {
 /**
  * Avertissements pour chaque ligne du tableau (tableau vide = rien à signaler).
  * Règles D&D 2024 :
- *  - armure légère / intermédiaire / lourde sans formation : Désavantage aux tests de d20
+ *  - armure légère / intermédiaire / lourde sans formation : Désavantage aux Tests d20
  *    impliquant la Force ou la Dextérité, et impossible de lancer des sorts ;
  *  - bouclier sans formation : pas de bonus de CA ;
  *  - armure dont la Force requise dépasse la valeur de Force : vitesse réduite de 3 m (10 ft) ;
@@ -136,7 +136,7 @@ export function armorWarnings(armors = [], training = {}, strScore = 10) {
 
         if (BODY_CATEGORIES.has(category)) {
             if (training[category] !== true) {
-                warnings.push('Armure non maîtrisée : Désavantage aux tests de d20 de Force ou de Dextérité, et impossible de lancer des sorts.');
+                warnings.push('Armure non maîtrisée : Désavantage aux Tests d20 de Force ou de Dextérité, et impossible de lancer des sorts.');
             }
             const required = strengthRequirement(armor.str);
             if (required > 0 && strScore < required) {

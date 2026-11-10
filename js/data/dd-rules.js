@@ -105,7 +105,9 @@ const DD_RULES = {
         },
         warlock: {
             name: "Warlock",
-            nameFr: "Sorcier",
+            nameFr: "Occultiste",
+            // Nom de la v3 et des anciennes sauvegardes : toujours reconnu, jamais réécrit
+            aliasesFr: ["Sorcier"],
             hitDice: "d8",
             primaryAbility: ["cha"],
             savingThrows: ["wis", "cha"],
@@ -129,14 +131,14 @@ const DD_RULES = {
     subclasses: {
         // ----- BARBARE -----
         "path_of_the_berserker": { class: "barbarian", name: "Berserker", nameFr: "Voie du Berserker", source: "PHB2024" },
-        "path_of_the_wild_heart": { class: "barbarian", name: "Wild Heart", nameFr: "Voie du Cœur Sauvage", source: "PHB2024" },
+        "path_of_the_wild_heart": { class: "barbarian", name: "Wild Heart", nameFr: "Voie du Cœur sauvage", aliasesFr: ["Voie du Cœur Sauvage"], source: "PHB2024" },
         "path_of_the_world_tree": { class: "barbarian", name: "World Tree", nameFr: "Voie de l'Arbre-Monde", source: "PHB2024" },
-        "path_of_the_zealot": { class: "barbarian", name: "Zealot", nameFr: "Voie du Zélote", source: "PHB2024" },
+        "path_of_the_zealot": { class: "barbarian", name: "Zealot", nameFr: "Voie du Zélateur", aliasesFr: ["Voie du Zélote"], source: "PHB2024" },
         "path_of_the_heretic": { class: "barbarian", name: "Heretic", nameFr: "Voie Herculéenne", source: "Odyssée" },
 
         // ----- BARDE -----
         "college_of_dance": { class: "bard", name: "College of Dance", nameFr: "Collège de la Danse", source: "PHB2024" },
-        "college_of_glamour": { class: "bard", name: "College of Glamour", nameFr: "Collège du Glamour", source: "PHB2024" },
+        "college_of_glamour": { class: "bard", name: "College of Glamour", nameFr: "Collège de la Séduction", aliasesFr: ["Collège du Glamour"], source: "PHB2024" },
         "college_of_lore": { class: "bard", name: "College of Lore", nameFr: "Collège du Savoir", source: "PHB2024" },
         "college_of_valor": { class: "bard", name: "College of Valor", nameFr: "Collège de la Vaillance", source: "PHB2024" },
         "college_of_epic_muse": { class: "bard", name: "College of the Epic Muse", nameFr: "Collège de poésie épique", source: "Odyssée" },
@@ -144,29 +146,29 @@ const DD_RULES = {
         // ----- CLERC -----
         "life_domain": { class: "cleric", name: "Life Domain", nameFr: "Domaine de la Vie", source: "PHB2024" },
         "light_domain": { class: "cleric", name: "Light Domain", nameFr: "Domaine de la Lumière", source: "PHB2024" },
-        "trickery_domain": { class: "cleric", name: "Trickery Domain", nameFr: "Domaine de la Supercherie", source: "PHB2024" },
+        "trickery_domain": { class: "cleric", name: "Trickery Domain", nameFr: "Domaine de la Ruse", aliasesFr: ["Domaine de la Supercherie"], source: "PHB2024" },
         "war_domain": { class: "cleric", name: "War Domain", nameFr: "Domaine de la Guerre", source: "PHB2024" },
         "prophecy_domain": { class: "cleric", name: "Prophecy Domain", nameFr: "Domaine de la prophétie", source: "Odyssée" },
 
         // ----- DRUIDE -----
         "circle_of_the_land": { class: "druid", name: "Circle of the Land", nameFr: "Cercle de la Terre", source: "PHB2024" },
         "circle_of_the_moon": { class: "druid", name: "Circle of the Moon", nameFr: "Cercle de la Lune", source: "PHB2024" },
-        "circle_of_the_sea": { class: "druid", name: "Circle of the Sea", nameFr: "Cercle de la Mer", source: "PHB2024" },
-        "circle_of_the_stars": { class: "druid", name: "Circle of the Stars", nameFr: "Cercle des Étoiles", source: "PHB2024" },
+        "circle_of_the_sea": { class: "druid", name: "Circle of the Sea", nameFr: "Cercle des Mers", aliasesFr: ["Cercle de la Mer"], source: "PHB2024" },
+        "circle_of_the_stars": { class: "druid", name: "Circle of the Stars", nameFr: "Cercle des Astres", aliasesFr: ["Cercle des Étoiles"], source: "PHB2024" },
         "circle_of_sacrifice": { class: "druid", name: "Circle of Sacrifice", nameFr: "Le Cercle des sacrifices", source: "Odyssée" },
 
         // ----- GUERRIER -----
-        "battle_master": { class: "fighter", name: "Battle Master", nameFr: "Maître de Guerre", source: "PHB2024" },
+        "battle_master": { class: "fighter", name: "Battle Master", nameFr: "Maître de guerre", aliasesFr: ["Maître de Guerre"], source: "PHB2024" },
         "champion": { class: "fighter", name: "Champion", nameFr: "Champion", source: "PHB2024" },
-        "eldritch_knight": { class: "fighter", name: "Eldritch Knight", nameFr: "Chevalier Occulte", source: "PHB2024" },
-        "psi_warrior": { class: "fighter", name: "Psi Warrior", nameFr: "Guerrier Psy", source: "PHB2024" },
+        "eldritch_knight": { class: "fighter", name: "Eldritch Knight", nameFr: "Chevalier occulte", aliasesFr: ["Chevalier Occulte"], source: "PHB2024" },
+        "psi_warrior": { class: "fighter", name: "Psi Warrior", nameFr: "Soldat psi", aliasesFr: ["Guerrier Psy"], source: "PHB2024" },
         "odyssean_champion": { class: "fighter", name: "Odyssean Champion", nameFr: "L'Hoplite", source: "Odyssée" },
 
         // ----- MOINE -----
-        "warrior_of_mercy": { class: "monk", name: "Warrior of Mercy", nameFr: "Guerrier de la Miséricorde", source: "PHB2024" },
-        "warrior_of_shadow": { class: "monk", name: "Warrior of Shadow", nameFr: "Guerrier de l'Ombre", source: "PHB2024" },
-        "warrior_of_the_elements": { class: "monk", name: "Warrior of the Elements", nameFr: "Guerrier des Éléments", source: "PHB2024" },
-        "warrior_of_the_open_hand": { class: "monk", name: "Warrior of the Open Hand", nameFr: "Guerrier de la Main Ouverte", source: "PHB2024" },
+        "warrior_of_mercy": { class: "monk", name: "Warrior of Mercy", nameFr: "Credo de la Miséricorde", aliasesFr: ["Guerrier de la Miséricorde"], source: "PHB2024" },
+        "warrior_of_shadow": { class: "monk", name: "Warrior of Shadow", nameFr: "Credo de l'Ombre", aliasesFr: ["Guerrier de l'Ombre"], source: "PHB2024" },
+        "warrior_of_the_elements": { class: "monk", name: "Warrior of the Elements", nameFr: "Credo des Éléments", aliasesFr: ["Guerrier des Éléments"], source: "PHB2024" },
+        "warrior_of_the_open_hand": { class: "monk", name: "Warrior of the Open Hand", nameFr: "Credo de la Paume", aliasesFr: ["Guerrier de la Main Ouverte"], source: "PHB2024" },
         "way_of_the_shield_dancer": { class: "monk", name: "Way of the Shield Dancer", nameFr: "La Voie du bouclier", source: "Odyssée" },
 
         // ----- PALADIN -----
@@ -177,31 +179,31 @@ const DD_RULES = {
         "oath_of_the_dragonlords": { class: "paladin", name: "Oath of the Dragonlords", nameFr: "Serment du Seigneur Dragon", source: "Odyssée" },
 
         // ----- RÔDEUR -----
-        "beast_master": { class: "ranger", name: "Beast Master", nameFr: "Maître des Bêtes", source: "PHB2024" },
-        "fey_wanderer": { class: "ranger", name: "Fey Wanderer", nameFr: "Errant Féerique", source: "PHB2024" },
-        "gloom_stalker": { class: "ranger", name: "Gloom Stalker", nameFr: "Traqueur d'Ombre", source: "PHB2024" },
+        "beast_master": { class: "ranger", name: "Beast Master", nameFr: "Belluaire", aliasesFr: ["Maître des Bêtes"], source: "PHB2024" },
+        "fey_wanderer": { class: "ranger", name: "Fey Wanderer", nameFr: "Vagabond féerique", aliasesFr: ["Errant Féerique"], source: "PHB2024" },
+        "gloom_stalker": { class: "ranger", name: "Gloom Stalker", nameFr: "Traqueur des ténèbres", aliasesFr: ["Traqueur d'Ombre"], source: "PHB2024" },
         "hunter": { class: "ranger", name: "Hunter", nameFr: "Chasseur", source: "PHB2024" },
         "amazon_warrior": { class: "ranger", name: "Amazon Warrior", nameFr: "Conclave des Amazones", source: "Odyssée" },
 
         // ----- ROUBLARD -----
-        "arcane_trickster": { class: "rogue", name: "Arcane Trickster", nameFr: "Escroc Arcanique", source: "PHB2024" },
+        "arcane_trickster": { class: "rogue", name: "Arcane Trickster", nameFr: "Arnaqueur arcanique", aliasesFr: ["Escroc Arcanique"], source: "PHB2024" },
         "assassin": { class: "rogue", name: "Assassin", nameFr: "Assassin", source: "PHB2024" },
-        "soulknife": { class: "rogue", name: "Soulknife", nameFr: "Lame d'Âme", source: "PHB2024" },
+        "soulknife": { class: "rogue", name: "Soulknife", nameFr: "Âme acérée", aliasesFr: ["Lame d'Âme"], source: "PHB2024" },
         "thief": { class: "rogue", name: "Thief", nameFr: "Voleur", source: "PHB2024" },
         "the_odyssean": { class: "rogue", name: "The Odyssean", nameFr: "L'Odysséen", source: "Odyssée" },
 
         // ----- ENSORCELEUR -----
-        "aberrant_sorcery": { class: "sorcerer", name: "Aberrant Sorcery", nameFr: "Sorcellerie Aberrante", source: "PHB2024" },
-        "clockwork_sorcery": { class: "sorcerer", name: "Clockwork Sorcery", nameFr: "Sorcellerie Mécanique", source: "PHB2024" },
-        "draconic_sorcery": { class: "sorcerer", name: "Draconic Sorcery", nameFr: "Sorcellerie Draconique", source: "PHB2024" },
-        "wild_magic_sorcery": { class: "sorcerer", name: "Wild Magic Sorcery", nameFr: "Sorcellerie Sauvage", source: "PHB2024" },
+        "aberrant_sorcery": { class: "sorcerer", name: "Aberrant Sorcery", nameFr: "Sorcellerie aberrante", aliasesFr: ["Sorcellerie Aberrante"], source: "PHB2024" },
+        "clockwork_sorcery": { class: "sorcerer", name: "Clockwork Sorcery", nameFr: "Sorcellerie mécanique", aliasesFr: ["Sorcellerie Mécanique"], source: "PHB2024" },
+        "draconic_sorcery": { class: "sorcerer", name: "Draconic Sorcery", nameFr: "Sorcellerie draconique", aliasesFr: ["Sorcellerie Draconique"], source: "PHB2024" },
+        "wild_magic_sorcery": { class: "sorcerer", name: "Wild Magic Sorcery", nameFr: "Sorcellerie sauvage", aliasesFr: ["Sorcellerie Sauvage"], source: "PHB2024" },
         "demigod_bloodline": { class: "sorcerer", name: "Demigod Bloodline", nameFr: "Ascendance divine", source: "Odyssée" },
 
-        // ----- SORCIER -----
-        "archfey_patron": { class: "warlock", name: "Archfey Patron", nameFr: "Patron Archifée", source: "PHB2024" },
-        "celestial_patron": { class: "warlock", name: "Celestial Patron", nameFr: "Patron Céleste", source: "PHB2024" },
-        "fiend_patron": { class: "warlock", name: "Fiend Patron", nameFr: "Patron Fiélon", source: "PHB2024" },
-        "great_old_one_patron": { class: "warlock", name: "Great Old One Patron", nameFr: "Patron Grand Ancien", source: "PHB2024" },
+        // ----- OCCULTISTE -----
+        "archfey_patron": { class: "warlock", name: "Archfey Patron", nameFr: "Protecteur Archifée", aliasesFr: ["Patron Archifée"], source: "PHB2024" },
+        "celestial_patron": { class: "warlock", name: "Celestial Patron", nameFr: "Protecteur Céleste", aliasesFr: ["Patron Céleste"], source: "PHB2024" },
+        "fiend_patron": { class: "warlock", name: "Fiend Patron", nameFr: "Protecteur Fiélon", aliasesFr: ["Patron Fiélon"], source: "PHB2024" },
+        "great_old_one_patron": { class: "warlock", name: "Great Old One Patron", nameFr: "Protecteur Grand Ancien", aliasesFr: ["Patron Grand Ancien"], source: "PHB2024" },
         "the_fates_patron": { class: "warlock", name: "The Fates", nameFr: "Serviteur des Moires", source: "Odyssée" },
 
         // ----- MAGICIEN -----
@@ -236,7 +238,7 @@ const DD_RULES = {
         dragonborn: {
             name: "Dragonborn",
             nameFr: "Drakéide",
-            size: "Medium/Small",
+            size: "Medium",
             speed: 30,
             traits: ["Draconic Ancestry", "Breath Weapon", "Damage Resistance", "Darkvision", "Draconic Flight"],
             source: "PHB2024"
@@ -244,7 +246,7 @@ const DD_RULES = {
         dwarf: {
             name: "Dwarf",
             nameFr: "Nain",
-            size: "Medium/Small",
+            size: "Medium",
             speed: 30,
             traits: ["Darkvision", "Dwarven Resilience", "Dwarven Toughness", "Stonecunning"],
             source: "PHB2024"
@@ -252,7 +254,7 @@ const DD_RULES = {
         elf: {
             name: "Elf",
             nameFr: "Elfe",
-            size: "Medium/Small",
+            size: "Medium",
             speed: 30,
             traits: ["Darkvision", "Fey Ancestry", "Keen Senses", "Trance", "Elven Lineage"],
             source: "PHB2024"
@@ -284,9 +286,9 @@ const DD_RULES = {
         orc: {
             name: "Orc",
             nameFr: "Orc",
-            size: "Medium/Small",
+            size: "Medium",
             speed: 30,
-            traits: ["Adrenaline Rush", "Darkvision", "Relentless Endurance", "Powerful Build"],
+            traits: ["Adrenaline Rush", "Darkvision", "Relentless Endurance"],
             source: "PHB2024"
         },
         tiefling: {
@@ -541,6 +543,18 @@ const DD_RULES = {
     },
 
     /**
+     * Tous les noms qui désignent une classe, une sous-classe ou une espèce : anglais, français
+     * actuel, et anciens noms français (aliasesFr : « Sorcier » pour l'Occultiste, noms de
+     * sous-classes corrigés d'après le manuel). Une fiche enregistrée sous un ancien nom est lue
+     * sans être réécrite.
+     * @param {{ name: string, nameFr: string, aliasesFr?: string[] }} entry
+     * @returns {string[]}
+     */
+    namesOf(entry) {
+        return [entry.name, entry.nameFr, ...(entry.aliasesFr ?? [])];
+    },
+
+    /**
      * Trouve une classe par son nom (FR ou EN)
      * @param {string} className - Nom de la classe
      * @returns {object|null} - Objet classe ou null
@@ -550,9 +564,7 @@ const DD_RULES = {
         const cleanName = className.toLowerCase().trim();
 
         for (const [key, classData] of Object.entries(this.classes)) {
-            if (classData.name.toLowerCase() === cleanName ||
-                classData.nameFr.toLowerCase() === cleanName ||
-                key === cleanName) {
+            if (key === cleanName || this.namesOf(classData).some((name) => name.toLowerCase() === cleanName)) {
                 return classData;
             }
         }
@@ -652,7 +664,7 @@ const DD_RULES = {
             19: [4, 3, 3, 3, 2, 0, 0, 0, 0],
             20: [4, 3, 3, 3, 2, 0, 0, 0, 0]
         },
-        // Tiers de lanceur (PHB 2024, Chevalier occulte et Escroc arcanique : même table, sorts de
+        // Tiers de lanceur (PHB 2024, Chevalier occulte et Arnaqueur arcanique : même table, sorts de
         // Magicien) ; rien avant le niveau 3, où la sous-classe arrive
         third: {
             1: [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -724,7 +736,7 @@ const DD_RULES = {
      * @param {string} className - Nom de la classe (FR, EN ou slug)
      * @param {number} level - Niveau du personnage (1-20)
      * @param {string} [subclass] - identifiant de sous-classe (deriveCharacter().subclass) : Chevalier
-     *        occulte, Escroc arcanique (tiers de lanceur, seulement avec leur classe)
+     *        occulte, Arnaqueur arcanique (tiers de lanceur, seulement avec leur classe)
      * @returns {Object} - { 1: nbSlots, 2: nbSlots, ..., 9: nbSlots } ou {} si non-lanceur
      */
     getSpellSlots(className, level, subclass = '') {
@@ -734,9 +746,7 @@ const DD_RULES = {
         let classSlug = null;
         const cleanName = className.toLowerCase().trim();
         for (const [key, cls] of Object.entries(this.classes)) {
-            if (cls.name.toLowerCase() === cleanName ||
-                cls.nameFr.toLowerCase() === cleanName ||
-                key === cleanName) {
+            if (key === cleanName || this.namesOf(cls).some((name) => name.toLowerCase() === cleanName)) {
                 classSlug = key;
                 break;
             }

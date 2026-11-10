@@ -2,7 +2,7 @@
 // WEAPON-MASTERIES.JS (règles) - Bottes d'armes : fonctions pures, sans DOM
 //  - retrouver la botte écrite dans la colonne « Botte d'arme » (clé prof d'une arme)
 //  - valeurs calculées pour une arme précise (Écorchure, Renversement, Enchaînement)
-//  - capacité de classe Maîtrise des armes : nombre de types d'armes au niveau du personnage
+//  - capacité de classe Bottes d'arme : nombre de types d'armes au niveau du personnage
 // Rien n'est jamais réécrit : ces fonctions lisent le personnage, elles ne le modifient pas.
 // =============================================================================
 
@@ -173,7 +173,7 @@ function countAtLevel(counts, level) {
 }
 
 /**
- * Capacité de classe Maîtrise des armes (Barbare, Guerrier, Paladin, Rôdeur, Roublard).
+ * Capacité de classe Bottes d'arme (Barbare, Guerrier, Paladin, Rôdeur, Roublard).
  * @param {Object} source - résultat de deriveCharacter, ou personnage au format de sauvegarde
  * @returns {{ classSlug: string, className: string, level: number, count: number, kinds: string,
  *             rest: string, page: number, desc: string, tacticalMaster: Object|null } | null}
@@ -219,7 +219,7 @@ export function masteryAccessNote(character, derived = deriveCharacter(character
     const feat = hasWeaponMasterFeat(character);
     if (feature) {
         const tactical = feature.tacticalMaster;
-        return `Votre classe (${feature.className} niveau ${feature.level}) a la capacité Maîtrise des armes : `
+        return `Votre classe (${feature.className} niveau ${feature.level}) a la capacité Bottes d'arme : `
             + `vous pouvez utiliser la botte de ${feature.count} types d'${feature.kinds}. ${feature.rest}`
             + (tactical ? ` ${tactical.name} : ${tactical.desc.charAt(0).toLowerCase()}${tactical.desc.slice(1)}` : '')
             + (feat ? ` En plus, ${featText.charAt(0).toLowerCase()}${featText.slice(1)}` : '');
@@ -228,10 +228,10 @@ export function masteryAccessNote(character, derived = deriveCharacter(character
         // Classe vide, écrite autrement que dans le manuel ou multiclasse (« Guerrier / Magicien ») :
         // la fiche ne peut ni affirmer ni refuser l'accès à la botte
         return "La fiche ne reconnaît pas votre classe : vérifiez si une capacité de classe "
-            + "(Maîtrise des armes : Barbare, Guerrier, Paladin, Rôdeur, Roublard) ou un don "
+            + "(Bottes d'arme : Barbare, Guerrier, Paladin, Rôdeur, Roublard) ou un don "
             + "(Maître d'armes) vous donne accès à cette botte."
             + (feat ? ` ${featText}` : '');
     }
     if (feat) return featText;
-    return "Votre classe n'a pas la capacité Maîtrise des armes : vous ne pouvez pas utiliser cette botte (un don, comme Maître d'armes, peut l'accorder).";
+    return "Votre classe n'a pas la capacité Bottes d'arme : vous ne pouvez pas utiliser cette botte (un don, comme Maître d'armes, peut l'accorder).";
 }

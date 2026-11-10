@@ -156,17 +156,17 @@ function usedSpellSlots(state, includes = () => true) {
 
 /**
  * Capacité qui permet de récupérer des emplacements de sorts au repos court (une fois par repos long),
- * à cocher par le joueur : Restauration arcanique (Magicien) ou Récupération naturelle
+ * à cocher par le joueur : Restauration magique (Magicien) ou Ressourcement
  * (Druide du Cercle de la Terre, niv. 6+). Niveaux cumulés ≤ moitié du niveau (arrondi supérieur),
  * aucun emplacement de niveau 6+.
  * @returns {{ name: string, maxLevels: number } | null}
  */
 function slotRecoveryFeature(character, d) {
     const maxLevels = Math.ceil(d.level / 2);
-    if (d.classSlug === 'wizard') return { name: 'Restauration arcanique', maxLevels };
+    if (d.classSlug === 'wizard') return { name: 'Restauration magique', maxLevels };
     const subclass = String(character.char_subclass ?? '').replace(/<[^>]*>/g, '').toLowerCase();
     if (d.classSlug === 'druid' && d.level >= 6 && /terre|land/.test(subclass)) {
-        return { name: 'Récupération naturelle', maxLevels };
+        return { name: 'Ressourcement', maxLevels };
     }
     return null;
 }
@@ -233,8 +233,8 @@ export function planShortRest(character, { diceSpent = 0, healing = 0, sorcerous
     const subclassChoices = restSubclassChoices(character, d, 'short');
     Object.assign(patch, subclassChoices.patch);
 
-    // --- Magie de pacte (Sorcier) : seuls les emplacements de pacte reviennent ---
-    // Les niveaux de pacte sont ceux que donne la table du Sorcier (niveau 1 à 5) ; un
+    // --- Magie de pacte (Occultiste) : seuls les emplacements de pacte reviennent ---
+    // Les niveaux de pacte sont ceux que donne la table de l'Occultiste (niveau 1 à 5) ; un
     // emplacement ajouté à la main sur un autre niveau (Arcanum mystique niv. 6-9,
     // multiclasse…) ne revient qu'au repos long.
     let pactSlotsRestored = 0;
@@ -319,7 +319,7 @@ export function planLongRest(character) {
 
     // Dons à usages limités : tous reviennent (Chanceux, Tueur de mages, Rituel rapide), puis les
     // lancers gratuits des sorts de dons (lus sur la fiche déjà mise à jour : même clé feat_uses)
-    // Cases des capacités de sous-classe (Guerrier des dieux du Zélote…) : toutes reviennent aussi
+    // Cases des capacités de sous-classe (Soldat des dieux du Zélote…) : toutes reviennent aussi
     const counters = restFeatUses(character, d, 'long');
     const spellUses = restFeatSpellUses({ ...character, ...counters.patch }, d);
     const subclassUses = restSubclassUses(character, d, 'long');

@@ -3,12 +3,12 @@
 // fonctions pures, sans DOM.
 //
 //  - dégâts des boutons de sous-classe du tableau des armes (clés de combat_buffs ouvertes par
-//    SUBCLASS_BUFFS, js/rules/weapons.js) : Frénésie, Frappe effroyable, Frappes redoutables,
-//    Tueur de colosses, dé de supériorité, Frappe psionique ;
+//    SUBCLASS_BUFFS, js/rules/weapons.js) : Frénésie, Frappe effroyable, Frappes effroyables,
+//    Goût du sang, dé de supériorité, Frappe psionique ;
 //  - dés des ressources : dé de supériorité, dés d'énergie psionique ;
-//  - rappels sous les armes (Racines percutantes, Maître de la lance) ;
+//  - rappels sous les armes (Rossée de racines, Maître de la lance) ;
 //  - Résistances et immunités données par la sous-classe : repères près de la CA (zone armorClass
-//    de featEffects), avec la condition quand elle existe (Rage, Forme étoilée…).
+//    de featEffects), avec la condition quand elle existe (Rage, Forme stellaire…).
 // Règles du Player's Handbook 2024 anglais (chapitre des classes) ; Odyssée des Seigneurs Dragons
 // pour la Voie herculéenne, la Guerrière amazone et L'Hoplite.
 // Règle validée par Franck : une valeur saisie à la main n'est jamais modifiée.
@@ -89,7 +89,7 @@ export function maneuverNumbers(maneuver, derived) {
 }
 
 /**
- * Dés d'énergie psionique (Guerrier psionique et Lame d'âme, même table du PHB 2024) :
+ * Dés d'énergie psionique (Guerrier psionique et Âme acérée, même table du PHB 2024) :
  * niveau 3 : 4 d6 ; 5 : 6 d8 ; 9 : 8 d8 ; 11 : 8 d10 ; 13 : 10 d10 ; 17 : 12 d12.
  * @param {number} level - niveau de Guerrier ou de Roublard
  * @returns {{ count: number, die: string }}
@@ -105,9 +105,9 @@ export function psionicDice(level) {
 
 /** Frénésie : autant de d6 que le bonus de dégâts de Rage */
 export const frenzyDice = (level) => `${getRageBonus(level)}d6`;
-/** Frappe effroyable du Traqueur d'ombre : 2d6, 2d8 au niveau 11 (Déluge du traqueur) */
+/** Frappe effroyable du Traqueur d'ombre : 2d6, 2d8 au niveau 11 (Rafale du traqueur) */
 export const dreadfulStrikeDice = (level) => (level >= 11 ? '2d8' : '2d6');
-/** Frappes redoutables de l'Errant féerique : 1d4, 1d6 au niveau 11 */
+/** Frappes effroyables de l'Errant féerique : 1d4, 1d6 au niveau 11 */
 export const feyStrikesDie = (level) => (level >= 11 ? '1d6' : '1d4');
 
 /**
@@ -123,7 +123,7 @@ export function subclassBuffDamage(weapon, stats, buffs = {}, stat = '') {
     const out = [];
     const level = levelOf(stats);
     const realWeapon = !isUnarmedStrike(weapon);
-    // Frénésie (Berserker) : Attaque téméraire pendant la Rage, attaque de Force, premier coup du tour
+    // Frénésie (Berserker) : Témérité pendant la Rage, attaque de Force, premier coup du tour
     if (buffs.frenzy && buffs.rage && stat === 'FOR' && has(stats, 'path_of_the_berserker')) {
         out.push({ die: frenzyDice(level), type: 'Frénésie 1/tour' });
     }
@@ -134,7 +134,7 @@ export function subclassBuffDamage(weapon, stats, buffs = {}, stat = '') {
         out.push({ die: dreadfulStrikeDice(level), type: 'Psychique 1/tour' });
     }
     if (buffs.feyStrikes && has(stats, 'fey_wanderer')) out.push({ die: feyStrikesDie(level), type: 'Psychique' });
-    if (buffs.colossusSlayer && has(stats, 'hunter')) out.push({ die: '1d8', type: 'Tueur de colosses 1/tour' });
+    if (buffs.colossusSlayer && has(stats, 'hunter')) out.push({ die: '1d8', type: 'Goût du sang 1/tour' });
     if (buffs.psionicStrike && has(stats, 'psi_warrior')) {
         const int = mod(stats, 'int');
         out.push({ die: `1${psionicDice(level).die}${int ? signed(int) : ''}`, type: 'Force 1/tour' });
@@ -142,7 +142,7 @@ export function subclassBuffDamage(weapon, stats, buffs = {}, stat = '') {
     return out;
 }
 
-/** Arme de corps à corps Lourde ou Polyvalente (Racines percutantes) */
+/** Arme de corps à corps Lourde ou Polyvalente (Rossée de racines) */
 function heavyOrVersatile(weapon) {
     const props = String(weapon?.prop ?? '').toLowerCase().split(/[,;]/).map(p => p.trim());
     return props.some(p => p.startsWith('lourde') || p.startsWith('polyvalente'));
@@ -176,7 +176,7 @@ export function subclassCombatWeaponNotes(weapon, derived) {
             + (withAttack.length ? ` Connues : ${withAttack.join(', ')}.` : ''));
     }
     if (has(derived, 'path_of_the_world_tree', 10) && weaponReach(weapon).melee && !isUnarmedStrike(weapon) && heavyOrVersatile(weapon)) {
-        add('racines_percutantes', 'Racines percutantes', 'À votre tour : allonge +3 m, et Poussée ou Renversement en plus de la botte de l\'arme.');
+        add('racines_percutantes', 'Rossée de racines', 'À votre tour : allonge +3 m, et Poussée ou Renversement en plus de la botte de l\'arme.');
     }
     if (has(derived, 'odyssean_champion', 7) && isSpear(weapon)) {
         add('maitre_de_la_lance', 'Maître de la lance', 'Dé de dégâts d8 (d10 à deux mains) et allonge 3 m : à régler dans la configuration de l\'arme. Action Bonus après l\'attaque : talon de l\'arme, 1d4 contondants.');
@@ -192,11 +192,11 @@ export function subclassCombatWeaponNotes(weapon, derived) {
  * Sans condition, la Résistance est permanente (ou dépend d'un choix noté dans le texte).
  */
 export const SUBCLASS_DEFENSES = Object.freeze([
-    ['war_domain', 17, 'avatar_de_bataille', 'Avatar de bataille', 'Résistance C/P/T',
+    ['war_domain', 17, 'avatar_de_bataille', 'Avatar de la bataille', 'Résistance C/P/T',
         'Résistance aux dégâts contondants, perforants et tranchants.'],
-    ['circle_of_the_land', 10, 'protection_de_la_nature', 'Protection de la nature', 'Résistance (terre)',
+    ['circle_of_the_land', 10, 'protection_de_la_nature', 'Protégé de dame Nature', 'Résistance (terre)',
         'Immunité à l\'état Empoisonné ; Résistance selon la terre : aride feu, polaire froid, tempérée foudre, tropicale poison.'],
-    ['psi_warrior', 10, 'esprit_protege', 'Esprit protégé', 'Résistance psychique',
+    ['psi_warrior', 10, 'esprit_protege', 'Esprit blindé', 'Résistance psychique',
         'Résistance aux dégâts psychiques. Charmé ou Effrayé au début du tour : un dé psionique y met fin.'],
     ['aberrant_sorcery', 6, 'defenses_psychiques', 'Défenses psychiques', 'Résistance psychique',
         'Résistance aux dégâts psychiques ; Avantage aux sauvegardes contre les états Charmé et Effrayé.'],
@@ -206,23 +206,23 @@ export const SUBCLASS_DEFENSES = Object.freeze([
         'Avantage aux sauvegardes contre les sorts et Résistance aux dégâts des sorts.'],
     ['oath_of_the_ancients', 7, 'aura_de_garde', 'Aura de garde', 'Résistance (aura)',
         'Vous et vos alliés dans votre Aura de protection : Résistance aux dégâts nécrotiques, psychiques et radiants.'],
-    ['fiend_patron', 10, 'resilience_fielonne', 'Résilience fiélonne', 'Résistance au choix',
+    ['fiend_patron', 10, 'resilience_fielonne', 'Résistance fiélonne', 'Résistance au choix',
         'Résistance à un type de dégâts (sauf force) choisi à la fin de chaque repos court ou long.'],
-    ['celestial_patron', 6, 'ame_radieuse', 'Âme radieuse', 'Résistance radiante',
+    ['celestial_patron', 6, 'ame_radieuse', 'Âme radiante', 'Résistance radiante',
         'Résistance aux dégâts radiants.'],
     ['draconic_sorcery', 6, 'affinite_elementaire', 'Affinité élémentaire', 'Résistance (affinité)',
         'Résistance au type choisi avec Affinité élémentaire : acide, froid, feu, foudre ou poison.'],
-    ['path_of_the_wild_heart', 3, 'rage_sauvage', 'Rage sauvage (Ours)', 'Ours (Rage)',
+    ['path_of_the_wild_heart', 3, 'rage_sauvage', 'Rage du prédateur (Ours)', 'Ours (Rage)',
         'Si vous choisissez l\'Ours en entrant en Rage : Résistance à tous les dégâts sauf force, nécrotiques, psychiques et radiants.', 'rage',
         { key: 'rage', value: 'bear' }],
     ['path_of_the_heretic', 10, 'rage_d_hercule', 'Rage d\'Hercule', 'Immunité poison (Rage)',
         'Pendant la Rage : immunité aux dégâts de poison et à l\'état Effrayé.', 'rage'],
     ['path_of_the_berserker', 6, 'rage_aveugle', 'Rage aveugle', 'Charme et peur (Rage)',
         'Pendant la Rage : immunité aux états Charmé et Effrayé.', 'rage'],
-    ['circle_of_the_stars', 14, 'plein_d_etoiles', 'Plein d\'étoiles', 'Résistance C/P/T (forme)',
-        'En Forme étoilée : Résistance aux dégâts contondants, perforants et tranchants.', { choice: 'starry_form' }],
-    ['circle_of_the_sea', 10, 'ne_de_la_tempete', 'Né de la tempête', 'Résistance (Colère)',
-        'Tant que la Colère de la mer est active : Résistance aux dégâts de froid, de foudre et de tonnerre, et vol.'],
+    ['circle_of_the_stars', 14, 'plein_d_etoiles', 'Plénitude stellaire', 'Résistance C/P/T (forme)',
+        'En Forme stellaire : Résistance aux dégâts contondants, perforants et tranchants.', { choice: 'starry_form' }],
+    ['circle_of_the_sea', 10, 'ne_de_la_tempete', 'Enfant de la tempête', 'Résistance (Courroux)',
+        'Tant que le Courroux des mers est actif : Résistance aux dégâts de froid, de foudre et de tonnerre, et vol.'],
     ['amazon_warrior', 3, 'cri_de_guerre', 'Cri de guerre', 'Résistance C/P/T (Cri)',
         'Pendant le Cri de guerre : Résistance aux dégâts contondants, perforants et tranchants.'],
     ['warrior_of_the_elements', 17, 'incarnation_elementaire', 'Incarnation élémentaire', 'Résistance (Harmonisation)',
@@ -233,8 +233,8 @@ export const SUBCLASS_DEFENSES = Object.freeze([
 const resistanceTo = (id) => DAMAGE_TYPES.find(([type]) => type === id)?.[2] ?? '';
 
 /**
- * Résistance dont le type dépend d'un choix de sous-classe (lot 7) : Protection de la nature (terre
- * du Cercle de la Terre), Affinité élémentaire, Résilience fiélonne.
+ * Résistance dont le type dépend d'un choix de sous-classe (lot 7) : Protégé de dame Nature (terre
+ * du Cercle de la Terre), Affinité élémentaire, Résistance fiélonne.
  * @param {string} subclass
  * @param {Object<string, string>} choice - derived.subclassChoices (choix déjà validés)
  * @returns {{ featId: string, mention: string, text: string } | null} null sans choix : la ligne
@@ -272,7 +272,7 @@ const conditionMet = (buff, derived, record) => (typeof buff === 'string'
 
 /**
  * Repères de Résistance près de la CA (zone armorClass). Une défense liée à la Rage est grisée
- * (inactive) tant que le bouton Rage est éteint ; Plein d'étoiles, tant que « En Forme étoilée »
+ * (inactive) tant que le bouton Rage est éteint ; Plénitude stellaire, tant que « En Forme stellaire »
  * n'est pas cochée (bloc Sous-classe). Un type de dégâts choisi (choiceDefense) remplace
  * la mention et le texte génériques de la ligne.
  * @param {Object} derived - deriveCharacter()

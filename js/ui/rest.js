@@ -65,7 +65,7 @@ function recoveryLines(summary, done) {
     return lines;
 }
 
-/** Rappel pour les capacités à appliquer soi-même (Restauration arcanique, Récupération naturelle) */
+/** Rappel pour les capacités à appliquer soi-même (Restauration magique, Ressourcement) */
 function slotRecoveryHint(summary) {
     const r = summary.slotRecovery;
     return r

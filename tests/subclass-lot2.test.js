@@ -56,10 +56,10 @@ describe('Voie du Zélote (Korgul)', () => {
         assert.deepEqual(counters(korgul()).map(c => [c.feature, c.max, c.reset]), [['guerrier_des_dieux', 4, 'long']]);
         const at = (level) => counters(korgul({ char_level: String(level) })).find(c => c.feature === 'guerrier_des_dieux').max;
         assert.deepEqual([3, 5, 6, 11, 12, 16, 17, 20].map(at), [4, 4, 5, 5, 6, 6, 7, 7]);
-        assert.equal(counters(korgul())[0].featName, 'Voie du Zélote');
+        assert.equal(counters(korgul())[0].featName, 'Voie du Zélateur');
     });
 
-    test('niveaux 6, 10 et 14 : Focalisation fanatique (Rage), Présence zélée et Rage des dieux (repos long)', () => {
+    test('niveaux 6, 10 et 14 : Détermination fanatique (Rage), Présence zélée et Rage des dieux (repos long)', () => {
         assert.deepEqual(counters(korgul({ char_level: '14' })).map(c => [c.feature, c.max, c.reset]), [
             ['guerrier_des_dieux', 6, 'long'],
             ['focalisation_fanatique', 1, 'rage'],
@@ -92,7 +92,7 @@ describe('Voie du Zélote (Korgul)', () => {
         assert.equal(JSON.stringify(c), before);
     });
 
-    test('fin de la Rage : seule la Focalisation fanatique revient', () => {
+    test('fin de la Rage : seule la Détermination fanatique revient', () => {
         const c = korgul({
             char_level: '10', combat_buffs: { rage: true },
             subclass_uses: { [key('guerrier_des_dieux')]: 2, [key('focalisation_fanatique')]: 1, [key('presence_zelee')]: 1 }
@@ -116,13 +116,13 @@ describe('Voie du Zélote (Korgul)', () => {
         assert.deepEqual(short.patch.subclass_uses, {
             [key('guerrier_des_dieux')]: 2, [key('focalisation_fanatique')]: 0, [key('presence_zelee')]: 1
         });
-        assert.deepEqual(short.summary.featUsesRestored.map(r => [r.label, r.featName]), [['Focalisation fanatique', 'Voie du Zélote']]);
+        assert.deepEqual(short.summary.featUsesRestored.map(r => [r.label, r.featName]), [['Détermination fanatique', 'Voie du Zélateur']]);
         const long = planLongRest(c);
         assert.deepEqual(long.patch.subclass_uses, {
             [key('guerrier_des_dieux')]: 0, [key('focalisation_fanatique')]: 0, [key('presence_zelee')]: 0
         });
         assert.deepEqual(long.summary.featUsesRestored.map(r => [r.inText, r.count]),
-            [['dés de Guerrier des dieux', 2], ['Focalisation fanatique', 1], ['Présence zélée', 1]]);
+            [['dés de Soldat des dieux', 2], ['Détermination fanatique', 1], ['Présence zélée', 1]]);
         // Rien de coché : la clé n'est pas ajoutée aux anciennes fiches
         assert.equal(planLongRest(korgul()).patch.subclass_uses, undefined);
         assert.equal(planShortRest(korgul()).patch.subclass_uses, undefined);
@@ -143,7 +143,7 @@ describe('Voie du Zélote (Korgul)', () => {
         assert.match(bowText, /Fureur divine/);
     });
 
-    test('bloc Sous-classe : Fureur divine et Guerrier des dieux « Calculé », avec le bon chiffre', () => {
+    test('bloc Sous-classe : Fureur divine et Soldat des dieux « Calculé », avec le bon chiffre', () => {
         const { reached } = subclassFeatures(deriveCharacter(korgul()));
         assert.deepEqual(reached.map(automationKind), ['calc', 'calc']);
         assert.match(reached[0].automation.text, /\+1d6\+2 \(Fureur divine\)/);
@@ -181,17 +181,27 @@ describe('Serments du Paladin (Iria)', () => {
         assert.equal(reached.some(s => 'listed' in s), false);
     });
 
+    test('repère « Aussi dans votre liste » : nom du livre français ou ancien nom de la base (aka)', () => {
+        const { reached } = subclassSpells(deriveCharacter(iria({ char_subclass: 'Serment de Gloire', char_level: '17' })));
+        const yolane = reached.find(s => s.vo === "Yolande's Regal Presence");
+        assert.equal(yolane.name, 'Présence royale de Yolane');
+        assert.deepEqual(yolane.aka, ['Présence royale de Yolande']);
+        // Grimoire rempli avant le changement de nom (premier nom de data/spells.json)
+        assert.equal(markListedSpells([yolane], [{ name: 'Présence royale de Yolande' }])[0].listed, true);
+        assert.equal(markListedSpells([yolane], [{ name: 'Présence royale de Yolane' }])[0].listed, true);
+    });
+
     test('chaque sort de serment existe dans la base de sorts, au bon niveau et avec le même nom', () => {
         const db = JSON.parse(readFileSync(new URL('../data/spells.json', import.meta.url), 'utf8'));
         const list = Array.isArray(db) ? db : db.spells;
         for (const [subclass, rows] of Object.entries(SUBCLASS_SPELLS).filter(([key]) => key.startsWith('oath_'))) {
             assert.ok(DD_RULES.subclasses[subclass]?.class === 'paladin', subclass);
             assert.equal(rows.length, 10, subclass);
-            for (const [classLevel, vo, name, level, flag] of rows) {
+            for (const [classLevel, vo, name, level, flag, options] of rows) {
                 assert.ok([3, 5, 9, 13, 17].includes(classLevel), `${subclass} ${vo}`);
                 const entry = list.find(s => s.vo === vo);
                 assert.ok(entry, `${vo} absent de data/spells.json`);
-                assert.equal(entry.name.split('|')[0], name, vo);
+                assert.ok([name, ...(options?.aka ?? [])].includes(entry.name.split('|')[0]), vo);
                 assert.equal(entry.level, level, vo);
                 assert.equal(entry.ritual === true, flag === 'R', `${vo} : rituel`);
                 // Un sort de Paladin ne dépasse pas le niveau 5 ; niveau de classe 3/5/9/13/17 → sort 1 à 5
@@ -208,7 +218,7 @@ describe('Serments du Paladin (Iria)', () => {
         assert.match(dragon.find(f => f.id === 'mepris_des_laches').automation.text, /Charisme DD 16 /);
     });
 
-    test('Arme sacrée : Charisme, minimum +1 ; Châtiment inspirant : 2d8 + niveau', () => {
+    test('Arme sacrée : Charisme, minimum +1 ; Châtiment d’exaltation : 2d8 + niveau', () => {
         const devotion = (cha) => subclassFeatures(deriveCharacter(iria({ char_subclass: 'Serment de Dévotion', cha_score: cha }))).reached
             .find(f => f.id === 'arme_sacree').automation.text;
         assert.match(devotion('16'), /: \+3 /);

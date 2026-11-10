@@ -85,7 +85,7 @@ describe('États : rappel des effets', () => {
         assert.deepEqual(conditionReminders({ fatigue_level: 0 }), []);
         const [exhaustion] = conditionReminders({ fatigue_level: 3 });
         assert.equal(exhaustion.level, 3);
-        assert.match(exhaustion.effects[0], /Niveau 3 : -6 aux tests de d20 et -4,5 m/);
+        assert.match(exhaustion.effects[0], /Niveau 3 : -6 aux Tests d20 et -4,5 m/);
         assert.match(conditionReminders({ fatigue_level: '6' })[0].effects[0], /mort/);
     });
 });

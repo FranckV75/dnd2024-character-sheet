@@ -6,7 +6,7 @@
 // Sous-classe (onglet Aptitudes & Traits) : MANUAL_AUTOMATION de js/rules/subclass-features.js.
 // La forme en cours est une case à cocher du même bloc (choix « wild_shape » ou « starry_form » de
 // subclass_choices, js/data/subclass-choices.js) : elle allume les repères près de la CA, de la
-// sauvegarde de Constitution et de la Vitesse (formNotes), et Plein d'étoiles (SUBCLASS_DEFENSES).
+// sauvegarde de Constitution et de la Vitesse (formNotes), et Plénitude stellaire (SUBCLASS_DEFENSES).
 // La fiche ne coche aucune case de Forme sauvage et n'écrit pas les PV temporaires : elle affiche
 // les chiffres, le joueur les reporte.
 //
@@ -17,12 +17,12 @@
 //    niveaux 2 / 6 / 17 (getClassResourceInfo, js/rules/logic.js) ;
 //  - Cercle de la Lune (p. 86-87) : Formes du cercle (niveau 3 : FP max = niveau ÷ 3 arrondi
 //    inférieur, CA 13 + Sagesse si plus que celle de la bête, PV temporaires = 3 × niveau) ; sorts du
-//    cercle lançables en forme ; Formes du cercle améliorées (niveau 6 : dégâts radiants au choix,
-//    Sagesse ajoutée aux sauvegardes de Constitution) ; Pas de lune (10) ; Forme lunaire (14 : +2d10
-//    radiants une fois par tour, Pas de lune partagé) ;
-//  - Cercle des Étoiles (p. 88-89) : Forme étoilée (niveau 3, 10 minutes, constellation Archer,
+//    cercle lançables en forme ; Formes du cercle améliorés (niveau 6 : dégâts radiants au choix,
+//    Sagesse ajoutée aux sauvegardes de Constitution) ; Foulée sélène (10) ; Forme lunaire (14 : +2d10
+//    radiants une fois par tour, Foulée sélène partagée) ;
+//  - Cercle des Étoiles (p. 88-89) : Forme stellaire (niveau 3, 10 minutes, constellation Archer,
 //    Calice ou Dragon) ; Constellations scintillantes (10 : 2d8, vol 6 m du Dragon, changement à chaque
-//    tour) ; Plein d'étoiles (14 : Résistance C/P/T en forme).
+//    tour) ; Plénitude stellaire (14 : Résistance C/P/T en forme).
 // =============================================================================
 
 import { CONSTELLATIONS } from '../data/subclass-choices.js';
@@ -135,15 +135,15 @@ export function moonFormLines(derived) {
             : 'Sauvegarde de Constitution en forme : la Sagesse s\'y ajoute, rien à ajouter tant qu\'elle n\'est pas positive.');
         lines.push('Chaque attaque de la forme peut infliger des dégâts radiants au lieu de son type (au choix à chaque coup).');
     }
-    if (level >= 10) lines.push(`Pas de lune : ${Math.max(1, wis)} case${Math.max(1, wis) > 1 ? 's' : ''} dans l'onglet Combat (téléportation de 9 m).`);
+    if (level >= 10) lines.push(`Foulée sélène : ${Math.max(1, wis)} case${Math.max(1, wis) > 1 ? 's' : ''} dans l'onglet Combat (téléportation de 9 m).`);
     if (level >= 14) {
-        lines.push('Forme lunaire : +2d10 dégâts radiants une fois par tour sur une cible touchée par une attaque de la forme ; Pas de lune peut emmener une créature consentante à 3 m.');
+        lines.push('Forme lunaire : +2d10 dégâts radiants une fois par tour sur une cible touchée par une attaque de la forme ; Foulée sélène peut emmener une créature consentante à 3 m.');
     }
     return lines;
 }
 
 /**
- * Carte de la Forme étoilée du Cercle des Étoiles : lignes chiffrées, constellation choisie d'abord.
+ * Carte de la Forme stellaire du Cercle des Étoiles : lignes chiffrées, constellation choisie d'abord.
  * @param {Object} derived - deriveCharacter()
  * @returns {string[]} [] si le personnage n'est pas un druide des Étoiles de niveau 3+
  */
@@ -159,14 +159,14 @@ export function starryFormLines(derived) {
             ? 'Au début de chacun de vos tours en forme, vous pouvez changer de constellation.'
             : 'Avant le niveau 10, la constellation reste la même jusqu\'à la fin de la forme.'
     ];
-    if (level >= 14) lines.push('Plein d\'étoiles : Résistance aux dégâts contondants, perforants et tranchants pendant la forme.');
+    if (level >= 14) lines.push('Plénitude stellaire : Résistance aux dégâts contondants, perforants et tranchants pendant la forme.');
     return lines;
 }
 
 /**
  * Repères près des valeurs pendant la forme (format FeatNote de feat-effects.js, classFeature: true),
- * fusionnés par classFeatureNotes (class-features.js). Rien quand la forme n'est pas cochée (Plein
- * d'étoiles, grisé hors forme, est dans SUBCLASS_DEFENSES).
+ * fusionnés par classFeatureNotes (class-features.js). Rien quand la forme n'est pas cochée (Plénitude
+ * stellaire, grisée hors forme, est dans SUBCLASS_DEFENSES).
  * @param {Object} derived - deriveCharacter() (subclassChoices)
  * @returns {Object<string, Object[]>}
  */
@@ -183,16 +183,16 @@ export function formNotes(derived = {}) {
             `En Forme sauvage : CA ${moon.ac} (13 + Sagesse) si celle de la bête est plus basse. La CA affichée reste celle du druide.`,
             { mention: `Forme : CA ${moon.ac}` });
         if (level >= 6 && wis > 0) {
-            add('saves.con', 'formes_du_cercle_ameliorees', 'Formes du cercle améliorées',
+            add('saves.con', 'formes_du_cercle_ameliorees', 'Formes du cercle améliorés',
                 `En Forme sauvage : ${signed(wis)} (Sagesse) à ajouter à la sauvegarde de Constitution de la bête ; le nombre affiché est celui du druide.`);
         }
     }
     if (inStarryForm(derived) && chosenConstellation(derived) === 'dragon') {
-        add('saves.con', 'forme_etoilee', 'Forme étoilée (Dragon)',
+        add('saves.con', 'forme_etoilee', 'Forme stellaire (Dragon)',
             'Sauvegarde pour maintenir la Concentration : un 9 ou moins au d20 compte comme un 10.');
         if (level >= 10) {
             add('speed', 'constellations_scintillantes', 'Constellations scintillantes (Dragon)',
-                'En Forme étoilée : vitesse de vol de 6 m, vol stationnaire.', { mention: 'Vol 6\u00a0m' });
+                'En Forme stellaire : vitesse de vol de 6 m, vol stationnaire.', { mention: 'Vol 6\u00a0m' });
         }
     }
     return zones;

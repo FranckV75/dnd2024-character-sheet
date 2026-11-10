@@ -151,9 +151,9 @@ describe('Frappe à mains nues (PHB 2024 p. 377)', () => {
 describe('Dons d\'armes (lot 7)', () => {
     test('Tireur d\'élite : armes à distance et armes lancées, pas le corps à corps', () => {
         const c = hero({ feat_4: 'tireur_d_elite' });
-        assert.match(notesOf(weapon('Arc long'), c).find(n => n.featId === 'tireur_d_elite').text, /^Ignore les abris/);
+        assert.match(notesOf(weapon('Arc long'), c).find(n => n.featId === 'tireur_d_elite').text, /^Ignore les Abris/);
         // Arme de corps à corps lancée : seul le contournement d'abri vaut (pas la longue portée ni le contact)
-        assert.equal(notesOf(weapon('Dague'), c).find(n => n.featId === 'tireur_d_elite').text, 'Lancée, elle ignore les abris 1/2 et 3/4.');
+        assert.equal(notesOf(weapon('Dague'), c).find(n => n.featId === 'tireur_d_elite').text, 'Lancée, elle ignore les Abris partiels et supérieurs.');
         assert.ok(!notesOf(weapon('Épée longue'), c).some(n => n.featId === 'tireur_d_elite'));
         assert.ok(!notesOf(unarmed(), c).some(n => n.featId === 'tireur_d_elite'));
     });

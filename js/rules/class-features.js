@@ -3,8 +3,8 @@
 // calculé par la fiche (fonctions pures, sans DOM)
 //  - Aura de protection (Paladin niveau 6) : + mod. de Charisme (minimum +1) aux sauvegardes ;
 //  - Touche-à-tout (Barde niveau 2) : + moitié du bonus de maîtrise aux compétences non maîtrisées ;
-//  - Défense sans armure de sous-classe : Résilience draconique (Ensorceleur, Sorcellerie
-//    draconique, niveau 3) et Jeu de jambes éblouissant (Barde, Collège de la Danse, niveau 3) ;
+//  - Défense sans armure de sous-classe : Résistance draconique (Ensorceleur, Sorcellerie
+//    draconique, niveau 3) et Pirouettes éblouissantes (Barde, Collège de la Danse, niveau 3) ;
 //  - maîtrise des armes : bonus de maîtrise à l'attaque seulement avec une arme maîtrisée.
 // Textes vérifiés dans le Player's Handbook 2024 anglais (pages citées).
 // Règle validée par Franck : une valeur saisie à la main n'est jamais modifiée ; ces capacités ne
@@ -63,7 +63,7 @@ export function subclassId(text, classSlug = '') {
     if (!clean) return '';
     const fits = (sub) => !classSlug || sub.class === classSlug;
     for (const [slug, sub] of Object.entries(DD_RULES.subclasses)) {
-        if (fits(sub) && [slug.replace(/_/g, ' '), sub.name, sub.nameFr].some(name => fold(name) === clean.replace(/_/g, ' '))) return slug;
+        if (fits(sub) && [slug.replace(/_/g, ' '), ...DD_RULES.namesOf(sub)].some(name => fold(name) === clean.replace(/_/g, ' '))) return slug;
     }
     for (const [slug, rule] of Object.entries(SUBCLASS_KEYWORDS)) {
         if ((!classSlug || rule.class === classSlug) && rule.pattern.test(clean)) return slug;
@@ -118,9 +118,9 @@ export function shieldKeepsMartialArts({ classSlug, subclass = '', level = 1 }) 
  * Formules de CA « sans armure » de la classe et de la sous-classe :
  *  - Barbare (p. 51) : 10 + Dex + Con, bouclier permis ;
  *  - Moine (p. 102) : 10 + Dex + Sag, ni armure ni bouclier ;
- *  - Ensorceleur, Sorcellerie draconique niveau 3, Résilience draconique (« Draconic Resilience ») :
+ *  - Ensorceleur, Sorcellerie draconique niveau 3, Résistance draconique (« Draconic Resilience ») :
  *    10 + Dex + Cha sans armure, bouclier permis ;
- *  - Barde, Collège de la Danse niveau 3, Jeu de jambes éblouissant (« Dazzling Footwork ») :
+ *  - Barde, Collège de la Danse niveau 3, Pirouettes éblouissantes (« Dazzling Footwork ») :
  *    10 + Dex + Cha sans armure ni bouclier ;
  *  - Moine, La Voie du bouclier (Odyssée, guide du joueur p. 46) niveau 3 : le bouclier n'empêche pas
  *    la Défense sans armure (shieldKeepsMartialArts).
@@ -137,7 +137,7 @@ export function unarmoredDefenseOptions({ classSlug, subclass = '', level = 1, m
         list.push(option('Défense sans armure (Moine)', 'Sag', Number(mods?.wis) || 0, shieldKeepsMartialArts({ classSlug, subclass, level })));
     }
     if (classSlug === 'sorcerer' && subclass === 'draconic_sorcery' && level >= 3) {
-        list.push(option('Résilience draconique (Ensorceleur)', 'Cha', Number(mods?.cha) || 0, true));
+        list.push(option('Résistance draconique (Ensorceleur)', 'Cha', Number(mods?.cha) || 0, true));
     }
     if (classSlug === 'bard' && subclass === 'college_of_dance' && level >= 3) {
         list.push(option('Défense sans armure (Collège de la Danse)', 'Cha', Number(mods?.cha) || 0, false));
@@ -197,8 +197,8 @@ export function subclassFinesse(weapon, { classSlug, subclass, level }) {
 /** Classes dont un choix que la fiche n'enregistre pas peut donner les armes de guerre */
 const CHOICE_MARTIAL = {
     cleric: "le Clerc maîtrise les armes de guerre s'il a choisi l'Ordre divin Protecteur",
-    druid: "le Druide maîtrise les armes de guerre s'il a choisi l'Ordre primordial Gardien",
-    warlock: "le Sorcier maîtrise l'arme de son Pacte de la lame"
+    druid: "le Druide maîtrise les armes de guerre s'il a choisi l'Ordre primitif Gardien",
+    warlock: "l'Occultiste maîtrise l'arme de son Pacte de la lame"
 };
 
 /** Phrase qui dit quelles armes la classe maîtrise (pour l'explication « sans maîtrise ») */
@@ -222,7 +222,7 @@ export function classWeaponProficiencyText(classSlug) {
  *  4. arme courante : toutes les classes ;
  *  5. arme de guerre : classe (Moine : Légère ; Roublard : Finesse ou Légère, Trident compris pour
  *     L'Odysséen, Odyssée), don Formation aux
- *     armes de guerre, Collège de la Vaillance (Barde niveau 3) ; Clerc, Druide, Sorcier : choix que
+ *     armes de guerre, Collège de la Vaillance (Barde niveau 3) ; Clerc, Druide, Occultiste : choix que
  *     la fiche n'enregistre pas (Protecteur, Gardien, Pacte de la lame) → maîtrise supposée, rappelée.
  * @param {Object} weapon - ligne de dynamic_weapons
  * @param {{ classSlug: string, subclass?: string, level?: number, feats?: string[] }} stats - deriveCharacter()
@@ -343,11 +343,11 @@ export function classFeatureNotes(derived, record = {}) {
                 jack);
         }
     }
-    // Résilience draconique (PHB 2024 p. 148, Ensorceleur niveau 3) : PV max +3, puis +1 par niveau
+    // Résistance draconique (PHB 2024 p. 148, Ensorceleur niveau 3) : PV max +3, puis +1 par niveau
     // d'Ensorceleur (= niveau) ; la CA est calculée par unarmoredDefenseOptions
     if (derived?.classSlug === 'sorcerer' && derived.subclass === 'draconic_sorcery' && derived.level >= 3) {
-        add('hpMax', 'resilience_draconique', 'Résilience draconique',
-            `dont +${derived.level} PV grâce à Résilience draconique (Ensorceleur niveau 3 : +3, puis +1 par niveau d'Ensorceleur) : à compter vous-même dans les PV max saisis, la fiche ne les ajoute pas.`,
+        add('hpMax', 'resilience_draconique', 'Résistance draconique',
+            `dont +${derived.level} PV grâce à Résistance draconique (Ensorceleur niveau 3 : +3, puis +1 par niveau d'Ensorceleur) : à compter vous-même dans les PV max saisis, la fiche ne les ajoute pas.`,
             derived.level, { manual: true });
     }
     for (const [subclass, minLevel, name, feature, kinds] of SUBCLASS_ARMOR_TRAINING) {
@@ -364,12 +364,12 @@ export function classFeatureNotes(derived, record = {}) {
     for (const [zone, notes] of Object.entries(subclassNotes(derived, record))) (zones[zone] ??= []).push(...notes);
     // Résistances de la sous-classe (lot 5) : repères près de la CA
     for (const [zone, notes] of Object.entries(subclassDefenseNotes(derived, record))) (zones[zone] ??= []).push(...notes);
-    // Choix de sous-classe (lot 7) : vitesses de l'Aspect sauvage…
+    // Choix de sous-classe (lot 7) : vitesses de l'Aspect de faune…
     for (const [zone, notes] of Object.entries(subclassChoiceNotes(derived, record))) (zones[zone] ??= []).push(...notes);
     // Formes du Cercle de la Lune et des Étoiles (lot 7) : repères pendant la forme cochée
     for (const [zone, notes] of Object.entries(formNotes(derived))) (zones[zone] ??= []).push(...notes);
     // Repères près des cases de la ressource de classe (lot 7, zone classResource) : rang du poème
-    // (Poésie épique), Influence sur la chance (Sorcellerie sauvage)
+    // (Poésie épique), Comme par hasard (Sorcellerie sauvage)
     for (const [zone, notes] of Object.entries(epicPoemNotes(derived))) (zones[zone] ??= []).push(...notes);
     for (const [zone, notes] of Object.entries(wildMagicNotes(derived))) (zones[zone] ??= []).push(...notes);
     return zones;

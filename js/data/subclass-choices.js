@@ -30,7 +30,7 @@ import { SKILLS } from './constants.js';
 import { MANEUVERS, FIGHTER_SKILLS, ARTISAN_TOOLS } from './maneuvers.js';
 import { PRIMAL_BEASTS, BEAST_STRIKE_TYPES, STIMFEE_LOOKS } from './subclass-companions.js';
 
-/** Types de terre du Cercle de la Terre : [valeur, libellé (= group de subclass-spells.js), type de dégâts de Protection de la nature] */
+/** Types de terre du Cercle de la Terre : [valeur, libellé (= group de subclass-spells.js), type de dégâts de Protégé de dame Nature] */
 export const LAND_TYPES = Object.freeze([
     ['arid', 'Aride', 'fire'], ['polar', 'Polaire', 'cold'], ['temperate', 'Tempérée', 'lightning'], ['tropical', 'Tropicale', 'poison']
 ]);
@@ -75,7 +75,7 @@ export const PHILOSOPHER_SCHOOLS = Object.freeze([
 ]);
 
 /**
- * Constellations de la Forme étoilée (Cercle des Étoiles, PHB 2024, p. 88-89) :
+ * Constellations de la Forme stellaire (Cercle des Étoiles, PHB 2024, p. 88-89) :
  * [valeur, libellé] ; chiffres calculés dans js/rules/subclass-forms.js
  */
 export const CONSTELLATIONS = Object.freeze([['archer', 'Archer'], ['chalice', 'Calice'], ['dragon', 'Dragon']]);
@@ -113,7 +113,7 @@ export const SUBCLASS_CHOICE_FIELDS = {
         }
     ],
     // Maître de guerre (PHB 2024, p. 93-95) : manœuvres connues (3, puis 5, 7 et 9 aux niveaux 7, 10
-    // et 15 ; une remplaçable à chacun de ces niveaux) et Disciple de la guerre (définitif)
+    // et 15 ; une remplaçable à chacun de ces niveaux) et Disciple martial (définitif)
     battle_master: [
         {
             key: 'maneuver', feature: 'superiorite_martiale_man_uvres', label: 'Manœuvre', wide: true,
@@ -133,15 +133,15 @@ export const SUBCLASS_CHOICE_FIELDS = {
     hunter: [
         {
             key: 'prey', feature: 'proie_du_chasseur', label: 'Proie du chasseur', inPlay: true, restReminder: 'short', when: 'Échangeable à chaque repos court ou long.',
-            options: [['colossus', 'Tueur de colosses'], ['horde', 'Briseur de hordes']]
+            options: [['colossus', 'Goût du sang'], ['horde', 'Briseur de hordes']]
         },
         {
             key: 'tactics', feature: 'tactiques_defensives', label: 'Tactique défensive', inPlay: true, restReminder: 'short', when: 'Échangeable à chaque repos court ou long.',
-            options: [['escape', 'Échapper à la horde'], ['multiattack', 'Défense contre les attaques multiples']], wide: true
+            options: [['escape', 'Cauchemar de la horde'], ['multiattack', 'Défense contre les attaques multiples']], wide: true
         }
     ],
     // Cercle de la Terre (PHB 2024, p. 84-85) : terre choisie à la fin de chaque repos long ; elle
-    // donne les sorts préparés et la Résistance de Protection de la nature (niveau 10)
+    // donne les sorts préparés et la Résistance de Protégé de dame Nature (niveau 10)
     circle_of_the_land: [
         {
             key: 'land', feature: 'sorts_du_cercle_de_la_terre', label: 'Type de terre', inPlay: true, restReminder: 'long',
@@ -158,23 +158,23 @@ export const SUBCLASS_CHOICE_FIELDS = {
             options: [['on', 'En Forme sauvage']]
         }
     ],
-    // Cercle des Étoiles (PHB 2024, p. 88-89) : Forme étoilée en cours (10 minutes : effacée à tout
-    // repos), constellation choisie à chaque Forme étoilée (gardée comme présélection)
+    // Cercle des Étoiles (PHB 2024, p. 88-89) : Forme stellaire en cours (10 minutes : effacée à tout
+    // repos), constellation choisie à chaque Forme stellaire (gardée comme présélection)
     circle_of_the_stars: [
         {
-            key: 'starry_form', feature: 'forme_etoilee', label: 'En Forme étoilée', toggle: true, inPlay: true, clearOn: 'rest',
-            when: 'À cocher pendant la Forme étoilée (10 minutes ; la case de Forme sauvage, onglet Combat, se coche à part) ; décochée au repos.',
-            options: [['on', 'En Forme étoilée']]
+            key: 'starry_form', feature: 'forme_etoilee', label: 'En Forme stellaire', toggle: true, inPlay: true, clearOn: 'rest',
+            when: 'À cocher pendant la Forme stellaire (10 minutes ; la case de Forme sauvage, onglet Combat, se coche à part) ; décochée au repos.',
+            options: [['on', 'En Forme stellaire']]
         },
         {
             key: 'constellation', feature: 'forme_etoilee', label: 'Constellation', inPlay: true,
-            when: 'Choisie à chaque Forme étoilée ; à partir du niveau 10, changeable au début de chacun de vos tours.',
+            when: 'Choisie à chaque Forme stellaire ; à partir du niveau 10, changeable au début de chacun de vos tours.',
             options: CONSTELLATIONS
         },
-        // Présage cosmique : Bienfait ou Malheur tiré à chaque repos long
+        // Présage cosmique : Fortune ou Péril tiré à chaque repos long
         {
             key: 'omen', feature: 'presage_cosmique', label: 'Présage', inPlay: true, clearOn: 'longRest', restReminder: 'long',
-            when: 'À chaque repos long, lancez un dé : pair Bienfait, impair Malheur.', options: [['weal', 'Bienfait'], ['woe', 'Malheur']]
+            when: 'À chaque repos long, lancez un dé : pair Fortune, impair Péril.', options: [['weal', 'Fortune'], ['woe', 'Péril']]
         }
     ],
     // Serment des Seigneurs Dragons (Odyssée, p. 47) : œuf trouvé ou rapporté par le pseudodragon
@@ -188,7 +188,7 @@ export const SUBCLASS_CHOICE_FIELDS = {
     // Errant féerique (PHB 2024, p. 124-125) : don purement descriptif, choisi ou tiré au d6
     fey_wanderer: [
         {
-            key: 'gift', feature: 'don_de_la_feerie', label: 'Don de la Féerie', wide: true,
+            key: 'gift', feature: 'don_de_la_feerie', label: 'Présents de Féerie', wide: true,
             options: [
                 ['butterflies', 'Papillons illusoires pendant vos repos'], ['flowers', 'Fleurs dans les cheveux à chaque aube'],
                 ['scent', 'Légère odeur d\'herbe ou d\'épice'], ['shadow', 'Ombre qui danse quand on ne la regarde pas'],
@@ -196,7 +196,7 @@ export const SUBCLASS_CHOICE_FIELDS = {
             ]
         }
     ],
-    // Traqueur d'ombre (PHB 2024, p. 125-126) : Esprit d'acier
+    // Traqueur d'ombre (PHB 2024, p. 125-126) : Mental d'acier
     gloom_stalker: [
         {
             key: 'save', feature: 'esprit_d_acier', label: 'Sauvegarde gagnée',
@@ -205,8 +205,8 @@ export const SUBCLASS_CHOICE_FIELDS = {
         }
     ],
     // Maître des bêtes (PHB 2024, p. 122-124) : bête invoquée (nouvelle bête possible à la fin de
-    // chaque repos long) et type des dégâts de sa Frappe (Bête du ciel : toujours tranchants, menu
-    // masqué ; Bête de la mer : un « Tranchants » enregistré est ignoré par js/rules/subclass-companions.js)
+    // chaque repos long) et type des dégâts de sa Frappe (Bête des cieux : toujours tranchants, menu
+    // masqué ; Bête des mers : un « Tranchants » enregistré est ignoré par js/rules/subclass-companions.js)
     beast_master: [
         {
             key: 'beast', feature: 'compagnon_primordial', label: 'Bête primordiale', inPlay: true, restReminder: 'long',
@@ -216,7 +216,7 @@ export const SUBCLASS_CHOICE_FIELDS = {
         {
             key: 'strike', feature: 'compagnon_primordial', label: 'Dégâts de la Frappe', inPlay: true,
             requires: { key: 'beast', value: ['land', 'sea'] },
-            when: 'Choisis à l\'invocation (Bête de la mer : contondants ou perforants).',
+            when: 'Choisis à l\'invocation (Bête des mers : contondants ou perforants).',
             options: BEAST_STRIKE_TYPES.map(([id, label]) => [id, label])
         }
     ],

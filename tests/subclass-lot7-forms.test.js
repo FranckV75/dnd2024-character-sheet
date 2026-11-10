@@ -1,6 +1,6 @@
 // =============================================================================
 // Sous-classes, lot 7 : formes du Cercle de la Lune (Forme sauvage) et du Cercle des Étoiles
-// (Forme étoilée, constellation) : chiffres de la carte, forme cochée, repères, repos.
+// (Forme stellaire, constellation) : chiffres de la carte, forme cochée, repères, repos.
 // =============================================================================
 
 import { test, describe } from 'node:test';
@@ -62,7 +62,7 @@ describe('Cercle de la Lune', () => {
         assert.match(lines[2], /: 9 \(3 × niveau\)/);
         assert.match(lines[3], /Durée : 1 h.*2 au total/);
         assert.ok(lines.includes('Sorts lançables en forme : Soins, Rayon de lune, Poussière d\'étoile.'));
-        assert.ok(!lines.some(line => /Constitution|Pas de lune|2d10/.test(line)));
+        assert.ok(!lines.some(line => /Constitution|Foulée sélène|2d10/.test(line)));
     });
 
     test('carte niveaux 6, 10, 14 et 18', () => {
@@ -72,7 +72,7 @@ describe('Cercle de la Lune', () => {
         assert.ok(six.some(line => /Invocation d'animaux/.test(line)));
         const ten = moonFormLines(d(moon(10)));
         assert.match(ten[0], /FP 3 au maximum.*8 formes connues, vitesse de vol permise/);
-        assert.ok(ten.some(line => /Pas de lune : 3 cases/.test(line)));
+        assert.ok(ten.some(line => /Foulée sélène : 3 cases/.test(line)));
         assert.ok(ten.some(line => /Fontaine de lune, Soins de groupe/.test(line)));
         const fourteen = moonFormLines(d(moon(14)));
         assert.match(fourteen[0], /FP 4/);
@@ -143,8 +143,8 @@ describe('Cercle des Étoiles', () => {
         assert.match(lines[1], /^Dragon \(choisie\) :/);
         assert.ok(lines.some(line => /reste la même jusqu'à la fin/.test(line)));
         assert.ok(starryFormLines(d(stars(10))).some(line => /changer de constellation/.test(line)));
-        assert.ok(starryFormLines(d(stars(14))).some(line => /Plein d'étoiles/.test(line)));
-        assert.ok(!starryFormLines(d(stars(13))).some(line => /Plein d'étoiles/.test(line)));
+        assert.ok(starryFormLines(d(stars(14))).some(line => /Plénitude stellaire/.test(line)));
+        assert.ok(!starryFormLines(d(stars(13))).some(line => /Plénitude stellaire/.test(line)));
         assert.match(feature(stars(3, { constellation: 'chalice' }), 'forme_etoilee').text, /constellation : Calice/);
         assert.equal(feature(stars(3), 'forme_etoilee').list.length, 5);
     });
@@ -174,14 +174,14 @@ describe('Cercle des Étoiles', () => {
     });
 });
 
-describe('Plein d\'étoiles', () => {
+describe('Plénitude stellaire', () => {
     test('absent au niveau 13, grisé hors forme au 14, actif forme cochée', () => {
         assert.equal(plein(stars(13, { starry_form: 'on' })), undefined);
         assert.equal(plein(stars(14)).inactive, true);
         assert.equal(plein(stars(14, { starry_form: 'on' })).inactive, undefined);
         // L'ancien bouton de combat ne l'allume pas
         assert.equal(plein(stars(14, undefined, { combat_buffs: { starryForm: true } })).inactive, true);
-        assert.match(feature(stars(14), 'plein_d_etoiles').text, /« En Forme étoilée » est cochée/);
+        assert.match(feature(stars(14), 'plein_d_etoiles').text, /« En Forme stellaire » est cochée/);
     });
 });
 
@@ -217,7 +217,7 @@ describe('Repères pendant la forme', () => {
 });
 
 describe('Repos', () => {
-    test('repos court : Forme étoilée décochée, Forme sauvage et constellation gardées', () => {
+    test('repos court : Forme stellaire décochée, Forme sauvage et constellation gardées', () => {
         const s = stars(3, { starry_form: 'on', constellation: 'dragon' });
         assert.deepEqual(planShortRest(s).patch.subclass_choices, { circle_of_the_stars: { constellation: 'dragon' } });
         assert.equal(planShortRest(moon(3, { wild_shape: 'on' })).patch.subclass_choices, undefined);

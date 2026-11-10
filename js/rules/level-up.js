@@ -18,6 +18,7 @@ import { bardicInspirationDie } from './subclass-calcs.js';
 import { hitDieFaces, readHitPoints } from './rest.js';
 import { featEffects } from './feat-effects.js';
 import { featSlotCounts, featSlotLevelFor, featSlotName, featName, classFeatSlot } from './feats.js';
+import { featuresAtLevel, classSpellCounts } from './class-progression.js';
 import { subclassFeatures, subclassSpells, automationKind } from './subclass-features.js';
 import { subclassChoiceFields } from './subclass-choices.js';
 import { FEAT_SLOT_ORDER } from '../state/schema.js';
@@ -37,7 +38,7 @@ const signed = (n) => (n >= 0 ? `+${n}` : String(n));
 const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
 
 /**
- * Bonus de PV par niveau déjà connus de la fiche (Robuste, Résilience draconique…) : différence
+ * Bonus de PV par niveau déjà connus de la fiche (Robuste, Résistance draconique…) : différence
  * entre les deux niveaux, par nom.
  */
 function hitPointBonuses(record, dFrom, next, dTo) {
@@ -59,7 +60,7 @@ function hitPointBonuses(record, dFrom, next, dTo) {
         if (delta > 0) bonuses.push({ name, value: delta });
     }
     // Nain (PHB 2024) : +1 PV max par niveau, que la fiche ne calcule pas ailleurs
-    if (DD_RULES.findSpecies(plain(record.char_species)) === DD_RULES.species.dwarf) bonuses.push({ name: 'Nain', value: 1 });
+    if (DD_RULES.findSpecies(plain(record.char_species)) === DD_RULES.species.dwarf) bonuses.push({ name: 'Ténacité naine', value: 1 });
     return bonuses;
 }
 
@@ -206,6 +207,32 @@ function subclassLines(dFrom, dTo, to) {
 }
 
 /**
+ * Aptitudes de base gagnées à ce niveau (js/data/class-progression.js) ; les dons et la
+ * sous-classe ont leurs propres lignes.
+ */
+function baseFeatureLines(classSlug, to) {
+    const gained = featuresAtLevel(classSlug, to).filter((feature) => feature.kind === 'feature');
+    if (!gained.length) return [];
+    return [
+        ...gained.map((feature) => `Nouvelle aptitude : ${feature.name}.`),
+        'Leur résumé : Aptitudes & Traits, bloc Capacités de classe.'
+    ];
+}
+
+/** Sorts mineurs et sorts préparés de la table de classe */
+function spellCountLines(classSlug, from, to) {
+    const before = classSpellCounts(classSlug, from);
+    const after = classSpellCounts(classSlug, to);
+    const lines = [];
+    if (after.cantrips !== null && after.cantrips !== before.cantrips) lines.push(`Sorts mineurs : ${before.cantrips ?? 0} → ${after.cantrips} (un sort mineur de plus à choisir).`);
+    if (after.prepared !== null && after.prepared !== before.prepared) {
+        const more = after.prepared - (before.prepared ?? 0);
+        lines.push(`Sorts préparés : ${before.prepared ?? 0} → ${after.prepared} (${plural(more, 'sort')} de plus à préparer).`);
+    }
+    return lines;
+}
+
+/**
  * Ce qui change au niveau suivant.
  * @param {Object} character - fiche au format de sauvegarde
  * @returns {{ canLevel: false, from: number, reason: string }
@@ -228,11 +255,9 @@ export function planLevelUp(character) {
     add('Général', general);
     add('Dons', featLines(next, to));
     if (classKnown) {
-        add('Classe', [...classLines(dFrom, dTo), `Autres capacités de classe du niveau ${to} : voir le manuel (pas encore listées par la fiche).`]);
+        add('Classe', [...classLines(dFrom, dTo), ...baseFeatureLines(dTo.classSlug, to)]);
         add('Sous-classe', subclassLines(dFrom, dTo, to));
-        const spells = [...spellSlotLines(dFrom, dTo), ...subclassSpellLines(dTo, to)];
-        if (Object.keys(dTo.spellSlots ?? {}).length) spells.push('Sorts préparés et sorts mineurs : vérifiez la table de votre classe (pas encore calculés par la fiche).');
-        add('Sorts', spells);
+        add('Sorts', [...spellCountLines(dTo.classSlug, dFrom.level, to), ...spellSlotLines(dFrom, dTo), ...subclassSpellLines(dTo, to)]);
     } else {
         add('Classe', ['Classe non reconnue (ou multiclasse) : seuls le niveau et les points de vie sont calculés ; vérifiez le reste dans le manuel.']);
     }

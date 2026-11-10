@@ -1,8 +1,8 @@
 // =============================================================================
-// WILD-MAGIC.JS - Tirages de la Déferlante de magie sauvage (onglet Combat), lot 7
+// WILD-MAGIC.JS - Tirages de la Bouffée de Sorcellerie sauvage (onglet Combat), lot 7
 //
-// Sorcellerie sauvage (niveau 3 ou plus) : bouton « Déferlante ? (d20) » (sur 20, la table est
-// tirée aussitôt) et bouton « Table (d100) » (Déferlante automatique des Marées du chaos, ligne
+// Sorcellerie sauvage (niveau 3 ou plus) : bouton « Bouffée ? (d20) » (sur 20, la table est
+// tirée aussitôt) et bouton « Table (d100) » (Bouffée automatique de Marée du chaos, ligne
 // 01-04, demande du MJ). Le résultat donne la ligne de la table du manuel, sans recopier ses effets.
 // Rien n'est enregistré : le résultat disparaît au rechargement. Règles : js/rules/wild-magic.js.
 // =============================================================================
@@ -38,16 +38,16 @@ export function initWildMagic({ root, store }) {
         box.hidden = false;
         // replaceChildren écrirait « null » en texte : les parties absentes sont retirées
         box.replaceChildren(...[
-            el('p', { class: 'label accent wild-magic-title', text: 'Déferlante de magie sauvage' }),
+            el('p', { class: 'label accent wild-magic-title', text: 'Bouffée de Sorcellerie sauvage' }),
             el('div', { class: 'wild-magic-buttons' },
                 el('button', {
                     type: 'button', class: 'btn wild-magic-roll', 'data-wild-roll': 'check',
-                    text: 'Déferlante ? (d20)', title: 'Après un sort d\'Ensorceleur lancé avec un emplacement (une fois par tour)'
+                    text: 'Bouffée ? (d20)', title: 'Après un sort d\'Ensorceleur lancé avec un emplacement (une fois par tour)'
                 }),
                 el('button', {
                     type: 'button', class: 'btn wild-magic-roll', 'data-wild-roll': 'table',
                     text: 'Table (d100)',
-                    title: `Tirage direct sur la table (Déferlante automatique, ligne 01-04, demande du MJ)${panel.keepTwo ? ' : deux résultats, Chaos maîtrisé' : ''}`
+                    title: `Tirage direct sur la table (Bouffée automatique, ligne 01-04, demande du MJ)${panel.keepTwo ? ' : deux résultats, Chaos contrôlé' : ''}`
                 })),
             result,
             panel.reminders.length ? el('ul', { class: 'wild-magic-reminders' },

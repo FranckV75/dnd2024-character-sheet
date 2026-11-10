@@ -53,7 +53,7 @@ describe('Choix des compagnons', () => {
         const c = beastMaster(3, { beast: 'land' });
         const rest = subclassChoiceNotes(deriveCharacter(c), c).rest ?? [];
         assert.equal(rest.length, 1);
-        assert.match(rest[0].text, /Bête de la terre/);
+        assert.match(rest[0].text, /Bête des terres/);
         assert.equal(rest[0].restKind, 'long');
     });
 
@@ -67,7 +67,7 @@ describe('Choix des compagnons', () => {
     });
 });
 
-describe('Maître des bêtes : compagnon primordial', () => {
+describe('Maître des bêtes : compagnon primitif', () => {
     test('pas de carte avant la sous-classe ; sans bête choisie : carte réduite, sans PV ni Frappe', () => {
         assert.deepEqual(cards(record('Rôdeur', 'Maître des Bêtes', 2, 'beast_master')), []);
         const c = card(beastMaster(3, undefined, { wis_score: '16' }), COMPANION_KEYS.primal);
@@ -112,16 +112,16 @@ describe('Maître des bêtes : compagnon primordial', () => {
         assert.equal(action(c, 'Frappe').name, 'Frappe de bête (×2 par ordre)');
         assert.match(action(c, 'Frappe').text, /\+8, .*1d8 \+ 6 perforants/);
         assert.deepEqual(saves(c), [6, 6, 6, 3, 6, 4]);
-        assert.equal(trait(c, 'Furie bestiale').inactive, true);
+        assert.equal(trait(c, 'Fureur bestiale').inactive, true);
         const marked = c11({ combat_buffs: { hunterMark: true } });
-        assert.equal(trait(marked, 'Furie bestiale').inactive, undefined);
-        assert.match(trait(marked, 'Furie bestiale').text, /\+1d6 dégâts de Force/);
+        assert.equal(trait(marked, 'Fureur bestiale').inactive, undefined);
+        assert.match(trait(marked, 'Fureur bestiale').text, /\+1d6 dégâts de Force/);
         assert.equal(trait(c, 'Partage des sorts'), undefined);
     });
 
     test('niveau 20 : dé de la Marque du chasseur 1d10 ; niveau 15 : Partage des sorts', () => {
         const c = card(beastMaster(20, { beast: 'sea' }, { combat_buffs: { hunterMark: true } }), COMPANION_KEYS.primal);
-        assert.match(trait(c, 'Furie bestiale').text, /\+1d10/);
+        assert.match(trait(c, 'Fureur bestiale').text, /\+1d10/);
         assert.ok(trait(card(beastMaster(15, { beast: 'sea' }), COMPANION_KEYS.primal), 'Partage des sorts'));
     });
 
@@ -137,12 +137,12 @@ describe('Maître des bêtes : compagnon primordial', () => {
         assert.match(action(card(beastMaster(3, { beast: 'sea', strike: 'bludgeoning' }), COMPANION_KEYS.primal), 'Frappe').text, / contondants\./);
     });
 
-    test('Ciel : Petite, PV 4 + 4 × niveau (d6), 1d4 + 3 + Sag tranchants, Vol rasant', () => {
+    test('Ciel : Petite, PV 4 + 4 × niveau (d6), 1d4 + 3 + Sag tranchants, Repli aérien', () => {
         const c = card(beastMaster(3, { beast: 'sky' }, { wis_score: '16' }), COMPANION_KEYS.primal);
         assert.deepEqual([c.hp.max, c.hp.dice], [16, '3d6']);
         assert.match(action(c, 'Frappe').text, /\+5, .*1d4 \+ 6 tranchants\./);
         assert.deepEqual(saves(c), [0, 5, 3, 1, 4, 2]);
-        assert.ok(trait(c, 'Vol rasant'));
+        assert.ok(trait(c, 'Repli aérien'));
         assert.equal(card(beastMaster(7, { beast: 'sky' }), COMPANION_KEYS.primal).hp.max, 32);
         assert.equal(card(beastMaster(11, { beast: 'sky' }), COMPANION_KEYS.primal).hp.max, 48);
     });
@@ -324,7 +324,7 @@ describe('PV actuels des compagnons (clé subclass_companions)', () => {
 describe('Textes « Dans la fiche »', () => {
     test('chaque capacité de compagnon renvoie à sa carte', () => {
         assert.match(auto(beastMaster(3), 'compagnon_primordial').text, /Bête à choisir/);
-        assert.match(auto(beastMaster(3, { beast: 'land' }), 'compagnon_primordial').text, /Carte « Bête de la terre » dans « Compagnons & familiers »/);
+        assert.match(auto(beastMaster(3, { beast: 'land' }), 'compagnon_primordial').text, /Carte « Bête des terres » dans « Compagnons & familiers »/);
         assert.match(auto(beastMaster(11), 'furie_bestiale').text, /\+1d6 de Force/);
         assert.match(auto(amazon(3), 'compagnon_stimfee').text, /PV 18, attaques \+6 et DD 12/);
         assert.match(auto(dragonlord(3, { egg: 'bronze' }), 'familier_pseudodragon').text, /Œuf de dragon : bronze.*Carte du pseudodragon/);

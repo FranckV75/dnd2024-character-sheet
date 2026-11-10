@@ -180,6 +180,22 @@
     color: var(--quiet-ink);
 }
 
+/* Plus de sorts préparés (ou mineurs) que la table de la classe */
+.spell-count.is-over {
+    color: var(--ko);
+}
+
+.spell-limit-note {
+    margin: 0 0 8px;
+    font-family: var(--font-text);
+    font-size: 0.9rem;
+    color: var(--ko);
+}
+
+.spell-limit-note[hidden] {
+    display: none;
+}
+
 /* ---------- Emplacements de sorts ---------- */
 
 .spell-slots {
@@ -1012,4 +1028,9 @@
     .subclass-spells-others {
         display: none;
     }
+}
+
+/* Sorts mineurs en plus de la table : simple rappel, pas une erreur */
+.spell-limit-note .is-info {
+    color: var(--text-muted);
 }

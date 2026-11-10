@@ -58,7 +58,7 @@ export const CLASS_FEAT_SLOTS = Object.freeze({
  * Style de combat (PHB 2024, capacité « Fighting Style ») : clé feat_2, un don de la catégorie
  * Style de combat, acquis au niveau 1 pour le Guerrier et au niveau 2 pour le Paladin et le Rôdeur
  * (featSlotLevelFor, js/rules/feats.js). Le Champion en reçoit un second au niveau 7 (feat_7).
- * Le Paladin et le Rôdeur peuvent prendre à la place Guerrier béni ou Guerrier druidique.
+ * Le Paladin et le Rôdeur peuvent prendre à la place Combattant béni ou Combattant druidique.
  */
 export const STYLE_FEAT_SLOT = 2;
 

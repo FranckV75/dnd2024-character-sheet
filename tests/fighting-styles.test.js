@@ -1,7 +1,7 @@
 /**
  * TESTS UNITAIRES — STYLES DE COMBAT (lot 4 des dons actifs)
  * Player's Handbook 2024 anglais : Fighting Style (Guerrier niveau 1, Paladin et Rôdeur niveau 2,
- * Guerrier béni / Guerrier druidique à la place), Additional Fighting Style (Champion niveau 7),
+ * Combattant béni / Combattant druidique à la place), Additional Fighting Style (Champion niveau 7),
  * dons « Fighting Style » p. 209-210 (Archery, Blind Fighting, Defense, Dueling, Great Weapon
  * Fighting, Interception, Protection, Thrown Weapon Fighting, Two-Weapon Fighting, Unarmed Fighting).
  * La fiche ne modifie jamais une valeur saisie : la CA et les armes sont calculées, le reste est rappelé.
@@ -69,9 +69,9 @@ describe('Emplacement « Style de combat » (feat_2) et style en plus du Champio
         assert.ok(texts.some(t => /déjà pris au style de combat/.test(t)));
     });
 
-    test('Guerrier béni / druidique à la place du style : nom, rappel, alerte si mauvaise classe', () => {
+    test('Combattant béni / druidique à la place du style : nom, rappel, alerte si mauvaise classe', () => {
         const paladin = hero({ char_class: 'Paladin', char_level: '2', feat_2: 'guerrier_beni' });
-        assert.equal(featName('guerrier_beni'), 'Guerrier béni');
+        assert.equal(featName('guerrier_beni'), 'Combattant béni');
         assert.ok(slotTexts(paladin, 2).some(t => /sorts mineurs de Clerc.*Charisme/.test(t)));
         assert.ok(!(featEffects(paladin)['featSlot:2'] ?? []).some(n => n.check));
         const wrong = hero({ char_class: 'Rôdeur', char_level: '2', feat_2: 'guerrier_beni' });

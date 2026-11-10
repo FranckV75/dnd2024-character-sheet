@@ -90,7 +90,7 @@ describe('Mobile (Speedy) et Incantateur d\'élite (Spell Sniper)', () => {
     test("Incantateur d'élite : +18 m, abris, contact", () => {
         const texts = slotTexts(hero({ feat_4: 'incantateur_d_elite' }), 4);
         assert.ok(texts.some(t => /au moins 3 m peut porter 18 m plus loin/.test(t)));
-        assert.ok(texts.some(t => /abris partiels \(\+2 CA\) et importants \(\+5 CA\)/.test(t)));
+        assert.ok(texts.some(t => /Abris partiels \(\+2 CA\) et supérieurs \(\+5 CA\)/.test(t)));
         assert.ok(texts.some(t => /1,50 m/.test(t)));
     });
 });

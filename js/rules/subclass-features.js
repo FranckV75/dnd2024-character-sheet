@@ -39,12 +39,12 @@ const chaMod = (derived) => Number(derived?.mods?.cha) || 0;
  * d'un effet du Conduit divin est celui des sorts de la classe) : 8 + maîtrise + Charisme.
  */
 const paladinDC = (derived) => 8 + (Number(derived?.pb) || 2) + chaMod(derived);
-/** Avantages de Révélation dans la chair (cases du menu, js/data/subclass-choices.js) */
+/** Avantages de Révélation incarnée (cases du menu, js/data/subclass-choices.js) */
 const REVELATIONS = [['rev_aquatic', 'Adaptation aquatique'], ['rev_flight', 'Vol scintillant'], ['rev_see', 'Voir l\'invisible'], ['rev_worm', 'Mouvement vermiforme']];
 const SPELLS_TEXT = 'Bloc « Sorts de sous-classe » de l\'onglet Magie : toujours préparés, hors du nombre de sorts préparés.';
 
 /**
- * Sorts préparés de niveau 1+ du Chevalier occulte et de l'Escroc arcanique (PHB 2024, même table) :
+ * Sorts préparés de niveau 1+ du Chevalier occulte et de l'Arnaqueur arcanique (PHB 2024, même table) :
  * 3 au niveau 3, 4 au 4, 5 au 7, 6 au 8, 7 au 10, 8 au 11, 9 au 13, 10 au 14, 11 au 16, 12 au 19, 13 au 20.
  * @param {number} level - niveau de Guerrier ou de Roublard
  * @returns {number} 0 avant le niveau 3
@@ -87,13 +87,13 @@ const MANUAL_AUTOMATION = {
         egide_du_poete: { text: (d) => epicPoemTexts(d).aegis, partial: true },
         epithetes_protectrices: { text: (d) => epicPoemTexts(d).epithets, partial: true }
     },
-    // Lot 7 : tirages de la Déferlante (js/rules/wild-magic.js, js/ui/wild-magic.js) ; les cases de
-    // Marées du chaos et de Déferlante domptée gardent leur texte de cases (ajouté par withCounter)
+    // Lot 7 : tirages de la Bouffée (js/rules/wild-magic.js, js/ui/wild-magic.js) ; les cases de
+    // Marée du chaos et de Bouffée domptée gardent leur texte de cases (ajouté par withCounter)
     wild_magic_sorcery: {
-        deferlante_de_magie_sauvage: { text: 'Boutons « Déferlante ? (d20) » et « Table (d100) » dans l\'onglet Combat : le résultat et sa ligne dans la table du manuel (les effets se lisent dans le manuel).', partial: true },
-        marees_du_chaos: { text: 'Quand sa case est cochée, rappel de la Déferlante automatique sous les boutons de tirage.' },
-        influence_sur_la_chance: { text: 'Repère « Influence ±1d4 » près des cases de points de sorcellerie (onglet Combat).', partial: true },
-        chaos_maitrise: { text: 'Le bouton d100 (et la Déferlante après un 20) tire deux résultats ; vous gardez celui de votre choix.' },
+        deferlante_de_magie_sauvage: { text: 'Boutons « Bouffée ? (d20) » et « Table (d100) » dans l\'onglet Combat : le résultat et sa ligne dans la table du manuel (les effets se lisent dans le manuel).', partial: true },
+        marees_du_chaos: { text: 'Quand sa case est cochée, rappel de la Bouffée automatique sous les boutons de tirage.' },
+        influence_sur_la_chance: { text: 'Repère « Hasard ±1d4 » près des cases de points de sorcellerie (onglet Combat).', partial: true },
+        chaos_maitrise: { text: 'Le bouton d100 (et la Bouffée après un 20) tire deux résultats ; vous gardez celui de votre choix.' },
         deferlante_domptee: { text: 'Rappel sous les boutons de tirage tant que sa case n\'est pas cochée.' }
     },
     // Lot 2 : Voie du Zélote (Korgul)
@@ -194,8 +194,8 @@ const MANUAL_AUTOMATION = {
         deluge_du_traqueur: { text: 'Dé de la Frappe effroyable passé à 2d8 (bouton du tableau des armes) ; attaque en plus ou effroi à jouer vous-même.', partial: true }
     },
     fey_wanderer: {
-        charme_surnaturel: { text: (d) => `${signed(Math.max(1, mod(d, 'wis')))} compté dans Intimidation, Persuasion, Représentation et Supercherie ; la compétence au choix est à cocher vous-même.`, partial: true },
-        frappes_redoutables: { text: (d) => `Bouton « Frappes redoutables » du tableau des armes : +${feyStrikesDie(d.level)} psychiques.` }
+        charme_surnaturel: { text: (d) => `${signed(Math.max(1, mod(d, 'wis')))} compté dans Intimidation, Persuasion, Représentation et Tromperie ; la compétence au choix est à cocher vous-même.`, partial: true },
+        frappes_redoutables: { text: (d) => `Bouton « Frappes effroyables » du tableau des armes : +${feyStrikesDie(d.level)} psychiques.` }
     },
     the_odyssean: {
         soldat_vagabond: { text: `Lance et Trident : maîtrise, attaque à la Dextérité et Attaque sournoise calculées. ${CHECK_TEXT('de la CA (case Boucliers)')}`, partial: true },
@@ -221,7 +221,7 @@ const MANUAL_AUTOMATION = {
     warrior_of_mercy: {
         main_qui_blesse: { text: (d) => `Dégâts nécrotiques : 1${martialArtsDieText(d.level)} ${signed(mod(d, 'wis'))}.`, partial: true },
         main_qui_soigne: { text: (d) => `PV rendus : 1${martialArtsDieText(d.level)} ${signed(mod(d, 'wis'))}.`, partial: true },
-        instruments_de_la_misericorde: { text: `${CHECK_TEXT('de Perspicacité et de Médecine', true)} Matériel d'herboriste : à noter vous-même.`, partial: true }
+        instruments_de_la_misericorde: { text: `${CHECK_TEXT('d\'Intuition et de Médecine', true)} Matériel d'herboriste : à noter vous-même.`, partial: true }
     },
     psi_warrior: {
         adepte_telekinesique_poussee_telekinesique: { text: (d) => `Sauvegarde de Force DD ${abilityDC(d, 'int')} (8 + Intelligence + maîtrise).`, partial: true },
@@ -323,7 +323,7 @@ const MANUAL_AUTOMATION = {
                 const chosen = choiceDefense('circle_of_the_land', d.subclassChoices);
                 return chosen
                     ? `Vos alliés dans le cube gagnent votre ${chosen.mention}.`
-                    : 'Vos alliés dans le cube gagnent la Résistance de votre Protection de la nature (type selon la terre choisie).';
+                    : 'Vos alliés dans le cube gagnent la Résistance de Protégé de dame Nature (type selon la terre choisie).';
             },
             partial: true
         }
@@ -341,32 +341,32 @@ const MANUAL_AUTOMATION = {
             text: 'Rappel dans le détail de Formes du cercle ; avec « En Forme sauvage » cochée, Sagesse à ajouter rappelée sous la sauvegarde de Constitution.',
             partial: true
         },
-        forme_lunaire: { text: 'Rappel dans le détail de Formes du cercle : +2d10 radiants une fois par tour, Pas de lune partagé.', partial: true }
+        forme_lunaire: { text: 'Rappel dans le détail de Formes du cercle : +2d10 radiants une fois par tour, Foulée sélène partagée.', partial: true }
     },
     circle_of_the_stars: {
-        // Lot 7 : carte de la Forme étoilée (js/rules/subclass-forms.js), forme et constellation dans le bloc
+        // Lot 7 : carte de la Forme stellaire (js/rules/subclass-forms.js), forme et constellation dans le bloc
         forme_etoilee: {
             text: (d) => {
                 const label = choiceLabel('circle_of_the_stars', 'constellation', chosenConstellation(d));
-                const state = inStarryForm(d) ? 'Forme étoilée en cours (case cochée)' : 'Cochez « En Forme étoilée » pendant la forme';
+                const state = inStarryForm(d) ? 'Forme stellaire en cours (case cochée)' : 'Cochez « En Forme stellaire » pendant la forme';
                 return `${state} ; ${label ? `constellation : ${label}` : 'constellation à choisir dans le menu'}. Chiffres des constellations ci-dessous ; la fiche ne coche pas la case de Forme sauvage.`;
             },
             list: (d) => starryFormLines(d),
             partial: true
         },
         constellations_scintillantes: {
-            text: 'Dés 2d8 et vol du Dragon comptés dans le détail de Forme étoilée ; avec le Dragon et « En Forme étoilée » cochée, vol de 6 m rappelé près de la Vitesse.',
+            text: 'Dés 2d8 et vol du Dragon comptés dans le détail de Forme stellaire ; avec le Dragon et « En Forme stellaire » cochée, vol de 6 m rappelé près de la Vitesse.',
             partial: true
         },
         plein_d_etoiles: {
-            text: 'Repère « Résistance C/P/T (forme) » près de la CA (onglet Combat), allumé quand « En Forme étoilée » est cochée (bloc Sous-classe).',
+            text: 'Repère « Résistance C/P/T (forme) » près de la CA (onglet Combat), allumé quand « En Forme stellaire » est cochée (bloc Sous-classe).',
             partial: true
         },
         presage_cosmique: {
             text: (d) => ({
-                weal: 'Bienfait tiré au dernier repos long : +1d6, rappelé sous les cases.',
-                woe: 'Malheur tiré au dernier repos long : −1d6, rappelé sous les cases.'
-            })[d.subclassChoices?.omen] ?? 'Présage à noter dans le menu ci-dessous après chaque repos long (dé pair : Bienfait, impair : Malheur) ; effacé au repos long suivant.',
+                weal: 'Fortune tirée au dernier repos long : +1d6, rappelé sous les cases.',
+                woe: 'Péril tiré au dernier repos long : −1d6, rappelé sous les cases.'
+            })[d.subclassChoices?.omen] ?? 'Présage à noter dans le menu ci-dessous après chaque repos long (dé pair : Fortune, impair : Péril) ; effacé au repos long suivant.',
             partial: true
         }
     },
@@ -452,13 +452,13 @@ const MANUAL_AUTOMATION = {
     hunter: {
         proie_du_chasseur: {
             text: (d) => (d.subclassChoices?.prey === 'horde'
-                ? 'Briseur de hordes choisi : attaque supplémentaire à jouer vous-même (le bouton « Tueur de colosses » est retiré du tableau des armes).'
-                : `${d.subclassChoices?.prey ? 'Tueur de colosses choisi' : 'Option à choisir dans le menu ci-dessous'} : bouton « Tueur de colosses » du tableau des armes (+1d8, une fois par tour).`),
+                ? 'Briseur de hordes choisi : attaque supplémentaire à jouer vous-même (le bouton « Goût du sang » est retiré du tableau des armes).'
+                : `${d.subclassChoices?.prey ? 'Goût du sang choisi' : 'Option à choisir dans le menu ci-dessous'} : bouton « Goût du sang » du tableau des armes (+1d8, une fois par tour).`),
             partial: true
         },
         tactiques_defensives: {
             text: (d) => ({
-                escape: "Échapper à la horde choisi : les attaques d'opportunité contre vous ont le Désavantage.",
+                escape: "Cauchemar de la horde choisi : les attaques d'opportunité contre vous ont le Désavantage.",
                 multiattack: 'Défense contre les attaques multiples choisie : après un coup reçu, Désavantage aux autres attaques de cette créature contre vous ce tour-ci.'
             })[d.subclassChoices?.tactics] ?? 'Option à choisir dans le menu ci-dessous, mémorisée par la fiche.',
             partial: true
@@ -699,7 +699,8 @@ function chosenSpellGroup(subclass, choice = {}) {
  * @returns {{ reached: SubclassSpell[], upcoming: SubclassSpell[], others: SubclassSpell[] }}
  *   reached : sorts déjà donnés ; upcoming : ceux des niveaux suivants ; others : terrains non
  *   choisis (Cercle de la Terre). SubclassSpell :
- *   { classLevel, vo, name, level (niveau du sort, 0 = sort mineur), ritual, note?, group? } ;
+ *   { classLevel, vo, name, level (niveau du sort, 0 = sort mineur), ritual, note?, group?, aka? } ;
+ *   aka : autre(s) nom(s) du sort (celui de data/spells.json quand le livre en diffère)
  *   group : terrain du Cercle de la Terre ou domaine de l'Ancêtre divin
  */
 export function subclassSpells({ subclass = '', level = 1, subclassChoices = {} } = {}) {
@@ -707,7 +708,8 @@ export function subclassSpells({ subclass = '', level = 1, subclassChoices = {} 
     const spells = rows.map(([classLevel, vo, name, spellLevel, flag, options]) => ({
         classLevel, vo, name, level: spellLevel, ritual: flag === 'R',
         ...(options?.note ? { note: options.note } : {}),
-        ...(options?.group ? { group: options.group } : {})
+        ...(options?.group ? { group: options.group } : {}),
+        ...(options?.aka ? { aka: options.aka } : {})
     }));
     const group = chosenSpellGroup(subclass, subclassChoices);
     // Philosophe de l'Académie : seulement les sorts des écoles actives (Amis du Sophisme)
@@ -804,7 +806,7 @@ const spellKey = (text) => normalizeText(text).replace(/\s+/g, ' ').trim();
 
 /**
  * Repère « Aussi dans votre liste » : marque chaque sort de sous-classe que le joueur a aussi noté
- * dans son grimoire (nom français ou anglais, sans tenir compte de la mise en forme, de la casse, des
+ * dans son grimoire (nom français, ancien nom (aka) ou anglais, sans tenir compte de la mise en forme, de la casse, des
  * accents, de l'apostrophe courbe ni des espaces en trop).
  * @param {Array<{ name: string, vo: string }>} spells - subclassSpells().reached
  * @param {Array<{ name?: string }>} rows - dynamic_spells
@@ -812,5 +814,5 @@ const spellKey = (text) => normalizeText(text).replace(/\s+/g, ' ').trim();
  */
 export function markListedSpells(spells, rows) {
     const listed = new Set((Array.isArray(rows) ? rows : []).map(row => spellKey(row?.name)).filter(Boolean));
-    return spells.map(spell => ({ ...spell, listed: listed.has(spellKey(spell.name)) || listed.has(spellKey(spell.vo)) }));
+    return spells.map(spell => ({ ...spell, listed: [spell.name, spell.vo, ...(spell.aka ?? [])].some(name => listed.has(spellKey(name))) }));
 }

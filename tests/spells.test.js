@@ -24,7 +24,7 @@ import {
     sortedSpellIndices,
     nextSort,
     spellCounts,
-    formatSpellCount,
+    formatSpellCount, spellLimitWarnings, cantripLimitNote, spellNameKey,
     newSpellRow,
     effectiveSlotMax,
     slotView,
@@ -266,11 +266,38 @@ describe('Lignes du tableau', () => {
     });
 
     test('Compteurs et texte', () => {
-        assert.deepEqual(spellCounts(rows), { total: 4, visible: 4, prepared: 2 });
-        assert.deepEqual(spellCounts(rows, '1'), { total: 4, visible: 2, prepared: 2 });
+        assert.deepEqual(spellCounts(rows), { total: 4, visible: 4, prepared: 2, cantrips: spellCounts(rows).cantrips });
+        assert.deepEqual(spellCounts(rows, '1'), { total: 4, visible: 2, prepared: 2, cantrips: spellCounts(rows).cantrips });
         assert.equal(formatSpellCount(spellCounts(rows)), '4 sorts · 2 préparés');
         assert.equal(formatSpellCount(spellCounts(rows, '1'), true), '2 / 4 sorts · 2 préparés');
+        // Table de la classe : « Préparés : x / y » et sorts mineurs, avertissement au-delà
+        assert.equal(formatSpellCount({ total: 9, visible: 9, prepared: 7, cantrips: 3 }, false, { cantrips: 4, prepared: 9 }),
+            '9 sorts · Préparés : 7 / 9 · Sorts mineurs : 3 / 4');
+        assert.equal(formatSpellCount({ total: 3, visible: 3, prepared: 2, cantrips: 0 }, false, { cantrips: null, prepared: 2 }),
+            '3 sorts · Préparés : 2 / 2');
+        assert.deepEqual(spellLimitWarnings({ prepared: 7, cantrips: 3 }, { cantrips: 4, prepared: 9 }), []);
+        // Seuls les sorts préparés en trop sont une erreur ; les sorts mineurs en trop, un rappel
+        assert.equal(spellLimitWarnings({ prepared: 10, cantrips: 5 }, { cantrips: 4, prepared: 9 }).length, 1);
+        assert.deepEqual(spellLimitWarnings({ prepared: 9, cantrips: 5 }, { cantrips: 4, prepared: 9 }), []);
+        assert.match(cantripLimitNote({ cantrips: 5 }, { cantrips: 4, prepared: 9 }), /^5 sorts mineurs notés pour 4 .*espèce/);
+        assert.equal(cantripLimitNote({ cantrips: 4 }, { cantrips: 4, prepared: 9 }), null);
+        assert.equal(cantripLimitNote({ cantrips: 4 }, { cantrips: null, prepared: 2 }), null);
+        assert.deepEqual(spellLimitWarnings({ prepared: 10, cantrips: 5 }, null), []);
         assert.equal(formatSpellCount({ total: 1, visible: 1, prepared: 0 }), '1 sort · 0 préparé');
+    });
+
+    test('Table de la classe : sorts déjà donnés et niveau vide hors du compte', () => {
+        const grimoire = [
+            { name: 'Marque du Chasseur', lvl: '1', prep: true },
+            { name: 'Soins', lvl: '1', prep: true },
+            { name: 'Thaumaturgie', lvl: '0' },
+            { name: 'Bouclier', lvl: '' }
+        ];
+        // Sans sorts donnés : 2 préparés ; la case de niveau vide n'est pas un sort mineur
+        assert.deepEqual(spellCounts(grimoire), { total: 4, visible: 4, prepared: 2, cantrips: 1 });
+        // Marque du chasseur (toujours préparée chez le Rôdeur), écrite autrement : hors du compte
+        const granted = new Set(['Marque du chasseur', 'Thaumaturgie'].map(spellNameKey));
+        assert.deepEqual(spellCounts(grimoire, '', granted), { total: 4, visible: 4, prepared: 1, cantrips: 0 });
     });
 
     test('Nouvelle ligne : copie de EMPTY_SPELL au niveau du filtre actif', () => {
@@ -425,7 +452,7 @@ describe('Le personnage lance-t-il des sorts ? (présentation du grimoire)', () 
         assert.equal(status({ classSlug: 'rogue', subclass: 'arcane trickster', level: 7 }).casts, true);
         assert.equal(status({ classSlug: 'rogue', subclass: '<b>Escroc arcanique</b>', level: 3 }).casts, true);
         assert.deepEqual(status({ classSlug: 'fighter', subclass: 'Chevalier Occulte', level: 2 }),
-            { casts: false, source: '', unlockLevel: 3, subclassName: 'Chevalier Occulte' });
+            { casts: false, source: '', unlockLevel: 3, subclassName: 'Chevalier occulte' });
         // Sous-classe d'une autre classe : sans effet
         assert.equal(status({ classSlug: 'barbarian', subclass: 'Chevalier Occulte', level: 5 }).casts, false);
         assert.equal(status({ classSlug: 'fighter', subclass: 'Champion', level: 5 }).casts, false);

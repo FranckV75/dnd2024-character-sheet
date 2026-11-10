@@ -1,6 +1,6 @@
 // =============================================================================
 // MANEUVERS.JS (données) - Manœuvres du Maître de guerre (PHB 2024 anglais, p. 94-95, « Maneuver
-// Options ») et outils d'artisan de Disciple de la guerre (p. 94 ; outils p. 220-221).
+// Options ») et outils d'artisan de Disciple martial (p. 94 ; outils p. 220-221).
 //
 // 20 manœuvres en 2024 (Brace, Grappling Strike et Quick Toss n'existent plus). Noms français du
 // Manuel des joueurs 2024 (photos de Franck du 10/11/2026), dans l'ordre alphabétique du manuel.
@@ -54,7 +54,7 @@ export const MANEUVERS = Object.freeze([
         text: 'Réaction quand une créature vous rate au corps à corps : attaque au corps à corps contre elle ; si elle touche, le dé s\'ajoute aux dégâts.' }
 ]);
 
-/** Compétences proposées au Guerrier de niveau 1 (PHB 2024, p. 91) : Disciple de la guerre */
+/** Compétences proposées au Guerrier de niveau 1 (PHB 2024, p. 91) : Disciple martial */
 export const FIGHTER_SKILLS = Object.freeze([
     'acrobatics', 'animal_handling', 'athletics', 'history', 'insight', 'intimidation', 'perception', 'persuasion', 'survival'
 ]);

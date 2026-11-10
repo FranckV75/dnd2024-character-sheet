@@ -92,7 +92,7 @@ describe('Marque du chasseur : dé affiché sur le bouton', () => {
     });
 });
 
-describe('Résilience draconique : PV max', () => {
+describe('Résistance draconique : PV max', () => {
     test('« dont +niveau » à reporter soi-même, rien avant le niveau 3', () => {
         const notes = featEffects(hero({ char_class: 'Ensorceleur', char_subclass: 'Sorcellerie Draconique' })).hpMax;
         const note = notes.find(n => n.featId === 'resilience_draconique');

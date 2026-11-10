@@ -190,7 +190,7 @@ function buildFeats(root) {
         const reserved = classFeatSlot(level);
         const style = Boolean(reserved?.style);
         // Second don de l'Humain (trait Polyvalent) : un don d'origine seulement ; style de combat :
-        // un don de cette catégorie (ou, au niveau 2, Guerrier béni / druidique à la place)
+        // un don de cette catégorie (ou, au niveau 2, Combattant béni / druidique à la place)
         const select = el('select', {
             id: `f-feat_${level}`, class: 'input', 'data-field': `feat_${level}`,
             'aria-label': human ? "Second don d'origine (Humain, trait Polyvalent)"
@@ -228,6 +228,7 @@ function buildFeats(root) {
 function buildStaticOptions(root) {
     fillSelect(root.querySelector('#f-char_class'),
         Object.values(DD_RULES.classes).map(c => [c.nameFr, c.nameFr]));
+    markAliases(root.querySelector('#f-char_class'), Object.values(DD_RULES.classes));
     fillSelect(root.querySelector('#f-char_species'),
         Object.values(DD_RULES.species).map(s => [s.nameFr, s.nameFr]));
     fillSelect(root.querySelector('#f-char_background'),
@@ -274,7 +275,8 @@ function bindFields(root, store) {
         // Nouvelle classe : sous-classe remise à zéro si elle n'appartient pas à la classe,
         // dé de vie mis à jour (comme en v3)
         if (key === 'char_class') {
-            if (!subclassesOf(patch.char_class).some(s => s.nameFr === store.get().char_subclass)) {
+            const current = foldName(store.get().char_subclass);
+            if (!subclassesOf(patch.char_class).some(s => DD_RULES.namesOf(s).some(name => foldName(name) === current))) {
                 patch.char_subclass = '';
             }
             const die = hitDieForClass(patch.char_class);
@@ -309,8 +311,27 @@ function bindFields(root, store) {
 // ---------------------------------------------------------------------------
 
 function subclassesOf(className) {
-    const slug = Object.entries(DD_RULES.classes).find(([, c]) => c.nameFr === className)?.[0];
+    const wanted = foldName(className);
+    const slug = Object.entries(DD_RULES.classes).find(([, c]) => DD_RULES.namesOf(c).some(name => foldName(name) === wanted))?.[0];
     return slug ? Object.values(DD_RULES.subclasses).filter(s => s.class === slug) : [];
+}
+
+/** Nom comparable : sans HTML, espaces ni majuscules */
+function foldName(value) {
+    return stripHTML(String(value ?? '')).trim().toLowerCase();
+}
+
+/**
+ * Anciens noms d'une option (« Sorcier » pour « Occultiste », sous-classes renommées d'après le
+ * manuel) : une fiche enregistrée sous l'ancien nom affiche l'option actuelle, sans être réécrite.
+ * @param {HTMLSelectElement} select
+ * @param {{ nameFr: string, name: string, aliasesFr?: string[] }[]} entries
+ */
+function markAliases(select, entries) {
+    for (const option of select.options) {
+        const entry = entries.find(e => e.nameFr === option.value);
+        if (entry) option.dataset.aliases = DD_RULES.namesOf(entry).map(foldName).join('|');
+    }
 }
 
 /**
@@ -347,7 +368,13 @@ function writeField(field, value, force = false) {
         // Ancienne sauvegarde avec un peu de HTML (« <font …>4</font> ») : l'option du même texte est
         // choisie, sans réécrire la valeur enregistrée
         const plain = stripHTML(raw).trim();
-        const text = plain !== raw && [...field.options].some(o => o.value === plain && !o.dataset.legacy) ? plain : raw;
+        const options = [...field.options].filter(o => !o.dataset.legacy);
+        // Ancien nom (« Sorcier ») : l'option du nom actuel (« Occultiste »), valeur enregistrée inchangée
+        const alias = !options.some(o => o.value === raw || o.value === plain)
+            ? options.find(o => o.dataset.aliases?.split('|').includes(plain.toLowerCase()))
+            : null;
+        const text = alias ? alias.value
+            : plain !== raw && options.some(o => o.value === plain) ? plain : raw;
         ensureOption(field, text);
         field.value = text;
         return;
@@ -363,6 +390,7 @@ function renderDynamicSelects(root, character, d) {
     const wanted = subs.map(s => s.nameFr).join('|');
     if (subSelect.dataset.forClass !== wanted) {
         fillSelect(subSelect, subs.map(s => [s.nameFr, s.source === 'Odyssée' ? `${s.nameFr} (Odyssée)` : s.nameFr]));
+        markAliases(subSelect, subs);
         subSelect.dataset.forClass = wanted;
     }
 
@@ -400,7 +428,7 @@ const OUTPUTS = {
     level: (d) => d.level,
     classResourceLabel: (d) => d.classResource.count ? d.classResource.label : 'Ressource de classe',
     exhaustion: (d) => d.exhaustion.dead ? 'Mort'
-        : d.exhaustion.level ? `${d.exhaustion.d20Penalty} aux tests de d20 ; vitesse -${String(d.exhaustion.speedPenaltyM).replace('.', ',')} m` : 'Aucun effet',
+        : d.exhaustion.level ? `${d.exhaustion.d20Penalty} aux Tests d20 ; vitesse -${String(d.exhaustion.speedPenaltyM).replace('.', ',')} m` : 'Aucun effet',
     renownTier: (d) => d.renownTier,
     spellDc: (d) => d.spellcasting ? d.spellcasting.dc : '—',
     spellAttack: (d) => d.spellcasting ? signed(d.spellcasting.attack) : '—',
@@ -533,7 +561,7 @@ function renderFeats(root, character, d, effects, counters) {
         // Même lecture que les règles (featSlots, js/rules/feats.js) : valeur nettoyée du HTML
         // des anciennes sauvegardes, pour que le don qui compte soit aussi celui qui est décrit
         const featId = stripHTML(String(character[`feat_${level}`] ?? ''));
-        // Guerrier béni / druidique (à la place du style de combat) : pas un don, mais décrit pareil
+        // Combattant béni / druidique (à la place du style de combat) : pas un don, mais décrit pareil
         const alternative = level === STYLE_FEAT_SLOT && Object.hasOwn(STYLE_ALTERNATIVES, featId) ? STYLE_ALTERNATIVES[featId] : null;
         const feat = Object.hasOwn(FEATS_DATA, featId) ? FEATS_DATA[featId]
             : alternative ? { prereq: `${alternative.className} niveau 2`, desc: alternative.desc } : undefined;
@@ -595,7 +623,7 @@ function syncCounterChecks(root, counters) {
 /** Bande « dons » de l'onglet Combat (et capacités de sous-classe), masquée si rien n'a de cases */
 function renderFeatCounters(root, counters) {
     const box = root.querySelector('#feat-counters');
-    // (le rechargement peut changer avec le niveau : Flash protecteur, repos court au niveau 6)
+    // (le rechargement peut changer avec le niveau : Éclat protecteur, repos court au niveau 6)
     const signature = JSON.stringify(counters.map(({ key, max, label, resetText, featName, use }) => [key, max, label, resetText, featName, use]));
     if (renderedSignatures.get(box) !== signature) {
         renderedSignatures.set(box, signature);
@@ -649,7 +677,7 @@ const MENTION_LABELS = {
         affinite_aquatique: 'Nage\u00a0= Vitesse'
     })[note.featId] ?? (note.value === undefined ? note.featName : `dont\u00a0+${note.value}\u00a0m grâce à ${note.featName}`),
     deathSaves: (note) => `Avantage (${note.featName})`,
-    // Près des cases de la ressource de classe (lot 7) : « Poème rang 2 · min. 2 », « Influence ±1d4 »
+    // Près des cases de la ressource de classe (lot 7) : « Poème rang 2 · min. 2 », « Hasard ±1d4 »
     classResource: (note) => note.mention ?? note.featName,
     saves: (note) => ({
         mage_de_guerre: 'Avantage Concentration',

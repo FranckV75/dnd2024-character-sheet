@@ -42,7 +42,7 @@ describe('Dés des ressources', () => {
             { count: 8, die: 'd10' }, { count: 10, die: 'd10' }, { count: 12, die: 'd12' }]);
     });
 
-    test('Frénésie = bonus de Rage en d6 ; Frappe effroyable 2d6 puis 2d8 ; Frappes redoutables 1d4 puis 1d6', () => {
+    test('Frénésie = bonus de Rage en d6 ; Frappe effroyable 2d6 puis 2d8 ; Frappes effroyables 1d4 puis 1d6', () => {
         assert.deepEqual([3, 9, 16].map(frenzyDice), ['2d6', '3d6', '4d6']);
         assert.deepEqual([3, 11].map(dreadfulStrikeDice), ['2d6', '2d8']);
         assert.deepEqual([3, 11].map(feyStrikesDie), ['1d4', '1d6']);
@@ -72,14 +72,14 @@ describe('Boutons du tableau des armes', () => {
         assert.doesNotMatch(damage(zealot, SWORD), /Frénésie/);
     });
 
-    test('Frappe effroyable, Frappes redoutables, Tueur de colosses : avec une arme seulement', () => {
+    test('Frappe effroyable, Frappes effroyables, Goût du sang : avec une arme seulement', () => {
         const gloom = record('Rôdeur', "Traqueur d'Ombre", 11, { combat_buffs: { dreadfulStrike: true } });
         assert.match(damage(gloom, BOW), /\+2d8 \(Psychique 1\/tour\)/);
         assert.doesNotMatch(damage(gloom, UNARMED), /Psychique/);
         const fey = record('Rôdeur', 'Errant Féerique', 3, { combat_buffs: { feyStrikes: true } });
         assert.match(damage(fey, SWORD), /\+1d4 \(Psychique\)/);
         const hunter = record('Rôdeur', 'Chasseur', 3, { combat_buffs: { colossusSlayer: true } });
-        assert.match(damage(hunter, SWORD), /\+1d8 \(Tueur de colosses 1\/tour\)/);
+        assert.match(damage(hunter, SWORD), /\+1d8 \(Goût du sang 1\/tour\)/);
     });
 
     test('Manœuvre et Frappe psionique', () => {
@@ -138,7 +138,7 @@ describe('Cases des ressources', () => {
         assert.ok(!philo('14').includes('epicurisme'));
     });
 
-    test('Flash protecteur : repos long, puis aussi repos court au niveau 6', () => {
+    test('Éclat protecteur : repos long, puis aussi repos court au niveau 6', () => {
         const key = 'light_domain.flash_protecteur';
         const at = (level) => {
             const r = record('Clerc', 'Domaine de la Lumière', level, { wis_score: '16', subclass_uses: { [key]: 2 } });
@@ -158,7 +158,7 @@ describe('Cases des ressources', () => {
         assert.deepEqual([restored[0].count, restored[0].remaining], [1, 3]);
     });
 
-    test('ressources oubliées au premier passage : Maître télékinésiste, Carte stellaire, Plénitude physique…', () => {
+    test('ressources oubliées au premier passage : Maître télékinétique, Carte stellaire, Plénitude physique…', () => {
         const features = (cls, sub, level, extra) => {
             const r = record(cls, sub, level, extra);
             return subclassCounters(r, deriveCharacter(r)).map(c => c.feature);
@@ -178,7 +178,7 @@ describe('Cases des ressources', () => {
         assert.deepEqual(subclassBuffs(r, d), ['dreadfulStrike']);
     });
 
-    test('Lumière guérisseuse : réserve de 1 + niveau de Sorcier', () => {
+    test('Lumière guérisseuse : réserve de 1 + niveau d\'Occultiste', () => {
         const r = record('Sorcier', 'Patron Céleste', 5);
         const pool = subclassCounters(r, deriveCharacter(r)).find(c => c.feature === 'lumiere_guerisseuse');
         assert.equal(pool.max, 6);
@@ -201,7 +201,7 @@ describe('Résistances près de la CA', () => {
         assert.equal(on.inactive, undefined);
     });
 
-    test('Domaine de la guerre 17, Âme radieuse 6 : dans la zone CA des effets', () => {
+    test('Domaine de la guerre 17, Âme radiante 6 : dans la zone CA des effets', () => {
         const war = record('Clerc', 'Domaine de la Guerre', 17);
         assert.ok(featEffects(war, deriveCharacter(war)).armorClass.some(n => n.mention === 'Résistance C/P/T'));
         assert.deepEqual(subclassDefenseNotes(hero('Clerc', 'Domaine de la Guerre', 16)), {});
@@ -219,7 +219,7 @@ describe('Rappels sous les armes et textes', () => {
         assert.match(damage(r, UNARMED), /\+1d8 \(Supériorité\)/);
     });
 
-    test('Racines percutantes : armes Lourdes ou Polyvalentes de corps à corps, niveau 10', () => {
+    test('Rossée de racines : armes Lourdes ou Polyvalentes de corps à corps, niveau 10', () => {
         const d = hero('Barbare', "Voie de l'Arbre-Monde", 10);
         assert.equal(subclassCombatWeaponNotes(SWORD, d)[0].featId, 'racines_percutantes');
         assert.deepEqual(subclassCombatWeaponNotes(BOW, d), []);

@@ -68,17 +68,17 @@ const CLASS_SLOT_CAPTIONS = Object.freeze({
 const FIGHTING_STYLE_CLASSES = Object.freeze(['fighter', 'paladin', 'ranger']);
 
 /**
- * À la place d'un style de combat (PHB 2024) : Guerrier béni (Paladin) ou Guerrier druidique
+ * À la place d'un style de combat (PHB 2024) : Combattant béni (Paladin) ou Combattant druidique
  * (Rôdeur), deux sorts mineurs. Valeurs possibles de feat_2 seulement ; ce ne sont pas des dons.
  */
 export const STYLE_ALTERNATIVES = Object.freeze({
     guerrier_beni: Object.freeze({
-        name: 'Guerrier béni', classId: 'paladin', className: 'Paladin',
-        desc: "<strong>Guerrier béni.</strong> À la place d'un style de combat, vous apprenez deux sorts mineurs de Clerc de votre choix (Assistance et Flamme sacrée sont conseillés). Ils comptent comme des sorts de Paladin pour vous, et le Charisme est votre caractéristique d'incantation pour eux. Quand vous gagnez un niveau de Paladin, vous pouvez remplacer l'un d'eux par un autre sort mineur de Clerc."
+        name: 'Combattant béni', classId: 'paladin', className: 'Paladin',
+        desc: "<strong>Combattant béni.</strong> À la place d'un style de combat, vous apprenez deux sorts mineurs de Clerc de votre choix (Assistance et Flamme sacrée sont conseillés). Ils comptent comme des sorts de Paladin pour vous, et le Charisme est votre caractéristique d'incantation pour eux. Quand vous gagnez un niveau de Paladin, vous pouvez remplacer l'un d'eux par un autre sort mineur de Clerc."
     }),
     guerrier_druidique: Object.freeze({
-        name: 'Guerrier druidique', classId: 'ranger', className: 'Rôdeur',
-        desc: "<strong>Guerrier druidique.</strong> À la place d'un style de combat, vous apprenez deux sorts mineurs de Druide de votre choix (Assistance et Poussière d'étoile sont conseillés). Ils comptent comme des sorts de Rôdeur pour vous, et la Sagesse est votre caractéristique d'incantation pour eux. Quand vous gagnez un niveau de Rôdeur, vous pouvez remplacer l'un d'eux par un autre sort mineur de Druide."
+        name: 'Combattant druidique', classId: 'ranger', className: 'Rôdeur',
+        desc: "<strong>Combattant druidique.</strong> À la place d'un style de combat, vous apprenez deux sorts mineurs de Druide de votre choix (Assistance et Poussière d'étoile sont conseillés). Ils comptent comme des sorts de Rôdeur pour vous, et la Sagesse est votre caractéristique d'incantation pour eux. Quand vous gagnez un niveau de Rôdeur, vous pouvez remplacer l'un d'eux par un autre sort mineur de Druide."
     })
 });
 
@@ -92,7 +92,7 @@ export function classOf(character) {
     const clean = plain(character?.char_class).toLowerCase();
     if (!clean) return '';
     for (const [slug, cls] of Object.entries(DD_RULES.classes)) {
-        if (slug === clean || cls.name.toLowerCase() === clean || cls.nameFr.toLowerCase() === clean) return slug;
+        if (slug === clean || DD_RULES.namesOf(cls).some((name) => name.toLowerCase() === clean)) return slug;
     }
     return '';
 }
@@ -102,7 +102,7 @@ export function subclassOf(character) {
     const clean = plain(character?.char_subclass).toLowerCase();
     if (!clean) return '';
     for (const [slug, sub] of Object.entries(DD_RULES.subclasses)) {
-        if (slug === clean || sub.name.toLowerCase() === clean || sub.nameFr.toLowerCase() === clean) return slug;
+        if (slug === clean || DD_RULES.namesOf(sub).some((name) => name.toLowerCase() === clean)) return slug;
     }
     return '';
 }

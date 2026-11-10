@@ -9,7 +9,7 @@
 // ouverte par une pastille placée à côté du bonus d'attaque.
 // Botte d'arme reconnue dans la colonne « Botte d'arme » (findMastery, js/rules/weapon-masteries.js) :
 // une pastille (livre), posée dans le coin bas droit de la case, ouvre la règle du manuel, les
-// valeurs calculées pour l'arme et la capacité Maîtrise des armes de la classe, fiche verrouillée
+// valeurs calculées pour l'arme et la capacité Bottes d'arme de la classe, fiche verrouillée
 // ou non. Elle est hors du flux (position absolue) : elle ne rehausse jamais la ligne. La saisie
 // n'est jamais réécrite : la pastille apparaît ou disparaît selon ce qui est écrit.
 // Les règles (filtres, remplissage depuis le manuel, validation) sont dans js/rules/weapons.js.
@@ -91,7 +91,7 @@ const BUFF_DEFS = {
         text: `Attaque sournoise (${sneakAttackDice(level)}d6)`,
         title: `Attaque sournoise : +${sneakAttackDice(level)}d6 avec une arme de finesse ou à distance (une fois par tour)`
     }),
-    // Rôdeur niveau 20, Tueur d'ennemis : 1d10 (même règle que computeWeapon)
+    // Rôdeur niveau 20, Tueur implacable : 1d10 (même règle que computeWeapon)
     hunterMark: ({ level, classSlug }) => {
         const die = hunterMarkDie({ level, classSlug });
         return {
@@ -133,22 +133,22 @@ const BUFF_DEFS = {
     frenzy: ({ level }) => ({
         icon: 'flame',
         text: `Frénésie (+${frenzyDice(level)})`,
-        title: `Frénésie (Berserker) : avec l'Attaque téméraire pendant la Rage, +${frenzyDice(level)} au premier coup du tour avec une attaque de Force. Compté seulement si le bouton Rage est allumé aussi.`
+        title: `Frénésie (Berserker) : avec Témérité pendant la Rage, +${frenzyDice(level)} au premier coup du tour avec une attaque de Force. Compté seulement si le bouton Rage est allumé aussi.`
     }),
     dreadfulStrike: ({ level }) => ({
         icon: 'moon',
         text: `Frappe effroyable (+${dreadfulStrikeDice(level)})`,
-        title: `Frappe effroyable (Traqueur d'ombre) : +${dreadfulStrikeDice(level)} psychiques avec une arme, une fois par tour ; cochez une case dans la bande des capacités.`
+        title: `Frappe effroyable (Traqueur des ténèbres) : +${dreadfulStrikeDice(level)} psychiques avec une arme, une fois par tour ; cochez une case dans la bande des capacités.`
     }),
     feyStrikes: ({ level }) => ({
         icon: 'sparkle',
-        text: `Frappes redoutables (+${feyStrikesDie(level)})`,
-        title: `Frappes redoutables (Errant féerique) : +${feyStrikesDie(level)} psychiques avec une arme, une fois par tour pour une même cible.`
+        text: `Frappes effroyables (+${feyStrikesDie(level)})`,
+        title: `Frappes effroyables (Vagabond féerique) : +${feyStrikesDie(level)} psychiques avec une arme, une fois par tour pour une même cible.`
     }),
     colossusSlayer: () => ({
         icon: 'target',
-        text: 'Tueur de colosses (+1d8)',
-        title: "Tueur de colosses (Proie du chasseur) : +1d8 avec une arme contre une créature qui a perdu des PV, une fois par tour. Allumez-le si vous avez choisi cette option et que la cible est blessée."
+        text: 'Goût du sang (+1d8)',
+        title: "Goût du sang (Proie du chasseur) : +1d8 avec une arme contre une créature qui a perdu des PV, une fois par tour. Allumez-le si vous avez choisi cette option et que la cible est blessée."
     }),
     superiority: (derived) => ({
         icon: 'swords',
@@ -158,7 +158,7 @@ const BUFF_DEFS = {
     psionicStrike: (derived) => ({
         icon: 'star',
         text: `Frappe psionique (+1${psionicDice(derived.level).die})`,
-        title: `Frappe psionique (Guerrier psionique) : +1${psionicDice(derived.level).die} + Intelligence de dégâts de force, une fois par tour, cible à 9 m ou moins. Cochez un dé psionique dans la bande des capacités.`
+        title: `Frappe psionique (Soldat psi) : +1${psionicDice(derived.level).die} + Intelligence de dégâts de force, une fois par tour, cible à 9 m ou moins. Cochez un dé psionique dans la bande des capacités.`
     })
 };
 
@@ -615,7 +615,7 @@ export function initWeapons(ctx) {
                     click: () => {
                         const current = store.get();
                         const combatBuffs = toggleBuff(current.combat_buffs, d.key);
-                        // Rage éteinte : les cases « une fois par Rage » se vident (Focalisation fanatique)
+                        // Rage éteinte : les cases « une fois par Rage » se vident (Détermination fanatique)
                         store.update({ combat_buffs: combatBuffs, ...rageEndPatch(current, deriveCharacter(current), combatBuffs) });
                     }
                 }
@@ -659,14 +659,14 @@ export function initWeapons(ctx) {
                 el('p', { class: 'weapons-mastery-calc-none', text: note }));
         }
 
-        // Arme non maîtrisée : la capacité Maîtrise des armes (et le don Maître d'armes) ne vaut qu'avec une arme maîtrisée
+        // Arme non maîtrisée : la capacité Bottes d'arme (et le don Maître d'armes) ne vaut qu'avec une arme maîtrisée
         const proficiency = computeWeapon(weapon, derived)?.proficiency;
         const unproficient = proficiency && !proficiency.proficient
             ? el('p', { class: 'weapons-mastery-unproficient', text: "Vous ne maîtrisez pas cette arme : sa botte ne s'utilise qu'avec une arme maîtrisée (réglage « Arme maîtrisée » de la configuration de l'arme)." })
             : null;
 
         const pages = [`p. ${mastery.page}`];
-        if (feature) pages.push(`capacité Maîtrise des armes (${feature.className}) : p. ${feature.page}`);
+        if (feature) pages.push(`capacité Bottes d'arme (${feature.className}) : p. ${feature.page}`);
 
         openModal({
             title: mastery.name,
@@ -678,7 +678,7 @@ export function initWeapons(ctx) {
                 weaponBox,
                 unproficient,
                 el('div', { class: 'weapons-mastery-access' },
-                    el('p', { class: 'weapons-mastery-access-title', text: 'Maîtrise des armes' }),
+                    el('p', { class: 'weapons-mastery-access-title', text: "Bottes d'arme" }),
                     el('p', { text: masteryAccessNote(character, derived) })),
                 el('p', { class: 'weapons-mastery-source', text: `Manuel des joueurs 2024, ${pages.join(' ; ')}.` })),
             actions: [{ label: 'Fermer', primary: true }]

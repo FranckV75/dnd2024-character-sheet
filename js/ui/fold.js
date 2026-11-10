@@ -61,7 +61,7 @@ export function applyFold(block) {
 
 /**
  * Bouton de repli : une pastille avec un chevron, et le texte visible (« Niv. 3 », nom du compagnon…).
- * @param {string} label - nom accessible (« Niv. 3, Rage sauvage »)
+ * @param {string} label - nom accessible (« Niv. 3, Rage du prédateur »)
  * @param {...(Node|string)} content - contenu visible du bouton (aucun : chevron seul)
  * @returns {HTMLButtonElement}
  */

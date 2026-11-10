@@ -63,11 +63,23 @@ describe('Capacités atteintes et à venir', () => {
 
     test('Korgul, Barbare Zélote niveau 4 : les deux capacités du niveau 3 atteintes', () => {
         const { subclass, reached, upcoming } = subclassFeatures(hero({ char_class: 'Barbare', char_subclass: 'Voie du Zélote', char_level: '4' }));
-        assert.equal(subclass.name, 'Voie du Zélote');
+        assert.equal(subclass.name, 'Voie du Zélateur');
         assert.deepEqual(reached.map(f => f.level), [3, 3]);
         assert.ok(reached.some(f => /Fureur divine/.test(f.name)));
         assert.deepEqual(upcoming.map(f => f.level), [6, 10, 14]);
         assert.equal(automationKind(reached[0]), 'calc');
+    });
+
+    test('anciennes sauvegardes (noms d\'avant le Manuel français) : mêmes capacités, noms du livre', () => {
+        // Sous-classe et classe enregistrées sous leur ancien nom ; les id ne changent pas
+        const zealot = subclassFeatures(hero({ char_class: 'Barbare', char_subclass: 'Voie du Zélote', char_level: '6' }));
+        assert.equal(zealot.subclass.key, 'path_of_the_zealot');
+        assert.equal(zealot.reached.find(f => f.id === 'guerrier_des_dieux').name, 'Soldat des dieux');
+        assert.equal(zealot.reached.find(f => f.id === 'focalisation_fanatique').name, 'Détermination fanatique');
+        const fey = subclassFeatures(hero({ char_class: 'Sorcier', char_subclass: 'Patron Archifée', char_level: '6' }));
+        assert.equal(fey.subclass.name, 'Protecteur Archifée');
+        assert.deepEqual(fey.reached.filter(f => f.id === 'foulees_feeriques' || f.id === 'fuite_brumeuse').map(f => f.name),
+            ['Foulée des fées', 'Échappatoire brumeuse']);
     });
 
     test('niveau 2 : tout est à venir ; sans sous-classe : rien', () => {

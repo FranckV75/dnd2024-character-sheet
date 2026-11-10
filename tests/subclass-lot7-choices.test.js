@@ -1,7 +1,7 @@
 // =============================================================================
 // Sous-classes, lot 7 : petits choix mémorisés (terre du Cercle de la Terre, Présage cosmique,
-// Affinité élémentaire, Résilience fiélonne, Esprit d'acier, Ancêtre divin, Troisième œil,
-// Révélation dans la chair, œuf du pseudodragon, Cri de guerre, Prédictions des Moires, Don de la
+// Affinité élémentaire, Résistance fiélonne, Mental d'acier, Ancêtre divin, Troisième œil,
+// Révélation incarnée, œuf du pseudodragon, Cri de guerre, Prédictions des Moires, Don de la
 // Féerie, Manifestations de l'ordre) et leurs effets ; effacement au repos (clearOn), rappels de fin
 // de repos (restReminder), cases à cocher (toggle).
 // =============================================================================
@@ -98,7 +98,7 @@ describe('Fiche sans choix enregistré : comme avant le lot 7', () => {
         assert.equal(defenses(land(10)).find(n => n.featId === 'protection_de_la_nature').mention, 'Résistance (terre)');
     });
 
-    test('Fiélon et draconique : lignes génériques ; Esprit d\'acier sur la Sagesse', () => {
+    test('Fiélon et draconique : lignes génériques ; Mental d\'acier sur la Sagesse', () => {
         assert.equal(defenses(fiend(10)).find(n => n.featId === 'resilience_fielonne').mention, 'Résistance au choix');
         assert.equal(defenses(draconic(6)).find(n => n.featId === 'affinite_elementaire').mention, 'Résistance (affinité)');
         assert.doesNotMatch(defenses(draconic(6))[0].text, /ascendance/);
@@ -108,7 +108,7 @@ describe('Fiche sans choix enregistré : comme avant le lot 7', () => {
     });
 
     test('textes et cases : rien de choisi, texte d\'origine', () => {
-        assert.equal(counter(stars(6), 'presage_cosmique').use, 'Réaction : +1d6 (Bienfait) ou −1d6 (Malheur) à un test d20 à 9 m.');
+        assert.equal(counter(stars(6), 'presage_cosmique').use, 'Réaction : +1d6 (Fortune) ou −1d6 (Péril) à un test d20 à 9 m.');
         assert.match(counter(amazon(3), 'cri_de_guerre').use, /un type de monstre/);
         assert.match(counter(diviner(10), 'troisieme_il').use, /vision dans le noir 36 m, lire les langues/);
         assert.deepEqual(subclassSpells(deriveCharacter(demigod(3))).reached, []);
@@ -149,7 +149,7 @@ describe('Cercle de la Terre', () => {
         assert.ok(spells.others.every(s => s.group !== 'Aride' && s.classLevel <= 5));
     });
 
-    test('Protection de la nature : rien au niveau 9, Résistance nommée au niveau 10', () => {
+    test('Protégé de dame Nature : rien au niveau 9, Résistance nommée au niveau 10', () => {
         assert.equal(defenses(land(9, { land: 'arid' })).length, 0);
         const ward = defenses(land(10, { land: 'arid' })).find(n => n.featId === 'protection_de_la_nature');
         assert.equal(ward.mention, 'Résistance au feu (terre aride)');
@@ -158,7 +158,7 @@ describe('Cercle de la Terre', () => {
         assert.equal(defenses(land(10, { land: 'tropical' }))[0].mention, 'Résistance au poison (terre tropicale)');
     });
 
-    test('textes « Dans la fiche » : sorts, Protection et Sanctuaire naturel selon la terre', () => {
+    test('textes « Dans la fiche » : sorts, Protection et Sanctuaire de dame Nature selon la terre', () => {
         assert.match(auto(land(3, { land: 'polar' }), 'sorts_du_cercle_de_la_terre'), /Sorts de sous-classe.*Terre polaire choisie/);
         assert.match(auto(land(3), 'sorts_du_cercle_de_la_terre'), /Choisissez la terre/);
         assert.match(auto(land(10, { land: 'polar' }), 'protection_de_la_nature'), /Résistance au froid \(terre polaire\)/);
@@ -167,10 +167,10 @@ describe('Cercle de la Terre', () => {
 });
 
 describe('Présage cosmique, Cri de guerre, Prédictions des Moires, Troisième œil : texte des cases', () => {
-    test('Présage : Bienfait ou Malheur sous les cases', () => {
-        assert.match(counter(stars(6, { omen: 'weal' }), 'presage_cosmique').use, /^Réaction : \+1d6 \(Bienfait\)/);
-        assert.match(counter(stars(6, { omen: 'woe' }), 'presage_cosmique').use, /^Réaction : −1d6 \(Malheur\)/);
-        assert.match(auto(stars(6, { omen: 'woe' }), 'presage_cosmique'), /Malheur.*1 case dans l'onglet Combat/);
+    test('Présage : Fortune ou Péril sous les cases', () => {
+        assert.match(counter(stars(6, { omen: 'weal' }), 'presage_cosmique').use, /^Réaction : \+1d6 \(Fortune\)/);
+        assert.match(counter(stars(6, { omen: 'woe' }), 'presage_cosmique').use, /^Réaction : −1d6 \(Péril\)/);
+        assert.match(auto(stars(6, { omen: 'woe' }), 'presage_cosmique'), /Péril.*1 case dans l'onglet Combat/);
     });
 
     test('Cri de guerre : type de monstre nommé', () => {
@@ -208,7 +208,7 @@ describe('Ancêtre divin', () => {
     });
 });
 
-describe('Esprit d\'acier', () => {
+describe('Mental d\'acier', () => {
     test('Intelligence choisie : rappel sur la sauvegarde d\'Intelligence, plus sur la Sagesse', () => {
         const c = gloom(7, { save: 'int' });
         const zones = subclassNotes(deriveCharacter(c), c);
@@ -225,7 +225,7 @@ describe('Esprit d\'acier', () => {
     });
 });
 
-describe('Révélation dans la chair', () => {
+describe('Révélation incarnée', () => {
     test('speedMeters : un nombre seul en mètres, sinon null', () => {
         assert.equal(speedMeters('9'), 9);
         assert.equal(speedMeters('9 m'), 9);
@@ -285,7 +285,7 @@ describe('Repos : choix effacés (clearOn) et rappels (restReminder)', () => {
         assert.equal(rest(land(3, { land: 'arid' }))[0].restKind, 'long');
         const omen = rest(stars(6, { omen: 'weal' }))[0];
         assert.equal(omen.restKind, 'long');
-        assert.match(omen.text, /Présage \(Bienfait\) : prend fin avec ce repos/);
+        assert.match(omen.text, /Présage \(Fortune\) : prend fin avec ce repos/);
         assert.match(rest(diviner(10, { eye: 'see' }))[0].text, /prend fin avec ce repos/);
         assert.deepEqual(rest(diviner(10)), []);
         // Dans le résumé des repos : court sans la terre, long avec
@@ -307,7 +307,7 @@ describe('Œuf du pseudodragon, Affinité élémentaire, choix descriptifs', () 
         assert.equal(defenses(c)[0].mention, 'Résistance au poison');
     });
 
-    test('Don de la Féerie et Manifestations de l\'ordre : simples menus mémorisés', () => {
+    test('Présents de Féerie et Manifestations de l\'ordre : simples menus mémorisés', () => {
         const fey = record('Rôdeur', 'Errant Féerique', 3, 'fey_wanderer', { gift: 'horns' });
         assert.deepEqual(subclassChoice(fey, deriveCharacter(fey)), { gift: 'horns' });
         const clock = record('Ensorceleur', 'Sorcellerie Mécanique', 3, 'clockwork_sorcery', { manifestation: 'ticking' });

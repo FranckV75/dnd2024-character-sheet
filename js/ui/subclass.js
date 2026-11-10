@@ -49,7 +49,7 @@ function choiceControls(fields, choice, featureName) {
             const takenElsewhere = new Set(field.group
                 ? fields.filter(other => other.group === field.group && other.key !== field.key).map(other => choice[other.key]).filter(Boolean)
                 : []);
-            // Case à cocher (Révélation dans la chair) : cochée = valeur de sa seule option
+            // Case à cocher (Révélation incarnée) : cochée = valeur de sa seule option
             if (field.toggle) {
                 return el('div', { class: 'feat-choice subclass-choice-toggle' },
                     el('label', { class: 'subclass-choice-check' },

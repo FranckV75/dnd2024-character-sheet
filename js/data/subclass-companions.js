@@ -3,7 +3,7 @@
 //
 // Blocs constants des créatures que donne une sous-classe ; les chiffres qui dépendent du personnage
 // (PV, CA, bonus d'attaque, DD, sauvegardes) sont calculés par js/rules/subclass-companions.js.
-//  - Maître des bêtes (PHB 2024, p. 122-124) : bête primordiale de la terre, de la mer ou du ciel ;
+//  - Maître des bêtes (PHB 2024, p. 122-124) : bête primordiale des terres, des mers ou des cieux ;
 //  - Conclave des Amazones (Odyssée, p. 49 et 51) : stimfée, oiseau mécanique ;
 //  - Serment du Seigneur Dragon (Odyssée, p. 47 et 49) : pseudodragon (PHB 2024, p. 354), puis dragon
 //    lié. Le guide renvoie au Manuel des monstres pour le dragon : blocs des dragonnets repris du
@@ -25,7 +25,7 @@ export const BEAST_STRIKE_TYPES = Object.freeze([
  */
 export const PRIMAL_BEASTS = Object.freeze({
     land: {
-        label: 'Bête de la terre', size: 'Moyenne', hpBase: 5, hpPerLevel: 5, hitDie: 'd8',
+        label: 'Bête des terres', size: 'Moyenne', hpBase: 5, hpPerLevel: 5, hitDie: 'd8',
         speed: '12 m, escalade 12 m',
         scores: { str: 14, dex: 14, con: 15, int: 8, wis: 14, cha: 11 },
         senses: 'vision dans le noir 18 m',
@@ -34,7 +34,7 @@ export const PRIMAL_BEASTS = Object.freeze({
         traits: []
     },
     sea: {
-        label: 'Bête de la mer', size: 'Moyenne', hpBase: 5, hpPerLevel: 5, hitDie: 'd8',
+        label: 'Bête des mers', size: 'Moyenne', hpBase: 5, hpPerLevel: 5, hitDie: 'd8',
         speed: '1,5 m, nage 18 m',
         scores: { str: 14, dex: 14, con: 15, int: 8, wis: 14, cha: 11 },
         senses: 'vision dans le noir 27 m',
@@ -43,12 +43,12 @@ export const PRIMAL_BEASTS = Object.freeze({
         traits: [['Amphibie', 'Elle respire dans l\'air et sous l\'eau.']]
     },
     sky: {
-        label: 'Bête du ciel', size: 'Petite', hpBase: 4, hpPerLevel: 4, hitDie: 'd6',
+        label: 'Bête des cieux', size: 'Petite', hpBase: 4, hpPerLevel: 4, hitDie: 'd6',
         speed: '3 m, vol 18 m',
         scores: { str: 6, dex: 16, con: 13, int: 8, wis: 14, cha: 11 },
         senses: 'vision dans le noir 18 m',
         strikeDie: '1d4', strikeFlat: 3, strikeTypes: ['slashing'],
-        traits: [['Vol rasant', 'Elle ne provoque pas d\'attaque d\'opportunité quand elle sort en volant de l\'allonge d\'un ennemi.']]
+        traits: [['Repli aérien', 'Elle ne provoque pas d\'attaque d\'opportunité quand elle sort en volant de l\'allonge d\'un ennemi.']]
     }
 });
 

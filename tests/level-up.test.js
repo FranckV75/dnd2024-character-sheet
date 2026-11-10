@@ -49,14 +49,14 @@ describe('Montée de niveau : points de vie', () => {
         assert.equal(hitPointGain(weak, { mode: 'roll', roll: '1' }), 1);
     });
 
-    test('Bonus par niveau déjà connus de la fiche : Robuste, Résilience draconique, Nain', () => {
+    test('Bonus par niveau déjà connus de la fiche : Robuste, Résistance draconique, Nain', () => {
         const sorcerer = planLevelUp(sheet({
             char_class: 'Ensorceleur', char_subclass: 'Sorcellerie draconique', char_level: '5', feat_4: 'robuste', hp_max: '40', con_score: '14'
         }));
-        assert.deepEqual(sorcerer.hp.bonuses, [{ name: 'Robuste', value: 2 }, { name: 'Résilience draconique', value: 1 }]);
+        assert.deepEqual(sorcerer.hp.bonuses, [{ name: 'Robuste', value: 2 }, { name: 'Résistance draconique', value: 1 }]);
         assert.equal(hitPointGain(sorcerer.hp, { mode: 'fixed' }), 4 + 2 + 3);
         const dwarf = planLevelUp(sheet({ char_class: 'Magicien', char_level: '2', hp_max: '12', con_score: '12', char_species: 'Nain' }));
-        assert.deepEqual(dwarf.hp.bonuses, [{ name: 'Nain', value: 1 }]);
+        assert.deepEqual(dwarf.hp.bonuses, [{ name: 'Ténacité naine', value: 1 }]);
     });
 
     test('Patch : niveau et PV max en texte ; PV actuels seulement sur demande', () => {
@@ -97,7 +97,7 @@ describe('Montée de niveau : ce qui change', () => {
     });
 
     test('Ressource et dés de classe', () => {
-        assert.match(all(planLevelUp(sheet({ char_class: 'Guerrier', char_level: '3' }))), /Second Souffle : 2 → 3/);
+        assert.match(all(planLevelUp(sheet({ char_class: 'Guerrier', char_level: '3' }))), /Second souffle : 2 → 3/);
         assert.match(all(planLevelUp(sheet({ char_class: 'Barbare', char_level: '8' }))), /Rage : \+2 → \+3/);
         assert.match(all(planLevelUp(sheet({ char_class: 'Roublard', char_level: '2' }))), /Attaque sournoise : 1d6 → 2d6/);
     });
@@ -112,7 +112,7 @@ describe('Montée de niveau : ce qui change', () => {
     test('Sous-classe : choix au niveau 3, puis nouvelles capacités et nouveaux choix', () => {
         assert.match(all(planLevelUp(sheet({ char_class: 'Magicien', char_level: '2' }))), /Choisissez votre sous-classe .*Évocateur/);
         const sorcerer = all(planLevelUp(sheet({ char_class: 'Ensorceleur', char_subclass: 'Sorcellerie draconique', char_level: '5' })));
-        assert.match(sorcerer, /Nouvelle capacité \(Sorcellerie Draconique\) : Affinité élémentaire/);
+        assert.match(sorcerer, /Nouvelle capacité \(Sorcellerie draconique\) : Affinité élémentaire/);
         assert.match(sorcerer, /À choisir dans le bloc Sous-classe : Type de dégâts/);
     });
 
@@ -141,9 +141,9 @@ describe('Montée de niveau : corrections de la relecture', () => {
         assert.deepEqual(hp.bonuses, [{ name: 'Robuste', value: 8 }]);
     });
 
-    test('Résilience draconique gagnée au niveau 3 : 1 PV par niveau, d\'un coup', () => {
+    test('Résistance draconique gagnée au niveau 3 : 1 PV par niveau, d\'un coup', () => {
         const { hp } = planLevelUp(sheet({ char_class: 'Ensorceleur', char_subclass: 'Sorcellerie draconique', char_level: '2', hp_max: '14', con_score: '10' }));
-        assert.deepEqual(hp.bonuses, [{ name: 'Résilience draconique', value: 3 }]);
+        assert.deepEqual(hp.bonuses, [{ name: 'Résistance draconique', value: 3 }]);
     });
 
     test('Constitution faible : au moins 1 PV avant le bonus du Nain', () => {

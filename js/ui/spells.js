@@ -38,7 +38,7 @@ import {
     SPELL_CLASS_OPTIONS, SPELL_LEVELS, plainText, cellText, descToPlainText, spellDisplayName,
     spellLevelLabel, effectiveSpellClass, searchSpells, findSpellByName, spellToRow, rowLevel,
     isSpellRowEmpty, hasSpellContent, spellRowsView, nextSort, spellCounts,
-    formatSpellCount, newSpellRow, slotView, toggleSlotUsed, adjustSlotMax, slotLevels,
+    formatSpellCount, spellLimitWarnings, cantripLimitNote, spellNameKey, newSpellRow, slotView, toggleSlotUsed, adjustSlotMax, slotLevels,
     nextFreeSlotLevel, spellcastingStatus, grimoireView, spellDamageTypes
 } from '../rules/spells.js';
 import { adeptElements, elementWord } from '../rules/feat-choices.js';
@@ -47,6 +47,7 @@ import { subclassSpells, subclassFeatures, markListedSpells } from '../rules/sub
 import { FEAT_SLOT_ORDER, HUMAN_FEAT_SLOT } from '../state/schema.js';
 import { ABILITY_IDS } from '../data/constants.js';
 import { loadSpells } from '../data/spells.js';
+import { classSpellCounts, classAlwaysPreparedSpells } from '../rules/class-progression.js';
 import { el, icon, setIconLabel } from './dom.js';
 import { cellText as createCellText } from './cell-text.js';
 import { attachAutocomplete } from './autocomplete.js';
@@ -244,6 +245,8 @@ export function initSpells(ctx) {
     }, icon('chat'));
 
     const countOut = el('output', { class: 'spell-count', 'aria-live': 'polite' });
+    // Dépassement de la table de la classe (sorts préparés, sorts mineurs) : dit en toutes lettres
+    const limitNote = el('p', { class: 'spell-limit-note', role: 'status', hidden: true });
 
     const toolbar = el('div', { class: 'spells-toolbar' },
         el('div', { class: 'spell-level-chips btn-segments', role: 'group', 'aria-label': 'Filtrer les sorts par niveau' }, levelChips),
@@ -690,7 +693,8 @@ export function initSpells(ctx) {
             tbody.append(...trs.filter(tr => tr.parentNode !== tbody));
         }
 
-        const counts = spellCounts(rows, view.level);
+        const derivedNow = deriveCharacter(character);
+        const counts = spellCounts(rows, view.level, grantedSpellKeys(character, derivedNow));
         const anySpell = rows.some(hasSpellContent);
         const anyShown = shown.size > 0;
         container.toggleAttribute('data-no-spells', !anySpell);
@@ -710,7 +714,20 @@ export function initSpells(ctx) {
         }
         emptyText.hidden = !emptyMain.textContent;
 
-        countOut.textContent = formatSpellCount(counts, view.level !== '');
+        // Table de la classe : « Préparés : 7 / 9 », en rouge au-delà ; sorts mineurs en trop :
+        // simple rappel (une espèce ou un don en donne d'autres). Les sorts donnés par la classe,
+        // la sous-classe ou un don ne comptent pas, même notés au grimoire.
+        const limits = derivedNow.classSlug ? classSpellCounts(derivedNow.classSlug, derivedNow.level) : null;
+        const warnings = spellLimitWarnings(counts, limits);
+        const note = cantripLimitNote(counts, limits);
+        countOut.textContent = formatSpellCount(counts, view.level !== '', limits);
+        countOut.classList.toggle('is-over', warnings.length > 0);
+        countOut.title = [...warnings, note].filter(Boolean).join(' ');
+        limitNote.replaceChildren(
+            ...warnings.map((text) => el('span', { text: `${text} ` })),
+            ...(note ? [el('span', { class: 'is-info', text: note })] : [])
+        );
+        limitNote.hidden = !limitNote.textContent;
     }
 
     function renderHeader() {
@@ -1118,6 +1135,7 @@ export function initSpells(ctx) {
 
     const body = el('div', { class: 'spells-body', id: 'spells-body' },
         toolbar,
+        limitNote,
         slotsBox,
         featBox,
         subclassBox,
@@ -1152,4 +1170,18 @@ export function initSpells(ctx) {
         // Base chargée : les repères « Adepte » peuvent maintenant s'afficher
         else if (adeptElements(store.get()).length) render(store.get(), ['dynamic_spells']);
     });
+}
+
+/**
+ * Sorts déjà donnés à la fiche (toujours préparés par la classe, sorts de sous-classe atteints,
+ * sorts de dons) : notés aussi au grimoire, ils ne comptent pas dans la table de la classe.
+ * @returns {Set<string>} noms comparables (spellNameKey)
+ */
+function grantedSpellKeys(character, derived) {
+    const names = derived.classSlug ? classAlwaysPreparedSpells(derived.classSlug, derived.level) : [];
+    for (const spell of subclassSpells(derived).reached) names.push(spell.name, spell.vo, ...(spell.aka ?? []));
+    for (const group of featSpellGroups(character, derived)) {
+        for (const spell of group.spells) names.push(spell.name, spell.vo);
+    }
+    return new Set(names.filter(Boolean).map(spellNameKey));
 }

@@ -108,7 +108,7 @@ describe('Voie du Cœur sauvage', () => {
         assert.equal(on.inactive, undefined);
     });
 
-    test('Aspect sauvage : escalade ou nage près de la Vitesse', () => {
+    test('Aspect de faune : escalade ou nage près de la Vitesse', () => {
         const speed = (choices) => {
             const c = wild(6, choices);
             return (subclassChoiceNotes(deriveCharacter(c), c).speed ?? []).map(n => n.text);
@@ -119,7 +119,7 @@ describe('Voie du Cœur sauvage', () => {
         assert.deepEqual(speed({}), []);
     });
 
-    test('Puissance sauvage, Faucon : vol pendant la Rage, éteint sans Rage ou avec une armure', () => {
+    test('Puissance de la faune, Faucon : vol pendant la Rage, éteint sans Rage ou avec une armure', () => {
         const falcon = (extra) => {
             const c = wild(14, { power: 'falcon' }, extra);
             return subclassChoiceNotes(deriveCharacter(c), c).speed[0];
@@ -141,7 +141,7 @@ describe('Voie du Cœur sauvage', () => {
 describe('Chasseur', () => {
     const hunter = (choices, extra = {}) => record('Rôdeur', 'Chasseur', 7, { subclass_choices: { hunter: choices }, ...extra });
 
-    test('Briseur de hordes : bouton Tueur de colosses retiré, et un bouton resté allumé ne compte plus', async () => {
+    test('Briseur de hordes : bouton Goût du sang retiré, et un bouton resté allumé ne compte plus', async () => {
         const { subclassBuffs, effectiveBuffs } = await import('../js/rules/weapons.js');
         const buttons = (choices) => { const c = hunter(choices); return subclassBuffs(c, deriveCharacter(c)); };
         assert.deepEqual(buttons({}), ['colossusSlayer']);
@@ -158,7 +158,7 @@ describe('Chasseur', () => {
     });
 });
 
-describe('Maître de guerre : manœuvres et Disciple de la guerre', async () => {
+describe('Maître de guerre : manœuvres et Disciple martial', async () => {
     const { maneuversKnown, knownManeuvers, maneuverNumbers, subclassCombatWeaponNotes } = await import('../js/rules/subclass-combat.js');
     const { MANEUVERS } = await import('../js/data/maneuvers.js');
     const bm = (level, choices, extra = {}) => record('Guerrier', 'Maître de Guerre', level, { subclass_choices: { battle_master: choices }, ...extra });

@@ -23,7 +23,7 @@ export const SPELL_CLASS_OPTIONS = [
     ['druid', 'Druide'],
     ['sorcerer', 'Ensorceleur'],
     ['wizard', 'Magicien'],
-    ['warlock', 'Occultiste/Sorcier'],
+    ['warlock', 'Occultiste'],
     ['paladin', 'Paladin'],
     ['ranger', 'Rôdeur']
 ];
@@ -161,7 +161,7 @@ export function spellLevelLabel(level) {
  * si c'est une classe de lanceur de sorts, sinon aucune (toutes les classes).
  * @param {string} filterValue - character.spell_class_filter
  * @param {string} characterClassSlug - ex. 'wizard', 'barbarian', ''
- * @param {string} [subclass] - deriveCharacter().subclass : Chevalier occulte et Escroc arcanique
+ * @param {string} [subclass] - deriveCharacter().subclass : Chevalier occulte et Arnaqueur arcanique
  *        prennent leurs sorts dans la liste du Magicien
  * @returns {string} - identifiant de classe, ou '' pour toutes
  */
@@ -385,31 +385,70 @@ export function nextSort(current, col) {
  * Compteurs du grimoire.
  * @param {Array<Object>} rows
  * @param {string} levelFilter
- * @returns {{ total: number, visible: number, prepared: number }}
+ * @returns {{ total: number, visible: number, prepared: number, cantrips: number }}
  *          total / visible : sorts renseignés (les lignes vides ne comptent pas)
+ * @param {Set<string>|null} [granted] - noms (spellNameKey) des sorts donnés par la classe, la
+ *          sous-classe ou un don : notés au grimoire, ils ne comptent ni en préparés ni en mineurs
  */
-export function spellCounts(rows, levelFilter = '') {
+export function spellCounts(rows, levelFilter = '', granted = null) {
     let total = 0;
     let visible = 0;
     let prepared = 0;
+    let cantrips = 0;
     for (const row of rows || []) {
         if (isSpellRowEmpty(row)) continue;
         total++;
         if (matchesLevelFilter(row, levelFilter)) visible++;
+        // Sort déjà donné par la classe, la sous-classe ou un don : hors du compte de la table
+        if (granted?.has(spellNameKey(row.name))) continue;
         if (isPrepared(row)) prepared++;
+        // Sort mineur : niveau 0 écrit (une case de niveau vide ne compte pas)
+        if (parseInt(plainText(row?.lvl), 10) === 0) cantrips++;
     }
-    return { total, visible, prepared };
+    return { total, visible, prepared, cantrips };
+}
+
+/** Nom de sort comparable (accents, majuscules, apostrophes et espaces ignorés) */
+export function spellNameKey(text) {
+    return normalizeText(text).replace(/\s+/g, ' ').trim();
 }
 
 /**
  * Texte du compteur : « 12 sorts · 5 préparés » ou, filtré, « 3 / 12 sorts · 5 préparés ».
- * @param {{ total: number, visible: number, prepared: number }} counts
+ * Avec la table de la classe (limits) : « 12 sorts · Préparés : 7 / 9 · Sorts mineurs : 3 / 4 ».
+ * @param {{ total: number, visible: number, prepared: number, cantrips?: number }} counts
  * @param {boolean} filtered
+ * @param {{ cantrips: number|null, prepared: number|null }} [limits] - js/rules/class-progression.js
  * @returns {string}
  */
-export function formatSpellCount({ total, visible, prepared }, filtered = false) {
+export function formatSpellCount({ total, visible, prepared, cantrips = 0 }, filtered = false, limits = null) {
     const spells = `${filtered ? `${visible} / ` : ''}${total} sort${total > 1 ? 's' : ''}`;
-    return `${spells} · ${prepared} préparé${prepared > 1 ? 's' : ''}`;
+    const parts = [spells, limits?.prepared != null ? `Préparés : ${prepared} / ${limits.prepared}` : `${prepared} préparé${prepared > 1 ? 's' : ''}`];
+    if (limits?.cantrips != null) parts.push(`Sorts mineurs : ${cantrips} / ${limits.cantrips}`);
+    return parts.join(' · ');
+}
+
+/**
+ * Sorts préparés au-delà de la table de classe (les sorts donnés par la classe, la sous-classe
+ * ou un don ne comptent pas : voir spellCounts).
+ * @returns {string[]} phrases d'avertissement (vide : rien à signaler)
+ */
+export function spellLimitWarnings({ prepared }, limits) {
+    if (limits?.prepared != null && prepared > limits.prepared) {
+        return [`${prepared} sorts préparés pour ${limits.prepared} permis par la table de votre classe à ce niveau.`];
+    }
+    return [];
+}
+
+/**
+ * Sorts mineurs au-delà de la table : simple rappel, pas une erreur (une espèce, un don, l'Ordre
+ * divin Thaumaturge, l'Ordre primitif Mage ou le Pacte du grimoire en donnent d'autres).
+ * @returns {string|null}
+ */
+export function cantripLimitNote({ cantrips = 0 }, limits) {
+    if (limits?.cantrips == null || cantrips <= limits.cantrips) return null;
+    return `${cantrips} sorts mineurs notés pour ${limits.cantrips} donnés par la table de votre classe : `
+        + "les autres viennent sans doute de votre espèce, d'un don ou d'une option de classe (Thaumaturge, Mage, Pacte du grimoire).";
 }
 
 /**
@@ -552,7 +591,7 @@ export function nextFreeSlotLevel(shown) {
 /**
  * Sous-classes qui apportent l'Incantation à une classe sans magie (PHB 2024),
  * avec le niveau de personnage où elle arrive : Chevalier occulte (Guerrier)
- * et Escroc arcanique (Roublard), tous deux au niveau 3.
+ * et Arnaqueur arcanique (Roublard), tous deux au niveau 3.
  */
 export const SUBCLASS_SPELLCASTING = { eldritch_knight: 3, arcane_trickster: 3 };
 
@@ -569,7 +608,7 @@ function spellcastingSubclass(subclass, classSlug) {
     for (const [slug, level] of Object.entries(SUBCLASS_SPELLCASTING)) {
         const info = DD_RULES.subclasses?.[slug];
         if (!info || (classSlug && info.class !== classSlug)) continue;
-        if ([slug, info.name, info.nameFr].some(name => normalizeText(name) === wanted)) {
+        if ([slug, ...DD_RULES.namesOf(info)].some(name => normalizeText(name) === wanted)) {
             return { slug, nameFr: info.nameFr, level };
         }
     }
@@ -580,7 +619,7 @@ function spellcastingSubclass(subclass, classSlug) {
  * Le personnage lance-t-il des sorts à son niveau ?
  *  - classe de lanceur de sorts (Barde, Clerc, Druide, Ensorceleur, Magicien, Occultiste,
  *    Paladin, Rôdeur : Incantation ou Magie de pacte dès le niveau 1 en 2024) ;
- *  - sous-classe lanceuse (Chevalier occulte, Escroc arcanique) à partir du niveau 3 ;
+ *  - sous-classe lanceuse (Chevalier occulte, Arnaqueur arcanique) à partir du niveau 3 ;
  *  - ou emplacements suivis à la main dans spell_slots_state (multiclasse, règle maison).
  * Les sorts accordés par un don ou une espèce ne comptent pas : ils se voient dans le grimoire.
  * @param {{ classSlug?: string, subclass?: string, level?: number, spellSlots?: Object, slotState?: Object }} params

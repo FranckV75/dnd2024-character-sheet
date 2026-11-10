@@ -60,14 +60,14 @@ export function getClassResourceInfo(level, className, mods) {
         reset = "one";
     }
     else if (clsClean.includes('bard')) {
-        label = "Inspiration Bardique";
+        label = "Inspiration bardique";
         count = Math.max(1, mods['cha']);
         reset = level >= 5 ? "all" : "none";
     }
     else if (clsClean.includes('clerc') || clsClean.includes('cleric')) {
         // Conduit divin : à partir du niveau 2 (Manuel du joueur 2024)
         if (level >= 2) {
-            label = "Conduit Divin";
+            label = "Conduit divin";
             count = 2;
             if (level >= 6) count = 3;
             if (level >= 18) count = 4;
@@ -77,7 +77,7 @@ export function getClassResourceInfo(level, className, mods) {
     else if (clsClean.includes('druid')) {
         // Forme sauvage : à partir du niveau 2, 4 utilisations au niveau 17
         if (level >= 2) {
-            label = "Formes Sauvages";
+            label = "Forme sauvage";
             count = 2;
             if (level >= 6) count = 3;
             if (level >= 17) count = 4;
@@ -85,7 +85,7 @@ export function getClassResourceInfo(level, className, mods) {
         }
     }
     else if (clsClean.includes('guerrier') || clsClean.includes('fighter')) {
-        label = "Second Souffle";
+        label = "Second souffle";
         count = 2;
         if (level >= 4) count = 3;
         if (level >= 10) count = 4;
@@ -94,29 +94,29 @@ export function getClassResourceInfo(level, className, mods) {
     else if (clsClean.includes('ensorceleur') || clsClean.includes('sorcer')) {
         // Points de sorcellerie : à partir du niveau 2
         if (level >= 2) {
-            label = "Points de Sorcellerie";
+            label = "Points de sorcellerie";
             count = level;
             reset = "none";
         }
     }
     else if (clsClean.includes('moine') || clsClean.includes('monk')) {
-        // Points de discipline : à partir du niveau 2
+        // Points de Credo : à partir du niveau 2
         if (level >= 2) {
-            label = "Points de Discipline (Ki)";
+            label = "Points de Credo";
             count = level;
             reset = "all";
         }
     }
     else if (clsClean.includes('paladin')) {
         if (level >= 3) {
-            label = "Conduit Divin";
+            label = "Conduit divin";
             count = 2;
             if (level >= 11) count = 3;
             reset = "one";
         }
     }
     else if (clsClean.includes('rôdeur') || clsClean.includes('ranger')) {
-        label = "Marque du Chasseur";
+        label = "Ennemi juré";
         count = 2;
         if (level >= 5) count = 3;
         if (level >= 9) count = 4;

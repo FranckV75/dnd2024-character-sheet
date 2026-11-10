@@ -93,5 +93,5 @@ export function conditionReminders(record) {
 /** Effet chiffré de l'Épuisement au niveau atteint */
 function exhaustionLine({ level, d20Penalty, speedPenaltyM, dead }) {
     if (dead) return 'Niveau 6 : mort.';
-    return `Niveau ${level} : ${d20Penalty} aux tests de d20 et -${String(speedPenaltyM).replace('.', ',')} m de vitesse (mort au niveau 6).`;
+    return `Niveau ${level} : ${d20Penalty} aux Tests d20 et -${String(speedPenaltyM).replace('.', ',')} m de vitesse (mort au niveau 6).`;
 }

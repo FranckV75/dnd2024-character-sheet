@@ -378,7 +378,7 @@ const FEAT_RULES = {
     // Incantateur d'élite — PHB 2024 « Spell Sniper », p. 208
     incantateur_d_elite: ({ add }) => {
         add('featSlot', "Portée : un sort à jet d'attaque dont la portée est d'au moins 3 m peut porter 18 m plus loin (au choix).");
-        add('featSlot', "Vos jets d'attaque de sort ignorent les abris partiels (+2 CA) et importants (+5 CA), pas l'abri total.");
+        add('featSlot', "Vos jets d'attaque de sort ignorent les Abris partiels (+2 CA) et supérieurs (+5 CA), pas l'abri total.");
         add('featSlot', "Pas de Désavantage à vos jets d'attaque de sort quand un ennemi se trouve à 1,50 m de vous.");
     },
 
@@ -474,7 +474,7 @@ const FEAT_RULES = {
         const text = "Sort lancé avec un emplacement de niveau 1 à 4 : lancez 1d4 ; si le résultat est égal au niveau de l'emplacement, celui-ci n'est pas dépensé.";
         add('featSlot', text);
         if (derived.classSlug && !hasSpellcasting(record, derived)) {
-            add('featSlot', 'Prérequis : la capacité Sorts (une classe de lanceur de sorts, ou Chevalier occulte, Escroc arcanique).', { check: true });
+            add('featSlot', 'Prérequis : la capacité Sorts (une classe de lanceur de sorts, ou Chevalier occulte, Arnaqueur arcanique).', { check: true });
         }
     },
 
@@ -611,7 +611,7 @@ const FEAT_RULES = {
 
     // Tireur d'élite — PHB 2024 « Sharpshooter », p. 207
     tireur_d_elite: ({ add }) => {
-        add('featSlot', "Attaques à distance avec une arme : elles ignorent les abris partiels (1/2) et importants (3/4) ; ni la longue portée ni un ennemi à 1,50 m ne donnent le Désavantage (rappel sous ces armes).");
+        add('featSlot', "Attaques à distance avec une arme : elles ignorent les Abris partiels et supérieurs ; ni la longue portée ni un ennemi à 1,50 m ne donnent le Désavantage (rappel sous ces armes).");
     },
 
     // ----- Lot 4 : styles de combat — PHB 2024 p. 209-210 (« Fighting Style Feats ») -----
@@ -712,7 +712,7 @@ function energyChoices(record) {
 const energyName = (id) => ENERGY_TYPES.find(([key]) => key === id)?.[1] ?? id;
 
 /** Capacité Sorts (prérequis de Faveur de mémoire magique) : emplacements de sorts de la classe,
- *  ou sous-classe Chevalier occulte / Escroc arcanique. Pas la Magie de pacte de l'Occultiste : le
+ *  ou sous-classe Chevalier occulte / Arnaqueur arcanique. Pas la Magie de pacte de l'Occultiste : le
  *  PHB 2024 écrit « Spellcasting or Pact Magic Feature » quand elle suffit, ici « Spellcasting Feature ». */
 function hasSpellcasting(record, derived) {
     return (derived.classSlug !== 'warlock' && Object.keys(derived.spellSlots ?? {}).length > 0)
@@ -746,7 +746,7 @@ function unarmedRowHint(record, add) {
     }
 }
 
-/** Notes de Guerrier béni / druidique : sorts à noter soi-même, et classe qui y a droit */
+/** Notes de Combattant béni / druidique : sorts à noter soi-même, et classe qui y a droit */
 function alternativeNotes(id, list, advised, ability, record, add) {
     const alt = STYLE_ALTERNATIVES[id];
     add('featSlot', `Deux sorts mineurs de ${list} à ajouter vous-même au grimoire (${advised} sont conseillés), lancés avec ${ability}. Ils remplacent le style de combat.`);
@@ -1030,8 +1030,8 @@ const WEAPON_RULES = [
     { featId: 'tireur_d_elite', applies: ({ weapon }) => weaponReach(weapon).ranged,
         // Une arme de corps à corps lancée n'est pas une arme à distance : seul le contournement d'abri vaut
         text: ({ weapon }) => (weaponReach(weapon).melee
-            ? 'Lancée, elle ignore les abris 1/2 et 3/4.'
-            : 'Ignore les abris 1/2 et 3/4 ; ni la longue portée ni un ennemi à 1,50 m ne donnent le Désavantage.') },
+            ? 'Lancée, elle ignore les Abris partiels et supérieurs.'
+            : 'Ignore les Abris partiels et supérieurs ; ni la longue portée ni un ennemi à 1,50 m ne donnent le Désavantage.') },
     { featId: 'maitre_arbaletrier', applies: ({ weapon }) => isCrossbow(weapon),
         text: ({ weapon, derived, buffs }) => {
             const light = hasProperty(weapon, 'legere');
@@ -1074,7 +1074,7 @@ export function weaponFeatNotes(weapon, character, derived = deriveCharacter(cha
         }),
         // Coup critique élargi (Champion, L'Hoplite) : capacité de sous-classe
         ...subclassWeaponNotes(weapon, derived),
-        // Manœuvres, Racines percutantes, Maître de la lance (lot 5)
+        // Manœuvres, Rossée de racines, Maître de la lance (lot 5)
         ...subclassCombatWeaponNotes(weapon, derived)];
 }
 
@@ -1181,7 +1181,7 @@ export function featEffects(character, derived = deriveCharacter(character || {}
         });
     }
 
-    // Capacités de classe et de sous-classe (Aura de protection, Touche-à-tout, Résilience draconique…)
+    // Capacités de classe et de sous-classe (Aura de protection, Touche-à-tout, Résistance draconique…)
     for (const [zone, notes] of Object.entries(classFeatureNotes(derived, record))) {
         (effects[zone] ??= []).push(...notes);
     }

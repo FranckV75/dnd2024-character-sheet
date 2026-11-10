@@ -2,8 +2,8 @@
 // SUBCLASS-CALCS.JS (règles) - Petits calculs des capacités de sous-classe (lot 4,
 // docs/SOUS_CLASSES.md) : fonctions pures, sans DOM.
 //
-//  - valeurs calculées par la fiche : Initiative (Traqueur d'ombre, L'Odysséen), tests de Charisme
-//    de l'Errant féerique, Frappe à mains nues du Collège de la Danse, armes de corps à corps de
+//  - valeurs calculées par la fiche : Initiative (Traqueur des ténèbres, L'Odysséen), tests de Charisme
+//    de l'Vagabond féerique, Frappe à mains nues du Collège de la Danse, armes de corps à corps de
 //    l'Ascendance divine (Charisme), arc long de la Voie herculéenne (Force) ;
 //  - rappels près des valeurs (zones de featEffects) : maîtrises données par la sous-classe à cocher,
 //    vitesses d'escalade et de nage, Avantage à l'Initiative ou aux jets contre la mort, coups
@@ -61,7 +61,7 @@ export function abilityDC(stats, ability) {
 
 /**
  * Bonus d'Initiative donnés par la sous-classe (ajoutés à l'Initiative calculée) :
- *  - Traqueur d'ombre (Rôdeur 3, « Dread Ambusher ») : modificateur de Sagesse ;
+ *  - Traqueur des ténèbres (Rôdeur 3, « Dread Ambusher ») : modificateur de Sagesse ;
  *  - L'Odysséen (Roublard 13, Odyssée, « À toute épreuve ») : modificateur de Charisme.
  * Un modificateur nul ou négatif n'ajoute rien (« vous pouvez ajouter »).
  * @param {{ classSlug: string, subclass: string, level: number, mods: Object }} stats
@@ -70,7 +70,7 @@ export function abilityDC(stats, ability) {
 export function subclassInitiativeBonuses(stats) {
     const bonuses = [];
     if (stats?.classSlug === 'ranger' && has(stats, 'gloom_stalker') && mod(stats, 'wis') > 0) {
-        bonuses.push({ featId: 'embusqueur_redoutable_bonus_d_initiative', featName: 'Embusqueur redoutable', label: 'Sag', value: mod(stats, 'wis') });
+        bonuses.push({ featId: 'embusqueur_redoutable_bonus_d_initiative', featName: 'Embuscade effrayante', label: 'Sag', value: mod(stats, 'wis') });
     }
     if (stats?.classSlug === 'rogue' && has(stats, 'the_odyssean', 13) && mod(stats, 'cha') > 0) {
         bonuses.push({ featId: 'a_toute_epreuve', featName: 'À toute épreuve', label: 'Cha', value: mod(stats, 'cha') });
@@ -79,7 +79,7 @@ export function subclassInitiativeBonuses(stats) {
 }
 
 /**
- * Bonus de sous-classe à une compétence : Errant féerique (Rôdeur 3, « Otherworldly Glamour ») —
+ * Bonus de sous-classe à une compétence : Vagabond féerique (Rôdeur 3, « Otherworldly Glamour ») —
  * modificateur de Sagesse (minimum +1) à tous les tests de Charisme.
  * @param {{ classSlug: string, subclass: string, level: number, mods: Object }} stats
  * @param {string} ability - caractéristique de la compétence
@@ -152,19 +152,19 @@ export function criticalRange(stats) {
  * [sous-classe, niveau, champ de la fiche, zone de la fiche, capacité, ce qu'elle donne].
  */
 const SUBCLASS_PROFICIENCIES = Object.freeze([
-    ['gloom_stalker', 7, 'wis_save_prof', 'saves.wis', "Esprit d'acier", 'la maîtrise des sauvegardes de Sagesse (si vous l\'aviez déjà : Intelligence ou Charisme au choix)'],
+    ['gloom_stalker', 7, 'wis_save_prof', 'saves.wis', "Mental d'acier", 'la maîtrise des sauvegardes de Sagesse (si vous l\'aviez déjà : Intelligence ou Charisme au choix)'],
     ['demigod_bloodline', 3, 'str_save_prof', 'saves.str', 'La force en héritage', 'la maîtrise des sauvegardes de Force'],
     ['path_of_the_heretic', 3, 'skill_prof_athletics', 'skills.athletics', 'Lutteur précoce', 'la maîtrise d\'Athlétisme'],
-    ['warrior_of_mercy', 3, 'skill_prof_insight', 'skills.insight', 'Instruments de la miséricorde', 'la maîtrise de Perspicacité'],
-    ['warrior_of_mercy', 3, 'skill_prof_medicine', 'skills.medicine', 'Instruments de la miséricorde', 'la maîtrise de Médecine'],
+    ['warrior_of_mercy', 3, 'skill_prof_insight', 'skills.insight', 'Instruments de charité', 'la maîtrise d\'Intuition'],
+    ['warrior_of_mercy', 3, 'skill_prof_medicine', 'skills.medicine', 'Instruments de charité', 'la maîtrise de Médecine'],
     ['prophecy_domain', 3, 'skill_prof_perception', 'skills.perception', 'Conscience étendue', 'la maîtrise de Perception']
 ]);
 
-/** Sauvegardes possibles d'Esprit d'acier (Traqueur d'ombre 7) : [caractéristique, « de Sagesse »…] */
+/** Sauvegardes possibles de Mental d'acier (Traqueur des ténèbres 7) : [caractéristique, « de Sagesse »…] */
 const STEEL_MIND_SAVES = Object.freeze({ wis: 'de Sagesse', int: "d'Intelligence", cha: 'de Charisme' });
 
 /**
- * Ligne d'Esprit d'acier selon le choix enregistré (lot 7) : Intelligence ou Charisme à la place de la
+ * Ligne de Mental d'acier selon le choix enregistré (lot 7) : Intelligence ou Charisme à la place de la
  * Sagesse ; sans choix, la ligne d'origine (Sagesse).
  * @param {Object} derived - deriveCharacter() (subclassChoices)
  * @param {Array} row - ligne gloom_stalker de SUBCLASS_PROFICIENCIES
@@ -205,21 +205,21 @@ export function subclassNotes(derived, record = {}) {
     }
     // Avantage à l'Initiative
     if (derived?.classSlug === 'fighter' && has(derived, 'champion')) {
-        add('initiative', 'athlete_remarquable', 'Athlète remarquable', 'Champion niveau 3 : Avantage aux jets d\'Initiative et aux tests de Force (Athlétisme).');
+        add('initiative', 'athlete_remarquable', 'Athlète accompli', 'Champion niveau 3 : Avantage aux jets d\'Initiative et aux tests de Force (Athlétisme).');
     }
     if (derived?.classSlug === 'rogue' && has(derived, 'assassin')) {
         add('initiative', 'assassinat', 'Assassinat', 'Assassin niveau 3 : Avantage aux jets d\'Initiative.');
     }
-    // Compétences de Charisme (Errant féerique)
+    // Compétences de Charisme (Vagabond féerique)
     const glamour = subclassSkillBonus(derived, 'cha');
     if (glamour > 0) {
         for (const id of ['deception', 'intimidation', 'performance', 'persuasion']) {
-            add(`skills.${id}`, 'charme_surnaturel', 'Charme surnaturel',
-                `Errant féerique niveau 3 : ${signed(glamour)} (modificateur de Sagesse, minimum +1) déjà compté, comme à tous vos tests de Charisme.`,
+            add(`skills.${id}`, 'charme_surnaturel', 'Charme mystique',
+                `Vagabond féerique niveau 3 : ${signed(glamour)} (modificateur de Sagesse, minimum +1) déjà compté, comme à tous vos tests de Charisme.`,
                 { value: glamour, applied: true });
         }
     }
-    // Maîtrises à cocher (Esprit d'acier : sauvegarde choisie dans le menu « save », Sagesse par défaut)
+    // Maîtrises à cocher (Mental d'acier : sauvegarde choisie dans le menu « save », Sagesse par défaut)
     for (const row of SUBCLASS_PROFICIENCIES) {
         const [subclass, minLevel, field, zone, name, gives] = row[0] === 'gloom_stalker' ? steelMindRow(derived, row) : row;
         if (!has(derived, subclass, minLevel) || ticked(record, field)) continue;
@@ -230,7 +230,7 @@ export function subclassNotes(derived, record = {}) {
         add('speed', 'monte_en_l_air', 'Monte-en-l\'air', 'Voleur niveau 3 : vitesse d\'escalade égale à votre Vitesse ; vos sauts se calculent avec la Dextérité.');
     }
     if (derived?.classSlug === 'druid' && has(derived, 'circle_of_the_sea', 6)) {
-        add('speed', 'affinite_aquatique', 'Affinité aquatique', 'Cercle de la Mer niveau 6 : vitesse de nage égale à votre Vitesse.');
+        add('speed', 'affinite_aquatique', 'Affinité aquatique', 'Cercle des Mers niveau 6 : vitesse de nage égale à votre Vitesse.');
     }
     if (derived?.classSlug === 'paladin' && has(derived, 'oath_of_glory', 7)) {
         add('speed', 'aura_d_alacrite', 'Aura d\'alacrité',
@@ -240,7 +240,7 @@ export function subclassNotes(derived, record = {}) {
     // Jets contre la mort
     if (derived?.classSlug === 'fighter' && has(derived, 'champion', 18)) {
         add('deathSaves', 'survivant', 'Survivant',
-            `Champion niveau 18 : Avantage aux jets contre la mort, et 18 à 20 comptent comme un 20. Ensanglanté avec au moins 1 PV : ${5 + mod(derived, 'con')} PV (5 + Con) au début de chaque tour.`);
+            `Champion niveau 18 : Avantage aux jets contre la mort, et 18 à 20 comptent comme un 20. En péril avec au moins 1 PV : ${5 + mod(derived, 'con')} PV (5 + Con) au début de chaque tour.`);
     }
     return zones;
 }

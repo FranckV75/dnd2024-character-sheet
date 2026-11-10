@@ -156,7 +156,7 @@ const ofColor = (label) => (/^[aeiouyéèêâ]/i.test(label) ? `d'${label.toLowe
  * @property {string} key - COMPANION_KEYS
  * @property {string} feature - capacité de sous-classe (js/data/subclass-features.js)
  * @property {string} name - titre de la carte
- * @property {string} short - nom court dans une phrase (« stimfée », « bête de la terre »)
+ * @property {string} short - nom court dans une phrase (« stimfée », « bête des terres »)
  * @property {string} subtitle - type, taille, alignement
  * @property {string} missing - choix à faire avant d'afficher le reste ('' sinon)
  * @property {{ value: number, detail: string } | null} ac
@@ -185,7 +185,7 @@ function primalCompanion(derived, record) {
     const choice = derived.subclassChoices ?? {};
     const beast = Object.hasOwn(PRIMAL_BEASTS, choice.beast ?? '') ? PRIMAL_BEASTS[choice.beast] : null;
     const card = emptyCard(COMPANION_KEYS.primal, 'compagnon_primordial',
-        beast ? `Compagnon primordial : ${beast.label}` : 'Compagnon primordial',
+        beast ? `Compagnon primitif : ${beast.label}` : 'Compagnon primitif',
         beast ? `Bête de taille ${beast.size.toLowerCase()}, neutre ; agit à votre tour` : 'Bête primordiale',
         beast ? beast.label.toLowerCase() : 'bête primordiale');
     card.ac = { value: 13 + wis, detail: `13 + Sagesse (${signed(wis)})` };
@@ -210,7 +210,7 @@ function primalCompanion(derived, record) {
     if (level >= 11) {
         const die = hunterMarkDie({ level, classSlug: derived.classSlug });
         card.traits.push({
-            name: 'Furie bestiale',
+            name: 'Fureur bestiale',
             text: `La première fois à chaque tour qu'elle touche une créature sous votre Marque du chasseur : +${die} dégâts de Force${record?.combat_buffs?.hunterMark === true ? '.' : ' (bouton Marque du chasseur éteint, onglet Combat).'}`,
             ...(record?.combat_buffs?.hunterMark === true ? {} : { inactive: true })
         });
@@ -225,7 +225,7 @@ function primalCompanion(derived, record) {
     const typeText = type
         ? STRIKE_TEXT[type]
         : `${names.slice(0, -1).join(', ')} ou ${names.at(-1)} (type à choisir dans le bloc Sous-classe)`;
-    const force = level >= 7 ? ' (ou Force, Entraînement exceptionnel)' : '';
+    const force = level >= 7 ? ' (ou Force, Coordination facilitée)' : '';
     const extra = beast.grapple ? ` La cible est Agrippée (DD d'évasion ${dc}).` : beast.strikeExtra ? ` ${beast.strikeExtra}` : '';
     card.actions = [
         {

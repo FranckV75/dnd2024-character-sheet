@@ -186,9 +186,9 @@ describe('Repos court', () => {
         // Autres lanceurs : emplacements inchangés au repos court
         const wizard = makeCharacter({ char_class: 'Magicien', spell_slots_state: { 1: { used: 2 } } });
         assert.equal(shortRestPatch(wizard, {}).spell_slots_state, undefined);
-        assert.deepEqual(planShortRest(wizard, {}).summary.slotRecovery, { name: 'Restauration arcanique', maxLevels: 3 });
+        assert.deepEqual(planShortRest(wizard, {}).summary.slotRecovery, { name: 'Restauration magique', maxLevels: 3 });
         const landDruid = makeCharacter({ char_class: 'Druide', char_subclass: 'Cercle de la Terre', char_level: '6' });
-        assert.deepEqual(planShortRest(landDruid, {}).summary.slotRecovery, { name: 'Récupération naturelle', maxLevels: 3 });
+        assert.deepEqual(planShortRest(landDruid, {}).summary.slotRecovery, { name: 'Ressourcement', maxLevels: 3 });
         assert.equal(planShortRest(makeCharacter(), {}).summary.slotRecovery, null);
     });
 });

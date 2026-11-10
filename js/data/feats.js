@@ -79,7 +79,7 @@ const FEATS_DATA = {
         "type": "Origine",
         "prereq": "Niv 1+",
         "asi": "Aucune",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Points de chance</strong>. Vous disposez d'un nombre de points de Chance égal à votre bonus de maîtrise et pouvez les dépenser pour les avantages ci-dessous. Vous récupérez vos points de Chance dépensés à la fin d'un Repos long. <br><strong>Avantage</strong>. Lorsque vous lancez un d20 pour un test de D20, vous pouvez dépenser 1 point de Chance pour vous donner un Avantage. <br><strong>Désavantage</strong>. Lorsqu'une créature lance un d20 pour un jet d'attaque contre vous, vous pouvez dépenser 1 point de Chance pour lui imposer un Désavantage."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Points de chance</strong>. Vous disposez d'un nombre de points de Chance égal à votre bonus de maîtrise et pouvez les dépenser pour les avantages ci-dessous. Vous récupérez vos points de Chance dépensés à la fin d'un Repos long. <br><strong>Avantage</strong>. Lorsque vous lancez un d20 pour un Test d20, vous pouvez dépenser 1 point de Chance pour vous donner un Avantage. <br><strong>Désavantage</strong>. Lorsqu'une créature lance un d20 pour un jet d'attaque contre vous, vous pouvez dépenser 1 point de Chance pour lui imposer un Désavantage."
     },
     "chef_cuisinier": {
         "name": "Chef cuisinier",
@@ -298,7 +298,7 @@ const FEATS_DATA = {
         "type": "Épique",
         "prereq": "niveau 19 ou supérieur",
         "asi": "+1 au choix (max 30)",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Destin amélioré</strong>. Lorsque vous-même ou une autre créature située dans un rayon de 18 mètres autour de vous réussissez ou ratez un test de D20, vous pouvez lancer 2d4 et appliquer le total obtenu comme bonus ou malus au résultat du d20. Une fois cet avantage utilisé, vous ne pouvez plus l'utiliser avant d'avoir lancé l'Initiative ou terminé un Repos court ou long."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Destin amélioré</strong>. Lorsque vous-même ou une autre créature située dans un rayon de 18 mètres autour de vous réussissez ou ratez un Test d20, vous pouvez lancer 2d4 et appliquer le total obtenu comme bonus ou malus au résultat du d20. Une fois cet avantage utilisé, vous ne pouvez plus l'utiliser avant d'avoir lancé l'Initiative ou terminé un Repos court ou long."
     },
     "figure_de_proue": {
         "name": "Figure de proue",
@@ -340,7 +340,7 @@ const FEATS_DATA = {
         "type": "Général",
         "prereq": "niveau 4 ou supérieur, capacité Sorts ou Magie de pacte",
         "asi": "+1 Int ou Sag ou Cha",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Intelligence, Sagesse ou Charisme de 1, jusqu'à un maximum de 20. <br><strong>Contournement d'abri</strong>. Vos jets d'attaque de sort ignorent les Abris partiels (1/2) et les Abris importants (3/4). <br><strong>Incantation au corps à corps</strong>. Être à 1,50 mètre ou moins d'un ennemi n'inflige pas de Désavantage à vos jets d'attaque avec des sorts. <br><strong>Portée améliorée</strong>. Lorsque vous lancez un sort d'une portée d'au moins 3 mètres et qui nécessite un jet d'attaque, vous pouvez augmenter sa portée de 18 mètres."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Intelligence, Sagesse ou Charisme de 1, jusqu'à un maximum de 20. <br><strong>Contournement d'abri</strong>. Vos jets d'attaque de sort ignorent les Abris partiels et les Abris supérieurs. <br><strong>Incantation au corps à corps</strong>. Être à 1,50 mètre ou moins d'un ennemi n'inflige pas de Désavantage à vos jets d'attaque avec des sorts. <br><strong>Portée améliorée</strong>. Lorsque vous lancez un sort d'une portée d'au moins 3 mètres et qui nécessite un jet d'attaque, vous pouvez augmenter sa portée de 18 mètres."
     },
     "initie_a_la_magie": {
         "name": "Initié à la magie",
@@ -519,7 +519,7 @@ const FEATS_DATA = {
         "type": "Général",
         "prereq": "niveau 4 ou supérieur, Dextérité 13 ou plus",
         "asi": "+1 Dex",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Dextérité de 1, jusqu'à un maximum de 20. <br><strong>Contournement d'abri</strong>. Vos attaques à distance avec des armes ignorent les Abris partiels (1/2) et les Abris importants (3/4). <br><strong>Tir au corps à corps</strong>. Être à 1,50 mètre ou moins d'un ennemi n'inflige pas de Désavantage à vos jets d'attaque avec des armes à distance. <br><strong>Longue portée</strong>. Attaquer à longue portée n'inflige pas de Désavantage à vos jets d'attaque avec des armes à distance."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Dextérité de 1, jusqu'à un maximum de 20. <br><strong>Contournement d'abri</strong>. Vos attaques à distance avec des armes ignorent les Abris partiels et les Abris supérieurs. <br><strong>Tir au corps à corps</strong>. Être à 1,50 mètre ou moins d'un ennemi n'inflige pas de Désavantage à vos jets d'attaque avec des armes à distance. <br><strong>Longue portée</strong>. Attaquer à longue portée n'inflige pas de Désavantage à vos jets d'attaque avec des armes à distance."
     },
     "trancheur": {
         "name": "Trancheur",

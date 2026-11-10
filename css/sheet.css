@@ -2119,6 +2119,46 @@ fieldset.inline-checks {
     display: none;
 }
 
+/* Aptitudes de base (js/ui/class-progression.js) : colonnes de la table de classe en pastilles
+   « Rages 4 · 5 au niv. 12 » */
+.class-columns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.class-column {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 2px 8px;
+    border: 1px solid var(--gold-soft);
+    border-radius: 4px;
+}
+
+.class-column-name {
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.class-column-value {
+    font-family: var(--font-title);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--number);
+}
+
+.class-column-next {
+    font-family: var(--font-text);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
 .subclass-title {
     display: flex;
     flex-wrap: wrap;

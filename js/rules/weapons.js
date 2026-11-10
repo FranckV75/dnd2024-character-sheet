@@ -60,13 +60,13 @@ const FEAT_BUFFS = {
  * Dégâts : subclassBuffDamage (js/rules/subclass-combat.js).
  */
 const SUBCLASS_BUFFS = {
-    // Berserker (PHB 2024) : Frénésie, avec l'Attaque téméraire pendant la Rage
+    // Berserker (PHB 2024) : Frénésie, avec Témérité pendant la Rage
     frenzy: ['path_of_the_berserker', 3],
     // Traqueur d'ombre : Frappe effroyable (usages en cases, onglet Combat)
     dreadfulStrike: ['gloom_stalker', 3],
-    // Errant féerique : Frappes redoutables
+    // Errant féerique : Frappes effroyables
     feyStrikes: ['fey_wanderer', 3],
-    // Chasseur : Proie du chasseur, option Tueur de colosses
+    // Chasseur : Proie du chasseur, option Goût du sang
     colossusSlayer: ['hunter', 3],
     // Maître de guerre : dé de supériorité ajouté aux dégâts par une manœuvre
     superiority: ['battle_master', 3],
@@ -344,7 +344,7 @@ export function subclassBuffs(character, derived) {
     const level = derived?.level ?? characterLevel(character?.char_level);
     return Object.entries(SUBCLASS_BUFFS)
         .filter(([, [id, minLevel]]) => id === subclass && level >= minLevel)
-        // Chasseur : pas de bouton Tueur de colosses si Briseur de hordes est choisi (lot 7, subclass_choices)
+        // Chasseur : pas de bouton Goût du sang si Briseur de hordes est choisi (lot 7, subclass_choices)
         .filter(([key]) => !(key === 'colossusSlayer' && derived?.subclassChoices?.prey === 'horde'))
         .map(([key]) => key);
 }
