@@ -118,6 +118,13 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
   Ouverture, Sape, Coup double, Ralentissement, Poussée, Écorchure…) accessible depuis le tableau des armes,
   en infobulle ou petite fenêtre comme les sorts, avec le texte du Manuel du joueur 2024 en français.
   Peut rejoindre le projet « dons actifs ».
+- Capacités de sous-classe (`docs/SOUS_CLASSES.md`) : lots 0 à 7 ✅ le 09/11/2026 (4.27.0). Restes du
+  lot 7, gardés pour plus tard (décision de Franck du 10/11/2026) :
+  - bouton « Monté sur le dragon » (Serment du Seigneur Dragon, niveau 15) et monture de l'Amazone
+    (*Trouver une monture*) ;
+  - repère de l'Affinité élémentaire dans le grimoire (« +Cha » sur les sorts du type choisi) ;
+  - compteur de strophes (Poésie épique) : après avoir tapé un nombre, un toucher immédiat sur « + »
+    ou « − » peut être perdu (le bloc se reconstruit).
 - Plus tard aussi (idées de Franck) :
   - ✅ (05/11/2026) Configuration des armures : la colonne CA n'est plus saisie, elle est calculée et
     expliquée (bulle au toucher). Un engrenage par ligne règle le bonus magique (+1 à +3), et pour un

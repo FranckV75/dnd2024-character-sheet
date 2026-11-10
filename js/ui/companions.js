@@ -11,6 +11,7 @@
 import { el, signed } from './dom.js';
 import { deriveCharacter } from '../rules/character.js';
 import { companionCards, setCompanionHpPatch } from '../rules/subclass-companions.js';
+import { foldButton, bindFolding, applyFolds } from './fold.js';
 
 /** Case de la ligne CA / PV / Vitesse / Initiative */
 function stat(label, value, detail, extraClass = '') {
@@ -61,8 +62,10 @@ function entryList(title, entries) {
 }
 
 function cardNode(card) {
-    return el('article', { class: 'companion-card', 'aria-label': card.name },
+    // Pastille à chevron : replie la carte (seuls le nom et le type restent), retenu sur cet appareil
+    return el('article', { class: 'companion-card', 'aria-label': card.name, 'data-fold-key': `companion:${card.key}` },
         el('div', { class: 'companion-head' },
+            foldButton(card.name),
             el('p', { class: 'companion-name', text: card.name }),
             el('p', { class: 'companion-type', text: card.subtitle })),
         card.missing ? el('p', { class: 'companion-missing', text: card.missing }) : null,
@@ -108,8 +111,11 @@ export function initCompanions({ root, store }) {
         const focused = container.contains(document.activeElement) ? document.activeElement?.dataset?.companionHp : null;
         container.replaceChildren(...cards.map(cardNode));
         container.hidden = cards.length === 0;
+        applyFolds(container);
         if (focused) container.querySelector(`[data-companion-hp="${focused}"]`)?.focus();
     };
+    // Cartes repliables (fold.js)
+    bindFolding(container);
     // PV actuels modifiés (validés en quittant la case ou avec Entrée) : clé subclass_companions
     container.addEventListener('change', (event) => {
         const input = event.target.closest('[data-companion-hp]');

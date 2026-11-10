@@ -15,6 +15,7 @@ import { subclassFeatures, automationKind, SUBCLASS_LEVEL } from '../rules/subcl
 import { subclassChoiceFields, setSubclassChoicePatch, stepSubclassChoicePatch } from '../rules/subclass-choices.js';
 import { companionChoicePatch } from '../rules/subclass-companions.js';
 import { isLocked } from './lock.js';
+import { foldButton, bindFolding, applyFolds } from './fold.js';
 
 /** Étiquette de ce que la fiche fait de la capacité */
 const KIND_LABELS = { calc: 'Calculé', partial: 'En partie', reminder: 'Rappel' };
@@ -130,11 +131,14 @@ function optionList(feature, upcoming) {
     ];
 }
 
-function featureItem(feature, { upcoming = false, fields = [], choice = {} } = {}) {
+function featureItem(feature, { upcoming = false, fields = [], choice = {}, subclassKey = '' } = {}) {
     const kind = automationKind(feature);
-    return el('li', { class: 'subclass-feature', 'data-kind': kind },
+    // Capacité atteinte : la pastille du niveau la replie (seul le titre reste), comme les dons
+    return el('li', { class: 'subclass-feature', 'data-kind': kind, 'data-fold-key': upcoming ? null : `subclass:${subclassKey}.${feature.id}` },
         el('div', { class: 'subclass-feature-head' },
-            el('span', { class: 'subclass-level', text: levelText(feature) }),
+            upcoming
+                ? el('span', { class: 'subclass-level', text: levelText(feature) })
+                : foldButton(`${levelText(feature)}, ${feature.name}`, el('span', { text: levelText(feature) })),
             el('span', { class: 'subclass-feature-name', text: feature.name }),
             upcoming ? null : el('span', { class: 'feat-tag', 'data-kind': kind, text: KIND_LABELS[kind] })),
         el('p', { class: 'subclass-feature-text', text: feature.text }),
@@ -180,11 +184,13 @@ function build(character) {
         upcoming.map(f => f.id),
         fields.map(field => [field.key, field.inPlay]), choice]);
     const nodes = [
+        // Titre : sa pastille replie tout le bloc (seul le titre reste)
         el('p', { class: 'subclass-title' }, icon('star'),
             el('span', { text: `Sous-classe : ${subclass.name}` }),
+            foldButton(`Capacités de la sous-classe ${subclass.name}`),
             el('span', { class: 'subclass-source', text: SOURCE_LABELS[subclass.source] ?? subclass.source })),
         reached.length
-            ? el('ul', { class: 'subclass-list' }, reached.map(feature => featureItem(feature, { fields, choice })))
+            ? el('ul', { class: 'subclass-list' }, reached.map(feature => featureItem(feature, { fields, choice, subclassKey: subclass.key })))
             : el('p', { class: 'subclass-empty', text: `Aucune capacité avant le niveau ${upcoming[0]?.level ?? SUBCLASS_LEVEL}.` }),
         upcoming.length ? el('details', { class: 'subclass-upcoming' },
             el('summary', {}, icon('hourglass'), el('span', {
@@ -218,12 +224,17 @@ export function initSubclassFeatures({ root, store }) {
         const stepped = active?.dataset?.subclassStep ? [active.dataset.subclassStep, active.dataset.step] : null;
         container.replaceChildren(...nodes);
         container.hidden = nodes.length === 0;
+        if (subclass) container.dataset.foldKey = `subclass:${subclass}`;
+        else delete container.dataset.foldKey;
+        applyFolds(container);
         for (const details of container.querySelectorAll('details')) {
             if (opened.includes(details.className)) details.open = true;
         }
         if (focused) container.querySelector(`[data-subclass-choice="${focused}"]`)?.focus();
         else if (stepped) container.querySelector(`[data-subclass-step="${stepped[0]}"][data-step="${stepped[1]}"]`)?.focus();
     };
+    // Pastilles de repli (bloc entier et chaque capacité), retenues sur cet appareil (fold.js)
+    bindFolding(container);
     // Compteur (strophes) : « − » et « + » ajoutent -1 ou +1, entre le minimum et le maximum
     container.addEventListener('click', (event) => {
         const button = event.target.closest('button[data-subclass-step]');

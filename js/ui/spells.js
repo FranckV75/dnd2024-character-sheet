@@ -53,6 +53,7 @@ import { attachAutocomplete } from './autocomplete.js';
 import { confirmModal } from './modal.js';
 import { isLocked } from './lock.js';
 import { motionOff } from './motion-pref.js';
+import { foldButton, bindFolding, applyFolds } from './fold.js';
 
 const TOOLTIP_STORAGE_KEY = 'dd2024_spell_tooltips';
 /** Grimoire ouvert à la demande (personnage sans magie) : réglage du navigateur, pas de la fiche */
@@ -909,7 +910,9 @@ export function initSpells(ctx) {
     // hors du nombre de sorts préparés ; reconstruits seulement si leur contenu change
     // -----------------------------------------------------------------------
 
-    const subclassBox = el('section', { class: 'feat-spells subclass-spells', 'aria-labelledby': 'subclass-spells-title', hidden: true });
+    // Repliable (pastille à chevron du titre, fold.js) : seul le titre reste, retenu sur cet appareil
+    const subclassBox = el('section', { class: 'feat-spells subclass-spells', 'aria-labelledby': 'subclass-spells-title', 'data-fold-key': 'subclass-spells', hidden: true });
+    bindFolding(subclassBox);
     let subclassSignature = null;
 
     function renderSubclassSpells(character, d) {
@@ -950,7 +953,8 @@ export function initSpells(ctx) {
                     : ' Seuls ceux du terrain choisi à votre dernier repos long sont préparés (choix dans l\'onglet Aptitudes & Traits).') : '');
         }
         subclassBox.replaceChildren(...(spells.length ? [
-            el('h4', { class: 'feat-spells-title', id: 'subclass-spells-title' }, icon('star'), el('span', { text: 'Sorts de sous-classe' })),
+            el('h4', { class: 'feat-spells-title', id: 'subclass-spells-title' }, icon('star'), el('span', { text: 'Sorts de sous-classe' }),
+                foldButton('Sorts de sous-classe')),
             el('p', { class: 'feat-spells-intro', text: intro }),
             ...(groups[0] ? groups.map(group => groupBlock(group, spells)) : [list(spells)]),
             otherGroups.length ? el('details', { class: 'subclass-spells-others' },
@@ -958,6 +962,7 @@ export function initSpells(ctx) {
                 ...otherGroups.map(group => groupBlock(group, othersListed))) : null,
             next.length ? el('p', { class: 'feat-spells-extra' }, el('strong', { text: 'À venir : ' }), `${next.join(' ; ')}.`) : null
         ].filter(Boolean) : []));
+        applyFolds(subclassBox);
     }
 
     function render(character, changedKeys, { structural = false } = {}) {

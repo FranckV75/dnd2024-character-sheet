@@ -152,7 +152,9 @@ dialog,
 }
 
 /* Pastille des dons : pas de chevron de repli sur papier */
-.feat-badge .icon {
+.feat-badge .icon,
+.fold-toggle .icon,
+.fold-toggle-bare {
     display: none;
 }
 

@@ -2184,6 +2184,69 @@ fieldset.inline-checks {
     margin-left: auto;
 }
 
+/* Pastille de repli (fold.js) des capacités de sous-classe, des cartes de compagnon et des sorts de
+   sous-classe : même gravure que la pastille des dons. La toucher ne garde que le titre du bloc
+   (retenu sur cet appareil) ; tout s'imprime (print.css). Sans texte : chevron seul. */
+.fold-toggle {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 26px;
+    padding: 1px 6px;
+    cursor: pointer;
+    line-height: 1.3;
+    border: 1px solid var(--gold-soft);
+    border-radius: 4px;
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
+    color: var(--accent);
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    letter-spacing: normal;
+    text-shadow: var(--engrave);
+    align-self: center;
+}
+
+.fold-toggle .icon {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    color: currentColor;
+    stroke-width: 2;
+    transition: transform 0.2s ease;
+}
+
+.fold-toggle:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+/* Bloc replié : chevron tourné vers la droite (« il y a une suite ») */
+[data-folded="true"] > :is(.subclass-title, .subclass-feature-head, .companion-head, .feat-spells-title) > .fold-toggle .icon {
+    transform: rotate(-90deg);
+}
+
+@media screen {
+    /* Bloc replié : seul son titre reste ; imprimé en entier */
+    .subclass-features[data-folded="true"] > :not(.subclass-title),
+    .subclass-feature[data-folded="true"] > :not(.subclass-feature-head),
+    .companion-card[data-folded="true"] > :not(.companion-head),
+    .subclass-spells[data-folded="true"] > :not(.feat-spells-title) {
+        display: none;
+    }
+}
+
+@media screen and (pointer: coarse) {
+    /* Pastille de repli : plus grande sous le doigt */
+    .fold-toggle {
+        min-width: 40px;
+        min-height: 32px;
+    }
+}
+
 .subclass-feature .feat-tag[data-kind="reminder"] {
     border-style: dashed;
     color: var(--quiet-ink);

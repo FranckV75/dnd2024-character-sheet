@@ -2,6 +2,13 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.28.0] - 2026-11-10 (Blocs repliables)
+### Added
+- Blocs repliables, comme les dons : bloc « Sous-classe » entier et chacune de ses capacités (la
+  pastille « Niv. X »), cartes de compagnon, sorts de sous-classe. Une pastille à chevron ne garde
+  que le titre ; le choix est retenu sur l'appareil (`dd2024_blocks_folded`, jamais dans la
+  sauvegarde) et tout s'imprime (`js/ui/fold.js`).
+
 ## [4.27.0] - 2026-11-09 (Sous-classes, lot 7 : choix, compagnons, formes)
 ### Added
 - Choix de sous-classe mémorisés (nouvelle clé facultative `subclass_choices`, ignorée par l'ancien
