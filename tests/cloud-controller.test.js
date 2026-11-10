@@ -793,3 +793,40 @@ describe('Bascule depuis la v3', () => {
         assert.equal(t.store.get().combat_buffs.rage, true);
     });
 });
+
+describe('Retour à une sauvegarde de secours (source « snapshot »)', () => {
+    test('Même personnage, lié : envoyé comme une modification, sans question, lien gardé', async () => {
+        const online = sheet('Korgul', { hp_current: '9' });
+        const db = fakeSupabase([row('Korgul', online, T0)]);
+        const t = tab({ db, storage: linkedStorage(online), character: online });
+        await t.sync.setUser(U);
+        t.store.replace(sheet('Korgul', { hp_current: '4' }), { source: 'snapshot' });
+        await t.runTimers();
+        assert.deepEqual(t.asked, []);
+        assert.equal(cloud(db, 'Korgul').data.hp_current, '4');
+        assert.equal(t.sync.getState().name, 'Korgul');
+        assert.equal(t.sync.getState().detached, false);
+    });
+
+    test('Même personnage, modifié ailleurs entre-temps : question « Deux versions différentes »', async () => {
+        const online = sheet('Korgul', { hp_current: '9' });
+        const db = fakeSupabase([row('Korgul', online, T0)]);
+        const t = tab({ db, storage: linkedStorage(online), character: online });
+        await t.sync.setUser(U);
+        db.table.find(r => r.name === 'Korgul').data = sheet('Korgul', { hp_current: '1' });
+        db.table.find(r => r.name === 'Korgul').updated_at = T1;
+        t.store.replace(sheet('Korgul', { hp_current: '4' }), { source: 'snapshot' });
+        await t.runTimers();
+        assert.equal(t.asked[0]?.kind, 'conflict');
+        assert.equal(cloud(db, 'Korgul').data.hp_current, '1');
+    });
+
+    test('Autre personnage : traité comme un import (lien remis à zéro)', async () => {
+        const online = sheet('Korgul');
+        const db = fakeSupabase([row('Korgul', online, T0)]);
+        const t = tab({ db, storage: linkedStorage(online), character: online });
+        await t.sync.setUser(U);
+        t.store.replace(sheet('Iria'), { source: 'snapshot' });
+        assert.equal(t.sync.getState().name, '');
+    });
+});

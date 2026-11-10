@@ -244,7 +244,7 @@ function openImportModal(store, setStatus) {
         title: '📂 Importer une fiche',
         wide: true,
         body: [
-            el('p', { class: 'toolbar-modal-note', text: 'La fiche actuelle sera remplacée. Exportez-la d\'abord si vous voulez la conserver.' }),
+            el('p', { class: 'toolbar-modal-note', text: 'La fiche actuelle sera remplacée. Elle sera gardée parmi les derniers états de cet appareil (« Revenir à… ») ; exportez-la pour la conserver durablement.' }),
             el('section', { class: 'toolbar-option' },
                 el('h3', { class: 'toolbar-option-title', text: 'Depuis un fichier' }),
                 el('div', { class: 'toolbar-option-row' }, chooseButton, fileInput)),
@@ -397,12 +397,12 @@ function openExportModal(store, setStatus) {
 async function newCharacter(store, setStatus) {
     const ok = await confirmModal({
         title: '📄 Nouvelle fiche',
-        message: 'La fiche actuelle sera remplacée par une fiche vierge. Exportez-la d\'abord si vous voulez la conserver.',
+        message: 'La fiche actuelle sera remplacée par une fiche vierge. Elle sera gardée parmi les derniers états de cet appareil (« Revenir à… ») ; exportez-la pour la conserver durablement.',
         confirmLabel: 'Créer une fiche vierge',
         danger: true
     });
     if (!ok) return;
-    store.replace(createDefaultCharacter());
+    store.replace(createDefaultCharacter(), { source: 'new' });
     try {
         localStorage.removeItem(STORAGE_KEYS.activeName);
     } catch {

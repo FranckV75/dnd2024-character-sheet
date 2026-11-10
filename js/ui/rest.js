@@ -265,9 +265,11 @@ function confirmLongRest(summary) {
     });
 }
 
-async function longRest(store, setStatus) {
+async function longRest(store, setStatus, keepSnapshot) {
     const ok = await confirmLongRest(planLongRest(store.get()).summary);
     if (!ok) return;
+    // Sauvegarde de secours : le repos long remet beaucoup de compteurs à zéro
+    keepSnapshot?.('long-rest');
     store.update(planLongRest(store.get()).patch);
     setStatus('Repos long terminé');
 }
@@ -299,7 +301,7 @@ export function initRest(ctx) {
     });
     const longButton = el('button', {
         type: 'button', class: 'btn rest-btn',
-        on: { click: () => { longRest(store, setStatus); } }
+        on: { click: () => { longRest(store, setStatus, ctx.keepSnapshot); } }
     });
     // Une icône par repos : soleil (courte pause dans la journée), lit (la nuit) ;
     // la lune est celle du titre de la section

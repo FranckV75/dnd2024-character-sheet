@@ -16,6 +16,7 @@ import { createDefaultCharacter } from './schema.js';
 export function createStore(initial = createDefaultCharacter()) {
     let state = structuredClone(initial);
     const listeners = new Set();
+    const beforeReplaceHooks = new Set();
 
     function notify(changedKeys, meta = {}) {
         for (const listener of listeners) {
@@ -52,8 +53,26 @@ export function createStore(initial = createDefaultCharacter()) {
          *        fiche est reprise d'un autre onglet (main.js) : déjà enregistrée, rien à réécrire
          */
         replace(character, meta = {}) {
+            for (const hook of beforeReplaceHooks) {
+                try {
+                    hook(state, meta);
+                } catch (e) {
+                    console.error('Erreur avant le remplacement de la fiche :', e);
+                }
+            }
             state = structuredClone(character);
             notify(null, meta);
+        },
+
+        /**
+         * Appelé juste avant chaque remplacement (sauvegarde de secours de la fiche remplacée).
+         * Une erreur n'empêche jamais le remplacement.
+         * @param {(current: Object, meta: Object) => void} hook
+         * @returns {() => void} Fonction de retrait
+         */
+        beforeReplace(hook) {
+            beforeReplaceHooks.add(hook);
+            return () => beforeReplaceHooks.delete(hook);
         },
 
         /**

@@ -2,6 +2,22 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.29.0] - 2026-11-10 (Sauvegardes de secours)
+### Added
+- Sauvegardes de secours datées, sur l'appareil seulement (clé du navigateur `dd2024_char_snapshots`,
+  jamais dans la sauvegarde ni en ligne) : les 10 derniers états de la fiche, pris à l'ouverture,
+  avant un repos long et avant tout remplacement (import, nouvelle fiche, chargement depuis le
+  compte, retour à un état). Un état déjà dans la liste n'est pas ajouté une seconde fois ; une
+  fiche vierge n'est jamais gardée (`js/state/snapshots.js`).
+- Bouton « Revenir à… » dans la barre Gestion (masqué fiche verrouillée) : date et heure, nom,
+  niveau, classe et moment de chaque état ; revenir à un état garde d'abord la fiche actuelle.
+  Fiche liée à un compte : le retour au même personnage est envoyé comme une modification
+  ordinaire (question « Deux versions différentes » si la version en ligne a changé entre-temps).
+### Changed
+- Stockage de l'appareil plein : la fiche passe avant les sauvegardes de secours, qui ne cèdent leur
+  place que si cela permet de l'enregistrer (les plus récentes sont remises) ; le joueur est prévenu,
+  comme lorsqu'une sauvegarde de secours n'a pas pu être prise avant un remplacement.
+
 ## [4.28.1] - 2026-11-10 (Noms des manœuvres)
 ### Fixed
 - Maître de guerre : noms français des 20 manœuvres repris du Manuel des joueurs 2024 (Regain,

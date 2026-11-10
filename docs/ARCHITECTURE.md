@@ -63,6 +63,8 @@ js/
 │   │                   illisible, fichiers JSON (un JSON qui n'est pas une fiche est refusé)
 │   ├── local-save.js   Enregistrement automatique dans le navigateur et reprise de la fiche
 │   │                   enregistrée par un autre onglet (sans DOM, testé avec plusieurs onglets)
+│   ├── snapshots.js    Sauvegardes de secours datées (10 derniers états, sur l'appareil seulement ;
+│   │                   écran « Revenir à… » : ui/snapshots.js)
 │   └── other-tab.js    Fiche enregistrée par un autre onglet : reprise et fusion (pure)
 └── ui/                 Interface (un module par fonctionnalité, initialisé par main.js)
     ├── sheet.js        Construit la fiche, relie chaque champ data-field au store,

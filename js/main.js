@@ -1,7 +1,7 @@
 // =============================================================================
 // MAIN.JS - Point d'entrée de l'application (v4)
 // Crée le store, construit la fiche puis branche chaque fonctionnalité.
-// Chaque module reçoit le même contexte : { root, store, setStatus, saveWithCharacter, saveNow }.
+// Chaque module reçoit le même contexte : { root, store, setStatus, saveWithCharacter, saveNow, keepSnapshot }.
 // Enregistre la fiche dans le navigateur et reprend celle qu'un autre onglet y a enregistrée.
 // =============================================================================
 
@@ -31,6 +31,8 @@ import { createStore } from './state/store.js';
 import { createDefaultCharacter } from './state/schema.js';
 import { loadLocal, saveLocal, STORAGE_KEYS } from './state/persistence.js';
 import { createLocalSave } from './state/local-save.js';
+import { takeSnapshot, saveFreeingSnapshots, reasonForReplace } from './state/snapshots.js';
+import { initSnapshots } from './ui/snapshots.js';
 import { richTextAvailable } from './ui/sanitize.js';
 import { showRichTextNotice, showUnreadableSaveNotice } from './ui/boot-notices.js';
 
@@ -83,6 +85,20 @@ const bootText = readStored(STORAGE_KEYS.character);
 const saved = loadLocal();
 const store = createStore(saved ? saved.character : createDefaultCharacter());
 
+// --- Sauvegardes de secours datées (js/state/snapshots.js), sur l'appareil seulement ---
+// À l'ouverture (fiche lisible), puis avant chaque remplacement de la fiche (import, nouvelle
+// fiche, chargement depuis le compte, retour à un état). Pas pour une fiche reprise d'un autre
+// onglet : celui-ci a déjà gardé la sienne.
+if (saved && saved.backupKey === undefined) takeSnapshot(saved.character, 'open');
+store.beforeReplace((current, meta) => {
+    if (meta.source === 'other-tab') return;
+    const { why } = takeSnapshot(current, reasonForReplace(meta.source));
+    // Échec (stockage plein, fiche énorme) : dit au joueur APRÈS le message de l'import (« … chargée »)
+    if (why === 'storage' || why === 'too-big') {
+        setTimeout(() => setStatus('⚠️ La fiche précédente n\'a pas pu être gardée dans « Revenir à… » (stockage de l\'appareil plein).'), 0);
+    }
+});
+
 function readStored(key) {
     try {
         return localStorage.getItem(key);
@@ -103,7 +119,15 @@ const localSave = createLocalSave({
         setItem: (key, value) => localStorage.setItem(key, value),
         removeItem: (key) => localStorage.removeItem(key)
     },
-    writeSheet: (character) => saveLocal(character),
+    // La fiche passe avant les sauvegardes de secours : stockage plein, leur place est libérée
+    // (seulement si cela permet d'enregistrer la fiche), et les plus récentes sont remises
+    writeSheet: (character) => {
+        const { saved: done, dropped } = saveFreeingSnapshots(() => saveLocal(character));
+        if (dropped) {
+            setStatus(`⚠️ Stockage de l'appareil plein : ${dropped} sauvegarde(s) de secours parmi les plus anciennes retirée(s) de « Revenir à… ». Exportez la fiche pour la garder ailleurs.`);
+        }
+        return done;
+    },
     knownText: bootText,
     delay: AUTOSAVE_DELAY_MS,
     status: {
@@ -119,7 +143,9 @@ const ctx = {
     /** Ajoute une donnée à enregistrer avec la fiche (voir local-save.js) */
     saveWithCharacter: (key, getValue, onStoredChange) => localSave.saveWithCharacter(key, getValue, onStoredChange),
     /** Enregistre tout de suite la fiche (et les données associées) */
-    saveNow: () => localSave.saveNow()
+    saveNow: () => localSave.saveNow(),
+    /** Garde l'état actuel de la fiche dans les sauvegardes de secours (avant un repos long…) */
+    keepSnapshot: (reason) => takeSnapshot(store.get(), reason)
 };
 
 // Écouteurs posés AVANT ceux des fonctionnalités : au retour sur l'onglet, la fiche des autres
@@ -150,7 +176,7 @@ for (const [label, step] of [
         console.error(`Échec de ${label} :`, error);
     }
 }
-for (const init of [initToolbar, initAccount, initGallery, initWeapons, initArmors, initSpells, initRest, initSubclassFeatures, initCompanions, initWildMagic, initBoxFolding, initStyleEditor, initMotion, initFeedback]) {
+for (const init of [initToolbar, initSnapshots, initAccount, initGallery, initWeapons, initArmors, initSpells, initRest, initSubclassFeatures, initCompanions, initWildMagic, initBoxFolding, initStyleEditor, initMotion, initFeedback]) {
     try {
         init(ctx);
     } catch (error) {

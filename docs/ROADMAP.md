@@ -156,8 +156,8 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
          (PV, don à choisir, emplacements de sorts, nouvelles capacités).
       2. Suivi des états (Empoisonné, À terre, Effrayé…) : pastilles à cocher avec le rappel de
          l'effet au toucher (aujourd'hui seul l'Épuisement est suivi).
-      3. Sauvegardes de secours datées : la fiche garde ses 5 à 10 derniers états, avec un bouton
-         pour revenir en arrière.
+      3. ✅ (4.29.0, 10/11/2026) Sauvegardes de secours datées : la fiche garde ses 10 derniers
+         états, avec un bouton « Revenir à… » dans la barre Gestion.
       4. Lanceur de dés (demande de janvier 2026, voir « Décisions en attente ») : toucher un bonus
          d'attaque ou une compétence lance le dé et affiche le total.
       5. Fiche utilisable sans wifi, installée comme une application sur la tablette (attention aux

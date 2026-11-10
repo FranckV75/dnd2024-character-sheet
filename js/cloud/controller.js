@@ -306,7 +306,7 @@ export function createCloudSync({
         // Nom de ligne v3 différent du nom affiché (mise en forme…) : la fiche prend le nom en ligne
         if (cloudName(characterName(character)) !== row.name) character.char_name = row.name;
         epoch += 1;
-        changeStore(() => store.replace(character));
+        changeStore(() => store.replace(character, { source: 'cloud' }));
         setBase({
             name: row.name, userId: user.id, updatedAt: row.updated_at, hash: sheetFingerprint(character), sentHashes: [], detached: false
         });
@@ -640,6 +640,14 @@ export function createCloudSync({
             emit();
             // Saisies de cet onglet gardées par-dessus (meta.merged) : envoyées comme d'habitude
             if (meta.merged && current()) schedulePush();
+            return;
+        }
+        if (changedKeys === null && meta.source === 'snapshot' && linked() && cloudName(characterName(previous)) === current()) {
+            // Retour à une sauvegarde de secours du même personnage, lié en ligne : simple
+            // modification, envoyée comme d'habitude (question « Deux versions différentes » si la
+            // version en ligne a changé entre-temps), sans casser le lien
+            emit();
+            schedulePush();
             return;
         }
         if (changedKeys === null) {
