@@ -126,6 +126,8 @@ export function isLegacyRowName(legacyName, name) {
 export const V4_ONLY_KEYS = Object.freeze(['combat_buffs', 'spell_slots_state', 'feat_uses', 'feat_choices', 'subclass_uses', 'subclass_choices',
     // PV actuels des compagnons de sous-classe (lot 7, js/rules/subclass-companions.js)
     'subclass_companions',
+    // États cochés (Empoisonné, À terre…, js/rules/conditions.js)
+    'conditions',
     // Emplacements de dons propres à la v4, déduits de schema.js (un nouvel emplacement y est ajouté tout seul)
     ...[HUMAN_FEAT_SLOT, ...Object.keys(CLASS_FEAT_SLOTS).map(Number)].map((slot) => `feat_${slot}`)]);
 

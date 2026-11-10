@@ -53,8 +53,13 @@ export function reasonForReplace(source) {
 
 const defaultStorage = () => (typeof localStorage !== 'undefined' ? localStorage : null);
 
-/** Texte comparé pour reconnaître une fiche vierge : les réglages d'affichage (fond, thème) ne comptent pas */
-const contentText = (character) => canonicalJSON({ ...character, _visual_prefs: undefined });
+/** Texte comparé pour reconnaître une fiche vierge ou un doublon : les réglages d'affichage (fond, thème) ne comptent pas */
+const contentText = (character) => canonicalJSON({
+    ...character,
+    _visual_prefs: undefined,
+    // Liste d'états vide (états cochés puis retirés) : comme une fiche qui n'en a jamais eu
+    conditions: Array.isArray(character?.conditions) && character.conditions.length ? character.conditions : undefined
+});
 
 let blankText = null;
 /** Texte d'une fiche vierge (calculé une fois) */

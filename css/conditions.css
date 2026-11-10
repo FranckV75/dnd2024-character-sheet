@@ -1,0 +1,94 @@
+/* =============================================================================
+   CONDITIONS.CSS - Encadré « États » de l'onglet Combat (js/ui/conditions.js)
+   Pastilles .btn-chip (components.css) : dorées quand l'état est coché (aria-pressed),
+   liseré pointillé quand l'état est seulement entraîné par un autre (Inconscient → À terre).
+   ============================================================================= */
+
+.condition-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.condition-chip {
+    min-height: 32px;
+}
+
+/* État coché (ou Épuisement de niveau 1 ou plus) : pastille dorée */
+.condition-chip[aria-pressed="true"],
+.condition-chip.is-on {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--btn-top);
+}
+
+.condition-chip[aria-pressed="true"]:hover:not(:disabled),
+.condition-chip.is-on:hover:not(:disabled) {
+    color: var(--btn-top);
+}
+
+.condition-chip[aria-pressed="true"]:focus-visible,
+.condition-chip.is-on:focus-visible {
+    outline-color: var(--accent-strong);
+}
+
+/* Entraîné par un état coché, sans être coché lui-même */
+.condition-chip.is-implied {
+    border-style: dashed;
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.condition-reminders {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.condition-reminders[hidden] {
+    display: none;
+}
+
+.condition-reminder {
+    padding: 6px 10px;
+    border-left: 3px solid var(--accent);
+    font-family: var(--font-text);
+}
+
+.condition-reminder .condition-name {
+    font-family: var(--font-title);
+    letter-spacing: 0.04em;
+    color: var(--accent);
+}
+
+.condition-reminder .muted {
+    font-style: italic;
+}
+
+.condition-reminder ul {
+    margin: 2px 0 0;
+    padding-left: 18px;
+}
+
+.condition-clear {
+    margin-top: 8px;
+}
+
+/* .btn-chip impose display : l'attribut hidden doit l'emporter */
+.condition-clear[hidden] {
+    display: none;
+}
+
+@media print {
+    .condition-clear {
+        display: none;
+    }
+
+    /* Aucun état en cours : l'encadré ne s'imprime pas (titre seul) */
+    .box.conditions:not(:has(.condition-reminders:not([hidden]))) {
+        display: none;
+    }
+}

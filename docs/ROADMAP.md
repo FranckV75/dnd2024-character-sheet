@@ -154,8 +154,8 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
     - Préférées :
       1. Assistant de montée de niveau : un bouton « Passer au niveau N » qui liste ce qui change
          (PV, don à choisir, emplacements de sorts, nouvelles capacités).
-      2. Suivi des états (Empoisonné, À terre, Effrayé…) : pastilles à cocher avec le rappel de
-         l'effet au toucher (aujourd'hui seul l'Épuisement est suivi).
+      2. ✅ (4.30.0, 10/11/2026) Suivi des états (Empoisonné, À terre, Effrayé…) : pastilles à
+         cocher dans l'onglet Combat avec le rappel de l'effet.
       3. ✅ (4.29.0, 10/11/2026) Sauvegardes de secours datées : la fiche garde ses 10 derniers
          états, avec un bouton « Revenir à… » dans la barre Gestion.
       4. Lanceur de dés (demande de janvier 2026, voir « Décisions en attente ») : toucher un bonus

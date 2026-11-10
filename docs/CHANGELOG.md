@@ -2,6 +2,21 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.30.0] - 2026-11-10 (Suivi des états)
+### Added
+- Encadré repliable « États » dans l'onglet Combat, sous les PV : une pastille par état du Manuel
+  des joueurs 2024 (noms français du manuel : À terre, Agrippé, Assourdi, Aveuglé, Charmé,
+  Effrayé, Empoisonné, Entravé, Épuisement, Étourdi, Inconscient, Invisible, Neutralisé, Paralysé,
+  Pétrifié). Toucher une pastille coche l'état et affiche le rappel de ses effets, avec les états
+  qu'il entraîne (Inconscient → Neutralisé et À terre, en pointillés) ; décocher Inconscient laisse
+  À terre. Les états restent cochables fiche verrouillée ; « Tout retirer » les décoche tous.
+- L'Épuisement reste réglé par niveau dans l'encadré Repos : sa pastille y mène et affiche le
+  niveau, et son rappel donne les chiffres du niveau atteint.
+- Nouvelle clé facultative `conditions` (liste des états cochés), enregistrée et synchronisée,
+  ignorée par l'ancien site ; absente des anciennes fiches (`js/rules/conditions.js`,
+  `js/data/conditions.js`). Effets : résumé du glossaire des règles (le manuel fait foi).
+- Impression : l'encadré n'est imprimé que si un état est en cours.
+
 ## [4.29.0] - 2026-11-10 (Sauvegardes de secours)
 ### Added
 - Sauvegardes de secours datées, sur l'appareil seulement (clé du navigateur `dd2024_char_snapshots`,

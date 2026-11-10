@@ -15,6 +15,7 @@ import { EQUIPMENT_DATA } from '../data/equipment.js';
 import { ABILITY_IDS } from '../data/constants.js';
 import { deriveCharacter, hitDieForClass } from '../rules/character.js';
 import { MAX_SLOTS_PER_LEVEL, SPELL_LEVELS } from '../rules/spells.js';
+import { sanitizeConditions, CONDITIONS_KEY } from '../rules/conditions.js';
 import {
     createDefaultCharacter, PLAIN_TEXT_FIELDS, BOOLEAN_FIELDS,
     EMPTY_WEAPON, EMPTY_SPELL, EMPTY_ARMOR
@@ -298,6 +299,10 @@ export function migrateCharacter(input) {
         const value = character[field];
         character[field] = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
     }
+
+    // 8 bis. États cochés (clé facultative v4) : laissée absente si la fiche n'en a pas
+    // (empreinte en ligne inchangée), sinon liste d'états connus
+    if (Object.hasOwn(raw, CONDITIONS_KEY)) character[CONDITIONS_KEY] = sanitizeConditions(raw[CONDITIONS_KEY]);
 
     // 9. Tableaux dynamiques
     character.dynamic_weapons = Array.isArray(raw.dynamic_weapons) ? raw.dynamic_weapons.map(w => migrateWeapon(w, report)) : [];

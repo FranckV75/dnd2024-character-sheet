@@ -70,7 +70,9 @@ const PUSH_DELAY_MS = 2000;
 /** La fiche ne contient rien qui mérite d'être préservé */
 export function isBlankCharacter(character) {
     const blank = createDefaultCharacter();
-    return !characterName(character) && Object.keys(blank).every(key =>
+    // États cochés (clé facultative « conditions », absente de la fiche vierge) : la fiche a servi
+    const conditions = character?.conditions;
+    return !characterName(character) && !(Array.isArray(conditions) && conditions.length) && Object.keys(blank).every(key =>
         JSON.stringify(character?.[key] ?? null) === JSON.stringify(blank[key]));
 }
 

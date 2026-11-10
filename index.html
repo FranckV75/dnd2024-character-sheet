@@ -34,6 +34,7 @@
     <link rel="stylesheet" href="css/magic.css">
     <link rel="stylesheet" href="css/spells.css">
     <link rel="stylesheet" href="css/rest.css">
+    <link rel="stylesheet" href="css/conditions.css">
     <link rel="stylesheet" href="css/style-editor.css">
     <link rel="stylesheet" href="css/account.css">
     <link rel="stylesheet" href="css/motion.css">
@@ -231,6 +232,12 @@
                         <!-- Tirages de la Déferlante (Sorcellerie sauvage) : js/ui/wild-magic.js -->
                         <div class="box wild-magic" id="wild-magic" hidden></div>
                     </div>
+
+                    <!-- États (Empoisonné, À terre…) : construit par js/ui/conditions.js -->
+                    <section class="box conditions" data-fold-box="conditions">
+                        <h3 data-icon="warning">États</h3>
+                        <div id="conditions-feature"></div>
+                    </section>
 
                     <!-- Armes : construit par js/ui/weapons.js -->
                     <section class="box" id="weapons-feature" aria-label="Armes"></section>
