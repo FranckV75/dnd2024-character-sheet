@@ -4,8 +4,8 @@ Ce fichier passe le relais à une nouvelle session de Claude. Franck le fait lir
 
 ## Où en est le projet
 
-- En ligne : version **4.34.0** (`master` = `3f52d88`). Sur `v4`, pas encore publié (attend le
-  « Publie » de Franck) :
+- En ligne : version **4.37.0** (`master` = `v4` = `e1ea8a8`), publiée le 10/11/2026 avec
+  l'accord de Franck. Elle regroupe :
   - 4.35.0 : vitesse du Moine et du Barbare, cases Fougue / Inflexible / Coup de chance, filtre
     « Magiques » des armes, pages françaises des Bottes d'arme, « Formes du cercle améliorées » ;
   - 4.36.0 : encadré « Espèce & historique » (traits et options d'espèce, sorts d'espèce, Souffle,
