@@ -6,8 +6,9 @@ Toutes les modifications notables du projet sont documentées dans ce fichier. L
 ### Added
 - Blocs repliables, comme les dons : bloc « Sous-classe » entier et chacune de ses capacités (la
   pastille « Niv. X »), cartes de compagnon, sorts de sous-classe et sorts de dons, et les encadrés
-  Armures, Traits de personnage, Odyssée des Seigneurs Dragons, Apparence, Histoire & personnalité
-  (pastille au bout du titre, attribut `data-fold-box` dans index.html). Une pastille à chevron ne garde
+  Capacités de classe, Compagnons & familiers, Armures, Traits de personnage, Odyssée des Seigneurs
+  Dragons, Apparence, Histoire & personnalité (pastille au bout du titre, attribut `data-fold-box`
+  dans index.html) ; Armes (le titre et les bonus de combat restent). Pastilles agrandies (32 × 22 px à la souris). Une pastille à chevron ne garde
   que le titre ; le choix est retenu sur l'appareil (`dd2024_blocks_folded`, jamais dans la
   sauvegarde) et tout s'imprime (`js/ui/fold.js`).
 

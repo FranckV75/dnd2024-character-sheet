@@ -8,7 +8,8 @@
 // (règles CSS sous @media screen).
 // Clés : « subclass:<sous-classe> » (bloc entier), « subclass:<sous-classe>.<capacité> »,
 // « companion:<compagnon> », « subclass-spells », « feat-spells », et « box:<nom> »
-// pour les encadrés de index.html marqués data-fold-box (armures, traits, Odyssée, apparence…).
+// pour les encadrés de index.html marqués data-fold-box (capacités de classe, compagnons, armures,
+// traits, Odyssée, apparence…).
 // =============================================================================
 
 import { el, icon } from './dom.js';
@@ -76,9 +77,13 @@ export function foldButton(label, ...content) {
  * @param {HTMLElement} container
  */
 export function bindFolding(container) {
+    container.dataset.foldBound = 'true';
     container.addEventListener('click', (event) => {
         const button = event.target.closest('[data-fold-toggle]');
         if (!button || !container.contains(button)) return;
+        // Blocs imbriqués (encadré « Capacités de classe » > bloc « Sous-classe ») : seul le
+        // conteneur écouté le plus proche du bouton agit (sinon le repli s'annulerait)
+        if (button.parentElement.closest('[data-fold-bound]') !== container) return;
         const block = button.closest('[data-fold-key]');
         const key = block?.dataset.foldKey;
         if (!key) return;
@@ -105,8 +110,7 @@ export function initBoxFolding({ root }) {
         if (!title) continue;
         box.dataset.foldKey = `box:${box.dataset.foldBox}`;
         title.append(foldButton(title.textContent.trim()));
-        // Un écouteur par encadré : un conteneur commun recevrait aussi les clics des blocs
-        // repliables qui ont déjà le leur (sous-classe, compagnons…)
+        // Un écouteur par encadré (les blocs qu'il contient, sous-classe ou compagnons, ont le leur)
         bindFolding(box);
         applyFold(box);
     }

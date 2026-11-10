@@ -41,6 +41,7 @@ import { openModal, confirmModal } from './modal.js';
 import { attachAutocomplete } from './autocomplete.js';
 import { isLocked } from './lock.js';
 import { createMagicParts, setMagic, enchant, magicLevel, ENCHANT_DELAY_MS } from './magic.js';
+import { foldButton, bindFolding, applyFold } from './fold.js';
 
 const FILTERS = [
     ['all', 'Toutes'],
@@ -217,7 +218,9 @@ export function initWeapons(ctx) {
     container.replaceChildren(
         el('div', { class: 'weapons-head' },
             // Icône dorée devant le titre, comme les titres de index.html (data-icon, ornaments.js)
-            el('h3', { id: 'weapons-title', 'data-icon': 'swords' }, icon('swords'), 'Armes'),
+            // Pastille à chevron (fold.js) : replie le tableau ; le titre et les bonus de combat
+            // (Rage…) restent, ils servent à chaque tour
+            el('h3', { id: 'weapons-title', 'data-icon': 'swords' }, icon('swords'), 'Armes', foldButton('Armes')),
             buffsBox),
         el('div', { class: 'weapons-filters btn-segments', role: 'group', 'aria-label': 'Filtrer les armes affichées' },
             filterButtons),
@@ -239,6 +242,9 @@ export function initWeapons(ctx) {
                 tbody)),
         undoBox,
         addButton);
+    container.dataset.foldKey = 'box:weapons';
+    bindFolding(container);
+    applyFold(container);
 
     // ---------------------------------------------------------------------
     // Lecture / écriture dans le store

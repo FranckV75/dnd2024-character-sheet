@@ -2193,8 +2193,9 @@ fieldset.inline-checks {
     align-items: center;
     justify-content: center;
     gap: 4px;
-    min-width: 26px;
-    padding: 1px 6px;
+    min-width: 32px;
+    min-height: 22px;
+    padding: 2px 8px;
     cursor: pointer;
     line-height: 1.3;
     border: 1px solid var(--gold-soft);
@@ -2212,8 +2213,8 @@ fieldset.inline-checks {
 
 .fold-toggle .icon {
     flex: none;
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     color: currentColor;
     stroke-width: 2;
     transition: transform 0.2s ease;
@@ -2225,7 +2226,8 @@ fieldset.inline-checks {
 }
 
 /* Bloc replié : chevron tourné vers la droite (« il y a une suite ») */
-[data-folded="true"] > :is(h3, .subclass-title, .subclass-feature-head, .companion-head, .feat-spells-title) > .fold-toggle .icon {
+[data-folded="true"] > :is(h3, .subclass-title, .subclass-feature-head, .companion-head, .feat-spells-title) > .fold-toggle .icon,
+#weapons-feature[data-folded="true"] > .weapons-head > h3 > .fold-toggle .icon {
     transform: rotate(-90deg);
 }
 
@@ -2235,7 +2237,8 @@ fieldset.inline-checks {
     .subclass-feature[data-folded="true"] > :not(.subclass-feature-head),
     .companion-card[data-folded="true"] > :not(.companion-head),
     .feat-spells[data-folded="true"] > :not(.feat-spells-title),
-    .box[data-fold-box][data-folded="true"] > :not(h3) {
+    .box[data-fold-box][data-folded="true"] > :not(h3),
+    #weapons-feature[data-folded="true"] > :not(.weapons-head) {
         display: none;
     }
 
@@ -2249,8 +2252,9 @@ fieldset.inline-checks {
     }
 }
 
-/* Encadré de index.html : la pastille au bout du titre, après le filet d'or */
-.box > h3 > .fold-toggle {
+/* Encadré de index.html (et titre « Armes ») : la pastille au bout du titre, après le filet d'or */
+.box > h3 > .fold-toggle,
+.weapons-head h3 > .fold-toggle {
     order: 4;
 }
 
