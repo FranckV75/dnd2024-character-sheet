@@ -142,7 +142,7 @@ const FEATS_DATA = {
         "type": "Général",
         "prereq": "niveau 4 ou supérieur, Dextérité 13 ou plus",
         "asi": "+1 Dex",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Dextérité de 1, jusqu'à un maximum de 20. <br><strong>Vision aveugle</strong>. Vous bénéficiez de la Vision aveugle avec une portée de 3 mètres. <br><strong>Brouillard de guerre</strong>. Vous exploitez les distractions du combat et obtenez un Avantage à chaque jet de Dextérité (Discrétion) effectué lors de l'action Se cacher pendant le combat. <br><strong>Tireur discret</strong>. Si vous effectuez un jet d'attaque caché et que celui-ci échoue, votre position n'est pas révélée."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Dextérité de 1, jusqu'à un maximum de 20. <br><strong>Vision aveugle</strong>. Vous bénéficiez de la Vision aveugle avec une portée de 3 mètres. <br><strong>Brouillard de guerre</strong>. Vous exploitez les distractions du combat et obtenez un Avantage à chaque jet de Dextérité (Discrétion) effectué lors de l'action Furtivité pendant le combat. <br><strong>Tireur discret</strong>. Si vous effectuez un jet d'attaque caché et que celui-ci échoue, votre position n'est pas révélée."
     },
     "doue": {
         "name": "Doué",
@@ -206,7 +206,7 @@ const FEATS_DATA = {
         "type": "Général",
         "prereq": "niveau 4 ou supérieur, Force ou Dextérité 13 ou plus",
         "asi": "+1 For ou Dex",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Force ou Dextérité de 1, jusqu'à un maximum de 20. <br><strong>Foncer amélioré</strong>. Lorsque vous prenez l'action Foncer, votre vitesse augmente de 3 mètres pour cette action. <br><strong>Attaque de charge</strong>. Si vous vous déplacez d'au moins 3 mètres en ligne droite vers une cible juste avant de la toucher avec un jet d'attaque au corps à corps dans le cadre de l'action Attaque, choisissez l'un des effets suivants : vous obtenez un bonus de 1d8 aux dégâts de l'attaque, ou vous repoussez la cible jusqu'à 3 mètres si elle ne fait pas plus d'une taille de plus que vous. Vous ne pouvez utiliser cet avantage qu'une seule fois par tour."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Force ou Dextérité de 1, jusqu'à un maximum de 20. <br><strong>Pointe améliorée</strong>. Lorsque vous prenez l'action Pointe, votre vitesse augmente de 3 mètres pour cette action. <br><strong>Attaque de charge</strong>. Si vous vous déplacez d'au moins 3 mètres en ligne droite vers une cible juste avant de la toucher avec un jet d'attaque au corps à corps dans le cadre de l'action Attaque, choisissez l'un des effets suivants : vous obtenez un bonus de 1d8 aux dégâts de l'attaque, ou vous repoussez la cible jusqu'à 3 mètres si elle ne fait pas plus d'une taille de plus que vous. Vous ne pouvez utiliser cet avantage qu'une seule fois par tour."
     },
     "faconneur": {
         "name": "Façonneur",
@@ -425,7 +425,7 @@ const FEATS_DATA = {
         "type": "Général",
         "prereq": "niveau 4 ou supérieur, Dextérité ou Constitution 13 ou plus",
         "asi": "+1 Dex ou Con",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Dextérité ou Constitution de 1, jusqu'à un maximum de 20. <br><strong>Vitesse améliorée</strong>. Votre vitesse augmente de 3 mètres. <br><strong>Foncer en Terrain difficile</strong>. Lorsque vous prenez l'action Foncer pendant votre tour, un terrain difficile ne vous coûte pas un mouvement supplémentaire pour le reste de ce tour. <br><strong>Déplacement agile</strong>. Les attaques d'opportunité ont un Désavantage contre vous."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Dextérité ou Constitution de 1, jusqu'à un maximum de 20. <br><strong>Vitesse améliorée</strong>. Votre vitesse augmente de 3 mètres. <br><strong>Pointe sur Terrain difficile</strong>. Lorsque vous prenez l'action Pointe pendant votre tour, un terrain difficile ne vous coûte pas un mouvement supplémentaire pour le reste de ce tour. <br><strong>Déplacement agile</strong>. Les attaques d'opportunité ont un Désavantage contre vous."
     },
     "musicien": {
         "name": "Musicien",

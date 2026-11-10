@@ -100,7 +100,7 @@ describe('Maître des bêtes : compagnon primordial', () => {
         const c = card(beastMaster(7, { beast: 'land', strike: 'slashing' }, { wis_score: '16' }), COMPANION_KEYS.primal);
         assert.equal(c.hp.max, 40);
         assert.match(action(c, 'Frappe').text, /\+6, .*1d8 \+ 5 tranchants \(ou Force/);
-        assert.match(action(c, 'Ordres').text, /Foncer, Se désengager, Esquiver ou Aider/);
+        assert.match(action(c, 'Ordres').text, /action Désengagement, Esquive, Pointe ou Soutien/);
         assert.deepEqual(saves(c), [5, 5, 5, 2, 5, 3]);
     });
 

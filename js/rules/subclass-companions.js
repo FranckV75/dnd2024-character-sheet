@@ -234,7 +234,7 @@ function primalCompanion(derived, record) {
         },
         {
             name: 'Ordres',
-            text: `Sans votre ordre (action bonus), elle ne fait que l'action Esquiver. Vous pouvez aussi renoncer à une de vos attaques de l'action Attaquer pour qu'elle fasse sa Frappe.${level >= 7 ? ' Commandée, elle peut en plus Foncer, Se désengager, Esquiver ou Aider par sa propre action bonus.' : ''} Si vous êtes Neutralisé, elle agit librement.`
+            text: `Sans votre ordre (action bonus), elle ne fait que l'action Esquive. Vous pouvez aussi renoncer à une de vos attaques de l'action Attaque pour qu'elle fasse sa Frappe.${level >= 7 ? ' Commandée, elle peut en plus prendre l\'action Désengagement, Esquive, Pointe ou Soutien par sa propre action bonus.' : ''} Si vous êtes Neutralisé, elle agit librement.`
         }
     ];
     if (choice.strike && !allowed.includes(choice.strike) && allowed.length > 1) {

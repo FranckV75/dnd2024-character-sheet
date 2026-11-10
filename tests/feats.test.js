@@ -310,13 +310,13 @@ describe('featEffects : dons du lot 1 (PHB 2024)', () => {
         assert.doesNotMatch(eu['featSlot:4'][0].text, /DD/);
     });
 
-    test('Expert de la charge : rappels Charge et Foncer, +1d8 quand le bouton est actif', () => {
+    test('Expert de la charge : rappels Charge et Pointe, +1d8 quand le bouton est actif', () => {
         const c = fighter({ feat_4: 'expert_de_la_charge', combat_buffs: { charger: true },
             dynamic_weapons: [weapon('Hache à deux mains'), weapon('Arc long'), weapon('Hachette')] });
         const effects = featEffects(c);
         assert.deepEqual(effects.weapons.map(n => n.value), ['1d8', 3]);
         assert.match(effects.weapons[0].text, /au moins 3 m en ligne droite.*\+1d8.*repoussez-la jusqu'à 3 m.*Une fois par tour/);
-        assert.equal(effects.weapons[1].text, 'Foncer : votre vitesse augmente de 3 m pour cette action.');
+        assert.equal(effects.weapons[1].text, 'Pointe : votre vitesse augmente de 3 m pour cette action.');
         assert.deepEqual(ids(effects['weapon:0']), ['expert_de_la_charge']);
         assert.equal(effects['weapon:1'], undefined, 'arme à distance');
         assert.deepEqual(ids(effects['weapon:2']), ['expert_de_la_charge'], 'arme de lancer : aussi de corps à corps');

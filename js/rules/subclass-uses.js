@@ -174,7 +174,7 @@ export const SUBCLASS_COUNTERS = Object.freeze({
     battle_master: [
         { feature: 'superiorite_martiale_des_de_superiorite', label: "Dés de supériorité", inText: "dés de supériorité", max: ({ level }) => superiorityDiceCount(level), reset: 'short',
             use: "Une case par manœuvre utilisée (dé et DD sous chaque arme)." },
-        { feature: 'connais_ton_ennemi', label: "Connais ton ennemi", inText: "Connais ton ennemi", max: once, reset: 'long',
+        { feature: 'connais_ton_ennemi', label: "Observation de l'ennemi", inText: "Observation de l'ennemi", max: once, reset: 'long',
             use: "Action Bonus : immunités, résistances et vulnérabilités d'une créature. Un dé de supériorité la rend (décochez)." }
     ],
     psi_warrior: [

@@ -2,6 +2,17 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.28.1] - 2026-11-10 (Noms des manœuvres)
+### Fixed
+- Maître de guerre : noms français des 20 manœuvres repris du Manuel des joueurs 2024 (Regain,
+  Balayage, Bélier, Instruction, Chassé-croisé…), dans l'ordre alphabétique du manuel ; « Connais
+  ton ennemi » devient « Observation de l'ennemi ». Les manœuvres déjà cochées restent cochées
+  (clés inchangées).
+- Noms des actions du Manuel des joueurs 2024 français partout : Pointe (*Dash*, au lieu de
+  « Foncer » : Expert de la charge, Mobile, Fente, Rage sauvage), Furtivité (*Hide*, au lieu de
+  « Se cacher » : Discret, Voleur), Attaque, Désengagement, Esquive, Soutien (*Help*) et Utilisation
+  (Maître des bêtes, serments du Paladin, Jeu de jambes défensif).
+
 ## [4.28.0] - 2026-11-10 (Blocs repliables)
 ### Added
 - Blocs repliables, comme les dons : bloc « Sous-classe » entier et chacune de ses capacités (la

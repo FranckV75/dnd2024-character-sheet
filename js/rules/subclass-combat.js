@@ -75,7 +75,7 @@ export function knownManeuvers(derived) {
 }
 
 /**
- * Chiffres d'une manœuvre pour le personnage : dé, DD, Parade, Ralliement.
+ * Chiffres d'une manœuvre pour le personnage : dé, DD, Parade, Regain.
  * @param {Object} maneuver - entrée de MANEUVERS
  * @param {Object} derived - deriveCharacter()
  * @returns {string} « 1d8 ; DD 13 (Force) », « 1d8 + 3 dégâts en moins »…

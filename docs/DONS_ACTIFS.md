@@ -68,7 +68,7 @@ Dans la colonne « Pour qui », le mot entre parenthèses est l'intérêt du don
 
 | Don | Pour qui | Ce que la fiche ferait | Famille | Effort |
 |---|---|---|---|---|
-| Expert de la charge | Korgul, Iria | Bouton « Charge (+1d8) » à côté de Rage. Rappel « Foncer : +3 m ». | bouton | S |
+| Expert de la charge | Korgul, Iria | Bouton « Charge (+1d8) » à côté de Rage. Rappel « Pointe : +3 m ». | bouton | S |
 | Doué | Hedera, Fafnir, Iria, Cephalus | Rappel « 3 maîtrises à cocher » sous le don. | choix | S |
 | Guérisseur | Hedera, Cephalus | Rappel avec la valeur calculée : « dé de vie de la cible + X ». | texte | S |
 | Broyeur | Korgul, Hedera, Iria | Rappel sur les armes contondantes : poussée de 1,50 m, et Avantage pour tous après un critique. | texte | S |
@@ -168,8 +168,8 @@ Aucun de ces styles ne sert à Korgul, Hedera, Fafnir ou Cephalus : leur classe 
 - ✅ Guérisseur : nom retenu « Médecin de combat » partout (données et rappels).
 - Façonneur : dans la table de fabrication, « masse » doit être « massue ».
 - Athlète : coquille « Lorsque vous êtes en À terre ».
-- Discret : il faut écrire « action Se cacher » au lieu de « action Furtivité ». Coquille « Vous obtenez de Vision aveugle ».
-- Expert de la charge : il faut écrire « action Foncer » au lieu de « action Pointe ». Le même mot « Pointe » apparaît peut-être dans Mobile, à vérifier.
+- ✅ Discret : « action Furtivité » est bien le nom du Manuel des joueurs 2024 français (action « Hide », confirmé par Franck le 10/11/2026 ; la correction en « Se cacher » a été annulée en 4.28.1). Coquille « Vous obtenez de Vision aveugle ».
+- ✅ Expert de la charge et Mobile : « action Pointe » est bien le nom du Manuel des joueurs 2024 français (action « Dash », confirmé par Franck le 10/11/2026) ; la correction en « Foncer » du 04/11 a été annulée (4.28.1).
 - Incantateur d'élite : la description limite l'effet aux sorts « à distance », alors que le Manuel parle de toutes les attaques de sort.
 - Télékinésiste : feats.js ajoute que la main peut aussi s'éloigner de 9 m de plus. Le Manuel anglais ne parle que de la portée du sort. C'est peut-être une nuance de la traduction française, qu'on ne peut pas vérifier.
 

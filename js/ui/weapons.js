@@ -109,7 +109,7 @@ const BUFF_DEFS = {
     charger: () => ({
         icon: 'swords',
         text: 'Charge (+1d8)',
-        title: "Expert de la charge : +1d8 aux dégâts d'une attaque au corps à corps après 3 m en ligne droite vers la cible (une fois par tour). Foncer : +3 m de vitesse pour cette action."
+        title: "Expert de la charge : +1d8 aux dégâts d'une attaque au corps à corps après 3 m en ligne droite vers la cible (une fois par tour). Pointe : +3 m de vitesse pour cette action."
     }),
     // Style Duel (PHB 2024 p. 209)
     dueling: () => ({

@@ -15,6 +15,7 @@ import { SUBCLASS_CHOICE_FIELDS } from '../js/data/subclass-choices.js';
 import { SUBCLASS_FEATURES } from '../js/data/subclass-features.js';
 import { DD_RULES } from '../js/data/dd-rules.js';
 import { V4_ONLY_KEYS } from '../js/cloud/sync.js';
+import { MANEUVERS } from '../js/data/maneuvers.js';
 import { migrateCharacter } from '../js/state/migrate.js';
 import { createDefaultCharacter } from '../js/state/schema.js';
 
@@ -178,7 +179,7 @@ describe('Maître de guerre : manœuvres et Disciple de la guerre', async () => 
         assert.deepEqual(knownManeuvers(deriveCharacter(bm(7, c.subclass_choices.battle_master))).map(m => m.id), ['parry', 'riposte', 'rally']);
     });
 
-    test('chiffres : Parade, Ralliement, DD', () => {
+    test('chiffres : Parade, Regain, DD', () => {
         const parry = MANEUVERS.find(m => m.id === 'parry');
         const rally = MANEUVERS.find(m => m.id === 'rally');
         const trip = MANEUVERS.find(m => m.id === 'trip_attack');
@@ -189,10 +190,10 @@ describe('Maître de guerre : manœuvres et Disciple de la guerre', async () => 
         assert.equal(maneuverNumbers(trip, deriveCharacter(bm(5, {}, { dex_score: '18' }))), '1d8 ; DD 15 (Force)');
     });
 
-    test('sous les armes : manœuvres jouées avec une attaque ; pas Attaque circulaire à distance', () => {
+    test('sous les armes : manœuvres jouées avec une attaque ; pas Balayage à distance', () => {
         const d = deriveCharacter(bm(3, { maneuver1: 'trip_attack', maneuver2: 'sweeping_attack', maneuver3: 'parry' }));
         const melee = subclassCombatWeaponNotes({ name: 'Épée longue', prop: 'Polyvalente' }, d)[0].text;
-        assert.match(melee, /Connues : Croc-en-jambe \(For\), Attaque circulaire\./);
+        assert.match(melee, /Connues : Croc-en-jambe \(For\), Balayage\./);
         const ranged = subclassCombatWeaponNotes({ name: 'Arc long', prop: 'Munitions (45/180 m), Lourde, À deux mains' }, d)[0].text;
         assert.doesNotMatch(ranged, /circulaire/);
     });
@@ -210,6 +211,19 @@ describe('Maître de guerre : manœuvres et Disciple de la guerre', async () => 
     test('bloc Sous-classe : liste chiffrée des manœuvres choisies', () => {
         const f = subclassFeatures(deriveCharacter(bm(3, { maneuver1: 'rally' }))).reached.find(x => x.id === 'superiorite_martiale_man_uvres');
         assert.match(f.automation.text, /^1 manœuvre choisie sur 3/);
-        assert.match(f.automation.list[0], /^Ralliement \(1d8 \+ 1 PV temporaires\)/);
+        assert.match(f.automation.list[0], /^Regain \(1d8 \+ 1 PV temporaires\)/);
+    });
+
+    test('noms du Manuel des joueurs 2024 français, dans son ordre alphabétique (clés inchangées)', () => {
+        assert.deepEqual(MANEUVERS.map(m => m.name), [
+            'Attaque menaçante', 'Attaque précise', 'Autorité naturelle', 'Balayage', 'Bélier',
+            'Chassé-croisé', 'Croc-en-jambe', 'Désarmement', 'Diversion', 'Embuscade',
+            'Évaluation tactique', 'Feinte', 'Fente', 'Instruction', 'Jeu de jambes défensif',
+            'Manœuvre tactique', 'Parade', 'Provocation', 'Regain', 'Riposte'
+        ]);
+        // Les clés enregistrées dans les fiches (subclass_choices) restent les identifiants anglais
+        assert.equal(MANEUVERS.find(m => m.id === 'rally').name, 'Regain');
+        assert.equal(MANEUVERS.find(m => m.id === 'sweeping_attack').name, 'Balayage');
+        assert.equal(new Set(MANEUVERS.map(m => m.id)).size, 20);
     });
 });

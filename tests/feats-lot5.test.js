@@ -83,7 +83,7 @@ describe('Mobile (Speedy) et Incantateur d\'élite (Spell Sniper)', () => {
         const effects = featEffects(character);
         assert.deepEqual(effects.speed.map(n => [n.value, n.manual]), [[3, true]]);
         assert.equal(character.speed, '9 m');
-        assert.ok(slotTexts(character, 4).some(t => /^Foncer/.test(t)));
+        assert.ok(slotTexts(character, 4).some(t => /^Pointe/.test(t)));
         assert.ok(slotTexts(character, 4).some(t => /attaques d'opportunité contre vous ont le Désavantage/.test(t)));
     });
 

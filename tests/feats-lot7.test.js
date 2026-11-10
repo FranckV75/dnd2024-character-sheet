@@ -204,7 +204,7 @@ describe('Rappels des dons (lot 7)', () => {
     });
 
     test('Discret : repère à côté de Discrétion', () => {
-        assert.match(featEffects(hero({ feat_4: 'discret' }))['skills.stealth'][0].text, /Se cacher/);
+        assert.match(featEffects(hero({ feat_4: 'discret' }))['skills.stealth'][0].text, /action Furtivité/);
     });
 
     test('Façonneur : rappel au repos long seulement', () => {

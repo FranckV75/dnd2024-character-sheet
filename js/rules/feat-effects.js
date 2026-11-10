@@ -292,12 +292,12 @@ const FEAT_RULES = {
         }
     },
 
-    // Expert de la charge — PHB 2024 « Charger », p. 202 (« Dash » = action Foncer)
+    // Expert de la charge — PHB 2024 « Charger », p. 202 (« Dash » = action Pointe)
     expert_de_la_charge: ({ add }) => {
         add('weapons', "Charge : après au moins 3 m en ligne droite vers la cible juste avant de la toucher au corps à corps (action Attaque), +1d8 aux dégâts, ou repoussez-la jusqu'à 3 m (taille au plus une de plus que vous). Une fois par tour.",
             { value: '1d8' });
-        add('weapons', 'Foncer : votre vitesse augmente de 3 m pour cette action.', { value: 3 });
-        add('featSlot', 'Bouton « Charge (+1d8) » dans les armes (corps à corps) ; Foncer : +3 m.', { value: '1d8' });
+        add('weapons', 'Pointe : votre vitesse augmente de 3 m pour cette action.', { value: 3 });
+        add('featSlot', 'Bouton « Charge (+1d8) » dans les armes (corps à corps) ; Pointe : +3 m.', { value: '1d8' });
     },
 
     // Cogneur lourd — PHB 2024 « Great Weapon Master », p. 204 (le bonus aux dégâts est un bouton existant)
@@ -371,7 +371,7 @@ const FEAT_RULES = {
         add('speed', "+3 m grâce à Mobile. La Vitesse saisie n'est pas modifiée : ajoutez-les vous-même s'ils n'y sont pas déjà.",
             { value: 3, manual: true });
         add('featSlot', 'Vitesse +3 m : à reporter vous-même dans la Vitesse saisie (repère à côté).', { value: 3, manual: true });
-        add('featSlot', "Foncer : quand vous prenez l'action Foncer, le terrain difficile ne vous coûte pas de mouvement en plus jusqu'à la fin du tour.");
+        add('featSlot', "Pointe : quand vous prenez l'action Pointe, le terrain difficile ne vous coûte pas de mouvement en plus jusqu'à la fin du tour.");
         add('featSlot', "Les attaques d'opportunité contre vous ont le Désavantage.");
     },
 
@@ -572,9 +572,9 @@ const FEAT_RULES = {
 
     // Discret — PHB 2024 « Skulker », p. 208
     discret: ({ add }) => {
-        add('skills.stealth', "Avantage pour l'action Se cacher pendant un combat.");
+        add('skills.stealth', "Avantage pour l'action Furtivité pendant un combat.");
         add('featSlot', 'Vision aveugle à 3 m : à noter vous-même avec vos sens.');
-        add('featSlot', "Avantage en Discrétion pour l'action Se cacher pendant un combat (repère à côté de Discrétion). Caché, une attaque ratée ne révèle pas votre position.");
+        add('featSlot', "Avantage en Discrétion pour l'action Furtivité pendant un combat (repère à côté de Discrétion). Caché, une attaque ratée ne révèle pas votre position.");
     },
 
     // Empoigneur — PHB 2024 « Grappler », p. 204 : DD de Lutte = 8 + mod. For + bonus de maîtrise

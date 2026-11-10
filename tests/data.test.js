@@ -133,12 +133,13 @@ describe('Dons', () => {
 
     test('Descriptions : coquilles et noms d\'actions corrigés', () => {
         const all = feats.map(([, f]) => f.desc).join('\n');
-        assert.ok(!/action Pointe|action Furtivité|Soigneur de bataille|êtes en À terre|obtenez de Vision/.test(all));
+        // Noms des actions du Manuel des joueurs 2024 français (Pointe = Dash, Furtivité = Hide, confirmés par Franck)
+        assert.ok(!/action Foncer|action Se cacher|Soigneur de bataille|êtes en À terre|obtenez de Vision/.test(all));
         assert.ok(FEATS_DATA.guerisseur.desc.includes('<strong>Médecin de combat</strong>'));
         assert.ok(FEATS_DATA.faconneur.desc.includes('Gourdin, massue, bâton de combat'));
-        assert.ok(FEATS_DATA.expert_de_la_charge.desc.includes("l'action Foncer"));
-        assert.ok(FEATS_DATA.mobile.desc.includes("l'action Foncer"));
-        assert.ok(FEATS_DATA.discret.desc.includes("l'action Se cacher"));
+        assert.ok(FEATS_DATA.expert_de_la_charge.desc.includes("l'action Pointe"));
+        assert.ok(FEATS_DATA.mobile.desc.includes("l'action Pointe"));
+        assert.ok(FEATS_DATA.discret.desc.includes("l'action Furtivité"));
         assert.ok(FEATS_DATA.incantateur_d_elite.desc.includes("Vos jets d'attaque de sort ignorent"));
     });
 
