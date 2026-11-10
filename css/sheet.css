@@ -2225,7 +2225,7 @@ fieldset.inline-checks {
 }
 
 /* Bloc replié : chevron tourné vers la droite (« il y a une suite ») */
-[data-folded="true"] > :is(.subclass-title, .subclass-feature-head, .companion-head, .feat-spells-title) > .fold-toggle .icon {
+[data-folded="true"] > :is(h3, .subclass-title, .subclass-feature-head, .companion-head, .feat-spells-title) > .fold-toggle .icon {
     transform: rotate(-90deg);
 }
 
@@ -2234,9 +2234,24 @@ fieldset.inline-checks {
     .subclass-features[data-folded="true"] > :not(.subclass-title),
     .subclass-feature[data-folded="true"] > :not(.subclass-feature-head),
     .companion-card[data-folded="true"] > :not(.companion-head),
-    .subclass-spells[data-folded="true"] > :not(.feat-spells-title) {
+    .feat-spells[data-folded="true"] > :not(.feat-spells-title),
+    .box[data-fold-box][data-folded="true"] > :not(h3) {
         display: none;
     }
+
+    /* Encadré replié à côté d'un autre (Apparence, Histoire) : il ne s'étire pas à sa hauteur */
+    .box[data-fold-box][data-folded="true"] {
+        align-self: start;
+    }
+
+    .box[data-fold-box][data-folded="true"] > h3 {
+        margin-bottom: 0;
+    }
+}
+
+/* Encadré de index.html : la pastille au bout du titre, après le filet d'or */
+.box > h3 > .fold-toggle {
+    order: 4;
 }
 
 @media screen and (pointer: coarse) {

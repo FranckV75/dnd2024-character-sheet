@@ -134,6 +134,22 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
     runes, inscription runique qui défile, braises). Toucher la pastille joue l'enchantement et dit
     l'effet. Bouton « Sans animation » dans la barre Gestion. À vérifier sur l'iPad de Catherine
     (Safari).
+  - ✅ (10/11/2026) Blocs repliables (pastille à chevron, retenue sur chaque tablette, tout
+    s'imprime) : sous-classe et ses capacités, compagnons, sorts de sous-classe et de dons, armures,
+    traits de personnage, Odyssée, apparence, histoire. Magie sauvage laissée dépliée (une ligne,
+    rappels utiles au moment d'agir).
+  - Idées du 10/11/2026, à traiter plus tard :
+    - Bilan de toutes les capacités de Korgul pour qu'elles apparaissent sur la fiche (exemple :
+      Sens du danger, un rappel « avantage aux sauvegardes de Dextérité » près de la Dextérité) :
+      faire un relevé de ce qui manque et qui serait utile.
+    - Grimoire : comme les objets magiques, un aspect qui monte en puissance avec le niveau du sort
+      (plus le sort est haut, plus l'effet est spectaculaire).
+    - Niveau : saisie à la main ou molette / liste ? Points d'expérience : afficher les PX restants
+      avant le niveau suivant.
+    - PV en cours de partie : une saisie plus pratique (molette façon cadenas, ou engrenage), à
+      étendre si elle est bonne à d'autres compteurs (Rage, points de Ki…).
+    - Encadré Armes : un filtre « Magiques », et les filtres (Toutes, Courantes, Guerre, Corps à
+      corps, Distance) dans un menu déroulant pour gagner de la place.
 
 ## Corrections de règles apportées (vérifiées dans le Manuel du joueur 2024)
 

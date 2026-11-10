@@ -7,7 +7,8 @@
 // garde la fiche qui lui convient sur sa tablette. Impression : tout est imprimé, replié ou non
 // (règles CSS sous @media screen).
 // Clés : « subclass:<sous-classe> » (bloc entier), « subclass:<sous-classe>.<capacité> »,
-// « companion:<compagnon> », « subclass-spells ».
+// « companion:<compagnon> », « subclass-spells », « feat-spells », et « box:<nom> »
+// pour les encadrés de index.html marqués data-fold-box (armures, traits, Odyssée, apparence…).
 // =============================================================================
 
 import { el, icon } from './dom.js';
@@ -91,6 +92,24 @@ export function bindFolding(container) {
         folded = read();
         applyFolds(container);
     });
+}
+
+/**
+ * Encadrés fixes de index.html (section.box data-fold-box="<nom>") : une pastille à chevron au bout
+ * du titre h3 replie l'encadré (seul le titre reste).
+ * @param {{ root: HTMLElement }} ctx
+ */
+export function initBoxFolding({ root }) {
+    for (const box of root.querySelectorAll('section.box[data-fold-box]')) {
+        const title = box.querySelector(':scope > h3');
+        if (!title) continue;
+        box.dataset.foldKey = `box:${box.dataset.foldBox}`;
+        title.append(foldButton(title.textContent.trim()));
+        // Un écouteur par encadré : un conteneur commun recevrait aussi les clics des blocs
+        // repliables qui ont déjà le leur (sous-classe, compagnons…)
+        bindFolding(box);
+        applyFold(box);
+    }
 }
 
 /**

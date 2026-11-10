@@ -828,7 +828,9 @@ export function initSpells(ctx) {
     // « lancer gratuit » sont remises à jour sur place (le focus reste)
     // -----------------------------------------------------------------------
 
-    const featBox = el('section', { class: 'feat-spells', 'aria-labelledby': 'feat-spells-title', hidden: true });
+    // Repliable comme les sorts de sous-classe (pastille à chevron du titre, fold.js)
+    const featBox = el('section', { class: 'feat-spells', 'aria-labelledby': 'feat-spells-title', 'data-fold-key': 'feat-spells', hidden: true });
+    bindFolding(featBox);
     let featSignature = null;
 
     const signedText = (n) => `${n >= 0 ? '+' : ''}${n}`;
@@ -893,10 +895,12 @@ export function initSpells(ctx) {
         if (signature !== featSignature) {
             featSignature = signature;
             featBox.replaceChildren(...(groups.length ? [
-                el('h4', { class: 'feat-spells-title', id: 'feat-spells-title' }, icon('star'), el('span', { text: 'Sorts de dons' })),
+                el('h4', { class: 'feat-spells-title', id: 'feat-spells-title' }, icon('star'), el('span', { text: 'Sorts de dons' }),
+                    foldButton('Sorts de dons')),
                 el('p', { class: 'feat-spells-intro', text: "Donnés par vos dons : toujours préparés, ils ne comptent pas dans vos sorts préparés. Pour les changer, modifiez le choix sous le don." }),
                 ...groups.map(featGroup)
             ] : []));
+            applyFolds(featBox);
         }
         const used = new Map(groups.flatMap(g => g.spells.filter(s => s.free).map(s => [s.free.key, s.free.used])));
         for (const box of featBox.querySelectorAll('input[data-feat-spell-use]')) {
