@@ -4,9 +4,10 @@ Ce fichier passe le relais à une nouvelle session de Claude. Franck le fait lir
 
 ## Où en est le projet
 
-- En ligne : version **4.33.0** (`master` = `d7c1fd0`), publiée avec l'accord de Franck.
-- Enregistrée sur `v4`, **pas encore publiée** (attendre le « Publie » de Franck) : **4.34.0**.
-  Elle regroupe :
+- En ligne : version **4.34.0** (`master` = `v4` = `3f52d88`), publiée le 10/11/2026 avec
+  l'accord de Franck. Sur `v4` seulement, pas publié : « Formes du cercle améliorées » (faute
+  d'accord du livre corrigée, choix de Franck), à publier avec la prochaine version.
+- La 4.34.0 regroupe :
   - les PX restants avant le niveau suivant, avec le bouton « + PX » ;
   - les boutons − / + sur Épuisement, Inspiration, renommée et PV des compagnons, et la « Bourse » ;
   - le numéro de version affiché dans la barre ;
@@ -45,7 +46,6 @@ Ce fichier passe le relais à une nouvelle session de Claude. Franck le fait lir
 - Espèces : options absentes (lignées elfiques, ascendances draconiques, portée de la vision dans
   le noir).
 - Pages des Bottes d'arme (`js/data/weapon-masteries.js`) : numéros du livre anglais.
-- Titre du livre « Formes du cercle améliorés » (sic) repris tel quel : Franck peut trancher.
 - Dragonnets du Seigneur Dragon : blocs à vérifier sur le Manuel des monstres 2024 (plus tard).
 
 ## Ensuite, sur demande de Franck seulement

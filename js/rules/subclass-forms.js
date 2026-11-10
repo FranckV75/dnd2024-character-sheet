@@ -17,7 +17,7 @@
 //    niveaux 2 / 6 / 17 (getClassResourceInfo, js/rules/logic.js) ;
 //  - Cercle de la Lune (p. 86-87) : Formes du cercle (niveau 3 : FP max = niveau ÷ 3 arrondi
 //    inférieur, CA 13 + Sagesse si plus que celle de la bête, PV temporaires = 3 × niveau) ; sorts du
-//    cercle lançables en forme ; Formes du cercle améliorés (niveau 6 : dégâts radiants au choix,
+//    cercle lançables en forme ; Formes du cercle améliorées (niveau 6 : dégâts radiants au choix,
 //    Sagesse ajoutée aux sauvegardes de Constitution) ; Foulée sélène (10) ; Forme lunaire (14 : +2d10
 //    radiants une fois par tour, Foulée sélène partagée) ;
 //  - Cercle des Étoiles (p. 88-89) : Forme stellaire (niveau 3, 10 minutes, constellation Archer,
@@ -183,7 +183,7 @@ export function formNotes(derived = {}) {
             `En Forme sauvage : CA ${moon.ac} (13 + Sagesse) si celle de la bête est plus basse. La CA affichée reste celle du druide.`,
             { mention: `Forme : CA ${moon.ac}` });
         if (level >= 6 && wis > 0) {
-            add('saves.con', 'formes_du_cercle_ameliorees', 'Formes du cercle améliorés',
+            add('saves.con', 'formes_du_cercle_ameliorees', 'Formes du cercle améliorées',
                 `En Forme sauvage : ${signed(wis)} (Sagesse) à ajouter à la sauvegarde de Constitution de la bête ; le nombre affiché est celui du druide.`);
         }
     }
