@@ -4,35 +4,49 @@ Ce fichier passe le relais à une nouvelle session de Claude. Franck le fait lir
 
 ## Où en est le projet
 
-- En ligne : version **4.31.0** (`master` = `v4`), publiée le 10/11/2026 avec l'accord de Franck.
-- La file des 3 chantiers est terminée : sauvegardes de secours datées (4.29.0), suivi des états
-  (4.30.0), assistant « Passer au niveau N » (4.31.0). Détails dans `docs/CHANGELOG.md`.
-- Enregistrés sur `v4`, **pas encore publiés** (attendre le « Publie » de Franck) : saisie des PV
-  (boutons − / +, pavé « Dégâts / Soins ») et niveau en liste (4.32.0) ; mises à jour installées
-  d'elles-mêmes (4.33.0, `js/ui/update.js` : changer ensemble `package.json` et `js/version.js`).
-- Prochain chantier prévu : capacités de base des 12 classes (et sorts préparés / mineurs), à
-  partir des photos du Manuel des joueurs français que Franck range dans le dossier des photos
-  (un sous-dossier par classe possible).
-- Franck possède le Manuel des joueurs 2024 en français (livre papier). Ses photos font foi pour les
-  noms français ; elles sont rangées, avec un index, dans
-  `E:\2 - CODE\Ressources_0_Feuille_de_Perso_Antigravity\Documentation\Photos Manuel des joueurs FR\`
-  (dossier privé, jamais dans le dépôt). Le PDF du dossier Manuels est en anglais.
+- En ligne : version **4.33.0** (`master` = `d7c1fd0`), publiée avec l'accord de Franck.
+- Enregistrée sur `v4`, **pas encore publiée** (attendre le « Publie » de Franck) : **4.34.0**.
+  Elle regroupe :
+  - les PX restants avant le niveau suivant, avec le bouton « + PX » ;
+  - les boutons − / + sur Épuisement, Inspiration, renommée et PV des compagnons, et la « Bourse » ;
+  - le numéro de version affiché dans la barre ;
+  - les aptitudes de base des 12 classes et les sorts préparés / mineurs permis ;
+  - les noms du Manuel des joueurs français (le Sorcier devient l'Occultiste ; sous-classes et
+    aptitudes renommées). Les anciens noms restent lus : `aliasesFr` et `DD_RULES.namesOf` dans
+    `js/data/dd-rules.js`.
+
+  Détails dans `docs/CHANGELOG.md`.
+- Franck possède le Manuel des joueurs 2024 en français (livre papier). Ses photos font foi pour
+  les noms français. Elles sont rangées, avec un index (`INDEX.md`), dans
+  `E:\2 - CODE\Ressources_0_Feuille_de_Perso_Antigravity\Photos Manuel des joueurs FR\`.
+  Ce dossier est privé et ne va jamais dans le dépôt. Les textes de la fiche sont des résumés,
+  jamais le texte du livre (le dépôt est public).
 
 ## À vérifier par Franck (tablette Android, iPad de Catherine)
 
-- « Revenir à… » (barre Gestion) : faire un repos long, puis revenir à l'état d'avant.
-- Encadré « États » (onglet Combat) : cocher Inconscient (Neutralisé et À terre en pointillés),
-  le décocher (À terre reste coché) ; l'état coché doit apparaître sur l'autre appareil.
-- Bouton « + » du niveau : facile à toucher, ne recouvre rien ; PV max obtenus corrects.
+- Le numéro « Version 4.34.0 » s'affiche en haut à droite après la mise à jour.
+- PX :
+  - vérifier la ligne « Encore X PX avant le niveau N » ;
+  - le bouton « + PX » ;
+  - le « + » du niveau qui s'allume au seuil.
+  - Le bouton « + PX » écrit les PX en nombre seul (« 4990/6500 » devient « 5090 »).
+- Boutons − / + : Épuisement, Inspiration, PV d'un compagnon. Bourse : gagner, puis dépenser plus
+  que ce qu'on a (refusé).
+- Fiche d'un Occultiste enregistrée avant la mise à jour : elle doit s'afficher « Occultiste »
+  et « Protecteur … », sans rien perdre ; l'ancien site doit toujours l'ouvrir.
+- Onglet Magie : « Préparés : x / y » ; rouge seulement si l'on a vraiment préparé trop de sorts.
 
-## Questions en suspens
+## Points relevés, non traités (à proposer à Franck)
 
-1. Photo de la liste des états (envoyée par Franck dans la conversation) : à copier dans le dossier
-   des photos et à ajouter à `INDEX.md` ; la session n'a pas pu récupérer le fichier.
-2. Textes des effets des états : résumés du glossaire ; à vérifier avec des photos du glossaire.
-3. Montée de niveau, pas encore listés : capacités de base des classes par niveau, nombre de sorts
-   préparés et de sorts mineurs ; nom français de « Dwarven Toughness » (bonus de PV du Nain).
-   Il faut les tables du manuel français.
+- Vitesse du Moine (Déplacement sans armure) pas ajoutée à la vitesse.
+- Utilisations de Fougue, Inflexible (Guerrier) et Coup de chance (Roublard) non comptées.
+- Historiques : ils n'appliquent rien à la fiche (dons et outils). Les noms français des dons et
+  outils n'existent qu'en anglais dans les données.
+- Espèces : options absentes (lignées elfiques, ascendances draconiques, portée de la vision dans
+  le noir).
+- Pages des Bottes d'arme (`js/data/weapon-masteries.js`) : numéros du livre anglais.
+- Titre du livre « Formes du cercle améliorés » (sic) repris tel quel : Franck peut trancher.
+- Dragonnets du Seigneur Dragon : blocs à vérifier sur le Manuel des monstres 2024 (plus tard).
 
 ## Ensuite, sur demande de Franck seulement
 

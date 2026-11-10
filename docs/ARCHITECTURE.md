@@ -31,6 +31,9 @@ js/
 │   ├── constants.js    Caractéristiques, compétences, fonds par défaut
 │   ├── dd-rules.js     Classes, sous-classes (dont Odyssée), espèces, historiques,
 │   │                   destins héroïques, emplacements de sorts, armes
+│   │                   (noms du Manuel français ; anciens noms dans aliasesFr, lus par namesOf)
+│   ├── class-progression.js  Aptitudes de base des 12 classes par niveau (résumés) et
+│   │                   colonnes de leur table (Rages, sorts mineurs, sorts préparés…)
 │   ├── equipment.js    Armures
 │   ├── feats.js        Dons (Origine, Général, Style de combat, Épique)
 │   ├── feat-spells.js  Sorts permis par les dons à sorts (tirés de data/spells.json, testés)
@@ -52,6 +55,9 @@ js/
 │   ├── rest.js         Repos court et repos long
 │   ├── conditions.js   États cochés (clé facultative « conditions ») et rappel de leurs effets
 │   ├── hit-points.js   PV en jeu : dégâts, soins, PV temporaires, boutons − / + (écran : ui/hit-points.js)
+│   ├── class-progression.js  Aptitudes atteintes / à venir, sorts mineurs et préparés permis
+│   ├── experience.js   PX : seuils de niveau, PX restants, PX gagnés
+│   ├── counters.js     Compteurs − / + (Épuisement, Inspiration, renommée) et pièces (Bourse)
 │   ├── level-up.js     Assistant « Passer au niveau N » : ce qui change, PV gagnés, modification
 │   │                   appliquée (niveau, PV max, PV actuels sur demande ; écran : ui/level-up.js)
 │   └── gallery.js      Réglages d'apparence (validation des fonds, _visual_prefs)
@@ -83,6 +89,8 @@ js/
     │                   retenu sur l'appareil, jamais dans la sauvegarde)
     ├── magic.js        Aspect des armes et armures magiques (pastille, décors, enchantement)
     ├── calc-bubble.js  Bulle de calcul : détail d'une valeur calculée (CA d'une armure, écusson CA)
+    ├── class-progression.js · experience.js · counters.js · companions.js · subclass.js
+    ├── stepper.js · number-pad.js   Boutons − / + à appui long et pavé de chiffres (partagés)
     ├── modal.js · autocomplete.js · cell-text.js · dom.js   (briques partagées)
     ├── boot-notices.js Avis du démarrage (mise en forme indisponible, sauvegarde illisible)
     └── sanitize.js     Nettoyage du texte riche via DOMPurify (sans attribut data-* ni aria-*)

@@ -2,6 +2,44 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.34.0] - 2026-11-10 (Classes du Manuel français, PX et compteurs)
+### Added
+- Capacités de classe : les aptitudes de base des 12 classes (résumés, pas le texte du livre) en
+  tête de l'encadré « Capacités de classe », repliables une à une ; celles des niveaux suivants
+  grisées sous « À venir ». Au-dessus, les colonnes de la table de la classe au niveau du personnage
+  (Rages 4, Dégâts de Rage +2…) avec le prochain changement (« 5 au niv. 12 »)
+  (`js/data/class-progression.js`, `js/rules/class-progression.js`, `js/ui/class-progression.js`).
+- Onglet Magie : « Préparés : 7 / 9 · Sorts mineurs : 3 / 4 » selon la table de la classe ; en
+  rouge, avec un message, quand on a préparé plus que permis. Les sorts déjà donnés par la classe
+  (Marque du chasseur, Châtiment divin…), la sous-classe ou un don ne comptent pas, même notés au
+  grimoire. Des sorts mineurs en plus de la table ne sont qu'un rappel, pas une erreur (une espèce,
+  un don ou une option de classe en donnent d'autres).
+- Assistant « Passer au niveau N » : il nomme les nouvelles aptitudes de base et le nombre de sorts
+  mineurs et de sorts préparés en plus (fin des renvois « voir le manuel »).
+- Points d'expérience : « Encore X PX avant le niveau N » sous la case ; bouton « + PX » (pavé de
+  chiffres) ; le « + » du niveau s'allume quand le seuil est atteint (`js/rules/experience.js`).
+- Boutons − / + sur Épuisement (0 à 6), Inspiration héroïque, Points de renommée (Odyssée) et PV
+  des compagnons ; bouton « Bourse : gagner / dépenser » sous les pièces (refuse de dépenser plus
+  que ce qu'on a) (`js/rules/counters.js`, `js/ui/counters.js`). Une case qui contient du texte
+  (« 2 (Chanceux) ») n'est jamais réécrite : un message invite à la corriger à la main.
+- Numéro de version affiché en haut à droite, sous l'état de l'enregistrement.
+### Changed
+- Noms alignés sur le Manuel des joueurs français (photos de Franck) : le Sorcier devient
+  l'Occultiste, 26 sous-classes changent de nom (Protecteur Fiélon, Voie du Zélateur, Credo de
+  l'Ombre, Domaine de la Ruse, Cercle des Astres…), environ 160 aptitudes de sous-classe et les
+  aptitudes de base (Points de Credo, Ennemi juré, Forme sauvage, Conduit divin, Second souffle,
+  Témérité, Bottes d'arme, Botte tactique, Restauration magique, Combattant béni, Ordre primitif).
+  Une fiche enregistrée avec un ancien nom (« Sorcier », « Patron Fiélon ») s'affiche avec le
+  nouveau, sans être réécrite : l'ancien site lit toujours les mêmes fiches.
+- Espèces, origines et états relus sur le manuel et son glossaire : taille Moyenne du Drakéide, du
+  Nain, de l'Elfe et de l'Orc ; bonus de PV « Ténacité naine » ; textes des états (Charmé, Tests
+  d20, Abri partiel / supérieur / total, En péril, points de Credo au lieu de « ki »).
+- Sorts de sous-classe renommés selon le livre (Terreur, Présence royale de Yolane…) : un sort déjà
+  noté au grimoire sous son ancien nom est toujours reconnu.
+### Notes
+- Le bouton « + PX » écrit les PX en nombre seul : une case « 4990/6500 » devient « 5090 » (le
+  décompte sous la case remplace le « /6500 »).
+
 ## [4.33.0] - 2026-11-10 (Mises à jour fiables)
 ### Added
 - Mises à jour installées d'elles-mêmes : à l'ouverture et à chaque retour sur la fiche (au plus

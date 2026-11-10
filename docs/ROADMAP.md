@@ -144,10 +144,17 @@ un correcteur), puis vérifié à la main et commité localement sur `v4` (rien 
       faire un relevé de ce qui manque et qui serait utile.
     - Grimoire : comme les objets magiques, un aspect qui monte en puissance avec le niveau du sort
       (plus le sort est haut, plus l'effet est spectaculaire).
-    - ✅ (4.32.0, 10/11/2026) Niveau : liste de 1 à 20 (molette sur iPad). Reste : points d'expérience : afficher les PX restants
-      avant le niveau suivant.
+    - ✅ (4.32.0, 10/11/2026) Niveau : liste de 1 à 20 (molette sur iPad). ✅ (4.34.0) PX restants
+      avant le niveau suivant, bouton « + PX », « + » du niveau allumé au seuil.
     - ✅ (4.32.0, 10/11/2026) PV en cours de partie : boutons − / + (appui long) et pavé « Dégâts /
-      Soins ». Reste : l'étendre si elle est bonne à d'autres compteurs (Rage, points de Ki…).
+      Soins ». ✅ (4.34.0) Étendu à Épuisement, Inspiration, renommée, PV des compagnons et pièces
+      (bouton « Bourse ») ; les Rages restent des cases à cocher.
+    - ✅ (4.34.0, 10/11/2026) Capacités de base des 12 classes, sorts préparés / mineurs permis,
+      noms du Manuel des joueurs français (Occultiste…), numéro de version affiché.
+    - À faire plus tard (relevés pendant le chantier 4.34.0) : vitesse du Moine (Déplacement sans
+      armure) pas ajoutée ; utilisations de Fougue, Inflexible et Coup de chance pas comptées ;
+      historiques sans effet sur la fiche (dons et outils) ; options d'espèce absentes (lignées,
+      ascendances draconiques, portée de la vision dans le noir).
     - Encadré Armes : un filtre « Magiques », et les filtres (Toutes, Courantes, Guerre, Corps à
       corps, Distance) dans un menu déroulant pour gagner de la place.
   - Idées proposées par Claude le 10/11/2026 (survol du projet, retenues par Franck pour plus tard) :
