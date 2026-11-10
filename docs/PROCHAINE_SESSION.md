@@ -7,6 +7,12 @@ Ce fichier passe le relais à une nouvelle session de Claude. Franck le fait lir
 - En ligne : version **4.31.0** (`master` = `v4`), publiée le 10/11/2026 avec l'accord de Franck.
 - La file des 3 chantiers est terminée : sauvegardes de secours datées (4.29.0), suivi des états
   (4.30.0), assistant « Passer au niveau N » (4.31.0). Détails dans `docs/CHANGELOG.md`.
+- Enregistrés sur `v4`, **pas encore publiés** (attendre le « Publie » de Franck) : saisie des PV
+  (boutons − / +, pavé « Dégâts / Soins ») et niveau en liste (4.32.0) ; mises à jour installées
+  d'elles-mêmes (4.33.0, `js/ui/update.js` : changer ensemble `package.json` et `js/version.js`).
+- Prochain chantier prévu : capacités de base des 12 classes (et sorts préparés / mineurs), à
+  partir des photos du Manuel des joueurs français que Franck range dans le dossier des photos
+  (un sous-dossier par classe possible).
 - Franck possède le Manuel des joueurs 2024 en français (livre papier). Ses photos font foi pour les
   noms français ; elles sont rangées, avec un index, dans
   `E:\2 - CODE\Ressources_0_Feuille_de_Perso_Antigravity\Documentation\Photos Manuel des joueurs FR\`
