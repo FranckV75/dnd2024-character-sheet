@@ -12,9 +12,8 @@ en fin de session :
 
 ## En ce moment
 
-- **En ligne** : version **4.37.0** (`master` = `e1ea8a8`), publiée le 10/11/2026.
-- **Prête, non publiée** : **4.38.0** sur `v4` (corrections de l'audit du 11/11, lots A, E, C, D).
-  Attend l'accord de Franck pour « Publie ».
+- **En ligne** : version **4.38.0** (`master` = `v4` = `384b532`), publiée le 11/11/2026 avec
+  l'accord de Franck (corrections de l'audit, lots A, E, C, D).
 - **GitHub** : Franck a demandé au support de purger les anciens commits (PDF, vieilles
   sauvegardes, adresse Gmail) ; réponse attendue.
 - **Emplacement** : le dépôt est désormais `E:\2 - CODE\Feuille de perso\Code\` (voir
