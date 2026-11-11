@@ -384,6 +384,9 @@
 .modal {
     width: min(500px, calc(100vw - 32px));
     max-height: calc(100vh - 48px);
+    /* Hauteur visible réelle : sur iPad, 100vh ne retire pas la barre d'adresse de Safari et le
+       bouton Fermer pouvait passer dessous (repli vh pour les navigateurs plus anciens) */
+    max-height: calc(100dvh - 48px);
     padding: 0;
     overflow: hidden;
     border: 1px solid var(--border);

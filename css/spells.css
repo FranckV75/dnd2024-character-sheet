@@ -284,6 +284,9 @@
 
 .table-scroll.spells-scroll {
     max-height: 60vh;
+    /* Petite hauteur de l'écran (barre d'adresse affichée) : le tableau tient à l'écran sur iPad
+       et ne change pas de taille quand la barre se replie au défilement (repli vh) */
+    max-height: 60svh;
 }
 
 .spells-table {
@@ -543,6 +546,8 @@
     width: max-content;
     max-width: min(420px, calc(100vw - 16px));
     max-height: 55vh;
+    /* Hauteur visible réelle (barre d'adresse de Safari comprise), repli vh */
+    max-height: 55dvh;
     overflow-y: auto;
     /* Faire défiler la description du doigt ne fait pas défiler la page derrière */
     overscroll-behavior: contain;
