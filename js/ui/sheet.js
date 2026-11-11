@@ -14,7 +14,7 @@ import { DD_RULES } from '../data/dd-rules.js';
 import { FEATS_DATA } from '../data/feats.js';
 import { FEAT_SLOT_ORDER, HUMAN_FEAT_SLOT, STYLE_FEAT_SLOT, featSlotLevel } from '../state/schema.js';
 import { stripHTML } from '../state/migrate.js';
-import { deriveCharacter, featSlotState, hitDieForClass, exhaustionSeverity } from '../rules/character.js';
+import { featSlotState, hitDieForClass, exhaustionSeverity } from '../rules/character.js';
 import { featEffects, AUTOMATED_FEATS } from '../rules/feat-effects.js';
 import { featCounters, setFeatUsesPatch } from '../rules/feat-uses.js';
 import { subclassCounters, setSubclassUsesPatch } from '../rules/subclass-uses.js';
@@ -27,6 +27,7 @@ import { el, fillSelect, icon, signed, sheetElements, RICH_FIELD } from './dom.j
 import { applyLock, isLocked } from './lock.js';
 import { openModal } from './modal.js';
 import { createCalcBubble } from './calc-bubble.js';
+import { derivedOf } from './derived.js';
 
 const SKILL_STATS = ['str', 'dex', 'int', 'wis', 'cha'];
 // Icônes dorées des groupes de compétences (dessinées par dom.js, à la place des émojis)
@@ -300,7 +301,7 @@ function bindFields(root, store) {
         const flag = button.dataset.manualSwitch;
         button.addEventListener('click', () => {
             if (isLocked()) return;
-            store.update({ [flag]: 'true', passive_perception: String(deriveCharacter(store.get()).passivePerception) });
+            store.update({ [flag]: 'true', passive_perception: String(derivedOf(store.get()).passivePerception) });
             const input = root.querySelector(`[data-manual-only="${flag}"]`);
             input?.focus();
             input?.select();
@@ -970,7 +971,7 @@ function renderSkillRanks(root, d) {
 }
 
 function render(root, character, replaced = false) {
-    const d = deriveCharacter(character);
+    const d = derivedOf(character);
     renderDynamicSelects(root, character, d);
     renderClassResource(root, character, d);
     for (const field of sheetElements(root, '[data-field]')) {

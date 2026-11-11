@@ -12,7 +12,7 @@
 import { el, icon } from './dom.js';
 import { foldButton, bindFolding, applyFolds } from './fold.js';
 import { isLocked } from './lock.js';
-import { deriveCharacter } from '../rules/character.js';
+import { derivedOf } from './derived.js';
 import { speciesView, setSpeciesChoicePatch } from '../rules/species.js';
 
 const ABILITY_NAMES = { int: 'Intelligence', wis: 'Sagesse', cha: 'Charisme' };
@@ -89,7 +89,7 @@ function traitItem(view, trait, { upcoming = false, locked = false, pb = 2 } = {
 
 /** Contenu du bloc (pur DOM) */
 function build(character) {
-    const derived = deriveCharacter(character);
+    const derived = derivedOf(character);
     const view = speciesView(character, derived);
     if (!view) return { signature: 'none', nodes: [], slug: '' };
     const locked = isLocked();

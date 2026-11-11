@@ -19,7 +19,8 @@ import { DD_RULES } from '../data/dd-rules.js';
 import { EMPTY_WEAPON } from '../state/schema.js';
 import { stripHTML, safeText, findRulebookWeapon } from '../state/migrate.js';
 import { locateRow } from '../state/other-tab.js';
-import { deriveCharacter, computeWeapon, sneakAttackDice, hunterMarkDie } from '../rules/character.js';
+import { computeWeapon, sneakAttackDice, hunterMarkDie } from '../rules/character.js';
+import { derivedOf } from './derived.js';
 import { getRageBonus, parseWeaponConfig } from '../rules/logic.js';
 import { weaponFeatNotes } from '../rules/feat-effects.js';
 import { weaponProficiency } from '../rules/class-features.js';
@@ -617,7 +618,7 @@ export function initWeapons(ctx) {
                         const current = store.get();
                         const combatBuffs = toggleBuff(current.combat_buffs, d.key);
                         // Rage éteinte : les cases « une fois par Rage » se vident (Détermination fanatique)
-                        store.update({ combat_buffs: combatBuffs, ...rageEndPatch(current, deriveCharacter(current), combatBuffs) });
+                        store.update({ combat_buffs: combatBuffs, ...rageEndPatch(current, derivedOf(current), combatBuffs) });
                     }
                 }
             }, icon(d.icon), el('span', { class: 'btn-label', text: d.text }))));
@@ -636,7 +637,7 @@ export function initWeapons(ctx) {
     function openMastery(index) {
         const character = store.get();
         const weapon = weapons()[index];
-        const derived = deriveCharacter(character);
+        const derived = derivedOf(character);
         // Bonus de combat actifs (Rage) : mêmes que ceux du tableau
         const buffs = effectiveBuffs(derived.classSlug, character.combat_buffs, character, derived);
         const details = weapon ? masteryDetails(weapon, character, derived, buffs) : null;
@@ -723,7 +724,7 @@ export function initWeapons(ctx) {
             [['', "Auto (selon les données de l'arme)"], ...WEAPON_DAMAGE_TYPES.map(t => [t, DAMAGE_TYPE_LABELS[t] || t])],
             config.dmgTypeOverride);
         // Maîtrise de l'arme : ce que la fiche déduit seule (classe, dons), et le choix du joueur
-        const auto = weaponProficiency({ ...weapon, weaponConfig: '' }, deriveCharacter(store.get()));
+        const auto = weaponProficiency({ ...weapon, weaponConfig: '' }, derivedOf(store.get()));
         const profSelect = select('prof', [
             ['auto', `Auto (${auto.proficient ? 'maîtrisée' : 'non maîtrisée'})`],
             ['yes', 'Oui : bonus de maîtrise compté'],
@@ -809,7 +810,7 @@ export function initWeapons(ctx) {
     }
 
     function refresh(character) {
-        const derived = deriveCharacter(character);
+        const derived = derivedOf(character);
         const buffs = effectiveBuffs(derived.classSlug, character.combat_buffs, character, derived);
         refreshBuffs(character, derived);
         refreshRows(weapons(), derived, buffs, character);

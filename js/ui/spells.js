@@ -33,7 +33,7 @@
 // =============================================================================
 
 import { EMPTY_SPELL } from '../state/schema.js';
-import { deriveCharacter } from '../rules/character.js';
+import { derivedOf } from './derived.js';
 import {
     SPELL_CLASS_OPTIONS, SPELL_LEVELS, plainText, cellText, descToPlainText, spellDisplayName,
     spellLevelLabel, effectiveSpellClass, searchSpells, findSpellByName, spellToRow, rowLevel,
@@ -265,7 +265,7 @@ export function initSpells(ctx) {
     const slotsBox = el('div', { class: 'spell-slots', role: 'group', 'aria-label': 'Emplacements de sorts' });
     let slotsSignature = null;
 
-    const rulebookSlots = (level) => deriveCharacter(store.get()).spellSlots[level] ?? 0;
+    const rulebookSlots = (level) => derivedOf(store.get()).spellSlots[level] ?? 0;
 
     function slotState(character = store.get()) {
         const state = character.spell_slots_state;
@@ -467,7 +467,7 @@ export function initSpells(ctx) {
             maxItems: 12,
             getItems: (query) => {
                 const character = store.get();
-                const derivedNow = deriveCharacter(character);
+                const derivedNow = derivedOf(character);
                 const classSlug = effectiveSpellClass(character.spell_class_filter, derivedNow.classSlug, derivedNow.subclass);
                 return searchSpells(spellsDb, query, { classSlug, limit: 12 }).map(spell => ({
                     label: spellDisplayName(spell),
@@ -695,7 +695,7 @@ export function initSpells(ctx) {
             tbody.append(...trs.filter(tr => tr.parentNode !== tbody));
         }
 
-        const derivedNow = deriveCharacter(character);
+        const derivedNow = derivedOf(character);
         const counts = spellCounts(rows, view.level, grantedSpellKeys(character, derivedNow));
         const anySpell = rows.some(hasSpellContent);
         const anyShown = shown.size > 0;
@@ -705,7 +705,7 @@ export function initSpells(ctx) {
         emptyHint.textContent = '';
         if (!anySpell) {
             // Sorts de dons affichés juste au-dessus : le message ne doit pas les contredire
-            const derived = deriveCharacter(character);
+            const derived = derivedOf(character);
             const featSpells = featSpellGroups(character, derived).length > 0 || subclassSpells(derived).reached.length > 0
                 || speciesSpellNames(character, derived).length > 0;
             emptyMain.textContent = featSpells
@@ -1055,7 +1055,7 @@ export function initSpells(ctx) {
 
     function render(character, changedKeys, { structural = false } = {}) {
         if (changedKeys && !changedKeys.some(key => RELEVANT_KEYS.has(key))) return;
-        const d = deriveCharacter(character);
+        const d = derivedOf(character);
         renderClassFilter(character, d);
         renderHeader();
         renderRows(character, changedKeys === null && !structural, structural);

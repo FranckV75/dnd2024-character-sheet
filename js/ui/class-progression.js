@@ -9,7 +9,7 @@
 // =============================================================================
 
 import { el, icon } from './dom.js';
-import { deriveCharacter } from '../rules/character.js';
+import { derivedOf } from './derived.js';
 import { classProgression } from '../rules/class-progression.js';
 import { DD_RULES } from '../data/dd-rules.js';
 import { foldButton, bindFolding, applyFolds } from './fold.js';
@@ -38,7 +38,7 @@ function featureItem(classSlug, feature, upcoming) {
  * @returns {{ nodes: Node[], signature: string }}
  */
 function build(character) {
-    const derived = deriveCharacter(character);
+    const derived = derivedOf(character);
     const progression = derived.classSlug ? classProgression(derived.classSlug, derived.level) : null;
     if (!progression) return { signature: 'none', nodes: [] };
     const { columns, reached, upcoming } = progression;

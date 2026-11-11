@@ -10,7 +10,7 @@
 // =============================================================================
 
 import { el, icon } from './dom.js';
-import { deriveCharacter } from '../rules/character.js';
+import { derivedOf } from './derived.js';
 import { subclassFeatures, automationKind, SUBCLASS_LEVEL } from '../rules/subclass-features.js';
 import { subclassChoiceFields, setSubclassChoicePatch, stepSubclassChoicePatch } from '../rules/subclass-choices.js';
 import { companionChoicePatch } from '../rules/subclass-companions.js';
@@ -170,7 +170,7 @@ function emptyMessage(character, derived) {
  * @returns {{ nodes: Node[], signature: string }}
  */
 function build(character) {
-    const derived = deriveCharacter(character);
+    const derived = derivedOf(character);
     const { subclass, reached, upcoming } = subclassFeatures(derived);
     if (!subclass) {
         const message = emptyMessage(character, derived);
@@ -240,7 +240,7 @@ export function initSubclassFeatures({ root, store }) {
         const button = event.target.closest('button[data-subclass-step]');
         if (!button || !current || (button.dataset.buildControl && isLocked())) return;
         const character = store.get();
-        const patch = stepSubclassChoicePatch(character, deriveCharacter(character), button.dataset.subclassStep, Number(button.dataset.step));
+        const patch = stepSubclassChoicePatch(character, derivedOf(character), button.dataset.subclassStep, Number(button.dataset.step));
         if (Object.keys(patch).length) store.update(patch);
     });
     // Un choix modifié (menu ou case à cocher) : enregistré dans subclass_choices (rien d'autre ne change)
@@ -257,7 +257,7 @@ export function initSubclassFeatures({ root, store }) {
         // Compteur : la saisie affiche la valeur retenue (ramenée dans la plage, ou ancienne valeur si
         // la saisie est illisible), même quand l'enregistrement ne change rien
         if (control.type === 'number') {
-            const kept = deriveCharacter(store.get()).subclassChoices?.[control.dataset.subclassChoice];
+            const kept = derivedOf(store.get()).subclassChoices?.[control.dataset.subclassChoice];
             control.value = kept ?? control.min ?? '0';
         }
     });

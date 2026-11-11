@@ -10,7 +10,7 @@
 
 import { el, signed, icon, setIconLabel } from './dom.js';
 import { openModal } from './modal.js';
-import { deriveCharacter } from '../rules/character.js';
+import { derivedOf } from './derived.js';
 import {
     hitDiceState, hitDiceHealing, parseManualHitDice, canStartRest, planShortRest, planLongRest,
     sorcerousRestorationMax
@@ -75,7 +75,7 @@ function slotRecoveryHint(summary) {
 
 function openShortRest(store) {
     const character = store.get();
-    const d = deriveCharacter(character);
+    const d = derivedOf(character);
     const hd = hitDiceState(character);
     const preview = planShortRest(character).summary;
     const dieLabel = hd.faces ? `d${hd.faces}` : 'type de dé non choisi';

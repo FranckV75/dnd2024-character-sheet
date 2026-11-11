@@ -9,7 +9,7 @@
 // =============================================================================
 
 import { el, icon } from './dom.js';
-import { deriveCharacter } from '../rules/character.js';
+import { derivedOf } from './derived.js';
 import {
     concentrationOptions, concentrationView, setConcentrationPatch, CONCENTRATION_KEY
 } from '../rules/concentration.js';
@@ -66,7 +66,7 @@ export function initConcentration({ root, store }) {
 
     let signature = null;
     const render = (character) => {
-        const derived = deriveCharacter(character);
+        const derived = derivedOf(character);
         const options = concentrationOptions(character, grantedConcentration(character, derived, byVo));
         const view = concentrationView(character, derived);
         const next = JSON.stringify([options, view]);

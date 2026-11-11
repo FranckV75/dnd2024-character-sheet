@@ -9,7 +9,7 @@
 // =============================================================================
 
 import { el, signed } from './dom.js';
-import { deriveCharacter } from '../rules/character.js';
+import { derivedOf } from './derived.js';
 import { companionCards, setCompanionHpPatch } from '../rules/subclass-companions.js';
 import { foldButton, bindFolding, applyFolds } from './fold.js';
 import { wrapWithSteppers } from './stepper.js';
@@ -103,7 +103,7 @@ export function initCompanions({ root, store }) {
     };
     // Boutons − / + : un PV de plus ou de moins, entre 0 et le maximum ; false à une borne
     const stepHp = (key, delta) => {
-        const card = companionCards(deriveCharacter(store.get()), store.get()).find((c) => c.key === key);
+        const card = companionCards(derivedOf(store.get()), store.get()).find((c) => c.key === key);
         if (!card?.hp) return false;
         const next = Math.max(0, Math.min(card.hp.max, card.hp.current + delta));
         if (next === card.hp.current) return false;
@@ -113,7 +113,7 @@ export function initCompanions({ root, store }) {
         return true;
     };
     const render = (character) => {
-        const cards = companionCards(deriveCharacter(character), character);
+        const cards = companionCards(derivedOf(character), character);
         const signature = JSON.stringify(cards.map(card => (card.hp ? { ...card, hp: { ...card.hp, current: null } } : card)));
         if (signature === rendered) {
             syncHp(cards);
@@ -136,7 +136,7 @@ export function initCompanions({ root, store }) {
         const patch = setCompanionHpPatch(store.get(), input.dataset.companionHp, input.value, Number(input.dataset.hpMax));
         if (Object.keys(patch).length) store.update(patch);
         // Valeur ramenée entre 0 et le maximum, ou illisible : la case réaffiche les PV retenus
-        const kept = companionCards(deriveCharacter(store.get()), store.get()).find(card => card.key === input.dataset.companionHp);
+        const kept = companionCards(derivedOf(store.get()), store.get()).find(card => card.key === input.dataset.companionHp);
         if (kept?.hp) input.value = String(kept.hp.current);
     });
     render(store.get());

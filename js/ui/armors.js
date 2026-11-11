@@ -14,7 +14,8 @@
 import { EMPTY_ARMOR } from '../state/schema.js';
 import { stripHTML, safeText } from '../state/migrate.js';
 import { locateRow } from '../state/other-tab.js';
-import { parseNumber, armorCategory, deriveCharacter, mediumArmorDexMax } from '../rules/character.js';
+import { parseNumber, armorCategory, mediumArmorDexMax } from '../rules/character.js';
+import { derivedOf } from './derived.js';
 import {
     ARMOR_TYPES, searchArmorCatalogue, armorRowFromCatalogue, armorWarnings, armorTraining, isBlankArmor,
     armorMagicBonus, armorCanBeMagic, withArmorMagic, ARMOR_MAGIC_MAX, armorLine, catalogueArmor, catalogueArmorClass
@@ -193,7 +194,7 @@ export function initArmors({ root, store, setStatus }) {
         if (isLocked()) return;
         const source = armorsOf(store.get())[index];
         const original = asObject(source);
-        const ctx = armorContext(deriveCharacter(store.get()));
+        const ctx = armorContext(derivedOf(store.get()));
         const entry = catalogueArmor(original);
         const manual = followsManual(original, entry);
         const name = textOf(original.name).trim();
@@ -454,7 +455,7 @@ export function initArmors({ root, store, setStatus }) {
     function fill(character) {
         const list = armorsOf(character);
         const warnings = armorWarnings(list, armorTraining(character), parseNumber(character.str_score, 10));
-        const derived = deriveCharacter(character);
+        const derived = derivedOf(character);
         const computed = derived.armorClass.rows || [];
         // Lignes vides enregistrées : une seule reste affichée (ligne de saisie), aucune quand
         // la fiche est verrouillée ; une ligne en cours de saisie reste visible. Les autres sont

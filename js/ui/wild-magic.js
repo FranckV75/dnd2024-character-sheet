@@ -8,7 +8,7 @@
 // =============================================================================
 
 import { el } from './dom.js';
-import { deriveCharacter } from '../rules/character.js';
+import { derivedOf } from './derived.js';
 import { wildMagicPanel, surgeCheck, surgeTableRoll, surgeResultText } from '../rules/wild-magic.js';
 
 /**
@@ -23,7 +23,7 @@ export function initWildMagic({ root, store }) {
     let level = 1;
 
     const render = (character) => {
-        const derived = deriveCharacter(character);
+        const derived = derivedOf(character);
         const panel = wildMagicPanel(character, derived);
         const signature = JSON.stringify(panel);
         if (signature === rendered) return;
