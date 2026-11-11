@@ -439,16 +439,15 @@ fieldset.inline-checks {
     margin-bottom: 16px;
 }
 
-.sheet-header .field {
-    grid-column: span 3;
-}
-
+/* Trois lignes à toutes les largeurs : Nom + Classe / Niveau + Historique + Espèce /
+   Sous-classe + Taille + PX. La fiche ne dépasse jamais 1100 px de large : sur deux lignes,
+   le nom et les PX étaient coupés (« … ») sur tablette en paysage comme sur ordinateur */
 .sheet-header .field-name {
-    grid-column: span 4;
+    grid-column: span 8;
 }
 
-.sheet-header .field-narrow {
-    grid-column: span 1;
+.sheet-header .field:nth-of-type(2) {
+    grid-column: span 4;
 }
 
 /* Niveau : liste (molette sur iPad) et bouton « Passer au niveau » : deux colonnes */
@@ -456,13 +455,22 @@ fieldset.inline-checks {
     grid-column: span 2;
 }
 
-.sheet-header .field-wide {
+.sheet-header .field:nth-of-type(4),
+.sheet-header .field:nth-of-type(5) {
     grid-column: span 5;
 }
 
-.sheet-header .field-narrow:nth-of-type(7),
-.sheet-header .field-narrow:nth-of-type(8) {
+.sheet-header .field-wide {
+    grid-column: span 6;
+}
+
+/* Taille (une mesure courte, « 1m98 ») et PX (jusqu'à « 355000/355000 ») */
+.sheet-header .field-narrow:nth-of-type(7) {
     grid-column: span 2;
+}
+
+.sheet-header .field-narrow:nth-of-type(8) {
+    grid-column: span 4;
 }
 
 .input-title {
@@ -1877,20 +1885,6 @@ fieldset.inline-checks {
     .sheet {
         margin: 8px;
         padding: 14px;
-    }
-
-    /* En-tête sur 3 lignes : Nom + Classe / Niveau + Historique + Espèce / Sous-classe + Taille + PX.
-       Sur 2 lignes, à 1024 px (tablette en paysage), le nom et les PX étaient coupés (« … ») */
-    .sheet-header .field-name { grid-column: span 8; }
-    .sheet-header .field:nth-of-type(2) { grid-column: span 4; }
-    .sheet-header .field-narrow:nth-of-type(3) { grid-column: span 2; }
-    .sheet-header .field:nth-of-type(4),
-    .sheet-header .field:nth-of-type(5) { grid-column: span 5; }
-    .sheet-header .field-wide { grid-column: span 6; }
-
-    .sheet-header .field-narrow:nth-of-type(7),
-    .sheet-header .field-narrow:nth-of-type(8) {
-        grid-column: span 3;
     }
 
     .vitals-1 {
