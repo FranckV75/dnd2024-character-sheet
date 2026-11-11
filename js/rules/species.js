@@ -11,7 +11,8 @@
 //  - speciesView : traits atteints et à venir, option, Vision dans le noir, Vitesses de vol et de nage,
 //    Résistances, Souffle, chiffres de certains traits (Chevelure serpentine, Regard pétrifiant),
 //    sorts de l'espèce (avec DD et attaque) ;
-//  - speciesNotes : repères près des valeurs (Résistances près de la CA, Vitesse de l'Elfe sylvestre) ;
+//  - speciesNotes : repères près des valeurs (Résistances près de la CA ; Vitesse de l'espèce quand elle
+//    n'est pas de 9 m : Goliath, Centaure, Minotaure, et celle de l'Elfe sylvestre) ;
 //  - speciesCounterDefs : cases des traits à usages limités et des lancers gratuits de sorts,
 //    enregistrées dans subclass_uses (« species.souffle ») avec les capacités de classe ;
 //  - speciesSpellNames : noms des sorts donnés (hors du compte « Préparés / Sorts mineurs »).
@@ -21,12 +22,21 @@
 import { DD_RULES } from '../data/dd-rules.js';
 import { SPECIES_TRAITS } from '../data/species-traits.js';
 import { signed } from './numbers.js';
+import { speedMeters } from './subclass-choices.js';
 
 export const SPECIES_CHOICES_KEY = 'species_choices';
 
 const ABILITY_NAMES = Object.freeze({ int: 'Intelligence', wis: 'Sagesse', cha: 'Charisme' });
 const plain = (value) => String(value ?? '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
 const meters = (n) => `${String(n).replace('.', ',')} m`;
+/** Vitesse la plus courante (9 m) : seule une autre Vitesse d'espèce est signalée */
+const COMMON_SPEED = 9;
+
+/** Vitesse de base de l'espèce en mètres (DD_RULES, en pieds : 30 → 9, 35 → 10,5, 40 → 12), ou null */
+export function speciesBaseSpeed(slug) {
+    const feet = Number(DD_RULES.species[slug]?.speed);
+    return feet ? Math.round(feet * 3) / 10 : null;
+}
 
 /** Clé de DD_RULES.species du personnage, ou '' */
 export function speciesSlug(record) {
@@ -127,7 +137,9 @@ export function speciesView(record, derived) {
             selected, ability, abilityName: ability ? ABILITY_NAMES[ability] : null
         } : null,
         darkvision: selected?.darkvision ?? data.darkvision ?? null,
-        speed: selected?.speed ?? null,
+        // Option qui change la Vitesse (Elfe sylvestre), sinon Vitesse de l'espèce si elle n'est pas de 9 m
+        // (Goliath 10,5 m, Centaure et Minotaure 12 m)
+        speed: selected?.speed ?? (speciesBaseSpeed(slug) !== COMMON_SPEED ? speciesBaseSpeed(slug) : null),
         fly: data.fly ?? null,
         swim: selected?.swim ?? null,
         resistances: [...resistances],
@@ -182,12 +194,22 @@ export function speciesNotes(derived, record) {
             `${view.name} : Résistance aux dégâts : ${view.resistances.join(', ')} (dégâts de ce type divisés par deux).`,
             { mention: `Résistance (${view.resistances.join(', ')})` });
     }
-    const base = DD_RULES.species[view.slug].speed / 10 * 3;
-    if (view.speed && view.speed > base) {
+    const base = speciesBaseSpeed(view.slug);
+    if (view.option?.selected?.speed && view.speed > base) {
         const bonus = Math.round((view.speed - base) * 10) / 10;
         add('speed', 'species_speed', view.option.selected.name,
             `+${meters(bonus)} grâce à ${view.option.selected.name} (Vitesse de ${meters(view.speed)}). La Vitesse saisie n'est pas modifiée : ajoutez-les vous-même s'ils n'y sont pas déjà.`,
             { manual: true, value: bonus, applied: false, mention: `dont +${meters(bonus)} (${view.option.selected.name})` });
+    } else if (view.speed) {
+        // Vitesse de l'espèce autre que 9 m : « À reporter » tant que la Vitesse saisie est plus petite
+        // (ou illisible), « Déjà compté » sinon. La Vitesse saisie n'est jamais modifiée.
+        const typed = speedMeters(record?.speed);
+        const reached = typed !== null && typed >= view.speed;
+        add('speed', 'species_speed', view.name,
+            `${view.name} : Vitesse de base de ${meters(view.speed)}. ${reached
+                ? 'La Vitesse saisie en tient déjà compte.'
+                : "La Vitesse saisie n'est pas modifiée : corrigez-la vous-même si elle ne l'indique pas déjà."}`,
+            { ...(reached ? { applied: true } : { manual: true }), mention: `Vitesse ${meters(view.speed)} (${view.name})` });
     }
     return zones;
 }

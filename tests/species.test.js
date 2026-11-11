@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { deriveCharacter } from '../js/rules/character.js';
 import {
     speciesView, speciesNotes, speciesCounterDefs, speciesSpellNames, setSpeciesChoicePatch, breathDice, petrifyingGazeDc,
-    SPECIES_CHOICES_KEY
+    speciesBaseSpeed, SPECIES_CHOICES_KEY
 } from '../js/rules/species.js';
 import { SPECIES_TRAITS } from '../js/data/species-traits.js';
 import { DD_RULES } from '../js/data/dd-rules.js';
@@ -130,6 +130,39 @@ describe('Repères près des valeurs', () => {
         assert.equal(note.mention, 'dont +1,5 m (Elfe sylvestre)');
         assert.equal(note.manual, true);
         assert.equal(record.speed, '10,5');
+    });
+
+    test("Centaure et Minotaure : Vitesse 12 m dans l'encadré et près du champ Vitesse (« À reporter »)", () => {
+        for (const name of ['Centaure', 'Minotaure']) {
+            const record = { char_species: name, char_level: '5', speed: '9m' };
+            assert.equal(view(record).speed, 12, name);
+            const [note] = speciesNotes(deriveCharacter(record), record).speed;
+            assert.equal(note.mention, `Vitesse 12 m (${name})`);
+            assert.equal(note.manual, true);
+            assert.equal(note.applied, undefined);
+            assert.equal(record.speed, '9m');
+            // Le même repère arrive près du champ Vitesse (notes de capacités fusionnées)
+            assert.ok(classFeatureNotes(deriveCharacter(record), record).speed.some((n) => n.featId === 'species_speed'), name);
+        }
+    });
+
+    test("Vitesse de l'espèce déjà saisie : « Déjà compté » ; Vitesse illisible ou vide : « À reporter »", () => {
+        const at = (speed) => speciesNotes(deriveCharacter({ char_species: 'Centaure', speed }), { char_species: 'Centaure', speed }).speed[0];
+        assert.equal(at('12 m').applied, true);
+        assert.equal(at('12 m').manual, undefined);
+        assert.equal(at('13,5').applied, true);
+        assert.equal(at('').manual, true);
+        assert.equal(at('40 ft').manual, true);
+    });
+
+    test('Goliath 10,5 m ; espèces à 9 m sans repère de Vitesse', () => {
+        assert.equal(speciesBaseSpeed('goliath'), 10.5);
+        assert.equal(view({ char_species: 'Goliath' }).speed, 10.5);
+        for (const name of ['Humain', 'Elfe', 'Méduse', 'Satyre', 'Sirène', 'Nymphe']) {
+            const record = { char_species: name, char_level: '5' };
+            assert.equal(view(record).speed, null, name);
+            assert.equal(speciesNotes(deriveCharacter(record), record).speed, undefined, name);
+        }
     });
 });
 
