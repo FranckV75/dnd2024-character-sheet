@@ -369,7 +369,7 @@ export function computeArmorClass({ armors = [], className = '', mods, pb, shiel
             parts.push({ label: plainName(list[i]) || (kind === 'bonus' ? 'Bonus' : 'Maîtrise'), value: row.line.display, formula: row.line.formula });
         }
     });
-    // Style de combat Défense (PHB 2024 p. 209) : +1 en armure légère, intermédiaire ou lourde
+    // Style de combat Défense (Manuel des joueurs français p. 209) : +1 en armure légère, intermédiaire ou lourde
     if (defense && body !== -1) {
         bonus += 1;
         parts.push({ label: 'Défense (style de combat)', value: '+1', formula: 'en armure' });
@@ -511,15 +511,15 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     if (buffs.sneakAttack && (prop.toLowerCase().includes('finesse') || isRanged || subclassFinesse(weapon, stats))) {
         extraDmg.push({ die: `${sneakAttackDice(level)}d6`, type: 'Sournoise' });
     }
-    // Style Duel (PHB 2024 p. 209) : +2 aux dégâts, arme de corps à corps tenue à une main sans autre
+    // Style Duel (Manuel des joueurs français p. 209) : +2 aux dégâts, arme de corps à corps tenue à une main sans autre
     // arme ; bouton allumé par le joueur (la fiche ne sait pas ce qu'il tient en main)
     const reach = weaponReach(weapon);
     // (l'attaque à mains nues n'est pas une arme : pas de Duel)
     if (buffs.dueling && reach.melee && !unarmed && !prop.toLowerCase().includes('deux mains')) extraDmg.push({ die: '2', type: 'Duel' });
-    // Style Armes de lancer (PHB 2024 p. 210) : +2 aux dégâts d'une attaque à distance avec une arme de
+    // Style Armes de lancer (Manuel des joueurs français p. 209) : +2 aux dégâts d'une attaque à distance avec une arme de
     // Lancer (rappel sous l'arme, featEffects)
     if (buffs.thrownWeapon) extraDmg.push({ die: '2', type: 'Armes de lancer' });
-    // Style Archerie (PHB 2024 p. 209) : +2 aux jets d'attaque avec les armes à distance (pas les
+    // Style Archerie (Manuel des joueurs français p. 209) : +2 aux jets d'attaque avec les armes à distance (pas les
     // armes de corps à corps lancées)
     const attackBonuses = (stats.feats ?? []).includes('archerie') && !reach.melee && reach.ranged
         ? [{ value: 2, label: 'Archerie' }] : [];
@@ -589,8 +589,8 @@ export function weaponStatOverride(weapon, stats) {
 
 /**
  * Dé de l'attaque à mains nues : le plus gros parmi celui des Arts martiaux (déjà choisi, ou ''),
- * Bagarreur de tavernes (PHB 2024 p. 202 : 1d4) et Combat à mains nues (p. 210 : 1d6).
- * '' si aucun : la frappe fait alors 1 + mod. de Force.
+ * Bagarreur de tavernes (Manuel des joueurs français p. 200 : 1d4) et Combat à mains nues (p. 209 : 1d6).
+ * '' si aucun : l'attaque fait alors 1 + mod. de Force.
  * @param {string} current - '' ou dé déjà retenu (« 1d8 »)
  * @param {string[]} feats - dons atteints
  * @returns {string}

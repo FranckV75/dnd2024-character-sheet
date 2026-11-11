@@ -11,6 +11,7 @@ import {
     hasWeaponMasterFeat,
     masteryAccessNote,
     masteryParagraphs,
+    masterySource,
     MASTERY_NOTES
 } from '../js/rules/weapon-masteries.js';
 import { getMartialArtsDie } from '../js/rules/logic.js';
@@ -366,6 +367,26 @@ describe('masteryAccessNote et don Maître d\'armes', () => {
         assert.equal(hasWeaponMasterFeat(planned), false);
         assert.match(masteryAccessNote(planned), /n'a pas la capacité/);
         assert.match(masteryAccessNote(korgulLike({ feat_4: 'maitre_d_armes' })), /En plus, le don Maître d'armes/);
+    });
+});
+
+describe('masterySource : pages du Manuel des joueurs français', () => {
+    const topple = findMastery('Renversement');
+
+    test("botte p. 214, capacité de classe, Botte tactique et don Maître d'armes p. 206", () => {
+        assert.equal(masterySource(topple, null), "Manuel des joueurs français : bottes d'arme p. 214.");
+        assert.equal(masterySource(topple, weaponMasteryFeature({ char_class: 'Barbare', char_level: 5 })),
+            "Manuel des joueurs français : bottes d'arme p. 214 ; capacité Bottes d'arme (Barbare) p. 51.");
+        assert.equal(masterySource(topple, weaponMasteryFeature({ char_class: 'Guerrier', char_level: 9 }), true),
+            "Manuel des joueurs français : bottes d'arme p. 214 ; capacité Bottes d'arme (Guerrier) p. 105 ; "
+            + "Botte tactique p. 106 ; don Maître d'armes p. 206.");
+        assert.equal(masterySource(topple, null, true), "Manuel des joueurs français : bottes d'arme p. 214 ; don Maître d'armes p. 206.");
+    });
+
+    test('plus aucun renvoi au livre anglais', () => {
+        for (const mastery of Object.values(WEAPON_MASTERIES)) {
+            assert.doesNotMatch(masterySource(mastery, weaponMasteryFeature(korgulLike()), true), /anglais|PHB|Handbook/);
+        }
     });
 });
 

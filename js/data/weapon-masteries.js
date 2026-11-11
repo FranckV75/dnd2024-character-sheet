@@ -1,12 +1,13 @@
 // =============================================================================
 // WEAPON-MASTERIES.JS - Bottes d'armes (« Weapon Mastery Properties ») D&D 2024
-// Traduction fidèle du Player's Handbook 2024 (édition anglaise) :
-//  - les huit bottes : chapitre 6, « Mastery Properties », p. 214 ;
-//  - Maître d'armes : p. 209 ;
-//  - pages du Manuel des joueurs français (photos de Franck) pour la capacité de classe Bottes
-//    d'arme : Barbare p. 51, Guerrier p. 105, Paladin p. 147, Rôdeur p. 157, Roublard p. 167 ;
-//    Botte tactique (Guerrier niveau 9) : p. 106.
-// Numéros de page de l'édition anglaise : ceux imprimés dans le manuel (la page du PDF est décalée de 1).
+// Textes : traduction fidèle du Player's Handbook 2024 anglais (« Mastery Properties »).
+// Pages : celles du Manuel des joueurs français (photos de Franck, ..\Ressources\Photos Manuel des
+// joueurs FR\, INDEX.md), affichées dans la fenêtre d'une botte :
+//  - les huit bottes : chapitre 6, « Propriétés botte », p. 214 (Equipement_02) ; table des armes
+//    p. 215 (Equipement_03) ;
+//  - don Maître d'armes : p. 206 (Dons_08) ;
+//  - capacité de classe Bottes d'arme : Barbare p. 51, Guerrier p. 105, Paladin p. 147, Rôdeur
+//    p. 157, Roublard p. 167 ; Botte tactique (Guerrier niveau 9) : p. 106.
 // Distances converties en mètres et écrites en toutes lettres comme dans feats.js (5 ft = 1,50 mètre,
 // 10 ft = 3 mètres), avec une espace insécable (\u00A0) entre le nombre et l'unité pour qu'ils ne
 // soient jamais séparés en fin de ligne ; termes repris de feats.js (action Attaque, action Bonus,
@@ -14,7 +15,7 @@
 // Les noms français (name) sont ceux de la colonne « Botte d'arme » du manuel (dd-rules.js).
 // =============================================================================
 
-/** Phrase d'introduction du manuel (p. 214) */
+/** Phrase d'introduction des bottes (Manuel des joueurs français, p. 214) */
 export const WEAPON_MASTERY_INTRO = "Chaque arme possède une botte, qui n'est utilisable que par un personnage doté d'une capacité, comme Bottes d'arme, qui lui donne accès à cette botte.";
 
 /**
@@ -126,5 +127,8 @@ export const TACTICAL_MASTER = {
     desc: "Lorsque vous attaquez avec une arme dont vous pouvez utiliser la botte, vous pouvez remplacer cette botte par Poussée, Sape ou Ralentissement pour cette attaque."
 };
 
-/** Don qui donne accès à une botte (« Weapon Master », p. 209) : identifiant de js/data/feats.js */
+/** Don qui donne accès à une botte (« Weapon Master ») : identifiant de js/data/feats.js */
 export const WEAPON_MASTER_FEAT_ID = 'maitre_d_armes';
+
+/** Page du don Maître d'armes dans le Manuel des joueurs français (Dons_08) */
+export const WEAPON_MASTER_FEAT_PAGE = 206;

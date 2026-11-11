@@ -23,13 +23,6 @@ points relevés, puis une discussion pour trier toutes les idées.
   - repère de l'Affinité élémentaire dans le grimoire (« +Cha » sur les sorts du type choisi) ;
   - compteur de strophes (Poésie épique) : après avoir tapé un nombre, un toucher immédiat sur « + »
     ou « − » peut être perdu (le bloc se reconstruit).
-- Bottes d'arme : la page 214 (liste des bottes) et la page 209 (Maître d'armes) citent encore le
-  livre anglais (Styles de combat aussi). Photos faites par Franck le 11/11/2026 : chapitre 6
-  Équipement (21, dossier `Equipement\`) et chapitre 5 Dons (13, dossier `Dons\`) dans
-  `..\Ressources\Photos Manuel des joueurs FR\`, renommées et indexées dans `INDEX.md`. Repères :
-  bottes d'arme p. 214 (`Equipement_02`), table des armes p. 215 (`Equipement_03`), Maître d'armes
-  p. 206 (`Dons_08`), Styles de combat p. 209 (`Dons_11`, Protection en haut de la p. 210). Reste
-  à remplacer les renvois au livre anglais.
 - Espèces de l'Odyssée (Centaure, Méduse, Minotaure, Satyre, Sirène, Nymphe) : traits pas repris.
 - Dragonnets du Seigneur Dragon : blocs repris de mémoire du Manuel des monstres 2014, à vérifier
   sur le Manuel des monstres 2024 (photos de Franck).

@@ -2,8 +2,9 @@
  * TESTS UNITAIRES — STYLES DE COMBAT (lot 4 des dons actifs)
  * Player's Handbook 2024 anglais : Fighting Style (Guerrier niveau 1, Paladin et Rôdeur niveau 2,
  * Combattant béni / Combattant druidique à la place), Additional Fighting Style (Champion niveau 7),
- * dons « Fighting Style » p. 209-210 (Archery, Blind Fighting, Defense, Dueling, Great Weapon
- * Fighting, Interception, Protection, Thrown Weapon Fighting, Two-Weapon Fighting, Unarmed Fighting).
+ * dons « Fighting Style » (Archery, Blind Fighting, Defense, Dueling, Great Weapon Fighting,
+ * Interception, Protection, Thrown Weapon Fighting, Two-Weapon Fighting, Unarmed Fighting) ;
+ * Manuel des joueurs français : Dons de Style de combat p. 209, Protection p. 210.
  * La fiche ne modifie jamais une valeur saisie : la CA et les armes sont calculées, le reste est rappelé.
  */
 

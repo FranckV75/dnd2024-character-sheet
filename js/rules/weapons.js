@@ -45,7 +45,7 @@ const FEAT_BUFFS = {
     heavyWeaponMaster: 'maitre_des_armes_lourdes_cogneur_lourd',
     // Expert de la charge (PHB 2024 « Charger », p. 202) : +1d8 aux dégâts d'une attaque au corps à corps
     charger: 'expert_de_la_charge',
-    // Style Duel (PHB 2024 p. 209) : +2 aux dégâts à une main, sans autre arme
+    // Style Duel (Manuel des joueurs français p. 209) : +2 aux dégâts à une main, sans autre arme
     dueling: 'duel',
     // Faveur de prouesse martiale (« Boon of Combat Prowess », p. 210) : Visée infaillible, une fois
     // par tour ; allumé = déjà utilisée ce tour (aucun calcul)

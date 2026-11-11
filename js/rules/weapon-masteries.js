@@ -7,7 +7,7 @@
 // =============================================================================
 
 import {
-    WEAPON_MASTERIES, WEAPON_MASTERY_CLASSES, TACTICAL_MASTER, WEAPON_MASTER_FEAT_ID
+    WEAPON_MASTERIES, WEAPON_MASTERY_CLASSES, TACTICAL_MASTER, WEAPON_MASTER_FEAT_ID, WEAPON_MASTER_FEAT_PAGE
 } from '../data/weapon-masteries.js';
 import { DD_RULES } from '../data/dd-rules.js';
 import { deriveCharacter, computeWeapon, weaponStatOverride } from './character.js';
@@ -205,6 +205,23 @@ export function weaponMasteryFeature(source) {
  */
 export function hasWeaponMasterFeat(character) {
     return hasFeat(character, WEAPON_MASTER_FEAT_ID);
+}
+
+/**
+ * Source d'une botte, pages du Manuel des joueurs français : la botte (p. 214), puis ce qui en
+ * donne l'accès au personnage (capacité de classe Bottes d'arme, Botte tactique, don Maître d'armes).
+ * @param {{ page: number }} mastery - botte (findMastery)
+ * @param {Object|null} feature - weaponMasteryFeature(derived)
+ * @param {boolean} [weaponMaster] - le personnage a le don Maître d'armes
+ * @returns {string} par exemple « Manuel des joueurs français : bottes d'arme p. 214 ; capacité
+ *   Bottes d'arme (Guerrier) p. 105. »
+ */
+export function masterySource(mastery, feature, weaponMaster = false) {
+    const parts = [`bottes d'arme p. ${mastery.page}`];
+    if (feature) parts.push(`capacité Bottes d'arme (${feature.className}) p. ${feature.page}`);
+    if (feature?.tacticalMaster) parts.push(`${feature.tacticalMaster.name} p. ${feature.tacticalMaster.page}`);
+    if (weaponMaster) parts.push(`don Maître d'armes p. ${WEAPON_MASTER_FEAT_PAGE}`);
+    return `Manuel des joueurs français : ${parts.join(' ; ')}.`;
 }
 
 /**

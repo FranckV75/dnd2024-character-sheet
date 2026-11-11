@@ -614,7 +614,7 @@ const FEAT_RULES = {
         add('featSlot', "Attaques à distance avec une arme : elles ignorent les Abris partiels et supérieurs ; ni la longue portée ni un ennemi à 1,50 m ne donnent le Désavantage (rappel sous ces armes).");
     },
 
-    // ----- Lot 4 : styles de combat — PHB 2024 p. 209-210 (« Fighting Style Feats ») -----
+    // ----- Lot 4 : styles de combat — Manuel des joueurs français p. 209, Protection p. 210 (« Fighting Style Feats ») -----
 
     // Défense : +1 à la CA en armure légère, intermédiaire ou lourde (compté dans la CA calculée)
     defense: ({ derived: { armorClass }, add }) => {

@@ -29,7 +29,9 @@ import { rageEndPatch } from '../rules/subclass-uses.js';
 import {
     frenzyDice, dreadfulStrikeDice, feyStrikesDie, superiorityDie, maneuverDC, psionicDice
 } from '../rules/subclass-combat.js';
-import { findMastery, masteryDetails, masteryParagraphs, masteryAccessNote, weaponMasteryFeature } from '../rules/weapon-masteries.js';
+import {
+    findMastery, masteryDetails, masteryParagraphs, masteryAccessNote, masterySource, weaponMasteryFeature, hasWeaponMasterFeat
+} from '../rules/weapon-masteries.js';
 import {
     matchesWeaponFilter, rowFromRulebookWeapon, completeRowFromRulebook,
     readWeaponConfig, buildWeaponConfig, normalizeDamageDie, buffsForCharacter, effectiveBuffs, toggleBuff,
@@ -113,7 +115,7 @@ const BUFF_DEFS = {
         text: 'Charge (+1d8)',
         title: "Expert de la charge : +1d8 aux dégâts d'une attaque au corps à corps après 3 m en ligne droite vers la cible (une fois par tour). Pointe : +3 m de vitesse pour cette action."
     }),
-    // Style Duel (PHB 2024 p. 209)
+    // Style Duel (Manuel des joueurs français p. 209)
     dueling: () => ({
         icon: 'swords',
         text: 'Duel (+2)',
@@ -668,9 +670,8 @@ export function initWeapons(ctx) {
             ? el('p', { class: 'weapons-mastery-unproficient', text: "Vous ne maîtrisez pas cette arme : sa botte ne s'utilise qu'avec une arme maîtrisée (réglage « Arme maîtrisée » de la configuration de l'arme)." })
             : null;
 
-        // Bottes : page de l'édition anglaise ; capacité de classe : page du manuel français
-        const source = [`Manuel des joueurs 2024 (anglais), p. ${mastery.page}`];
-        if (feature) source.push(`Manuel des joueurs français, capacité Bottes d'arme (${feature.className}) : p. ${feature.page}`);
+        // Pages du Manuel des joueurs français : la botte, puis ce qui en donne l'accès
+        const source = masterySource(mastery, feature, hasWeaponMasterFeat(character));
 
         openModal({
             title: mastery.name,
@@ -684,7 +685,7 @@ export function initWeapons(ctx) {
                 el('div', { class: 'weapons-mastery-access' },
                     el('p', { class: 'weapons-mastery-access-title', text: "Bottes d'arme" }),
                     el('p', { text: masteryAccessNote(character, derived) })),
-                el('p', { class: 'weapons-mastery-source', text: `${source.join(' ; ')}.` })),
+                el('p', { class: 'weapons-mastery-source', text: source })),
             actions: [{ label: 'Fermer', primary: true }]
         });
     }
