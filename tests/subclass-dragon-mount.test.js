@@ -7,7 +7,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { deriveCharacter } from '../js/rules/character.js';
-import { dragonMount, dragonMountNotes } from '../js/rules/subclass-combat.js';
+import { dragonMount, dragonMountNotes, shownPassivePerception } from '../js/rules/subclass-combat.js';
 import { subclassBuffs, buffsForCharacter, effectiveBuffs } from '../js/rules/weapons.js';
 import { featEffects } from '../js/rules/feat-effects.js';
 import { planLongRest } from '../js/rules/rest.js';
@@ -67,6 +67,36 @@ describe('Monté sur le dragon', () => {
         const zones = featEffects(r);
         assert.ok(zones.armorClass.some(n => n.featId === 'jeune_dragon' && !n.inactive));
         assert.ok(zones['skills.perception'].some(n => n.featId === 'jeune_dragon'));
+    });
+
+    test('Perception passive tapée à la main : comparée telle que la fiche l\'affiche', () => {
+        // Sagesse 10 (calculée : 10), mais le joueur a tapé 20 : le dragon (17) ne fait pas mieux
+        const typed = dragonlord(15, 'bronze', { wis_score: '10', passive_perc_manual: 'true', passive_perception: '20', ...mounted });
+        assert.equal(shownPassivePerception(deriveCharacter(typed), typed), 20);
+        assert.equal(dragonMount(deriveCharacter(typed), typed).better, false);
+        const [high] = dragonMountNotes(deriveCharacter(typed), typed)['skills.perception'];
+        assert.equal(high.mention, 'Sens du dragon (monté)');
+        assert.match(high.text, /moins bonne que la vôtre \(20\), qui reste/);
+        // Valeur tapée plus basse que celle du dragon
+        const low = { ...typed, passive_perception: ' 12 ' };
+        const [better] = dragonMountNotes(deriveCharacter(low), low)['skills.perception'];
+        assert.equal(better.mention, 'Passive 17 (monté)');
+        assert.match(better.text, /au lieu de la vôtre \(12\)/);
+        // Égalité
+        const same = { ...typed, passive_perception: '17' };
+        assert.match(dragonMountNotes(deriveCharacter(same), same)['skills.perception'][0].text, /égale à la vôtre \(17\)\.$/);
+        // Texte libre (vu dans de vraies sauvegardes) : pas de comparaison, la règle seulement
+        const free = { ...typed, passive_perception: '13ou18ou21' };
+        assert.equal(shownPassivePerception(deriveCharacter(free), free), null);
+        assert.equal(dragonMount(deriveCharacter(free), free).better, null);
+        const [rule] = dragonMountNotes(deriveCharacter(free), free)['skills.perception'];
+        assert.equal(rule.mention, 'Sens du dragon (monté)');
+        assert.match(rule.text, /Perception passive 17 \(celle du dragon\) si elle est meilleure que la vôtre\.$/);
+        assert.doesNotMatch(rule.text, /\(10\)/);
+        // Saisie manuelle éteinte : la valeur tapée restée dans la fiche est ignorée
+        const auto = { ...typed, passive_perc_manual: '' };
+        assert.equal(shownPassivePerception(deriveCharacter(auto), auto), 10);
+        assert.match(dragonMountNotes(deriveCharacter(auto), auto)['skills.perception'][0].text, /au lieu de la vôtre \(10\)/);
     });
 
     test('sans œuf choisi : rappel grisé qui renvoie au menu', () => {

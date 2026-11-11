@@ -241,15 +241,18 @@ export const SUBCLASS_DEFENSES = Object.freeze([
  * elle est meilleure que la vôtre). Les jeunes dragons métalliques (Manuel des monstres 2024) n'ont
  * qu'une immunité, celle de leur souffle, et aucune résistance.
  * @param {Object} derived - deriveCharacter() (subclass, level, subclassChoices.egg, passivePerception)
+ * @param {Object} [record] - fiche (passive_perc_manual, passive_perception : valeur tapée à la main)
  * @returns {{ dragon: string, damage: string, immunity: string, senses: string, passive: number,
- *   better: boolean } | { dragon: null } | null} null hors de la sous-classe ou avant le niveau 15 ;
- *   { dragon: null } tant que la couleur de l'œuf n'est pas choisie
+ *   own: number|null, better: boolean|null } | { dragon: null } | null} null hors de la sous-classe ou
+ *   avant le niveau 15 ; { dragon: null } tant que la couleur de l'œuf n'est pas choisie ; own et
+ *   better valent null quand la Perception passive tapée n'est pas un nombre (texte libre)
  */
-export function dragonMount(derived) {
+export function dragonMount(derived, record = {}) {
     if (!has(derived, 'oath_of_the_dragonlords', 15)) return null;
     const egg = derived.subclassChoices?.egg ?? '';
     const dragon = Object.hasOwn(DRAGONLINGS, egg) ? DRAGONLINGS[egg] : null;
     if (!dragon) return { dragon: null };
+    const own = shownPassivePerception(derived, record);
     const label = DAMAGE_TYPES.find(([id]) => id === dragon.immunity)?.[1] ?? '';
     return {
         dragon: dragon.youngName,
@@ -257,20 +260,35 @@ export function dragonMount(derived) {
         immunity: dragon.immunityText,
         senses: YOUNG_DRAGON_SENSES,
         passive: dragon.youngPassive,
-        better: dragon.youngPassive > (Number(derived.passivePerception) || 0)
+        own,
+        better: own === null ? null : dragon.youngPassive > own
     };
+}
+
+/**
+ * Perception passive affichée sur la fiche : la valeur tapée à la main quand le joueur en a saisi une
+ * (passive_perc_manual = 'true', clés v3), sinon la valeur calculée.
+ * @param {Object} derived - deriveCharacter() (passivePerception)
+ * @param {Object} [record] - fiche (passive_perc_manual, passive_perception)
+ * @returns {number|null} null quand la valeur tapée n'est pas un nombre entier (texte libre, champ vide)
+ */
+export function shownPassivePerception(derived, record = {}) {
+    if (String(record?.passive_perc_manual) !== 'true') return Number(derived.passivePerception) || 0;
+    const typed = String(record?.passive_perception ?? '').trim();
+    return /^\d+$/.test(typed) ? Number(typed) : null;
 }
 
 /**
  * Repères du bouton « Monté sur le dragon » (combat_buffs.dragonMount, onglet Combat) : immunité près
  * de la CA (grisée tant que le bouton est éteint) et, monté, sens du dragon près de la Perception.
- * La Perception passive calculée de la fiche n'est pas modifiée : le repère dit laquelle compte.
+ * La Perception passive de la fiche n'est pas modifiée : le repère dit laquelle compte, en comparant
+ * celle du dragon à la valeur affichée (calculée, ou tapée à la main si c'est un nombre).
  * @param {Object} derived - deriveCharacter()
  * @param {Object} [record] - fiche (combat_buffs)
  * @returns {Object} { armorClass: [...], 'skills.perception'?: [...] } ou {}
  */
 export function dragonMountNotes(derived, record = {}) {
-    const mount = dragonMount(derived);
+    const mount = dragonMount(derived, record);
     if (!mount) return {};
     const base = { featId: 'jeune_dragon', featName: 'Monté sur le dragon', classFeature: true };
     const mounted = record?.combat_buffs?.dragonMount === true;
@@ -287,14 +305,18 @@ export function dragonMountNotes(derived, record = {}) {
         ? { ...base, mention: `Immunité ${mount.damage} (monté)`, text: `Monté sur votre ${mount.dragon.toLowerCase()} : vous partagez son ${immunity}.` }
         : { ...base, inactive: true, text: `${mount.immunity}, seulement monté sur votre ${mount.dragon.toLowerCase()} (bouton « Monté sur le dragon » éteint, onglet Combat).` }];
     if (!mounted) return { armorClass };
-    const own = Number(derived.passivePerception) || 0;
+    const { own, passive } = mount;
+    // Valeur tapée en texte libre (« 13ou18ou21 ») : impossible de comparer, on rappelle la règle
+    const compare = own === null ? 'si elle est meilleure que la vôtre.'
+        : mount.better ? `au lieu de la vôtre (${own}).`
+        : passive === own ? `égale à la vôtre (${own}).`
+        : `moins bonne que la vôtre (${own}), qui reste.`;
     return {
         armorClass,
         'skills.perception': [{
             ...base,
-            mention: mount.better ? `Passive ${mount.passive} (monté)` : 'Sens du dragon (monté)',
-            text: `Monté : ${mount.senses} ; Perception passive ${mount.passive} (celle du dragon) ${mount.better
-                ? `au lieu de la vôtre (${own}).` : `moins bonne que la vôtre (${own}), qui reste.`}`
+            mention: mount.better ? `Passive ${passive} (monté)` : 'Sens du dragon (monté)',
+            text: `Monté : ${mount.senses} ; Perception passive ${passive} (celle du dragon) ${compare}`
         }]
     };
 }
