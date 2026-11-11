@@ -7,7 +7,7 @@
 import { EQUIPMENT_DATA } from '../data/equipment.js';
 import { EMPTY_ARMOR } from '../state/schema.js';
 import { armorCategory, armorMagicBonus, parseNumber } from './character.js';
-export { armorMagicBonus, armorCanBeMagic, ARMOR_MAGIC_MAX, armorLine, armorBaseValue, catalogueArmor } from './character.js';
+export { armorMagicBonus, armorCanBeMagic, ARMOR_MAGIC_MAX, armorLine, catalogueArmor } from './character.js';
 
 /** Types proposés dans la liste (valeurs identiques à la v3) */
 export const ARMOR_TYPES = [

@@ -36,11 +36,6 @@ function save() {
     }
 }
 
-/** Le bloc est-il replié sur cet appareil ? */
-export function isFolded(key) {
-    return folded.has(key);
-}
-
 /**
  * Pose l'état replié sur un bloc et son bouton (attribut data-folded, aria-expanded, libellés).
  * @param {HTMLElement} block - élément qui porte data-fold-key

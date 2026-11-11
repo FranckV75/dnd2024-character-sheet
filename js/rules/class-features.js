@@ -151,9 +151,6 @@ export function unarmoredDefenseOptions({ classSlug, subclass = '', level = 1, m
 // Maîtrise des armes
 // -----------------------------------------------------------------------------
 
-/** Réglage « Maîtrisée » de la configuration d'une arme (propriété facultative `proficiency` de weaponConfig) */
-export const WEAPON_PROFICIENCY_SETTINGS = Object.freeze(['auto', 'yes', 'no']);
-
 /**
  * Réglage « Maîtrisée » d'une arme : 'yes', 'no', ou 'auto' (absent, inconnu).
  * @param {string|Object} weaponConfig - champ weaponConfig (chaîne JSON en v3)

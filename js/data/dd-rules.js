@@ -589,30 +589,8 @@ const DD_RULES = {
     ],
 
     // =========================================================================
-    // BONUS DE MAÎTRISE PAR NIVEAU (Proficiency Bonus)
+    // HELPER FUNCTIONS (bonus de maîtrise : calculateProficiencyBonus, js/rules/logic.js)
     // =========================================================================
-    proficiencyBonus: [
-        2, 2, 2, 2,     // Niveaux 1-4
-        3, 3, 3, 3,     // Niveaux 5-8
-        4, 4, 4, 4,     // Niveaux 9-12
-        5, 5, 5, 5,     // Niveaux 13-16
-        6, 6, 6, 6      // Niveaux 17-20
-    ],
-
-    // =========================================================================
-    // HELPER FUNCTIONS
-    // =========================================================================
-
-    /**
-     * Récupère le bonus de maîtrise pour un niveau donné
-     * @param {number} level - Niveau du personnage (1-20)
-     * @returns {number} - Bonus de maîtrise
-     */
-    getProficiencyBonus(level) {
-        if (level < 1) return 2;
-        if (level > 20) return 6;
-        return this.proficiencyBonus[level - 1];
-    },
 
     /**
      * Tous les noms qui désignent une classe, une sous-classe ou une espèce : anglais, français
@@ -624,23 +602,6 @@ const DD_RULES = {
      */
     namesOf(entry) {
         return [entry.name, entry.nameFr, ...(entry.aliasesFr ?? [])];
-    },
-
-    /**
-     * Trouve une classe par son nom (FR ou EN)
-     * @param {string} className - Nom de la classe
-     * @returns {object|null} - Objet classe ou null
-     */
-    findClass(className) {
-        if (!className) return null;
-        const cleanName = className.toLowerCase().trim();
-
-        for (const [key, classData] of Object.entries(this.classes)) {
-            if (key === cleanName || this.namesOf(classData).some((name) => name.toLowerCase() === cleanName)) {
-                return classData;
-            }
-        }
-        return null;
     },
 
     /**
@@ -660,24 +621,6 @@ const DD_RULES = {
             }
         }
         return null;
-    },
-
-    /**
-     * Filtre les éléments par source
-     * @param {object} collection - Collection à filtrer
-     * @param {string} sourceFilter - "PHB2024", "Odyssée" ou "all"
-     * @returns {object} - Objet filtré
-     */
-    filterBySource(collection, sourceFilter) {
-        if (sourceFilter === 'all') return collection;
-
-        const filtered = {};
-        for (const [key, item] of Object.entries(collection)) {
-            if (item.source === sourceFilter) {
-                filtered[key] = item;
-            }
-        }
-        return filtered;
     },
 
     // =========================================================================
