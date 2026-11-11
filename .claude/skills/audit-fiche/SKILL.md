@@ -35,7 +35,7 @@ explication, captures d'écran quand c'est visuel.
   `supabase/policies.sql` et le code, pas en essayant.
 - `tests/fixtures/local/` (vraies sauvegardes de Korgul) : lecture seule, jamais citées en entier
   dans le rapport (le dépôt et les rapports peuvent devenir publics).
-- Ne pas toucher à `E:\2 - CODE\0_Feuille_de_Perso_Antigravity` (lecture du manuel seulement), ni
+- Ne pas toucher à `..\Ressources\` ni à `..\Archives\` (lecture seulement), ni
   au dossier `.agent/` pendant l'audit. En dehors de l'audit aussi : jamais `.agent/rules/`, jamais
   `.agent/context/`, jamais déplacer `.agent/`.
 - Navigateur : Edge **en mode invisible** (headless) avec un profil séparé, jamais de fenêtre
@@ -60,10 +60,9 @@ Pas de remarques de style.
    du Barbare et du Moine, boucliers), attaque et dégâts (Frappe à mains nues, Moine, styles,
    bottes d'armes), sauvegardes, compétences, emplacements de sorts par classe, repos court et
    long, dons (au moins un par famille : calcul, case à cocher, choix, rappel). Manuel anglais :
-   `E:\2 - CODE\Ressources_0_Feuille_de_Perso_Antigravity\Documentation\` (Player's Handbook 2024),
-   texte extractible avec `pdftotext` ; même manuel anglais (malgré son nom français) :
-   `E:\2 - CODE\0_Feuille_de_Perso_Antigravity\Manuels\Manuel-du-joueur_D&D2025.pdf`. Il n'y a pas
-   de manuel du joueur en français : les noms français de la fiche viennent de `js/data/`.
+   `..\Ressources\Manuels\` (Player's Handbook 2024), texte extractible avec `pdftotext`.
+   Pas de PDF du manuel français : les noms français se vérifient sur les photos de
+   `..\Ressources\Photos Manuel des joueurs FR\` (index `INDEX.md`).
    L'OCR coupe parfois les titres (« WEA PO N MAST ER ») : chercher aussi par bouts de mots
    avant de conclure qu'une règle « n'existe pas ».
 2. **Sauvegardes et synchronisation.** Toutes les fiches de `tests/fixtures/` (et `local/` en

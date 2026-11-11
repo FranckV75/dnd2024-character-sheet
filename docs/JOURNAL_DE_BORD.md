@@ -16,7 +16,7 @@ en fin de session :
   l'accord de Franck. Rien n'attend de publication.
 - **Manuel français** : les photos de Franck font foi pour les noms français. Elles sont rangées,
   avec un index (`INDEX.md`), dans
-  `E:\2 - CODE\Ressources_0_Feuille_de_Perso_Antigravity\Photos Manuel des joueurs FR\`.
+  `..\Ressources\Photos Manuel des joueurs FR\` (à côté du dépôt).
   Ce dossier est privé et ne va jamais dans le dépôt. Les textes de la fiche sont des résumés,
   jamais le texte du livre (le dépôt est public).
 

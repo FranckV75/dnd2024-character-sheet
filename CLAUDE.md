@@ -8,12 +8,13 @@ ne jamais publier (push, déploiement) sans son accord explicite.
 
 ## Contexte
 
-- Ancienne version (v3, cassée puis réparée a minima) : `E:\2 - CODE\0_Feuille_de_Perso_Antigravity`
-  — sert de référence fonctionnelle, **ne pas la modifier** sauf demande expresse.
-- Ressources (anciennes versions, manuels PDF, idées, demandes des joueurs) :
-  `E:\2 - CODE\Ressources_0_Feuille_de_Perso_Antigravity`.
-- Manuels qui font foi pour les règles : `E:\2 - CODE\0_Feuille_de_Perso_Antigravity\Manuels\`
-  et `...\Ressources_0_Feuille_de_Perso_Antigravity\Documentation\`.
+- Rangement (voir `E:\2 - CODE\LISEZ-MOI.md`) : ce dépôt est le dossier `Code\` du projet
+  `E:\2 - CODE\Feuille de perso\`. À côté, et jamais dans le dépôt (il est public) :
+  - `..\Ressources\` (lecture seule) : `Manuels\` (PDF qui font foi pour les règles),
+    `Photos Manuel des joueurs FR\` (font foi pour les noms français, index `INDEX.md`),
+    `Idées et demandes des joueurs\`, `Fonds d'écran\`, `Sauvegardes de perso\` ;
+  - `..\Archives\` : anciennes versions du code, copie du dépôt avant le nettoyage du 09/11/2026.
+- Ancienne version (v3) : étiquette Git `v3-final` (référence fonctionnelle, ne pas la modifier).
 - Dépôt GitHub : `FranckV75/dnd2024-character-sheet`. `master` = site en ligne (GitHub Pages) :
   la v4 y est fusionnée à la bascule (étape 6) ; la v3 reste disponible sous l'étiquette `v3-final`.
   Travailler sur une branche (par ex. `v4`) et ne fusionner dans `master` qu'avec l'accord de Franck :
