@@ -40,14 +40,14 @@ const FEATS_DATA = {
         "desc": "Vous obtenez un bonus de +2 aux jets d'attaque effectués avec des armes à distance."
     },
     "arme_a_deux_mains": {
-        "name": "Arme à deux mains",
+        "name": "Armes à deux mains",
         "type": "Style de combat",
         "prereq": "capacité Style de combat",
         "asi": "Aucune",
         "desc": "Lorsque vous lancez les dégâts pour une attaque effectuée avec une arme de corps à corps tenue à deux mains, vous pouvez considérer n'importe quel 1 ou 2 sur un dé de dégâts comme un 3. L'arme doit posséder la propriété Deux mains ou Polyvalente pour obtenir cet avantage."
     },
     "arme_de_lancer": {
-        "name": "Arme de lancer",
+        "name": "Armes de lancer",
         "type": "Style de combat",
         "prereq": "capacité Style de combat",
         "asi": "Aucune",

@@ -121,7 +121,13 @@ describe('Styles sur les armes', () => {
         assert.doesNotMatch(computeWeapon(weapon('Arc court'), d, buffs).damage.text, /Duel/);
     });
 
-    test('Arme à deux mains : rappel sur les armes Deux mains et Polyvalentes, avec le dé à deux mains', () => {
+    test('Armes à deux mains, Armes de lancer : noms au pluriel du livre français (p. 209), identifiants enregistrés inchangés', () => {
+        assert.equal(featName('arme_a_deux_mains'), 'Armes à deux mains');
+        assert.equal(featName('arme_de_lancer'), 'Armes de lancer');
+        assert.deepEqual(reachedFeatIds(hero({ feat_2: 'arme_de_lancer' })).filter(id => id === 'arme_de_lancer'), ['arme_de_lancer']);
+    });
+
+    test('Armes à deux mains : rappel sur les armes Deux mains et Polyvalentes, avec le dé à deux mains', () => {
         const c = hero({ feat_2: 'arme_a_deux_mains' });
         const longsword = weaponFeatNotes(weapon('Épée longue'), c).find(n => n.featId === 'arme_a_deux_mains');
         assert.match(longsword.text, /1 ou 2.*compte comme un 3.*1d10/);
@@ -129,15 +135,15 @@ describe('Styles sur les armes', () => {
         assert.ok(!weaponFeatNotes(weapon('Dague'), c).some(n => n.featId === 'arme_a_deux_mains'));
     });
 
-    test('Arme de lancer : dégâts lancés +2 calculés', () => {
+    test('Armes de lancer : dégâts lancés +2 calculés', () => {
         const c = hero({ feat_2: 'arme_de_lancer' });
         const dagger = weaponFeatNotes(weapon('Dague'), c).find(n => n.featId === 'arme_de_lancer');
-        assert.match(dagger.text, /dégâts 1d4 \+3 PERF \+2 \(Arme de lancer\)/);
+        assert.match(dagger.text, /dégâts 1d4 \+3 PERF \+2 \(Armes de lancer\)/);
         const javelin = weaponFeatNotes(weapon('Javeline'), c).find(n => n.featId === 'arme_de_lancer');
-        assert.match(javelin.text, /1d6 \+3 PERF \+2 \(Arme de lancer\)/);
+        assert.match(javelin.text, /1d6 \+3 PERF \+2 \(Armes de lancer\)/);
         // Ancien dé libre (v3) : le +2 reste compté
         const legacy = { ...weapon('Javeline'), weaponConfig: JSON.stringify({ dmgDieOverride: '1d6 + 1d4' }) };
-        assert.match(weaponFeatNotes(legacy, c).find(n => n.featId === 'arme_de_lancer').text, /1d6 \+ 1d4 \+3 PERF \+2 \(Arme de lancer\)/);
+        assert.match(weaponFeatNotes(legacy, c).find(n => n.featId === 'arme_de_lancer').text, /1d6 \+ 1d4 \+3 PERF \+2 \(Armes de lancer\)/);
         assert.ok(!weaponFeatNotes(weapon('Épée longue'), c).some(n => n.featId === 'arme_de_lancer'));
     });
 

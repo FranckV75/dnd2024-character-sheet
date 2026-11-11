@@ -638,12 +638,12 @@ const FEAT_RULES = {
         add('featSlot', "+2 aux dégâts avec une arme de corps à corps tenue à une main, sans autre arme. Bouton « Duel (+2) » au-dessus du tableau des armes : allumé, le +2 s'ajoute aux armes de corps à corps qui ne sont pas à Deux mains.");
     },
 
-    // Arme à deux mains : 1 ou 2 sur un dé de dégâts = 3 (arme Deux mains ou Polyvalente, tenue à deux mains)
+    // Armes à deux mains : 1 ou 2 sur un dé de dégâts = 3 (arme Deux mains ou Polyvalente, tenue à deux mains)
     arme_a_deux_mains: ({ add }) => {
         add('featSlot', 'Arme de corps à corps Deux mains ou Polyvalente tenue à deux mains : chaque 1 ou 2 sur un dé de dégâts compte comme un 3 (rappel sous ces armes).');
     },
 
-    // Arme de lancer : +2 aux dégâts d'une attaque à distance avec une arme de Lancer (calculé sous l'arme)
+    // Armes de lancer : +2 aux dégâts d'une attaque à distance avec une arme de Lancer (calculé sous l'arme)
     arme_de_lancer: ({ add }) => {
         add('featSlot', "+2 aux dégâts quand vous touchez avec une attaque à distance d'une arme de Lancer : dégâts calculés sous chaque arme de Lancer du tableau.");
     },

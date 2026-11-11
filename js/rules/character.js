@@ -469,7 +469,7 @@ export function hunterMarkDie({ level, classSlug }) {
  * @param {Object} weapon - Ligne de `dynamic_weapons`
  * @param {{ mods: Object, pb: number, level: number, classSlug: string, subclass?: string, feats?: string[] }} stats - issu de deriveCharacter()
  * @param {{ rage?: boolean, sneakAttack?: boolean, hunterMark?: boolean, heavyWeaponMaster?: boolean, charger?: boolean, dueling?: boolean, thrownWeapon?: boolean }} [buffs]
- *        thrownWeapon : pas un bouton ; attaque lancée avec le style Arme de lancer (+2, rappel sous l'arme)
+ *        thrownWeapon : pas un bouton ; attaque lancée avec le style Armes de lancer (+2, rappel sous l'arme)
  * @returns {{ attack: {text: string, tooltip: string}, damage: {text: string, tooltip: string},
  *             proficiency: { proficient: boolean, source: string, text: string } } | null}
  *          proficiency : maîtrise de l'arme (weaponProficiency, class-features.js) ; sans elle, pas de
@@ -516,9 +516,9 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     const reach = weaponReach(weapon);
     // (la Frappe à mains nues n'est pas une arme : pas de Duel)
     if (buffs.dueling && reach.melee && !unarmed && !prop.toLowerCase().includes('deux mains')) extraDmg.push({ die: '2', type: 'Duel' });
-    // Style Arme de lancer (PHB 2024 p. 210) : +2 aux dégâts d'une attaque à distance avec une arme de
+    // Style Armes de lancer (PHB 2024 p. 210) : +2 aux dégâts d'une attaque à distance avec une arme de
     // Lancer (rappel sous l'arme, featEffects)
-    if (buffs.thrownWeapon) extraDmg.push({ die: '2', type: 'Arme de lancer' });
+    if (buffs.thrownWeapon) extraDmg.push({ die: '2', type: 'Armes de lancer' });
     // Style Archerie (PHB 2024 p. 209) : +2 aux jets d'attaque avec les armes à distance (pas les
     // armes de corps à corps lancées)
     const attackBonuses = (stats.feats ?? []).includes('archerie') && !reach.melee && reach.ranged
