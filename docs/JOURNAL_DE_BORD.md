@@ -12,10 +12,9 @@ en fin de session :
 
 ## En ce moment
 
-- **En ligne** : version **4.38.0** (`master` = `384b532`), publiée le 11/11/2026 avec
-  l'accord de Franck (corrections de l'audit, lots A, E, C, D).
-- **Prête, non publiée** : **4.39.0** sur `v4` (maîtrises d'armes, espèces de l'Odyssée,
-  dragonnets 2024, restes des sous-classes). Attend « Publie ».
+- **En ligne** : version **4.39.0** (`master` = `v4` = `dd44742`), publiée le 11/11/2026 avec
+  l'accord de Franck (maîtrises d'armes, espèces de l'Odyssée, dragonnets 2024, restes des
+  sous-classes ; 4.38.0 = corrections de l'audit, publiée le même jour).
 - **Petits champs sur iPad** : ne rien changer tant que Franck n'a pas d'info sur le zoom.
 - **GitHub** : Franck a demandé au support de purger les anciens commits (PDF, vieilles
   sauvegardes, adresse Gmail) ; réponse attendue.
