@@ -109,6 +109,9 @@ describe('Migration d\'une ancienne sauvegarde (format v1)', () => {
     test('Le rapport décrit les conversions', () => {
         assert.ok(report.some(line => line.includes('Dé de vie')));
         assert.ok(report.some(line => line.includes('Épée longue')));
+        // Le bloc « Armes » n'est plus sur la fiche : le rapport ne dit pas qu'il est « repris »
+        assert.ok(report.some(line => line.includes('« Armes »') && line.includes('plus affiché')));
+        assert.ok(!report.some(line => /reprises?/.test(line) && line.includes('profs_other')));
     });
 
     test('Migration idempotente : migrer deux fois ne change plus rien', () => {

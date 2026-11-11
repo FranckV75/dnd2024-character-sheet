@@ -285,9 +285,12 @@ export function migrateCharacter(input) {
     }
 
     // 6. Ancien champ des maîtrises d'armes
+    // Le bloc « Armes » a été retiré de la fiche en février 2026 (redondant avec le tableau des
+    // armes) : le texte reste dans la sauvegarde sans être affiché, et le rapport le dit.
     if (raw.profs_other && !raw.profs_weapons) {
         character.profs_weapons = textField(raw.profs_other);
-        report.push('Maîtrises d\'armes reprises de l\'ancien champ « profs_other ».');
+        report.push('Ancien champ « Armes » (profs_other) gardé dans la sauvegarde sous profs_weapons, '
+            + 'mais plus affiché sur la fiche.');
     }
 
     // 7. Épuisement : nombre entre 0 et 6
