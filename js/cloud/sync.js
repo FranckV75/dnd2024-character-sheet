@@ -147,6 +147,34 @@ export function withoutV4State(character) {
 }
 
 /**
+ * Clés gardées par la v4 que la page de la v3 n'a pas, donc effacées quand la v3 enregistre :
+ * maîtrises d'armes (profs_weapons) et clés des toutes premières versions (hd_total, hd_spent,
+ * profs_other), conservées par migrate.js.
+ */
+export const V3_MISSING_KEYS = Object.freeze(['profs_weapons', 'hd_total', 'hd_spent', 'profs_other']);
+
+/**
+ * Fiche réduite à ce que la v3 enregistre, pour reconnaître une version réécrite par un onglet v3
+ * sans autre changement. En plus de l'état de jeu v4 et des clés absentes de la v3 :
+ * - Perception passive saisie à la main : la v3 n'écrit passive_perc_manual que s'il vaut 'true'
+ *   (la v4 écrit '' quand on l'enlève) ;
+ * - cases de ressource de classe (class_res_N) : la v3 n'écrit que ses propres cases, une case
+ *   vide vaut une case absente. Une case cochée d'un côté et pas de l'autre reste une différence.
+ * La fiche doit déjà être normalisée (normalizeCharacter). Elle n'est pas modifiée.
+ * @param {Object} character
+ * @returns {Object}
+ */
+export function comparableWithV3(character) {
+    const copy = withoutV4State(character);
+    for (const key of V3_MISSING_KEYS) delete copy[key];
+    if (String(copy.passive_perc_manual) !== 'true') delete copy.passive_perc_manual;
+    for (const key of Object.keys(copy)) {
+        if (/^class_res_\d+$/.test(key) && copy[key] !== true) delete copy[key];
+    }
+    return copy;
+}
+
+/**
  * Texte de l'état de la synchronisation dans la barre (connecté), après « Connecté (nom) — ».
  * @param {{ name: string, named: boolean, dirty: boolean, detached: boolean, pending: boolean, renameElsewhere?: boolean,
  *           needsCheck: boolean, lastError: string }} state - getState() du contrôleur

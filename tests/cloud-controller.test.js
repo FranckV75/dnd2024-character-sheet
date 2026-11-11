@@ -792,6 +792,37 @@ describe('Bascule depuis la v3', () => {
         assert.equal(cloud(db, 'Korgul').data.combat_buffs.rage, true);
         assert.equal(t.store.get().combat_buffs.rage, true);
     });
+
+    test("Onglet v3 qui réécrit la fiche sans changement : maîtrises d'armes, anciennes clés, Perception passive effacée → pas de question", async () => {
+        const online = sheet('Korgul', {
+            profs_weapons: 'Armes courantes et de guerre', hd_type: 'd12', hd_total: 'D12', hd_spent: '3', passive_perc_manual: '',
+            class_res_0: true, class_res_1: false, class_res_2: false, combat_buffs: { rage: true }
+        });
+        const db = fakeSupabase([row('Korgul', online, T0)]);
+        const t = tab({ db, storage: linkedStorage(online), character: online });
+        await t.sync.setUser(U);
+        // Enregistrement par la v3 : ces clés n'existent pas sur sa page, 2 cases de ressource seulement
+        const resaved = v3('Korgul', { hd_type: 'd12', class_res_0: true, class_res_1: false });
+        for (const key of ['profs_weapons', 'hd_total', 'hd_spent', 'passive_perc_manual', 'class_res_2']) delete resaved[key];
+        db.touch('Korgul', U.id, resaved, T1);
+        await t.sync.check();
+        await t.runTimers();
+        assert.deepEqual(t.asked, []);
+        const data = cloud(db, 'Korgul').data;
+        assert.equal(data.profs_weapons, 'Armes courantes et de guerre', 'remises en ligne par ce navigateur');
+        assert.equal(data.hd_total, 'D12');
+        assert.equal(data.combat_buffs.rage, true);
+    });
+
+    test('Onglet v3 qui décoche une case de ressource : question posée (vrai changement)', async () => {
+        const online = sheet('Korgul', { class_res_0: true, class_res_1: false });
+        const db = fakeSupabase([row('Korgul', online, T0)]);
+        const t = tab({ db, storage: linkedStorage(online), character: online, answers: [null] });
+        await t.sync.setUser(U);
+        db.touch('Korgul', U.id, v3('Korgul', { class_res_0: false, class_res_1: false }), T1);
+        await t.sync.check();
+        assert.equal(t.asked[0]?.kind, 'conflict');
+    });
 });
 
 describe('Retour à une sauvegarde de secours (source « snapshot »)', () => {

@@ -55,7 +55,7 @@ import {
     listCharacters, fetchCharacter, insertCharacter, updateIfUnchanged, deleteCharacter, deleteIfUnchanged
 } from './repository.js';
 import {
-    decideOnCheck, cloudName, fingerprint, friendlyError, isLegacyRowName, isRename, withoutV4State
+    decideOnCheck, cloudName, fingerprint, friendlyError, isLegacyRowName, isRename, comparableWithV3
 } from './sync.js';
 import { characterName, STORAGE_KEYS } from '../state/persistence.js';
 import { migrateCharacter, normalizeCharacter, isV3Save } from '../state/migrate.js';
@@ -226,9 +226,9 @@ export function createCloudSync({
     const linked = () => (base.name && !base.detached && user && base.userId === user.id ? base.name : '');
     const isDirty = () => sheetFingerprint(store.get()) !== base.hash;
     const contentOf = (row) => sheetFingerprint(row.data);
-    /** Version écrite par la v3, identique à la fiche à l'état de jeu v4 près (que la v3 ne connaît pas) */
+    /** Version écrite par la v3, identique à la fiche à l'état de jeu v4 près et aux clés que la v3 n'enregistre pas */
     const sameApartFromV4State = (row, character) => isV3Save(row.data)
-        && fingerprint(withoutV4State(normalizeCharacter(row.data))) === fingerprint(withoutV4State(normalizeCharacter(character)));
+        && fingerprint(comparableWithV3(normalizeCharacter(row.data))) === fingerprint(comparableWithV3(normalizeCharacter(character)));
 
     /** Photographie (génération + compte) ; stale(s) = la fiche ou le compte a changé depuis */
     const snapshot = () => ({ epoch, userId: user?.id || null });

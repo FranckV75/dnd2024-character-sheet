@@ -7,7 +7,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
     decideOnCheck, sameVersion, cloudName, isRename, friendlyError, fingerprint, canonicalJSON,
-    isLegacyRowName, withoutV4State, newerVersion
+    isLegacyRowName, withoutV4State, comparableWithV3, V3_MISSING_KEYS, newerVersion
 } from '../js/cloud/sync.js';
 import {
     listCharacters, fetchCharacter, insertCharacter, updateIfUnchanged, deleteCharacter, deleteIfUnchanged
@@ -176,6 +176,29 @@ describe('Bascule depuis la v3 : noms, état de jeu, dates', () => {
         assert.deepEqual(withoutV4State(v4), { char_name: 'Korgul', hp_current: '7' });
         assert.equal(v4.combat_buffs.rage, true, "objet d'origine intact");
         assert.deepEqual(withoutV4State(null), {});
+    });
+
+    test("Comparaison avec une version écrite par la v3 : clés que la v3 n'enregistre pas ignorées", () => {
+        const v4 = {
+            char_name: 'Korgul', combat_buffs: { rage: true }, profs_weapons: 'Armes courantes et de guerre',
+            hd_total: 'D12', hd_spent: '3', profs_other: 'Armes', passive_perc_manual: '',
+            class_res_0: true, class_res_1: false, class_res_2: false
+        };
+        const v3 = { char_name: 'Korgul', class_res_0: true, class_res_1: false };
+        assert.deepEqual(comparableWithV3(v4), { char_name: 'Korgul', class_res_0: true });
+        assert.deepEqual(comparableWithV3(v4), comparableWithV3(v3));
+        assert.equal(v4.profs_weapons, 'Armes courantes et de guerre', "objet d'origine intact");
+        assert.deepEqual([...V3_MISSING_KEYS].sort(), ['hd_spent', 'hd_total', 'profs_other', 'profs_weapons']);
+        assert.deepEqual(comparableWithV3(null), {});
+    });
+
+    test('Comparaison avec la v3 : un vrai changement reste une différence', () => {
+        const base = { char_name: 'Korgul', passive_perc_manual: 'true', passive_perception: '15', class_res_0: true };
+        assert.deepEqual(comparableWithV3(base), base, 'Perception passive saisie et case cochée gardées');
+        assert.notDeepEqual(comparableWithV3(base), comparableWithV3({ ...base, passive_perc_manual: undefined }),
+            'saisie à la main retirée dans la v3');
+        assert.notDeepEqual(comparableWithV3(base), comparableWithV3({ ...base, class_res_0: false }), 'case décochée dans la v3');
+        assert.notDeepEqual(comparableWithV3(base), comparableWithV3({ ...base, char_name: 'Iria' }));
     });
 
     test("Version la plus récente : plus de 5 s d'écart (règle de la v3)", () => {
