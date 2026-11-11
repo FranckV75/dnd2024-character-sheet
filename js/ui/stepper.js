@@ -16,6 +16,19 @@ const REPEAT_FAST = 50;
 const FAST_AFTER = 8;
 
 /**
+ * Attente avant le pas suivant d'un appui long : le rythme (lent, puis rapide après FAST_AFTER
+ * pas) compte depuis le DÉBUT du pas, pour que le temps d'affichage de la fiche ne ralentisse
+ * pas la répétition sur une tablette lente (un pas tous les 50 ms, et non 50 ms + l'affichage).
+ * @param {number} count - pas déjà faits pendant cet appui
+ * @param {number} spent - durée du pas qui vient d'être fait (ms)
+ * @returns {number} ms
+ */
+export function repeatDelay(count, spent) {
+    const rhythm = count >= FAST_AFTER ? REPEAT_FAST : REPEAT_SLOW;
+    return Math.max(0, rhythm - Math.max(0, spent));
+}
+
+/**
  * @param {{ label: string, iconName: 'minus'|'plus', onStep: () => boolean, className?: string }} options
  * @returns {HTMLButtonElement}
  */
@@ -38,11 +51,12 @@ export function stepButton({ label, iconName, onStep, className = '' }) {
         const repeat = () => {
             repeated = true;
             count += 1;
+            const started = performance.now();
             if (!onStep()) {
                 stop();
                 return;
             }
-            timer = setTimeout(repeat, count >= FAST_AFTER ? REPEAT_FAST : REPEAT_SLOW);
+            timer = setTimeout(repeat, repeatDelay(count, performance.now() - started));
         };
         timer = setTimeout(repeat, HOLD_DELAY);
     });
