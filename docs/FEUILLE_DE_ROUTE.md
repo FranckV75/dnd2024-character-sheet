@@ -12,8 +12,8 @@ points relevés, puis une discussion pour trier toutes les idées.
 ### 1. Prochain chantier : audit de santé, puis découpage
 
 - Audit de santé (`/audit-fiche`) : beaucoup de changements depuis le dernier.
-- Puis découpage des plus gros fichiers (`css/sheet.css`, `js/rules/feat-effects.js`,
-  `js/ui/spells.js`).
+- Découpage des plus gros fichiers (`css/sheet.css`, `js/rules/feat-effects.js`,
+  `js/ui/spells.js`) : fait au lot D (voir docs/ARCHITECTURE.md).
 
 ### 2. Ensuite : restes et points relevés
 

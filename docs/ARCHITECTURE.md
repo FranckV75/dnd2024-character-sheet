@@ -9,12 +9,27 @@ index.html              Page de la fiche : barre « Gestion », en-tête, 4 ongl
 css/                    Une feuille par fonctionnalité ; toute couleur passe par une variable CSS
 │                       (thèmes dans base.css, variables locales dans magic, gallery, style-editor, print)
 ├── base.css            Jetons de thème clair / sombre (variables CSS), typographie
-├── sheet.css           Mise en page de la fiche, tablettes 768–1100 px
+├── sheet.css           Base de la fiche : champs, cases rondes, boîtes, en-tête, onglets
+│                       (suivie, dans cet ordre, des feuilles ci-dessous découpées en lot D :
+│                       l'ordre de chargement d'index.html compte, comme dans l'ancien fichier unique)
+├── tab-combat.css      Onglet 1 : caractéristiques, sauvegardes, vitaux, épuisement, tableaux
+├── wild-magic.css      Tirages de la Bouffée de Sorcellerie sauvage (onglet 1)
+├── feats.css           Onglet 2 : dons, mentions près des valeurs, encadré « Dans la fiche »
+├── tab-skills.css      Onglet 3 : compétences, légende, Odyssée
+├── treasure.css        Onglet 4 : caractéristiques d'incantation, pièces
+├── sheet-tablet.css    Adaptations à l'écran : tablettes 768–1100 px, écrans tactiles, grands écrans
+├── subclass.css        Capacités de sous-classe, aptitudes de base, choix de sous-classe
+├── fold.css            Pastilles de repli des blocs (js/ui/fold.js)
+├── companions.css      Cartes des compagnons de sous-classe
 ├── components.css      Boutons, fenêtres, auto-complétion, cases des tableaux (partagés)
 ├── toolbar.css         Barre « Gestion », mode cinéma, fenêtres d'import / export
 ├── account.css         Compte en ligne, « Mes personnages », questions de synchronisation
 ├── gallery.css         Fond d'écran, opacité de la fiche, galerie
 ├── weapons.css · armors.css · spells.css · rest.css · style-editor.css
+├── conditions.css · origins.css   Encadrés « États » (onglet 1) et « Espèce & historique » (onglet 2)
+├── hit-points.css      PV en jeu : boutons − / + des cases PV, bouton « Dégâts / Soins »
+├── stepper.css         Boutons − / + et pavé de chiffres (PV, PX, compteurs, bourse)
+├── level-up.css        Bouton « Passer au niveau N » et sa fenêtre
 ├── magic.css           Armes et armures magiques (+1 à +3 de plus en plus marqués, enchantement)
 ├── motion.css          Mouvements (ouverture en cascade, onglets, survol, thème, cinéma) ;
 │                       seule règle autorisée à utiliser !important : « Sans animation »
@@ -40,8 +55,17 @@ js/
 │   ├── species-traits.js  Traits des 10 espèces du Manuel des joueurs (résumés), options
 │   │                   (lignages, ascendances, héritages) et sorts d'espèce
 │   ├── weapon-masteries.js  Bottes d'armes (Weapon Mastery, PHB 2024) : textes et règles
+│   ├── subclass-features.js  Capacités des 60 sous-classes (48 du PHB 2024, 12 de l'Odyssée)
+│   ├── subclass-spells.js    Sorts toujours préparés donnés par une sous-classe
+│   ├── subclass-choices.js   Menus des choix de sous-classe à mémoriser (lot 7)
+│   ├── subclass-companions.js  Blocs constants des compagnons et familiers de sous-classe
+│   ├── maneuvers.js    Manœuvres du Maître de guerre, outils du Disciple martial
 │   └── spells.js       Chargement à la demande de data/spells.json
 ├── rules/              Règles D&D 2024 : fonctions pures, testées
+│   ├── identity.js     Reconnaissance de la classe (classSlug) : une seule lecture du nom de
+│   │                   classe pour toute la fiche (réexportée par character.js)
+│   ├── numbers.js      signed (« +3 », « -1 ») et rollDie (hasard fourni par l'interface),
+│   │                   seules copies de toute la fiche (dom.js et wild-magic.js les réexportent)
 │   ├── logic.js        Calculs élémentaires (modificateurs, maîtrise, armes, ressources)
 │   ├── character.js    Statistiques dérivées d'une fiche complète (deriveCharacter, computeWeapon)
 │   ├── weapons.js      Tableau des armes (filtres, bonus de combat, configuration)
@@ -53,6 +77,15 @@ js/
 │   ├── spells.js       Grimoire (recherche, tri, filtres, emplacements de sorts)
 │   ├── feats.js · feat-effects.js · feat-uses.js · feat-choices.js
 │   │                   Dons : emplacements atteints, effets, usages dépensés, choix mémorisés
+│   ├── feat-effects/   Effets des dons, une famille par fichier (feat-effects.js les rassemble
+│   │   │               dans FEAT_RULES et garde FEAT_ZONES, featEffects, restFeatNotes)
+│   │   ├── helpers.js  Outils partagés (DD, PV de Robuste, formations d'armures, notes « à la place »…)
+│   │   ├── general.js  Dons d'origine et généraux
+│   │   ├── epic.js     Faveurs épiques
+│   │   ├── lot7.js     Dons du lot 7 (Athlète, Bagarreur de tavernes, Tireur d'élite…)
+│   │   ├── fighting-styles.js  Styles de combat (et Combattant béni / druidique)
+│   │   ├── choice-notes.js     Notes des choix mémorisés (choiceNotes)
+│   │   └── weapon-notes.js     Rappels sous chaque arme (weaponFeatNotes)
 │   ├── feat-spells.js  Sorts donnés par un don (lot 6) : DD du don, lancers gratuits
 │   ├── rest.js         Repos court et repos long
 │   ├── conditions.js   États cochés (clé facultative « conditions ») et rappel de leurs effets
@@ -67,6 +100,17 @@ js/
 │   ├── counters.js     Compteurs − / + (Épuisement, Inspiration, renommée) et pièces (Bourse)
 │   ├── level-up.js     Assistant « Passer au niveau N » : ce qui change, PV gagnés, modification
 │   │                   appliquée (niveau, PV max, PV actuels sur demande ; écran : ui/level-up.js)
+│   ├── subclass-features.js  Capacités de sous-classe atteintes ou à venir, ce que la fiche en
+│   │                   fait (SUBCLASS_AUTOMATION), sorts de sous-classe
+│   ├── subclass-calcs.js  Petits calculs (Initiative, compétences, armes, critiques) et rappels
+│   │                   près des valeurs (zones de featEffects)
+│   ├── subclass-combat.js  Boutons de combat et dés des sous-classes, notes de CA et de défense
+│   ├── subclass-uses.js  Capacités à usages limités (clé facultative « subclass_uses »)
+│   ├── subclass-choices.js  Choix de sous-classe mémorisés (clé facultative « subclass_choices »)
+│   ├── subclass-forms.js  Formes du Cercle de la Lune et du Cercle des Étoiles
+│   ├── subclass-companions.js  Cartes des compagnons (clé facultative « subclass_companions »)
+│   ├── epic-poem.js    Collège de poésie épique (Odyssée) : strophes, rang du poème
+│   ├── wild-magic.js   Sorcellerie sauvage : Bouffée (d20) et table (d100)
 │   └── gallery.js      Réglages d'apparence (validation des fonds, _visual_prefs)
 ├── cloud/              Sauvegarde en ligne (Supabase, même table que la v3)
 │   ├── client.js       Client Supabase (clé publique ; sécurité par RLS)
@@ -91,6 +135,15 @@ js/
     │                   affiche les valeurs calculées (data-out)
     ├── tabs.js · theme.js · lock.js · toolbar.js · account.js · gallery.js
     ├── weapons.js · armors.js · spells.js · rest.js · style-editor.js
+    ├── spells/         Morceaux du grimoire (spells.js garde le tableau, le grimoire replié,
+    │                   l'assemblage) : prefs.js (réglages retenus sur l'appareil), tooltip.js
+    │                   (bulle d'un sort), filters.js (barre de recherche et filtres), slots.js
+    │                   (emplacements de sorts), granted.js (sorts donnés par les dons, la
+    │                   sous-classe et l'espèce)
+    ├── derived.js      deriveCharacter calculé une fois par version du personnage, partagé
+    ├── fold.js         Blocs repliables (sous-classe, compagnons, sorts de sous-classe), retenus
+    │                   sur l'appareil seulement
+    ├── wild-magic.js   Boutons de la Bouffée de Sorcellerie sauvage (onglet Combat)
     ├── motion.js · feedback.js · ornaments.js
     ├── motion-pref.js  Animations en marche ou coupées (appareil ou bouton « Sans animation »,
     │                   retenu sur l'appareil, jamais dans la sauvegarde)
@@ -271,8 +324,14 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
 - Capacités de classe et maîtrise des armes (`js/rules/class-features.js`, lot A) : Aura de protection
   (Paladin 6) et Touche-à-tout (Barde 2) sont comptées par `deriveCharacter` (`saves[id].aura`,
   `skills[id].jack`) et expliquées par des notes `classFeature: true` mêlées aux notes des dons
-  (`classFeatureNotes`, zones `saves.<id>` et `skills.<id>`). La sous-classe est lue par `subclassId`
-  (nom du menu, nom anglais, saisie libre sans accents). `computeArmorClass` prend la meilleure Défense sans
+  (`classFeatureNotes`, zones `saves.<id>` et `skills.<id>`). La classe est lue par une seule fonction,
+  `classSlug` (`js/rules/identity.js`). La sous-classe est lue par `subclassId` pour `deriveCharacter`
+  (nom du menu, nom anglais, saisie libre sans accents) et tout ce qui part de `derived.subclass`, mais
+  deux lectures à part restent : `subclassOf` (`js/rules/feats.js`, nom exact sans tenir compte des
+  majuscules : dons réservés à une sous-classe, et tableau des armes sans `derived`) et
+  `spellcastingSubclass` (`js/rules/spells.js`, Chevalier occulte et Arnaqueur arcanique). Elles ne
+  donnent pas toujours le même résultat pour une saisie libre : les réunir changerait la fiche, c'est
+  donc laissé à une décision de Franck. `computeArmorClass` prend la meilleure Défense sans
   armure de `unarmoredDefenseOptions` (Barbare, Moine — bouclier permis pour La Voie du bouclier de l'Odyssée —,
   Sorcellerie draconique, Collège de la Danse).
   `weaponProficiency` dit si une arme est maîtrisée (réglage `proficiency` de `weaponConfig`, puis classe
