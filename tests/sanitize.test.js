@@ -48,6 +48,37 @@ describe('Réglages de DOMPurify', () => {
         assert.equal(seen[1], SANITIZE_CONFIGS.rules);
         assert.ok(seen.every(config => config.ALLOW_DATA_ATTR === false));
     });
+
+    test('Même texte, même réglage : nettoyé une seule fois (frappe suivante, même résultat)', () => {
+        let calls = 0;
+        globalThis.DOMPurify = { sanitize: (html) => { calls++; return html.replace(/<script>.*<\/script>/g, ''); } };
+        const dirty = '<b>Korgul</b><script>alert(1)</script>';
+        assert.equal(sanitizeRich(dirty), '<b>Korgul</b>');
+        assert.equal(sanitizeRich(dirty), '<b>Korgul</b>');
+        assert.equal(calls, 1);
+        // Autre réglage, autre texte : nouveau nettoyage
+        sanitizeRulesText(dirty);
+        sanitizeRich('<i>autre</i>');
+        assert.equal(calls, 3);
+    });
+
+    test('DOMPurify remplacé (rechargé) : le texte est renettoyé par le nouveau', () => {
+        globalThis.DOMPurify = { sanitize: () => 'ancien' };
+        assert.equal(sanitizeRich('<b>x</b>'), 'ancien');
+        globalThis.DOMPurify = { sanitize: () => 'nouveau' };
+        assert.equal(sanitizeRich('<b>x</b>'), 'nouveau');
+    });
+
+    test('Mémoire bornée : un texte ancien est renettoyé après beaucoup d\'autres', () => {
+        let calls = 0;
+        globalThis.DOMPurify = { sanitize: (html) => { calls++; return html; } };
+        for (let i = 0; i <= 200; i++) sanitizeRich(`texte ${i}`);
+        assert.equal(calls, 201);
+        sanitizeRich('texte 0');
+        assert.equal(calls, 202);
+        sanitizeRich('texte 200');
+        assert.equal(calls, 202);
+    });
 });
 
 describe('Mise en forme disponible ?', () => {

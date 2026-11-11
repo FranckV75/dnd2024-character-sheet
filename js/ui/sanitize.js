@@ -103,11 +103,36 @@ export function richTextAvailable() {
 /** Réglages de DOMPurify (lus par les tests) */
 export const SANITIZE_CONFIGS = Object.freeze({ rich: RICH_CONFIG, rules: RULES_CONFIG });
 
+/**
+ * Derniers résultats, par DOMPurify chargé puis par réglage : la fiche réaffiche à chaque frappe
+ * les mêmes textes longs et les mêmes descriptions de dons, inutile de les renettoyer.
+ * Le nettoyage d'un même texte avec le même réglage donne toujours le même résultat.
+ */
+const CACHE_SIZE = 200;
+const cache = new WeakMap();
+
+function cacheFor(purifier, config) {
+    let byConfig = cache.get(purifier);
+    if (!byConfig) cache.set(purifier, byConfig = new Map());
+    let entries = byConfig.get(config);
+    if (!entries) byConfig.set(config, entries = new Map());
+    return entries;
+}
+
 function purify(html, config) {
     const purifier = globalThis.DOMPurify;
     if (!richTextAvailable()) return plainText(html);
     ensureStyleHook(purifier);
-    return purifier.sanitize(safeText(html), config);
+    const text = safeText(html);
+    const entries = cacheFor(purifier, config);
+    if (entries.has(text)) return entries.get(text);
+    const clean = purifier.sanitize(text, config);
+    // Seulement les chaînes (un DOMPurify d'essai peut rendre autre chose)
+    if (typeof clean === 'string') {
+        if (entries.size >= CACHE_SIZE) entries.delete(entries.keys().next().value);
+        entries.set(text, clean);
+    }
+    return clean;
 }
 
 /**
