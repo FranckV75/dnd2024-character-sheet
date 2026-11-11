@@ -9,7 +9,7 @@
          (DOMPurify, Supabase), et ne communique qu'avec la base Supabase du projet.
          'unsafe-inline' pour les styles seulement : couleurs du texte riche (style="…"). -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self';
-        script-src 'self' https://cdn.jsdelivr.net/npm/dompurify@3.1.5/ https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/;
+        script-src 'self' https://cdn.jsdelivr.net/npm/dompurify@3.4.17/ https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src https://fonts.gstatic.com;
         img-src 'self' data: blob: https: http:;
@@ -460,8 +460,8 @@
     </main>
 
     <!-- DOMPurify : nettoie le texte riche (protection contre l'injection de code) -->
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.5/dist/purify.min.js"
-        integrity="sha256-ILCzhApz2lHTpmxR8HPj7W2hBCs3QcWGHBt6Nmk9ySg=" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.17/dist/purify.min.js"
+        integrity="sha384-P0JNneQf81HOl9VwNXK76cQ9VMD6Nfsnepxb0cCOg8+UzEdzgPHAPV4wVQrvYQSx" crossorigin="anonymous" defer></script>
     <!-- Supabase : sauvegarde en ligne (même version et même empreinte que la v3) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.min.js"
         integrity="sha384-BV2dqVU6K3gwMR3iiAIxuWbMYbnQYo7u3jQXlR9cCWtBUVeIrrcuzn50r50eu9zk" crossorigin="anonymous"
