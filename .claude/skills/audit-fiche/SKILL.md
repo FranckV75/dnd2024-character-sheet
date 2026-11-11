@@ -48,7 +48,7 @@ explication, captures d'écran quand c'est visuel.
 - `npm run check` : résultat exact (nombre de tests).
 - Taille des fichiers JS/CSS (repérer les plus gros), nombre de tests par fichier.
 - Documentation à confronter au code : `docs/ROADMAP.md`, `docs/ARCHITECTURE.md`,
-  `docs/DONS_ACTIFS.md`, `docs/CHANGELOG.md`, `CLAUDE.md`.
+  `docs/etudes/DONS_ACTIFS.md`, `docs/CHANGELOG.md`, `CLAUDE.md`.
 
 ## 2. Angles d'examen
 

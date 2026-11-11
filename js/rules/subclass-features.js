@@ -2,7 +2,7 @@
 // SUBCLASS-FEATURES.JS (règles) - Capacités de sous-classe atteintes ou à venir
 // (fonctions pures, sans DOM)
 //
-// Les textes sont dans js/data/subclass-features.js (inventaire : docs/SOUS_CLASSES.md).
+// Les textes sont dans js/data/subclass-features.js (inventaire : docs/etudes/SOUS_CLASSES.md).
 // Une capacité est « atteinte » quand le niveau de classe est au moins celui de la capacité.
 // SUBCLASS_AUTOMATION dit ce que la fiche fait déjà de chaque capacité (sinon : simple rappel).
 // Règle validée par Franck : la fiche ne modifie jamais une valeur saisie à la main.

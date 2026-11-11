@@ -1,5 +1,7 @@
 # Dons actifs — classement
 
+> **Étude terminée.** Réalisée le 04/11/2026 ; les lots retenus par Franck ont été faits (voir `docs/CHANGELOG.md`). Elle sert de référence pour retoucher les dons (familles calcul, texte, choix, compteur, bouton). Les recommandations et le découpage en lots décrivent l'état du 04/11/2026, pas l'état actuel.
+
 Classement des 75 dons de la fiche, fait le 04/11/2026 (workflow : 4 classeurs, 4 vérificateurs relisant le Manuel, 1 synthèse), pour que Franck choisisse ce qu'on automatise.
 
 ## 1. Résumé

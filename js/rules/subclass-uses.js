@@ -1,6 +1,6 @@
 // =============================================================================
 // SUBCLASS-USES.JS (règles) - Capacités de sous-classe à usages limités : cases cochées, vidées
-// au repos ou à la fin de la Rage (lot 2, docs/SOUS_CLASSES.md)
+// au repos ou à la fin de la Rage (lot 2, docs/etudes/SOUS_CLASSES.md)
 //
 // Sauvegarde : clé facultative « subclass_uses » = { « <sous-classe>.<capacité> »: usages dépensés },
 // par exemple { "path_of_the_zealot.guerrier_des_dieux": 2 }. Absente des anciennes fiches (= rien de

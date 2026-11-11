@@ -1,6 +1,6 @@
 // =============================================================================
 // Sous-classes, lot 3 : sorts toujours préparés de toutes les sous-classes (domaines, cercles,
-// patrons, Rôdeur, Ensorceleur, Glamour, Magicien, Cœur sauvage…) — docs/SOUS_CLASSES.md.
+// patrons, Rôdeur, Ensorceleur, Glamour, Magicien, Cœur sauvage…) — docs/etudes/SOUS_CLASSES.md.
 // Tables relues dans le PHB 2024 anglais (et le guide de l'Odyssée pour ses sous-classes).
 // =============================================================================
 

@@ -1,5 +1,7 @@
 # Capacités de sous-classe — inventaire
 
+> **Étude terminée.** Réalisée le 09/11/2026 ; tous ses lots (0 à 7) ont été faits (versions 4.20 à 4.27, voir `docs/CHANGELOG.md`). Elle sert de référence pour retoucher les sous-classes : le code y renvoie. Les sections « Erreurs », « Points à trancher » et « Découpage en lots » décrivent l'état du 09/11/2026, pas l'état actuel.
+
 Inventaire des 60 sous-classes de la fiche (48 du Manuel des joueurs 2024, 12 de L'Odyssée des Seigneurs Dragons), fait le 09/11/2026 (workflow : 12 agents, un par classe, chacun relisant les manuels et le code). Aucun code n'a été modifié : ce document sert à choisir ce qu'on automatise.
 
 Manuels relus :

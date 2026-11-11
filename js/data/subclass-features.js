@@ -1,14 +1,14 @@
 // =============================================================================
 // SUBCLASS-FEATURES.JS (données) - Capacités des 60 sous-classes de la fiche
 // (48 du Player's Handbook 2024, 12 de L'Odyssée des Seigneurs Dragons), par clé de
-// DD_RULES.subclasses. Inventaire du 09/11/2026 (docs/SOUS_CLASSES.md) : chaque texte est un
+// DD_RULES.subclasses. Inventaire du 09/11/2026 (docs/etudes/SOUS_CLASSES.md) : chaque texte est un
 // résumé en français, relu dans le manuel (PHB 2024 anglais, guide du joueur de l'Odyssée).
 //
 // Champs : id (propre à la sous-classe, jamais renommé : les sauvegardes s'en servent), level
 // (niveau de classe), name (nom du Manuel des joueurs français 2024, relu sur le livre le
 // 10/11/2026 ; une aptitude découpée s'écrit « Aptitude (partie) » ou « Aptitude : partie »),
 // en (nom anglais du PHB), family ('calcul',
-// 'bouton', 'rappel' : voir docs/SOUS_CLASSES.md), text (règle résumée).
+// 'bouton', 'rappel' : voir docs/etudes/SOUS_CLASSES.md), text (règle résumée).
 // bookLevel : niveau du livre de l'Odyssée (règles 2014) quand la capacité est ramenée au
 // niveau 3, où la sous-classe s'obtient en 2024 (décision de Franck du 09/11/2026).
 // optionOf : une option d'une autre capacité (écoles du Philosophe de l'Académie).

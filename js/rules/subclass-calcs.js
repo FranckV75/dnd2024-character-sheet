@@ -1,6 +1,6 @@
 // =============================================================================
 // SUBCLASS-CALCS.JS (règles) - Petits calculs des capacités de sous-classe (lot 4,
-// docs/SOUS_CLASSES.md) : fonctions pures, sans DOM.
+// docs/etudes/SOUS_CLASSES.md) : fonctions pures, sans DOM.
 //
 //  - valeurs calculées par la fiche : Initiative (Traqueur des ténèbres, L'Odysséen), tests de Charisme
 //    de l'Vagabond féerique, Frappe à mains nues du Collège de la Danse, armes de corps à corps de

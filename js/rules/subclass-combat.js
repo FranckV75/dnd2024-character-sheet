@@ -1,5 +1,5 @@
 // =============================================================================
-// SUBCLASS-COMBAT.JS (règles) - Combat des sous-classes (lot 5, docs/SOUS_CLASSES.md) :
+// SUBCLASS-COMBAT.JS (règles) - Combat des sous-classes (lot 5, docs/etudes/SOUS_CLASSES.md) :
 // fonctions pures, sans DOM.
 //
 //  - dégâts des boutons de sous-classe du tableau des armes (clés de combat_buffs ouvertes par

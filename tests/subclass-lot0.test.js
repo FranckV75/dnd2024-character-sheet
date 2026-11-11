@@ -1,5 +1,5 @@
 // =============================================================================
-// Sous-classes, lot 0 (docs/SOUS_CLASSES.md, section 4) : corrections du code existant.
+// Sous-classes, lot 0 (docs/etudes/SOUS_CLASSES.md, section 4) : corrections du code existant.
 // Règles relues : Odyssée des Seigneurs Dragons, guide du joueur (Voie du bouclier p. 46,
 // L'Odysséen p. 52, style Hoplite p. 43, Collège de poésie épique) ; PHB 2024 (Draconic Resilience
 // p. 148, College of Valor « Martial Training », Foe Slayer).

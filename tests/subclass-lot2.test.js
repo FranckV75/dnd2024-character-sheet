@@ -1,7 +1,7 @@
 // =============================================================================
 // Sous-classes, lot 2 : Voie du Zélote (Korgul) et serments du Paladin (Iria)
 // Cases de sous-classe (subclass_uses), Fureur divine, sorts de serment, textes chiffrés du
-// Conduit divin (docs/SOUS_CLASSES.md). Règles relues dans le PHB 2024 anglais.
+// Conduit divin (docs/etudes/SOUS_CLASSES.md). Règles relues dans le PHB 2024 anglais.
 // =============================================================================
 
 import { test, describe } from 'node:test';

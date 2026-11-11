@@ -1,6 +1,6 @@
 // =============================================================================
 // Sous-classes, lot 1 : les capacités des 60 sous-classes en données, atteintes ou à venir
-// (docs/SOUS_CLASSES.md). Textes relus dans le PHB 2024 anglais et le guide de l'Odyssée.
+// (docs/etudes/SOUS_CLASSES.md). Textes relus dans le PHB 2024 anglais et le guide de l'Odyssée.
 // =============================================================================
 
 import { test, describe } from 'node:test';

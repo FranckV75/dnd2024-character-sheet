@@ -35,25 +35,23 @@ en fin de session :
 - Une fiche enregistrée avant la mise à jour s'ouvre sans rien perdre ; l'ancien site l'ouvre
   toujours (nouvelles clés facultatives `species_choices` et `concentration`).
 
-### Points relevés, non traités (à proposer à Franck)
-
-- Bottes d'arme : la page 214 (liste des bottes) et la page 209 (Maître d'armes) citent encore le
-  livre anglais ; il faudrait les photos du chapitre Équipement du livre français.
-- Espèces de l'Odyssée (Centaure, Méduse, Minotaure, Satyre, Sirène, Nymphe) : pas de traits repris.
-- Dragonnets du Seigneur Dragon : blocs à vérifier sur le Manuel des monstres 2024 (plus tard).
-- Poids porté : gardé en tête par Franck, pas utile pour le moment.
-
 ### Ensuite, sur demande de Franck seulement
 
 Lanceur de dés (seul), fiche sans wifi (seule, en dernier), puis audit `/audit-fiche` et découpage
-des gros fichiers. Idées en attente : `docs/ROADMAP.md`.
+des gros fichiers. Points relevés non traités (pages des Bottes d'arme, espèces de l'Odyssée,
+dragonnets, restes des sous-classes) et idées en attente : `docs/ROADMAP.md`.
 
 ## Sessions
 
-### 11/11/2026 — Journal de bord
+### 11/11/2026 — Journal de bord et rangement des documents
 
 - L'ancienne note de passage `docs/PROCHAINE_SESSION.md` devient ce journal, au nom fixe (choix de
   Franck) : le sujet de chaque session est dans le titre de son entrée, pas dans le nom du fichier.
+- `docs/ROADMAP.md` allégée : il n'y reste que ce qui est à faire et les décisions qui valent pour
+  la suite ; l'historique des étapes est résumé ici.
+- Les deux études terminées (dons actifs, sous-classes) rangées dans `docs/etudes/`, avec la date
+  et l'état en tête ; le code y renvoie toujours.
+- Entrées anciennes ajoutées ci-dessous (25/10 → 09/11), reconstituées d'après `docs/CHANGELOG.md`.
 
 ### 10/11/2026 (soir) — Espèces, historiques, rappels de classe et Concentration (4.35 → 4.37)
 
@@ -70,12 +68,30 @@ des gros fichiers. Idées en attente : `docs/ROADMAP.md`.
 
 ### 10/11/2026 — Sous-classes, file d'attente autonome, classes du Manuel français (4.28 → 4.34)
 
-- Projet des sous-classes terminé (`docs/SOUS_CLASSES.md`), blocs repliables, noms du Manuel
+- Projet des sous-classes terminé (`docs/etudes/SOUS_CLASSES.md`), blocs repliables, noms du Manuel
   français ; publié en 4.28.1.
 - File d'attente : sauvegardes de secours datées, suivi des états, assistant de montée de niveau
   (4.29 à 4.31), puis PX restants, boutons − / +, Bourse, aptitudes de base des 12 classes, sorts
   préparés permis, noms français (le Sorcier devient l'Occultiste) ; publié en 4.34.0.
 
-### Avant le 10/11/2026
+### 09/11/2026 — Dons, règles de classe, sécurité, puis sous-classes (4.8 → 4.27)
 
-Voir `docs/CHANGELOG.md` (versions 4.0 à 4.27) et l'historique Git.
+- Suite des dons actifs (4.8 à 4.15) : dons restants, faveurs épiques, règles de classe.
+- Protection des données, vitesse, ménage du code, sécurité (4.16 à 4.19).
+- Étude des sous-classes (`docs/etudes/SOUS_CLASSES.md`) : 60 sous-classes relues (48 du Manuel,
+  12 de l'Odyssée), erreurs relevées, découpage en 8 lots ; Franck a validé, les lots 0 à 7 sont
+  faits dans la journée (4.20 à 4.27).
+
+### 04/11 → 08/11/2026 — Dons actifs, Bottes d'arme, CA calculée (4.1 → 4.7)
+
+- 04/11 : Franck valide la v4 en ligne. Étude des dons actifs (`docs/etudes/DONS_ACTIFS.md`) : ce que
+  chaque don change sur la fiche (calcul, texte, choix, compteur, bouton) ; premiers lots (4.1).
+- 05/11 → 08/11 : Bottes d'arme (4.2), Classe d'armure calculée (4.3), objets magiques et suite des
+  dons (4.4 à 4.7).
+
+### 25/10 → 27/10/2026 — Reconstruction de la fiche (v4, jusqu'à 4.0.0)
+
+- La v3 (cassée puis réparée a minima) est reconstruite : règles en fonctions pures testées, une
+  seule source de vérité, même format de sauvegarde que la v3 (base Supabase partagée).
+- Étapes 0 à 5, passe esthétique (polices Cinzel et Alegreya, thèmes clair et sombre), puis bascule :
+  la 4.0.0 remplace la v3 en ligne le 27/10 (la v3 reste sous l'étiquette `v3-final`).
