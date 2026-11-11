@@ -1,13 +1,15 @@
 // =============================================================================
 // SPECIES.JS (règles) - Traits de l'espèce, option choisie et ce qu'elle donne
 //
-// Données : js/data/species-traits.js (Manuel des joueurs français). Sauvegarde : clé facultative
+// Données : js/data/species-traits.js (Manuel des joueurs français et Guide du joueur de L'Odyssée
+// des Seigneurs Dragons). Sauvegarde : clé facultative
 // « species_choices » = { option: 'drow', ability: 'wis' } : option de l'espèce (lignage,
 // ascendance, héritage…) et caractéristique d'incantation de ses sorts. Absente des anciennes
 // fiches ; l'ancien site (v3) l'ignore (V4_ONLY_KEYS, js/cloud/sync.js). Une option qui
 // n'appartient pas à l'espèce actuelle est ignorée (changement d'espèce), jamais effacée.
 //
-//  - speciesView : traits atteints et à venir, option, Vision dans le noir, Résistances, Souffle,
+//  - speciesView : traits atteints et à venir, option, Vision dans le noir, Vitesses de vol et de nage,
+//    Résistances, Souffle, chiffres de certains traits (Chevelure serpentine, Regard pétrifiant),
 //    sorts de l'espèce (avec DD et attaque) ;
 //  - speciesNotes : repères près des valeurs (Résistances près de la CA, Vitesse de l'Elfe sylvestre) ;
 //  - speciesCounterDefs : cases des traits à usages limités et des lancers gratuits de sorts,
@@ -54,6 +56,19 @@ export function breathDice(level) {
     return lvl >= 17 ? '4d10' : lvl >= 11 ? '3d10' : lvl >= 5 ? '2d10' : '1d10';
 }
 
+/** DD du Regard pétrifiant de la Méduse (fixe, selon le niveau) : 8, 10 (niv. 10), 12 (niv. 15), 14 (niv. 20) */
+export function petrifyingGazeDc(level) {
+    const lvl = Number(level) || 1;
+    return lvl >= 20 ? 14 : lvl >= 15 ? 12 : lvl >= 10 ? 10 : 8;
+}
+
+/** Chiffres calculés de certains traits atteints (repères affichés près des traits) */
+const TRAIT_STATS = Object.freeze({
+    chevelure_serpentine: ({ pb, mods }) =>
+        `Chevelure serpentine ${signed(pb + (Number(mods.dex) || 0))}, 1d6 perforants, JS Con DD 12`,
+    regard_petrifiant: ({ level }) => `Regard pétrifiant : JS Con DD ${petrifyingGazeDc(level)}`
+});
+
 /**
  * @param {Object} record
  * @param {{ level: number, pb: number, mods: Object }} derived - deriveCharacter(record)
@@ -61,10 +76,11 @@ export function breathDice(level) {
  *   slug: string, name: string, known: boolean,
  *   traits: Object[], upcoming: Object[],
  *   option: null | { key, label, perUse, abilities, choices, selected, ability, abilityName },
- *   darkvision: number|null, speed: number|null, resistances: string[],
+ *   darkvision: number|null, speed: number|null, fly: null | { speed: number, note: string },
+ *   swim: number|null, resistances: string[], stats: string[],
  *   breath: null | { dice: string, dc: number, type: string|null },
- *   spells: { name, vo, level, spellLevel, free, ability, dc, attack, reached, source }[]
- * }} known : false pour une espèce sans données (Odyssée) ; null sans espèce reconnue
+ *   spells: { name, vo, level, spellLevel, free, reset, ability, dc, attack, reached, source }[]
+ * }} known : false pour une espèce sans données ; null sans espèce reconnue
  */
 export function speciesView(record, derived) {
     const slug = speciesSlug(record);
@@ -72,7 +88,7 @@ export function speciesView(record, derived) {
     const name = DD_RULES.species[slug].nameFr;
     const data = SPECIES_TRAITS[slug];
     if (!data) {
-        return { slug, name, known: false, traits: [], upcoming: [], option: null, darkvision: null, speed: null, resistances: [], breath: null, spells: [] };
+        return { slug, name, known: false, traits: [], upcoming: [], option: null, darkvision: null, speed: null, fly: null, swim: null, resistances: [], stats: [], breath: null, spells: [] };
     }
     const level = Math.min(20, Math.max(1, Number(derived?.level) || 1));
     const pb = Number(derived?.pb) || 2;
@@ -95,7 +111,7 @@ export function speciesView(record, derived) {
             const mod = ab ? Number(mods[ab]) || 0 : null;
             return {
                 name: spell.name, vo: spell.vo, level: spell.level, spellLevel: spell.spellLevel,
-                free: spell.free ?? null, source: spell.source,
+                free: spell.free ?? null, reset: spell.free ? spell.reset ?? 'long' : null, source: spell.source,
                 ability: ab, dc: ab ? 8 + pb + mod : null, attack: ab ? pb + mod : null,
                 reached: spell.level <= level
             };
@@ -112,7 +128,10 @@ export function speciesView(record, derived) {
         } : null,
         darkvision: selected?.darkvision ?? data.darkvision ?? null,
         speed: selected?.speed ?? null,
+        fly: data.fly ?? null,
+        swim: selected?.swim ?? null,
         resistances: [...resistances],
+        stats: data.traits.filter((t) => t.level <= level && TRAIT_STATS[t.id]).map((t) => TRAIT_STATS[t.id]({ level, pb, mods })),
         breath,
         spells
     };
@@ -196,7 +215,7 @@ export function speciesCounterDefs(record, derived) {
         defs.push({
             key: `species.sort_${spell.vo.toLowerCase().replace(/[^a-z]+/g, '_')}`, feature: spell.vo, name: view.name, level: spell.level,
             label: spell.name, inText: spell.name,
-            max: spell.free === 'pb' ? pb : 1, reset: 'long',
+            max: spell.free === 'pb' ? pb : 1, reset: spell.reset,
             use: `Lancer sans emplacement (${spell.source}).${spell.dc ? ` DD ${spell.dc}, attaque ${signed(spell.attack)}.` : ''}`
         });
     }

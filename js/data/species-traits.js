@@ -1,17 +1,24 @@
 // =============================================================================
-// SPECIES-TRAITS.JS - Traits des 10 espèces du Manuel des joueurs 2024 (édition française)
+// SPECIES-TRAITS.JS - Traits des espèces : les 10 du Manuel des joueurs 2024 (édition française)
+// et les 6 du Guide du joueur de L'Odyssée des Seigneurs Dragons (VF 2022, chapitre 3)
 //
-// Lus sur les photos du manuel de Franck (dossier « Description des espèces », p. 186-197) et
-// vérifiés par une seconde lecture. Les textes sont des RÉSUMÉS dans nos mots (le dépôt est public),
-// avec les titres imprimés. Par espèce (clé de DD_RULES.species) :
+// Manuel : lus sur les photos du manuel de Franck (dossier « Description des espèces », p. 186-197)
+// et vérifiés par une seconde lecture. Odyssée : lus dans le PDF du guide (p. 26-35 imprimées) ; le
+// livre suit le format de 2014 : ses augmentations de caractéristiques, âge, alignement et langues
+// ne sont pas repris comme traits (en 2024, les caractéristiques viennent de l'historique).
+// Les textes sont des RÉSUMÉS dans nos mots (le dépôt est public), avec les titres imprimés.
+// Par espèce (clé de DD_RULES.species) :
 //  - darkvision : portée de la Vision dans le noir en mètres (null : aucune) ;
+//  - fly : Vitesse de vol { speed (m), note : condition } (Sirène) ;
 //  - traits : { id, name, level, activation, text, uses?: { count: 'pb' | nombre, reset }, resistance? } ;
 //  - option : choix de l'espèce (lignage, ascendance, héritage…) : { key, label, abilities? (caractéristique
 //    d'incantation au choix), perUse? (choisi à chaque utilisation, pas mémorisé), choices: [{ id, name,
-//    text, damageType?, darkvision?, speed?, spells?: [{ level, name, vo, spellLevel, free? }] }] } ;
+//    text, damageType?, darkvision?, speed?, swim? (Vitesse de nage en m), spells?: [{ level, name, vo,
+//    spellLevel, free?, reset?, ability? }] }] } ;
 //    level : niveau du personnage ; spellLevel : niveau du sort (0 = sort mineur) ; free : lancers sans
-//    emplacement par Repos long (1, ou 'pb' = bonus de maîtrise) ;
-//  - spells : sorts de l'espèce hors option ({ level, name, vo, ability: 'cha' | 'option', trait }).
+//    emplacement (1, ou 'pb' = bonus de maîtrise), rendus au Repos long, ou aussi au Repos court si
+//    reset: 'short' ; ability: 'cha' : toujours lancé avec le Charisme (sinon : caractéristique choisie) ;
+//  - spells : sorts de l'espèce hors option ({ level, name, vo, ability: 'cha' | 'option', trait, free?, reset? }).
 // Les noms de sorts sont ceux de data/spells.json (testé).
 // =============================================================================
 
@@ -761,6 +768,344 @@ export const SPECIES_TRAITS = Object.freeze({
                 "ability": "option",
                 "trait": "Présence d'outre-monde",
                 "spellLevel": 0
+            }
+        ]
+    },
+
+    // ----- L'ODYSSÉE DES SEIGNEURS DRAGONS (guide du joueur, chapitre 3) -----
+    "centaur": {
+        "darkvision": null,
+        "traits": [
+            {
+                "id": "charge",
+                "name": "Charge",
+                "level": 1,
+                "activation": "passif",
+                "text": "Si vous parcourez au moins 10 m en ligne droite vers une cible puis la touchez au corps à corps dans le même tour, votre première attaque lui inflige 1d6 dégâts supplémentaires."
+            },
+            {
+                "id": "monture",
+                "name": "Monture",
+                "level": 1,
+                "activation": "action Bonus",
+                "text": "Par une action Bonus, un allié bipède à 1,50 m ou moins, de taille égale ou inférieure à la vôtre, peut monter sur votre dos jusqu'à la fin de votre tour ; il redescend ensuite à 1,50 m de vous. Pendant ce transport, il n'est pas considéré comme monté et ne subit pas d'attaques d'opportunité."
+            },
+            {
+                "id": "quadrupede",
+                "name": "Quadrupède",
+                "level": 1,
+                "activation": "passif",
+                "text": "Les passages étroits qu'il faut escalader comptent pour vous comme un terrain difficile."
+            }
+        ]
+    },
+    "medusa": {
+        "darkvision": 18,
+        "traits": [
+            {
+                "id": "chevelure_serpentine",
+                "name": "Chevelure serpentine",
+                "level": 1,
+                "activation": "action",
+                "text": "Vos serpents sont une arme naturelle de corps à corps : attaque = bonus de maîtrise + mod. Dextérité, 1d6 dégâts perforants (sans modificateur). La cible touchée fait un JS de Constitution DD 12 ou reste Empoisonnée jusqu'au début de votre prochain tour."
+            },
+            {
+                "id": "maudite",
+                "name": "Maudite",
+                "level": 1,
+                "activation": "passif",
+                "text": "Votre transformation en méduse est achevée ; seul le sort Souhait peut lever la malédiction et vous rendre votre apparence d'origine."
+            },
+            {
+                "id": "sang_froid",
+                "name": "Sang-froid",
+                "level": 1,
+                "activation": "passif",
+                "text": "Avantage aux jets de sauvegarde contre les sorts et capacités qui infligent l'état Empoisonné."
+            },
+            {
+                "id": "vision_dans_le_noir",
+                "name": "Vision dans le noir",
+                "level": 1,
+                "activation": "passif",
+                "text": "Vision dans le noir sur 18 m."
+            },
+            {
+                "id": "regard_petrifiant",
+                "name": "Regard pétrifiant",
+                "level": 5,
+                "activation": "action",
+                "text": "Dès le niveau 5, par une action, une créature à 9 m ou moins qui croise votre regard fait un JS de Constitution, sinon elle est Paralysée jusqu'à la fin de son prochain tour. Pendant votre tour, une action Bonus l'oblige à refaire ce JS avec Désavantage (même effet en cas d'échec). Paralysée ainsi une 3e fois en 10 minutes, elle est Pétrifiée. DD 8, puis 10 au niveau 10, 12 au niveau 15 et 14 au niveau 20."
+            }
+        ]
+    },
+    "minotaur": {
+        "darkvision": 18,
+        "traits": [
+            {
+                "id": "dichromate",
+                "name": "Dichromate",
+                "level": 1,
+                "activation": "passif",
+                "text": "Vous voyez en rouges et en gris : seules les teintes rouge vif se distinguent pour vous (défaut à jouer, sans effet chiffré)."
+            },
+            {
+                "id": "odorat_aiguise",
+                "name": "Odorat aiguisé",
+                "level": 1,
+                "activation": "passif",
+                "text": "Avantage aux tests de Sagesse (Perception) fondés sur l'odorat ; vous sentez les odeurs fortes jusqu'à 9 km."
+            },
+            {
+                "id": "vision_dedaleenne",
+                "name": "Vision dédaléenne",
+                "level": 1,
+                "activation": "passif",
+                "text": "Vision dans le noir sur 18 m. Avantage aux tests de caractéristique pour trouver la sortie d'un labyrinthe ; réussite automatique aux JS contre les sorts Labyrinthe et Motif hypnotique."
+            },
+            {
+                "id": "rage_maudite",
+                "name": "Rage maudite",
+                "level": 5,
+                "activation": "action Bonus",
+                "text": "Dès le niveau 5, par une action Bonus, vous devenez un taureau selon les règles du sort Métamorphose, sans concentration ; regarder trop longtemps du rouge vif la déclenche aussi. Une fois par Repos long. Taureau : CA 11, 36 PV, Vitesse 12 m, Cornes +5 (1d8+4 perforants), Charge (6 m en ligne droite : +1d6 perforants, JS de Force DD 11 ou À terre).",
+                "uses": {
+                    "count": 1,
+                    "reset": "long"
+                }
+            },
+            {
+                "id": "taureau_enrage",
+                "name": "Taureau enragé",
+                "level": 9,
+                "activation": "autre",
+                "text": "Dès le niveau 9, la Rage maudite vous change en taureau enragé : mêmes valeurs, mais CA 12, 46 PV, et Férocité implacable une fois par jour (tombé à 0 PV après 10 dégâts ou moins, il reste à 1 PV)."
+            }
+        ]
+    },
+    "satyr": {
+        "darkvision": null,
+        "traits": [
+            {
+                "id": "heritage_feerique",
+                "name": "Héritage féerique",
+                "level": 1,
+                "activation": "passif",
+                "text": "Avantage aux jets de sauvegarde contre les états Charmé et Effrayé ; aucun sort ne peut vous endormir."
+            },
+            {
+                "id": "memoire_musicale",
+                "name": "Mémoire musicale",
+                "level": 1,
+                "activation": "passif",
+                "text": "Maîtrise d'un instrument de musique au choix, et Avantage aux tests de Représentation quand vous en jouez. Vous pouvez rejouer tout morceau entendu au moins une fois."
+            },
+            {
+                "id": "musique_enchantee",
+                "name": "Musique enchantée",
+                "level": 1,
+                "activation": "passif",
+                "text": "Vous connaissez le sort mineur Illusion mineure ; puis Sommeil au niveau 3 et Suggestion au niveau 5, chacun lancé une fois sans emplacement par Repos long. Il faut jouer d'un instrument maîtrisé ; caractéristique d'incantation : Charisme."
+            }
+        ],
+        "spells": [
+            {
+                "level": 1,
+                "name": "Illusion mineure",
+                "vo": "Minor Illusion",
+                "ability": "cha",
+                "trait": "Musique enchantée",
+                "spellLevel": 0
+            },
+            {
+                "level": 3,
+                "name": "Sommeil",
+                "vo": "Sleep",
+                "ability": "cha",
+                "trait": "Musique enchantée",
+                "spellLevel": 1,
+                "free": 1
+            },
+            {
+                "level": 5,
+                "name": "Suggestion",
+                "vo": "Suggestion",
+                "ability": "cha",
+                "trait": "Musique enchantée",
+                "spellLevel": 2,
+                "free": 1
+            }
+        ]
+    },
+    "siren": {
+        "darkvision": null,
+        "fly": {
+            "speed": 9,
+            "note": "joyeuse, sans armure intermédiaire ni lourde"
+        },
+        "traits": [
+            {
+                "id": "voix_envoutante",
+                "name": "Voix envoûtante",
+                "level": 1,
+                "activation": "passif",
+                "text": "Avantage aux tests de Représentation et de Persuasion quand vous vous servez de votre voix ; vous retenez votre souffle pendant 1 heure."
+            },
+            {
+                "id": "humeur_lunatique",
+                "name": "Humeur lunatique",
+                "level": 1,
+                "activation": "autre",
+                "text": "Après chaque Repos, court ou long, vous choisissez d'être joyeuse ou triste ; ce choix tient jusqu'au repos suivant, même si votre humeur change entre-temps."
+            },
+            {
+                "id": "vol",
+                "name": "Vol",
+                "level": 1,
+                "activation": "passif",
+                "text": "Vitesse de vol de 9 m tant que vous ne portez ni armure intermédiaire ni armure lourde (et seulement d'humeur joyeuse)."
+            },
+            {
+                "id": "chants_de_desespoir",
+                "name": "Chants de désespoir",
+                "level": 1,
+                "activation": "action",
+                "text": "D'humeur triste, vous lancez Charme-personne, puis Discours captivant (niveau 3) et Immobilisation de personne (niveau 5), chacun une fois sans emplacement, rendu après un Repos court ou long. Les cibles doivent vous entendre chanter ; caractéristique d'incantation : Charisme."
+            }
+        ],
+        "option": {
+            "key": "siren_mood",
+            "label": "Humeur lunatique",
+            "perUse": true,
+            "choices": [
+                {
+                    "id": "joyeuse",
+                    "name": "Joyeuse",
+                    "text": "Vous pouvez voler, mais pas entonner de Chants de désespoir."
+                },
+                {
+                    "id": "triste",
+                    "name": "Triste",
+                    "text": "Vous ne pouvez pas voler, mais vous avez accès aux Chants de désespoir."
+                }
+            ]
+        },
+        "spells": [
+            {
+                "level": 1,
+                "name": "Charme-personne",
+                "vo": "Charm Person",
+                "ability": "cha",
+                "trait": "Chants de désespoir",
+                "spellLevel": 1,
+                "free": 1,
+                "reset": "short"
+            },
+            {
+                "level": 3,
+                "name": "Discours captivant",
+                "vo": "Enthrall",
+                "ability": "cha",
+                "trait": "Chants de désespoir",
+                "spellLevel": 2,
+                "free": 1,
+                "reset": "short"
+            },
+            {
+                "level": 5,
+                "name": "Immobilisation de personne",
+                "vo": "Hold Person",
+                "ability": "cha",
+                "trait": "Chants de désespoir",
+                "spellLevel": 2,
+                "free": 1,
+                "reset": "short"
+            }
+        ]
+    },
+    "thylean_nymph": {
+        "darkvision": null,
+        "traits": [
+            {
+                "id": "beaute_ensorcelante",
+                "name": "Beauté ensorcelante",
+                "level": 1,
+                "activation": "passif",
+                "text": "Avantage aux tests de Persuasion. Vous lancez Charme-personne une fois sans emplacement, rendu après un Repos court ou long ; caractéristique d'incantation : Charisme."
+            },
+            {
+                "id": "heritage",
+                "name": "Héritage",
+                "level": 1,
+                "activation": "passif",
+                "text": "À la création, choisissez votre nymphe : dryade, naïade, néréide, oréade ou ouranie. Chacune a son bienfait et deux sorts (niveaux 3 et 7), lancés une fois sans emplacement, rendus après un Repos court ou long ; caractéristique d'incantation : Charisme."
+            }
+        ],
+        "option": {
+            "key": "nymph_heritage",
+            "label": "Héritage",
+            "choices": [
+                {
+                    "id": "dryade",
+                    "name": "Dryade",
+                    "text": "Vous parlez le langage des animaux et des plantes ; Avantage aux tests de Sagesse (Survie) en forêt. Baies nourricières (niv. 3), Peau d'écorce (niv. 7).",
+                    "spells": [
+                        { "level": 3, "name": "Baies nourricières", "vo": "Goodberry", "spellLevel": 1, "free": 1, "reset": "short", "ability": "cha" },
+                        { "level": 7, "name": "Peau d'écorce", "vo": "Barkskin", "spellLevel": 2, "free": 1, "reset": "short", "ability": "cha" }
+                    ]
+                },
+                {
+                    "id": "naiade",
+                    "name": "Naïade",
+                    "text": "Vous retenez votre souffle pendant 1 heure ; Vitesse de nage de 9 m. Création ou destruction d'eau (niv. 3), Contrôle de l'eau (niv. 7).",
+                    "swim": 9,
+                    "spells": [
+                        { "level": 3, "name": "Création ou destruction d'eau", "vo": "Create or Destroy Water", "spellLevel": 1, "free": 1, "reset": "short", "ability": "cha" },
+                        { "level": 7, "name": "Contrôle de l'eau", "vo": "Control Water", "spellLevel": 4, "free": 1, "reset": "short", "ability": "cha" }
+                    ]
+                },
+                {
+                    "id": "nereide",
+                    "name": "Néréide",
+                    "text": "Vous respirez sous l'eau ; Vitesse de nage de 9 m. Nappe de brouillard (niv. 3), Marche sur l'eau (niv. 7).",
+                    "swim": 9,
+                    "spells": [
+                        { "level": 3, "name": "Nappe de brouillard", "vo": "Fog Cloud", "spellLevel": 1, "free": 1, "reset": "short", "ability": "cha" },
+                        { "level": 7, "name": "Marche sur l'eau", "vo": "Water Walk", "spellLevel": 3, "free": 1, "reset": "short", "ability": "cha" }
+                    ]
+                },
+                {
+                    "id": "oreade",
+                    "name": "Oréade",
+                    "text": "Vision dans le noir sur 18 m ; Avantage aux tests de Sagesse (Survie) en voyage dans les steppes, les îles rocheuses et les montagnes. Marque du chasseur (niv. 3), Foulée brumeuse (niv. 7).",
+                    "darkvision": 18,
+                    "spells": [
+                        { "level": 3, "name": "Marque du chasseur", "vo": "Hunter's Mark", "spellLevel": 1, "free": 1, "reset": "short", "ability": "cha" },
+                        { "level": 7, "name": "Foulée brumeuse", "vo": "Misty Step", "spellLevel": 2, "free": 1, "reset": "short", "ability": "cha" }
+                    ]
+                },
+                {
+                    "id": "ouranie",
+                    "name": "Ouranie",
+                    "text": "Vision dans le noir sur 18 m ; Avantage aux tests de Sagesse (Survie) pour naviguer en s'aidant des étoiles. Lueurs féeriques (niv. 3), Lévitation (niv. 7).",
+                    "darkvision": 18,
+                    "spells": [
+                        { "level": 3, "name": "Lueurs féeriques", "vo": "Faerie Fire", "spellLevel": 1, "free": 1, "reset": "short", "ability": "cha" },
+                        { "level": 7, "name": "Lévitation", "vo": "Levitate", "spellLevel": 2, "free": 1, "reset": "short", "ability": "cha" }
+                    ]
+                }
+            ]
+        },
+        "spells": [
+            {
+                "level": 1,
+                "name": "Charme-personne",
+                "vo": "Charm Person",
+                "ability": "cha",
+                "trait": "Beauté ensorcelante",
+                "spellLevel": 1,
+                "free": 1,
+                "reset": "short"
             }
         ]
     }

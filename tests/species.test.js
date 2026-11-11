@@ -1,13 +1,15 @@
 /**
  * TESTS — ESPÈCES (4.36.0) : option de l'espèce (lignage, ascendance…), Vision dans le noir,
  * Résistances, Souffle, sorts d'espèce, cases des traits à usages limités et repos.
+ * Espèces de L'Odyssée des Seigneurs Dragons : Centaure, Méduse, Minotaure, Satyre, Sirène, Nymphe.
  */
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { deriveCharacter } from '../js/rules/character.js';
 import {
-    speciesView, speciesNotes, speciesCounterDefs, speciesSpellNames, setSpeciesChoicePatch, breathDice, SPECIES_CHOICES_KEY
+    speciesView, speciesNotes, speciesCounterDefs, speciesSpellNames, setSpeciesChoicePatch, breathDice, petrifyingGazeDc,
+    SPECIES_CHOICES_KEY
 } from '../js/rules/species.js';
 import { SPECIES_TRAITS } from '../js/data/species-traits.js';
 import { DD_RULES } from '../js/data/dd-rules.js';
@@ -34,6 +36,9 @@ describe('Données des espèces', () => {
         assert.ok(spells.length >= 20);
         for (const spell of spells) {
             assert.ok(byVo.has(spell.vo), `${spell.vo} absent de data/spells.json`);
+            assert.equal(byVo.get(spell.vo).level, spell.spellLevel, `niveau de ${spell.vo}`);
+            assert.ok(String(byVo.get(spell.vo).name).split('|').includes(spell.name), `nom français de ${spell.vo}`);
+            if (spell.reset !== undefined) assert.ok(['short', 'long'].includes(spell.reset), spell.vo);
         }
     });
 
@@ -48,12 +53,9 @@ describe('Données des espèces', () => {
 });
 
 describe('Vue de l\'espèce', () => {
-    test('Sans espèce reconnue : null ; espèce de l\'Odyssée : sans données', () => {
+    test('Sans espèce reconnue : null', () => {
         assert.equal(view({ char_species: '' }), null);
         assert.equal(view({ char_species: 'Inconnue' }), null);
-        const centaur = view({ char_species: 'Centaure', char_level: '3' });
-        assert.equal(centaur.known, false);
-        assert.deepEqual(centaur.traits, []);
     });
 
     test('Drow : Vision dans le noir de 36 m ; sorts selon le niveau ; DD avec la caractéristique choisie', () => {
@@ -187,5 +189,109 @@ describe('Relecture 4.36.0', () => {
         const [note] = speciesNotes(deriveCharacter(record), record).armorClass;
         assert.equal(note.applied, undefined);
         assert.equal(note.species, true);
+    });
+});
+
+describe('Espèces de L\'Odyssée des Seigneurs Dragons', () => {
+    test('Toutes les espèces de la liste ont leurs traits (plus de renvoi au livre)', () => {
+        for (const slug of Object.keys(DD_RULES.species)) assert.ok(SPECIES_TRAITS[slug]?.traits.length > 0, slug);
+        for (const name of ['Centaure', 'Méduse', 'Minotaure', 'Satyre', 'Sirène', 'Nymphe']) {
+            assert.equal(view({ char_species: name, char_level: '1' }).known, true, name);
+        }
+    });
+
+    test('Vitesses du guide : Centaure et Minotaure 12 m, les autres 9 m', () => {
+        const meters = (slug) => DD_RULES.species[slug].speed / 10 * 3;
+        assert.deepEqual(['centaur', 'minotaur', 'medusa', 'satyr', 'siren', 'thylean_nymph'].map(meters), [12, 12, 9, 9, 9, 9]);
+    });
+
+    test('Centaure : trois traits, sans Vision dans le noir ni case à cocher', () => {
+        const record = { char_species: 'Centaure', char_level: '3' };
+        const centaur = view(record);
+        assert.deepEqual(centaur.traits.map((t) => t.name), ['Charge', 'Monture', 'Quadrupède']);
+        assert.equal(centaur.darkvision, null);
+        assert.deepEqual(speciesCounterDefs(record, deriveCharacter(record)), []);
+    });
+
+    test('Méduse : Regard pétrifiant DD 8, 10, 12 puis 14 selon le niveau', () => {
+        assert.deepEqual([1, 5, 9, 10, 14, 15, 19, 20].map(petrifyingGazeDc), [8, 8, 8, 10, 10, 12, 12, 14]);
+    });
+
+    test('Méduse : Vision dans le noir 18 m ; Chevelure serpentine avec maîtrise + Dextérité ; Regard au niveau 5', () => {
+        const low = view({ char_species: 'Méduse', char_level: '4', dex_score: '16' });
+        assert.equal(low.darkvision, 18);
+        assert.deepEqual(low.stats, ['Chevelure serpentine +5, 1d6 perforants, JS Con DD 12']);
+        assert.deepEqual(low.upcoming.map((t) => t.id), ['regard_petrifiant']);
+        const high = view({ char_species: 'Méduse', char_level: '10', dex_score: '14' });
+        assert.deepEqual(high.stats, ['Chevelure serpentine +6, 1d6 perforants, JS Con DD 12', 'Regard pétrifiant : JS Con DD 10']);
+    });
+
+    test('Minotaure : Vision dans le noir 18 m ; Rage maudite une fois par repos long dès le niveau 5', () => {
+        const record = { char_species: 'Minotaure', char_level: '5' };
+        assert.equal(view(record).darkvision, 18);
+        assert.deepEqual(speciesCounterDefs(record, deriveCharacter(record)).map((d) => [d.key, d.max, d.reset]),
+            [['species.rage_maudite', 1, 'long']]);
+        assert.deepEqual(view(record).upcoming.map((t) => t.id), ['taureau_enrage']);
+        const low = { char_species: 'Minotaure', char_level: '4' };
+        assert.deepEqual(speciesCounterDefs(low, deriveCharacter(low)), []);
+    });
+
+    test('Satyre : sorts au Charisme ; Sommeil (niv. 3) et Suggestion (niv. 5) une fois par repos long', () => {
+        const record = { char_species: 'Satyre', char_level: '3', cha_score: '16' };
+        const satyr = view(record);
+        assert.deepEqual(satyr.spells.map((s) => [s.name, s.reached, s.dc]),
+            [['Illusion mineure', true, 13], ['Sommeil', true, 13], ['Suggestion', false, 13]]);
+        assert.deepEqual(speciesCounterDefs(record, deriveCharacter(record)).map((d) => [d.key, d.reset]),
+            [['species.sort_sleep', 'long']]);
+    });
+
+    test('Sirène : vol 9 m sous condition ; humeur choisie à chaque repos (non mémorisée)', () => {
+        const siren = view({ char_species: 'Sirène', char_level: '1' });
+        assert.equal(siren.fly.speed, 9);
+        assert.equal(siren.option.perUse, true);
+        assert.deepEqual(siren.option.choices.map((c) => c.id), ['joyeuse', 'triste']);
+        assert.equal(siren.option.selected, null);
+    });
+
+    test('Sirène : Chants de désespoir rendus au repos court ; le repos court vide leurs cases', () => {
+        const record = {
+            char_species: 'Sirène', char_level: '5', cha_score: '14',
+            subclass_uses: { 'species.sort_charm_person': 1, 'species.sort_hold_person': 1 }
+        };
+        const derived = deriveCharacter(record);
+        const defs = speciesCounterDefs(record, derived);
+        assert.deepEqual(defs.map((d) => [d.key, d.reset]),
+            [['species.sort_charm_person', 'short'], ['species.sort_enthrall', 'short'], ['species.sort_hold_person', 'short']]);
+        assert.deepEqual(restSubclassUses(record, derived, 'short').patch.subclass_uses,
+            { 'species.sort_charm_person': 0, 'species.sort_hold_person': 0 });
+        assert.match(defs[0].use, /Chants de désespoir/);
+        assert.match(defs[0].use, /DD 13/);
+    });
+
+    test('Nymphe : Héritage à choisir ; Charme-personne au Charisme dès le niveau 1', () => {
+        const nymph = view({ char_species: 'Nymphe', char_level: '1', cha_score: '16' });
+        assert.equal(nymph.option.label, 'Héritage');
+        assert.equal(nymph.option.abilities, null);
+        assert.equal(nymph.option.selected, null);
+        assert.deepEqual(nymph.spells.map((s) => [s.name, s.ability, s.dc, s.reset]), [['Charme-personne', 'cha', 13, 'short']]);
+    });
+
+    test('Nymphe : nage des naïades, vision des oréades, sorts de l\'héritage aux niveaux 3 et 7', () => {
+        const naiad = view({ char_species: 'Nymphe', char_level: '3', species_choices: { option: 'naiade' } });
+        assert.equal(naiad.swim, 9);
+        assert.equal(naiad.darkvision, null);
+        assert.deepEqual(naiad.spells.map((s) => [s.name, s.reached, s.ability]),
+            [['Charme-personne', true, 'cha'], ['Création ou destruction d\'eau', true, 'cha'], ['Contrôle de l\'eau', false, 'cha']]);
+        const record = { char_species: 'Nymphe', char_level: '7', species_choices: { option: 'oreade' } };
+        assert.equal(view(record).darkvision, 18);
+        assert.deepEqual(speciesCounterDefs(record, deriveCharacter(record)).map((d) => [d.key, d.reset]),
+            [['species.sort_charm_person', 'short'], ['species.sort_hunter_s_mark', 'short'], ['species.sort_misty_step', 'short']]);
+        assert.deepEqual(setSpeciesChoicePatch(record, 'option', 'ouranie'), { [SPECIES_CHOICES_KEY]: { option: 'ouranie' } });
+        assert.deepEqual(setSpeciesChoicePatch(record, 'ability', 'int'), {});
+    });
+
+    test('Sorts d\'espèce du Manuel : toujours rendus au repos long', () => {
+        const record = { char_species: 'Elfe', char_level: '3', species_choices: { option: 'drow', ability: 'cha' } };
+        assert.deepEqual(speciesCounterDefs(record, deriveCharacter(record)).map((d) => d.reset), ['long']);
     });
 });
