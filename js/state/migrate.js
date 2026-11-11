@@ -292,12 +292,13 @@ export function migrateCharacter(input) {
     }
 
     // 6. Ancien champ des maîtrises d'armes
-    // Le bloc « Armes » a été retiré de la fiche en février 2026 (redondant avec le tableau des
-    // armes) : le texte reste dans la sauvegarde sans être affiché, et le rapport le dit.
+    // Le bloc « Armes » avait été retiré de la fiche en février 2026 ; il est de nouveau affiché
+    // (case « Maîtrises d'armes », onglet Compétences & Histoire, décision du 11/11/2026). L'ancienne
+    // clé profs_other reste dans la sauvegarde, intacte (jamais supprimée).
     if (raw.profs_other && !raw.profs_weapons) {
         character.profs_weapons = textField(raw.profs_other);
-        report.push('Ancien champ « Armes » (profs_other) gardé dans la sauvegarde sous profs_weapons, '
-            + 'mais plus affiché sur la fiche.');
+        report.push('Ancien champ « Armes » (profs_other) repris dans la case « Maîtrises d\'armes » '
+            + '(onglet Compétences & Histoire).');
     }
 
     // 7. Épuisement : nombre entre 0 et 6

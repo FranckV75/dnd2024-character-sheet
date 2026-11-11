@@ -109,9 +109,20 @@ describe('Migration d\'une ancienne sauvegarde (format v1)', () => {
     test('Le rapport décrit les conversions', () => {
         assert.ok(report.some(line => line.includes('Dé de vie')));
         assert.ok(report.some(line => line.includes('Épée longue')));
-        // Le bloc « Armes » n'est plus sur la fiche : le rapport ne dit pas qu'il est « repris »
-        assert.ok(report.some(line => line.includes('« Armes »') && line.includes('plus affiché')));
-        assert.ok(!report.some(line => /reprises?/.test(line) && line.includes('profs_other')));
+        // Le bloc « Armes » est de nouveau affiché (case « Maîtrises d'armes ») : le rapport le dit
+        const weapons = report.filter(line => line.includes('profs_other'));
+        assert.equal(weapons.length, 1);
+        assert.match(weapons[0], /« Armes ».*repris dans la case « Maîtrises d'armes »/);
+        assert.ok(!weapons[0].includes('plus affiché'));
+    });
+
+    test('Ancien champ « Armes » : la clé profs_other reste dans la sauvegarde', () => {
+        assert.equal(c.profs_other, 'Armes courantes et de guerre');
+        // Une fiche qui a déjà profs_weapons garde son texte (profs_other n'écrase rien) et rien n'est signalé
+        const both = migrateCharacter({ char_name: 'X', profs_other: 'Ancien', profs_weapons: 'Récent' });
+        assert.equal(both.character.profs_weapons, 'Récent');
+        assert.equal(both.character.profs_other, 'Ancien');
+        assert.ok(!both.report.some(line => line.includes('profs_other')));
     });
 
     test('Migration idempotente : migrer deux fois ne change plus rien', () => {
@@ -371,6 +382,11 @@ describe('Vraies sauvegardes locales', { skip: localFiles.length === 0 && 'aucun
             for (const [key, value] of Object.entries(raw)) {
                 if (!normalized.has(key)) assert.deepEqual(character[key], value, key);
             }
+
+            // Case « Maîtrises d'armes » (de nouveau affichée) : texte d'origine intact, ou repris de
+            // l'ancien champ « Armes » (profs_other)
+            if (typeof raw.profs_weapons === 'string') assert.equal(character.profs_weapons, raw.profs_weapons, 'profs_weapons');
+            else if (typeof raw.profs_other === 'string') assert.equal(character.profs_weapons, raw.profs_other, 'profs_other repris');
 
             // Chaque ligne des tableaux garde ses champs d'origine (les champs vides peuvent
             // être complétés depuis le manuel ; cases et niveaux de sorts sont normalisés à part)
