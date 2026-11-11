@@ -36,7 +36,8 @@ function callArguments(source, open) {
 
 test('Aucun élément absent (null) passé tel quel au DOM dans js/ui/', () => {
     const offenders = [];
-    for (const file of readdirSync(UI_DIR).filter(name => name.endsWith('.js'))) {
+    // Sous-dossiers compris (js/ui/spells/)
+    for (const file of readdirSync(UI_DIR, { recursive: true }).filter(name => name.endsWith('.js'))) {
         const source = readFileSync(join(UI_DIR, file), 'utf8');
         for (const match of source.matchAll(METHODS)) {
             const open = match.index + match[0].length - 1;

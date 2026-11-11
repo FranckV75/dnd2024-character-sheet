@@ -30,23 +30,25 @@
 //    Le choix ouvert / replié est mémorisé dans ce navigateur, hors de la fiche. Pour un
 //    personnage sans magie de classe, les cases d'incantation passent après le grimoire.
 // Les règles (recherche, conversion, compteurs, emplacements) sont dans js/rules/spells.js.
+//
+// Fichiers du grimoire (js/ui/spells/) : barre de filtres (filters.js), emplacements de sorts
+// (slots.js), sorts de dons, de sous-classe et d'espèce (granted.js), infobulle (tooltip.js),
+// réglages de l'appareil (prefs.js). Ici : le tableau des sorts, le grimoire replié et l'assemblage.
 // =============================================================================
 
 import { EMPTY_SPELL } from '../state/schema.js';
 import { derivedOf } from './derived.js';
 import {
-    SPELL_CLASS_OPTIONS, SPELL_LEVELS, plainText, cellText, descToPlainText, spellDisplayName,
-    spellLevelLabel, effectiveSpellClass, searchSpells, findSpellByName, spellToRow, rowLevel,
+    plainText, cellText, spellDisplayName, effectiveSpellClass, searchSpells, findSpellByName, spellToRow, rowLevel,
     isSpellRowEmpty, hasSpellContent, spellRowsView, nextSort, spellCounts,
-    formatSpellCount, spellLimitWarnings, cantripLimitNote, spellNameKey, newSpellRow, slotView, toggleSlotUsed, adjustSlotMax, slotLevels,
-    nextFreeSlotLevel, spellcastingStatus, grimoireView, spellDamageTypes
+    formatSpellCount, spellLimitWarnings, cantripLimitNote, spellNameKey, newSpellRow,
+    spellcastingStatus, grimoireView, SPELL_LEVELS
 } from '../rules/spells.js';
 import { adeptElements, elementWord } from '../rules/feat-choices.js';
-import { featSpellGroups, setFeatSpellUsePatch } from '../rules/feat-spells.js';
-import { subclassSpells, subclassFeatures, markListedSpells } from '../rules/subclass-features.js';
-import { speciesView, speciesSpellNames, speciesCounterDefs } from '../rules/species.js';
-import { subclassUsesState, setSubclassUsesPatch } from '../rules/subclass-uses.js';
-import { FEAT_SLOT_ORDER, HUMAN_FEAT_SLOT } from '../state/schema.js';
+import { featSpellGroups } from '../rules/feat-spells.js';
+import { subclassSpells } from '../rules/subclass-features.js';
+import { speciesSpellNames } from '../rules/species.js';
+import { FEAT_SLOT_ORDER } from '../state/schema.js';
 import { ABILITY_IDS } from '../data/constants.js';
 import { loadSpells } from '../data/spells.js';
 import { classSpellCounts, classAlwaysPreparedSpells } from '../rules/class-progression.js';
@@ -56,26 +58,17 @@ import { attachAutocomplete } from './autocomplete.js';
 import { confirmModal } from './modal.js';
 import { isLocked } from './lock.js';
 import { motionOff } from './motion-pref.js';
-import { foldButton, bindFolding, applyFolds } from './fold.js';
+import { readGrimoireOpen, saveGrimoireOpen } from './spells/prefs.js';
+import { createSpellTooltip, adeptTypes, adeptRule } from './spells/tooltip.js';
+import { createSpellFilters } from './spells/filters.js';
+import { createSpellSlots, slotStateOf } from './spells/slots.js';
+import { createGrantedSpells } from './spells/granted.js';
 
-const TOOLTIP_STORAGE_KEY = 'dd2024_spell_tooltips';
-/** Grimoire ouvert à la demande (personnage sans magie) : réglage du navigateur, pas de la fiche */
-const GRIMOIRE_STORAGE_KEY = 'dd2024_grimoire_open';
 // Dons et leurs choix : repère « Adepte » (Adepte élémentaire) sur les sorts du type choisi
 // Sorts de dons : leurs choix, leurs lancers gratuits (feat_uses) et la caractéristique du DD
 const RELEVANT_KEYS = new Set(['dynamic_spells', 'spell_slots_state', 'spell_class_filter', 'char_class', 'char_subclass', 'char_level',
     'feat_choices', 'feat_uses', 'char_species', 'subclass_choices', 'species_choices', 'subclass_uses', ...FEAT_SLOT_ORDER.map(level => `feat_${level}`), ...ABILITY_IDS.map(id => `${id}_score`)]);
 
-/** « Adepte (feu) » : types d'Adepte élémentaire infligés par ce sort */
-function adeptTypes(spell, elements) {
-    return spell && elements.length ? spellDamageTypes(spell).filter(type => elements.includes(type)) : [];
-}
-
-/** Règle d'Adepte élémentaire pour ces types (infobulle et repère) */
-function adeptRule(types) {
-    const words = types.map(elementWord).join(', ');
-    return `Adepte élémentaire (${words}) : quand ce sort inflige des dégâts de ce type, il ignore la Résistance à ces dégâts et un 1 sur un dé de dégâts compte comme un 2.`;
-}
 const SORT_COLUMNS = {
     lvl: { label: 'Niv.', title: 'niveau' },
     name: { label: 'Nom', title: 'nom' },
@@ -91,38 +84,6 @@ const FLAG_COLUMNS = [
     ['r', 'R', 'Rituel'],
     ['m', 'M', 'Composante matérielle']
 ];
-
-function readTooltipSetting() {
-    try {
-        return localStorage.getItem(TOOLTIP_STORAGE_KEY) !== 'false';
-    } catch {
-        return true;
-    }
-}
-
-function saveTooltipSetting(enabled) {
-    try {
-        localStorage.setItem(TOOLTIP_STORAGE_KEY, String(enabled));
-    } catch {
-        // Stockage indisponible : le réglage ne sera pas mémorisé
-    }
-}
-
-function readGrimoireOpen() {
-    try {
-        return localStorage.getItem(GRIMOIRE_STORAGE_KEY) === 'true';
-    } catch {
-        return false;
-    }
-}
-
-function saveGrimoireOpen(open) {
-    try {
-        localStorage.setItem(GRIMOIRE_STORAGE_KEY, String(open));
-    } catch {
-        // Stockage indisponible : le choix ne sera pas mémorisé
-    }
-}
 
 /** Bref éclat doré (ligne de saisie appelée, grimoire ouvert) ; rien si les animations sont limitées */
 function flash(node, className) {
@@ -142,7 +103,6 @@ export function initSpells(ctx) {
     if (!container) return;
 
     const view = { level: '', sort: { col: null, dir: 'asc' } };
-    let tooltipsOn = readTooltipSetting();
     let grimoireOpen = readGrimoireOpen();
     let spellsDb = [];
     // Un élément par ligne de dynamic_spells (même indice), plus la ligne de saisie, toujours
@@ -155,6 +115,8 @@ export function initSpells(ctx) {
     // Sort créé depuis la ligne de saisie, tant que le focus ne l'a pas quittée :
     // { index, json } (json : sa dernière version écrite ici, voir settleDraft)
     let draft = null;
+    // Infobulle des sorts (spells/tooltip.js), partagée par le tableau et les sorts donnés
+    const tooltip = createSpellTooltip({ store });
 
     const spellsOf = () => {
         const list = store.get().dynamic_spells;
@@ -209,141 +171,24 @@ export function initSpells(ctx) {
     }
 
     // -----------------------------------------------------------------------
-    // Barre de filtres
+    // Barre de filtres (spells/filters.js)
     // -----------------------------------------------------------------------
 
-    const levelChips = ['', ...SPELL_LEVELS].map(level => el('button', {
-        type: 'button', class: 'btn-chip', 'data-level': level, 'aria-pressed': 'false',
-        'aria-label': level === '' ? 'Tous les niveaux' : level === '0' ? 'Sorts mineurs (niveau 0)' : `Niveau ${level}`,
-        text: level === '' ? 'Tous' : level,
-        on: {
-            click: () => {
-                view.level = level;
-                entryLevel = null; // la ligne de saisie reprend le niveau du filtre
-                hideTooltip();
-                render(store.get(), null, { structural: true });
-            }
+    const filters = createSpellFilters({
+        store, view, tooltip,
+        onLevel: () => {
+            entryLevel = null; // la ligne de saisie reprend le niveau du filtre
+            tooltip.hide();
+            render(store.get(), null, { structural: true });
         }
-    }));
-
-    const classSelect = el('select', {
-        id: 'spell-class-filter', class: 'input spell-class-select',
-        title: 'Liste de sorts proposée par l\'auto-complétion du nom',
-        on: { change: () => store.update({ spell_class_filter: classSelect.value }) }
     });
+    const { countOut } = filters;
 
-    const tooltipBtn = el('button', {
-        type: 'button', class: 'btn-icon spell-tooltip-toggle', 'aria-pressed': String(tooltipsOn),
-        'aria-label': 'Infobulles des sorts',
-        title: 'Afficher la description d\'un sort au survol ou au focus de son nom',
-        on: {
-            click: () => {
-                tooltipsOn = !tooltipsOn;
-                saveTooltipSetting(tooltipsOn);
-                tooltipBtn.setAttribute('aria-pressed', String(tooltipsOn));
-                if (!tooltipsOn) hideTooltip();
-            }
-        }
-    }, icon('chat'));
-
-    const countOut = el('output', { class: 'spell-count', 'aria-live': 'polite' });
     // Dépassement de la table de la classe (sorts préparés, sorts mineurs) : dit en toutes lettres
     const limitNote = el('p', { class: 'spell-limit-note', role: 'status', hidden: true });
 
-    const toolbar = el('div', { class: 'spells-toolbar' },
-        el('div', { class: 'spell-level-chips btn-segments', role: 'group', 'aria-label': 'Filtrer les sorts par niveau' }, levelChips),
-        el('div', { class: 'spell-class-filter' },
-            el('label', { for: 'spell-class-filter', text: 'Liste de sorts' }),
-            classSelect),
-        tooltipBtn,
-        countOut);
-
-    // -----------------------------------------------------------------------
-    // Emplacements de sorts
-    // -----------------------------------------------------------------------
-
-    const slotsBox = el('div', { class: 'spell-slots', role: 'group', 'aria-label': 'Emplacements de sorts' });
-    let slotsSignature = null;
-
-    const rulebookSlots = (level) => derivedOf(store.get()).spellSlots[level] ?? 0;
-
-    function slotState(character = store.get()) {
-        const state = character.spell_slots_state;
-        return state && typeof state === 'object' && !Array.isArray(state) ? state : {};
-    }
-
-    function buildSlotGroup(info, state) {
-        const { max, used } = slotView(state, info.level, info.rulebook);
-        const boxes = Array.from({ length: max }, (_, i) => el('input', {
-            type: 'checkbox', class: 'round-check',
-            'aria-label': `Emplacement de niveau ${info.level} n° ${i + 1} utilisé`,
-            checked: i < used,
-            on: {
-                change: (event) => store.update({
-                    spell_slots_state: toggleSlotUsed(slotState(), info.level, i, event.target.checked, rulebookSlots(info.level))
-                })
-            }
-        }));
-        const adjust = (delta) => store.update({
-            spell_slots_state: adjustSlotMax(slotState(), info.level, delta, rulebookSlots(info.level))
-        });
-        return el('div', { class: 'slot-group', 'data-level': info.level, 'data-pact': info.pact ? 'true' : null },
-            el('span', { class: 'label', text: info.label }),
-            el('span', { class: 'slot-boxes' }, boxes,
-                max === 0 ? el('span', { class: 'slot-none', text: 'aucun' }) : null),
-            el('button', {
-                type: 'button', class: 'btn-icon edit-only',
-                'aria-label': `Retirer un emplacement de niveau ${info.level}`, disabled: max === 0,
-                on: { click: () => adjust(-1) }
-            }, icon('minus')),
-            el('button', {
-                type: 'button', class: 'btn-icon edit-only',
-                'aria-label': `Ajouter un emplacement de niveau ${info.level}`,
-                on: { click: () => adjust(1) }
-            }, icon('plus')));
-    }
-
-    function renderSlots(character, d) {
-        const state = slotState(character);
-        const levels = slotLevels(d.spellSlots, d.classSlug, state);
-        const views = levels.map(info => ({ info, ...slotView(state, info.level, info.rulebook) }));
-        const signature = views.map(v => `${v.info.level}:${v.max}:${v.info.label}`).join('|');
-
-        if (signature !== slotsSignature) {
-            // Nombre d'emplacements changé : reconstruction, en gardant le focus sur le même bouton
-            const focusedLabel = slotsBox.contains(document.activeElement) ? document.activeElement.getAttribute('aria-label') : null;
-            slotsSignature = signature;
-            // Ajout manuel d'un niveau au-dessus de ceux du manuel (comme le « + » de la v3) : Arcanum
-            // mystique de l'Occultiste, multiclasse...
-            const free = nextFreeSlotLevel(levels);
-            slotsBox.replaceChildren(...[
-                ...levels.map(info => buildSlotGroup(info, state)),
-                levels.length === 0
-                    ? el('p', { class: 'slots-empty', text: 'Aucun emplacement de sorts pour cette classe à ce niveau.' })
-                    : null,
-                free ? el('button', {
-                    type: 'button', class: 'btn-chip edit-only slot-add-level',
-                    'aria-label': `Ajouter le suivi des emplacements de niveau ${free}`,
-                    on: {
-                        click: () => store.update({
-                            spell_slots_state: adjustSlotMax(slotState(), free, 1, rulebookSlots(free))
-                        })
-                    }
-                }, icon('plus'), el('span', { class: 'btn-label', text: `Emplacements niv. ${free}` })) : null
-            ].filter(Boolean));
-            if (focusedLabel) {
-                [...slotsBox.querySelectorAll('button')].find(b => b.getAttribute('aria-label') === focusedLabel && !b.disabled)?.focus();
-            }
-        } else {
-            for (const v of views) {
-                const group = slotsBox.querySelector(`.slot-group[data-level="${v.info.level}"]`);
-                group?.querySelectorAll('input[type="checkbox"]').forEach((box, i) => { box.checked = i < v.used; });
-            }
-        }
-        for (const group of slotsBox.querySelectorAll('.slot-group')) {
-            group.classList.toggle('is-active', group.dataset.level === view.level);
-        }
-    }
+    // Emplacements de sorts (spells/slots.js)
+    const slots = createSpellSlots({ store, view });
 
     // -----------------------------------------------------------------------
     // Tableau
@@ -357,7 +202,7 @@ export function initSpells(ctx) {
             on: {
                 click: () => {
                     view.sort = nextSort(view.sort, col);
-                    hideTooltip();
+                    tooltip.hide();
                     render(store.get(), null, { structural: true });
                 }
             }
@@ -395,7 +240,7 @@ export function initSpells(ctx) {
         type: 'button', class: 'add-row edit-only',
         on: {
             click: () => {
-                hideTooltip();
+                tooltip.hide();
                 render(store.get(), ['dynamic_spells'], { structural: true });
                 const entry = rowEls[spellsOf().length];
                 if (!entry || entry.tr.hidden) return;
@@ -429,7 +274,7 @@ export function initSpells(ctx) {
             class: `cell-input spell-${key}`, autocomplete: 'off', spellcheck: 'false',
             on: {
                 input: (event) => {
-                    if (key === 'name') hideTooltip();
+                    if (key === 'name') tooltip.hide();
                     editRow(r.index, { [key]: event.target.value });
                 }
             }
@@ -458,9 +303,9 @@ export function initSpells(ctx) {
         }, icon('trash'));
 
         r.name.addEventListener('mouseenter', () => scheduleShow(r, 'hover'));
-        r.name.addEventListener('mouseleave', scheduleHide);
+        r.name.addEventListener('mouseleave', tooltip.scheduleHide);
         r.name.addEventListener('focus', () => scheduleShow(r, 'focus'));
-        r.name.addEventListener('blur', scheduleHide);
+        r.name.addEventListener('blur', tooltip.scheduleHide);
 
         r.detach = attachAutocomplete(r.name, {
             minChars: 2,
@@ -535,7 +380,7 @@ export function initSpells(ctx) {
         }
         const list = spellsOf();
         if (list[index] !== row) return; // la fiche a changé entre-temps
-        hideTooltip();
+        tooltip.hide();
         // Rang de la ligne dans le tableau affiché : le focus ira à celle qui prend sa place
         const shownRows = () => [...tbody.children].filter(tr => !tr.hidden);
         const rank = Math.max(0, shownRows().indexOf(r.tr));
@@ -743,21 +588,9 @@ export function initSpells(ctx) {
                 ? 'Revenir à l\'ordre du grimoire'
                 : `Trier par ${SORT_COLUMNS[col].title}${active ? ' (ordre décroissant)' : ''}`;
         }
-        for (const chip of levelChips) chip.setAttribute('aria-pressed', String(chip.dataset.level === view.level));
+        filters.renderChips();
     }
 
-    function renderClassFilter(character, d) {
-        const value = String(character.spell_class_filter || '');
-        const own = SPELL_CLASS_OPTIONS.find(([slug]) => slug === effectiveSpellClass('', d.classSlug, d.subclass));
-        const firstLabel = own ? `Classe du personnage (${own[1]})` : 'Toutes les classes';
-        if (classSelect.options.length === 0) {
-            classSelect.replaceChildren(el('option', { value: '', text: firstLabel }),
-                ...SPELL_CLASS_OPTIONS.map(([slug, label]) => el('option', { value: slug, text: label })));
-        } else if (classSelect.options[0].textContent !== firstLabel) {
-            classSelect.options[0].textContent = firstLabel;
-        }
-        classSelect.value = SPELL_CLASS_OPTIONS.some(([slug]) => slug === value) ? value : '';
-    }
 
     // -----------------------------------------------------------------------
     // Personnage sans magie : court avis, grimoire ouvert à la demande
@@ -781,7 +614,7 @@ export function initSpells(ctx) {
             click: () => {
                 grimoireOpen = toggleBtn.getAttribute('aria-expanded') !== 'true';
                 saveGrimoireOpen(grimoireOpen);
-                hideTooltip();
+                tooltip.hide();
                 render(store.get(), ['dynamic_spells'], { structural: true });
                 if (grimoireOpen) {
                     flash(stats, 'is-revealed');
@@ -795,7 +628,7 @@ export function initSpells(ctx) {
         const rows = Array.isArray(character.dynamic_spells) ? character.dynamic_spells : [];
         const status = spellcastingStatus({
             classSlug: d.classSlug, subclass: character.char_subclass, level: d.level,
-            spellSlots: d.spellSlots, slotState: slotState(character)
+            spellSlots: d.spellSlots, slotState: slotStateOf(character)
         });
         // Saisie en cours dans le grimoire (ligne vidée) : il ne se replie pas sous les doigts
         const active = document.activeElement;
@@ -844,370 +677,55 @@ export function initSpells(ctx) {
         focused?.focus({ preventScroll: true });
     }
 
-    // -----------------------------------------------------------------------
-    // Sorts de dons (lot 6) : reconstruits seulement si leur contenu change ; les cases
-    // « lancer gratuit » sont remises à jour sur place (le focus reste)
-    // -----------------------------------------------------------------------
-
-    // Repliable comme les sorts de sous-classe (pastille à chevron du titre, fold.js)
-    const featBox = el('section', { class: 'feat-spells', 'aria-labelledby': 'feat-spells-title', 'data-fold-key': 'feat-spells', hidden: true });
-    bindFolding(featBox);
-    let featSignature = null;
-
-    const signedText = (n) => `${n >= 0 ? '+' : ''}${n}`;
-
-    function featSpellLine(spell) {
-        const name = el('button', { type: 'button', class: 'feat-spell-name', text: spell.name });
-        const show = () => {
-            const entry = spellsDb.find(s => s.vo === spell.vo);
-            if (!tooltipsOn || !entry) return;
-            clearTimeout(hideTimer);
-            showTooltipFor(name, entry);
-        };
-        name.addEventListener('mouseenter', show);
-        name.addEventListener('focus', show);
-        name.addEventListener('click', show);
-        name.addEventListener('mouseleave', scheduleHide);
-        name.addEventListener('blur', scheduleHide);
-        const free = spell.free
-            ? el('label', { class: 'feat-spell-free' },
-                el('input', {
-                    type: 'checkbox', class: 'round-check', 'data-play': 'true', 'data-feat-spell-use': spell.free.key,
-                    checked: spell.free.used,
-                    'aria-label': `${spell.name} : lancer gratuit utilisé`,
-                    on: { change: (event) => store.update(setFeatSpellUsePatch(store.get(), spell.free.key, event.target.checked)) }
-                }),
-                el('span', { text: spell.free.text }))
-            : null;
-        const details = [spell.slotText ? `Toujours préparé ; ${spell.slotText}.` : '', spell.note].filter(Boolean).join(' ');
-        return el('li', { class: 'feat-spell' },
-            el('div', { class: 'feat-spell-head' },
-                name,
-                el('span', { class: 'feat-spell-level', text: spellLevelLabel(spell.level) }),
-                spell.ritual ? el('span', { class: 'feat-spell-tag', text: 'Rituel' }) : null,
-            spell.listed ? el('span', { class: 'feat-spell-tag', 'data-kind': 'listed', text: 'Aussi dans votre liste' }) : null),
-            free,
-            details ? el('p', { class: 'feat-spell-note', text: details }) : null);
-    }
-
-    function featGroup(group) {
-        const stats = group.dc === null
-            ? el('span', { class: 'feat-spells-stats is-missing', text: 'Caractéristique à choisir sous le don' })
-            : el('span', { class: 'feat-spells-stats', text: `${group.abilityName} · DD ${group.dc} · attaque ${signedText(group.attack)}` });
-        return el('div', { class: 'feat-spells-group', 'data-feat': group.featId },
-            el('div', { class: 'feat-spells-head' },
-                el('strong', { class: 'feat-spells-name', text: group.featName }),
-                el('span', { class: 'feat-spells-slot', text: group.level === HUMAN_FEAT_SLOT ? 'Don niv. 1 · Humain' : `Don niv. ${group.level}` }),
-                stats),
-            group.spells.length ? el('ul', { class: 'feat-spells-list' }, group.spells.map(featSpellLine)) : null,
-            ...group.extras.map(extra => el('p', { class: 'feat-spells-extra' },
-                el('strong', { text: `${extra.label} : ` }), extra.text)),
-            group.missing.length
-                ? el('p', { class: 'feat-spells-missing', text: `À choisir sous le don (onglet Aptitudes & Traits) : ${group.missing.join(', ')}.` })
-                : null,
-            ...group.warnings.map(text => el('p', { class: 'feat-spells-warning', text })));
-    }
-
-    function renderFeatSpells(character, d) {
-        const groups = featSpellGroups(character, d);
-        featBox.hidden = groups.length === 0;
-        // Les cases cochées ne reconstruisent pas le bloc : seul leur état change
-        const signature = JSON.stringify(groups.map(g => ({ ...g, spells: g.spells.map(s => ({ ...s, free: s.free?.key ?? null })) })));
-        if (signature !== featSignature) {
-            featSignature = signature;
-            featBox.replaceChildren(...(groups.length ? [
-                el('h4', { class: 'feat-spells-title', id: 'feat-spells-title' }, icon('star'), el('span', { text: 'Sorts de dons' }),
-                    foldButton('Sorts de dons')),
-                el('p', { class: 'feat-spells-intro', text: "Donnés par vos dons : toujours préparés, ils ne comptent pas dans vos sorts préparés. Pour les changer, modifiez le choix sous le don." }),
-                ...groups.map(featGroup)
-            ] : []));
-            applyFolds(featBox);
-        }
-        const used = new Map(groups.flatMap(g => g.spells.filter(s => s.free).map(s => [s.free.key, s.free.used])));
-        for (const box of featBox.querySelectorAll('input[data-feat-spell-use]')) {
-            const checked = used.get(box.dataset.featSpellUse) === true;
-            if (box.checked !== checked) box.checked = checked;
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // Sorts de sous-classe (lot 2 des sous-classes : serments du Paladin) : toujours préparés,
-    // hors du nombre de sorts préparés ; reconstruits seulement si leur contenu change
-    // -----------------------------------------------------------------------
-
-    // Repliable (pastille à chevron du titre, fold.js) : seul le titre reste, retenu sur cet appareil
-    const subclassBox = el('section', { class: 'feat-spells subclass-spells', 'aria-labelledby': 'subclass-spells-title', 'data-fold-key': 'subclass-spells', hidden: true });
-    bindFolding(subclassBox);
-    let subclassSignature = null;
-
-    function renderSubclassSpells(character, d) {
-        const { reached, upcoming, others = [] } = subclassSpells(d);
-        const name = subclassFeatures(d).subclass?.name ?? '';
-        const spells = markListedSpells(reached, character.dynamic_spells);
-        const land = d.subclass === 'circle_of_the_land';
-        // Terre choisie (lot 7) : un seul terrain affiché, les autres repliés dessous
-        const chosenLand = land && others.length > 0;
-        const otherGroups = [...new Set(others.map(spell => spell.group))];
-        const othersListed = markListedSpells(others, character.dynamic_spells);
-        // Niveaux à venir : « niveau 9 : Hâte, Protection contre l'énergie »
-        // (Cercle de la Terre : « Boule de feu (Aride) »)
-        const next = [...new Set(upcoming.map(spell => spell.classLevel))]
-            .map(level => `niveau ${level} : ${upcoming.filter(spell => spell.classLevel === level)
-                .map(spell => (spell.group ? `${spell.name} (${spell.group})` : spell.name)).join(', ')}`);
-        // Sorts rangés par terrain (Cercle de la Terre), sinon une seule liste
-        const groups = [...new Set(spells.map(spell => spell.group ?? ''))];
-        const signature = JSON.stringify([name, spells, next, othersListed]);
-        subclassBox.hidden = spells.length === 0;
-        if (signature === subclassSignature) return;
-        subclassSignature = signature;
-        const list = (items) => el('ul', { class: 'feat-spells-list' }, items.map(featSpellLine));
-        const groupBlock = (group, items) => el('div', { class: 'feat-spells-group' },
-            el('div', { class: 'feat-spells-head' }, el('strong', { class: 'feat-spells-name', text: group })),
-            list(items.filter(spell => spell.group === group)));
-        let intro;
-        if (spells.every(spell => /^Seulement en rituel/.test(spell.note ?? ''))) {
-            // Voie du Cœur sauvage : rituels seulement
-            intro = `Donnés par votre sous-classe (${name}) : lancés seulement en rituel, ils ne comptent pas dans vos sorts préparés.`;
-        } else if (spells.every(spell => /^Une fois sans emplacement/.test(spell.note ?? ''))) {
-            // Ascendance divine : sorts de l'ancêtre, lancés sans emplacement
-            intro = `Donnés par votre sous-classe (${name}) : chacun se lance une fois sans emplacement, de nouveau après un repos court ou long ; ce ne sont pas des sorts préparés.`;
-        } else {
-            intro = `Donnés par votre sous-classe (${name}) : toujours préparés, ils ne comptent ni dans vos sorts préparés ni dans vos sorts mineurs.`
-                + (land ? (chosenLand
-                    ? ' Terre choisie à votre dernier repos long : seuls ses sorts sont préparés.'
-                    : ' Seuls ceux du terrain choisi à votre dernier repos long sont préparés (choix dans l\'onglet Aptitudes & Traits).') : '');
-        }
-        subclassBox.replaceChildren(...(spells.length ? [
-            el('h4', { class: 'feat-spells-title', id: 'subclass-spells-title' }, icon('star'), el('span', { text: 'Sorts de sous-classe' }),
-                foldButton('Sorts de sous-classe')),
-            el('p', { class: 'feat-spells-intro', text: intro }),
-            ...(groups[0] ? groups.map(group => groupBlock(group, spells)) : [list(spells)]),
-            otherGroups.length ? el('details', { class: 'subclass-spells-others' },
-                el('summary', { text: `Autres terrains, pas préparés (${otherGroups.join(', ')})` }),
-                ...otherGroups.map(group => groupBlock(group, othersListed))) : null,
-            next.length ? el('p', { class: 'feat-spells-extra' }, el('strong', { text: 'À venir : ' }), `${next.join(' ; ')}.`) : null
-        ].filter(Boolean) : []));
-        applyFolds(subclassBox);
-    }
-
-    // -----------------------------------------------------------------------
-    // Sorts d'espèce (4.36.0) : Lumière de l'Aasimar, sorts des lignages elfiques, des héritages
-    // fiélons… Toujours préparés, hors du compte ; lancers gratuits cochés dans subclass_uses
-    // (mêmes cases que dans l'onglet Combat, clé « species.sort_… »)
-    // -----------------------------------------------------------------------
-
-    const speciesBox = el('section', { class: 'feat-spells species-spells', 'aria-labelledby': 'species-spells-title', 'data-fold-key': 'species-spells', hidden: true });
-    bindFolding(speciesBox);
-    let speciesSignature = null;
-
-    function speciesFreeBoxes(def, used) {
-        return el('span', { class: 'feat-spell-free species-spell-free' },
-            ...Array.from({ length: def.max }, (_, index) => el('input', {
-                type: 'checkbox', class: 'round-check', 'data-play': 'true', 'data-species-use': def.key, 'data-index': String(index),
-                checked: index < used,
-                'aria-label': `${def.label} : lancer gratuit ${def.max > 1 ? `${index + 1} ` : ''}utilisé`,
-                // Même règle que les cases de l'onglet Combat : toucher la 3e coche les 3 premières,
-                // décocher la 1re les vide toutes
-                on: { change: (event) => {
-                    store.update(setSubclassUsesPatch(store.get(), def.key, event.target.checked ? index + 1 : index, def.max));
-                } }
-            })),
-            el('span', { text: `${def.max > 1 ? `${def.max} lancers` : '1 lancer'} sans emplacement, de nouveau après un repos long` }));
-    }
-
-    function renderSpeciesSpells(character, d) {
-        const view = speciesView(character, d);
-        const spells = (view?.spells ?? []).filter(spell => spell.reached);
-        const upcoming = (view?.spells ?? []).filter(spell => !spell.reached);
-        const defs = speciesCounterDefs(character, d);
-        const signature = JSON.stringify([view?.name, spells, upcoming.map(spell => spell.name), defs.map(def => [def.key, def.max])]);
-        speciesBox.hidden = spells.length === 0;
-        if (signature !== speciesSignature) {
-            speciesSignature = signature;
-            const abilityName = { int: 'Intelligence', wis: 'Sagesse', cha: 'Charisme' };
-            const line = (spell) => {
-                const item = featSpellLine({ name: spell.name, vo: spell.vo, level: spell.spellLevel });
-                const def = defs.find(entry => entry.feature === spell.vo);
-                const stats = spell.dc === null
-                    ? el('p', { class: 'feat-spells-missing', text: 'Caractéristique à choisir dans « Espèce & historique » (onglet Aptitudes & Traits).' })
-                    : el('p', { class: 'feat-spell-note', text: `${spell.source} · ${abilityName[spell.ability]} · DD ${spell.dc} · attaque ${signedText(spell.attack)}` });
-                item.append(...[def ? speciesFreeBoxes(def, 0) : null, stats].filter(Boolean));
-                return item;
-            };
-            speciesBox.replaceChildren(...(spells.length ? [
-                el('h4', { class: 'feat-spells-title', id: 'species-spells-title' }, icon('star'), el('span', { text: "Sorts d'espèce" }),
-                    foldButton("Sorts d'espèce")),
-                el('p', { class: 'feat-spells-intro', text: `Donnés par votre espèce (${view.name}) : toujours préparés, ils ne comptent ni dans vos sorts préparés ni dans vos sorts mineurs.` }),
-                el('ul', { class: 'feat-spells-list' }, spells.map(line)),
-                upcoming.length ? el('p', { class: 'feat-spells-extra' }, el('strong', { text: 'À venir : ' }),
-                    `${upcoming.map(spell => `${spell.name} (niveau ${spell.level})`).join(', ')}.`) : null
-            ].filter(Boolean) : []));
-            applyFolds(speciesBox);
-        }
-        // Cases cochées ici ou dans l'onglet Combat : seul leur état change
-        const state = subclassUsesState(character);
-        for (const box of speciesBox.querySelectorAll('input[data-species-use]')) {
-            const def = defs.find(entry => entry.key === box.dataset.speciesUse);
-            const checked = Number(box.dataset.index) < Math.min(Number(state[box.dataset.speciesUse]) || 0, def?.max ?? 0);
-            if (box.checked !== checked) box.checked = checked;
-        }
-    }
+    // Sorts de dons, de sous-classe et d'espèce (spells/granted.js), au-dessus du tableau
+    const granted = createGrantedSpells({ store, tooltip, getSpellsDb: () => spellsDb });
 
     function render(character, changedKeys, { structural = false } = {}) {
         if (changedKeys && !changedKeys.some(key => RELEVANT_KEYS.has(key))) return;
         const d = derivedOf(character);
-        renderClassFilter(character, d);
+        filters.renderClassFilter(character, d);
         renderHeader();
         renderRows(character, changedKeys === null && !structural, structural);
-        renderSlots(character, d);
-        renderFeatSpells(character, d);
-        renderSubclassSpells(character, d);
-        renderSpeciesSpells(character, d);
+        slots.render(character, d);
+        granted.render(character, d);
         renderGrimoire(character, d);
     }
 
     // -----------------------------------------------------------------------
-    // Infobulles (survol et focus du nom ; fonctionnent aussi verrouillé)
-    // La description est affichée en texte brut (textContent), jamais en HTML.
+    // Infobulle d'une ligne du tableau (survol et focus du nom ; fonctionne aussi verrouillé)
     // -----------------------------------------------------------------------
 
-    const tooltip = el('div', { class: 'spell-tooltip', id: 'spell-tooltip', role: 'tooltip', hidden: true });
-    let hideTimer = null;
-    let tooltipOwner = null;
-    /** Le dernier toucher / clic a eu lieu dans l'infobulle */
-    let touchedTooltip = false;
-
-    function fillTooltip(spell) {
-        const components = String(spell.components || '').split(/[\s,]+/).filter(Boolean).join(', ');
-        const tags = [spell.concentration ? 'Concentration' : '', spell.ritual ? 'Rituel' : ''].filter(Boolean);
-        const meta = [
-            ['Temps d\'incantation', spell.castTime],
-            ['Portée', spell.range],
-            ['Durée', spell.duration],
-            ['Composantes', components]
-        ].filter(([, value]) => value);
-        tooltip.replaceChildren(
-            el('div', { class: 'spell-tooltip-head' },
-                el('strong', { class: 'spell-tooltip-name', text: spellDisplayName(spell) }),
-                el('span', { class: 'spell-tooltip-level', text: [spellLevelLabel(spell.level), spell.school].filter(Boolean).join(' · ') }),
-                tags.length ? el('span', { class: 'spell-tooltip-tags', text: tags.join(' · ') }) : null),
-            el('dl', { class: 'spell-tooltip-meta' }, meta.map(([label, value]) => el('div', {},
-                el('dt', { text: label }), el('dd', { text: String(value) })))),
-            el('p', { class: 'spell-tooltip-desc', text: descToPlainText(spell.desc) || 'Description non disponible.' }),
-            ...adeptLine(spell));
-    }
-
-    /** Ligne Adepte élémentaire de l'infobulle (sort du type choisi) */
-    function adeptLine(spell) {
-        const types = adeptTypes(spell, adeptElements(store.get()));
-        return types.length ? [el('p', { class: 'spell-tooltip-adept', text: adeptRule(types) })] : [];
-    }
-
-    /**
-     * Au-dessus du nom s'il y a la place, sinon en dessous ; toujours entièrement dans la partie
-     * visible de l'écran (clavier virtuel compris) : une longue description qui ne tient pas est
-     * raccourcie à la place disponible et défile à l'intérieur de l'infobulle.
-     */
-    function positionTooltip(anchor) {
-        const rect = anchor.getBoundingClientRect();
-        const margin = 8;
-        const viewportWidth = document.documentElement.clientWidth;
-        const visual = window.visualViewport;
-        const viewTop = visual ? visual.offsetTop : 0;
-        const viewBottom = viewTop + (visual ? visual.height : window.innerHeight);
-        tooltip.style.maxHeight = '';
-        const natural = tooltip.offsetHeight;
-        const above = rect.top - viewTop - 2 * margin;
-        const below = viewBottom - rect.bottom - 2 * margin;
-        const placeAbove = natural <= above || (natural > below && above > below);
-        const room = placeAbove ? above : below;
-        if (natural > room) tooltip.style.maxHeight = `${Math.max(120, Math.floor(room))}px`;
-        const height = tooltip.offsetHeight;
-        let top = placeAbove ? rect.top - height - margin : rect.bottom + margin;
-        // Jamais au-dessus du haut de l'écran visible (très petit espace disponible)
-        if (top < viewTop + margin) top = viewTop + margin;
-        const left = Math.max(margin, Math.min(rect.left, viewportWidth - tooltip.offsetWidth - margin));
-        tooltip.style.left = `${left + window.scrollX}px`;
-        tooltip.style.top = `${top + window.scrollY}px`;
-    }
-
     function showTooltip(r) {
-        if (!tooltipsOn) return;
+        if (!tooltip.enabled) return;
         const row = spellsOf()[r.index];
         const spell = row ? findSpellByName(spellsDb, row.name) : null;
         if (!spell) {
-            hideTooltip();
+            tooltip.hide();
             return;
         }
-        showTooltipFor(r.name, spell);
-    }
-
-    /** Infobulle d'un sort de la base, posée près de anchor (nom d'une ligne, sort de don) */
-    function showTooltipFor(anchor, spell) {
-        if (tooltipOwner && tooltipOwner !== anchor) tooltipOwner.removeAttribute('aria-describedby');
-        fillTooltip(spell);
-        tooltip.hidden = false;
-        positionTooltip(anchor);
-        tooltipOwner = anchor;
-        anchor.setAttribute('aria-describedby', tooltip.id);
+        tooltip.showFor(r.name, spell);
     }
 
     function scheduleShow(r, reason) {
-        clearTimeout(hideTimer);
+        tooltip.cancelHide();
         // Pendant la saisie, la liste de suggestions s'affiche sous le champ : pas d'infobulle
         if (reason === 'hover' && r.name.getAttribute('aria-expanded') === 'true') return;
         showTooltip(r);
     }
 
-    function hideTooltip() {
-        clearTimeout(hideTimer);
-        touchedTooltip = false;
-        tooltip.hidden = true;
-        if (tooltipOwner) tooltipOwner.removeAttribute('aria-describedby');
-        tooltipOwner = null;
-    }
-
-    function scheduleHide() {
-        clearTimeout(hideTimer);
-        hideTimer = setTimeout(() => {
-            // Pointeur ou doigt sur l'infobulle (lecture d'une longue description) : elle reste
-            if (tooltip.matches(':hover') || touchedTooltip) return;
-            // Le nom garde le focus : l'infobulle reste (accès au clavier)
-            if (tooltipOwner && tooltipOwner === document.activeElement) return;
-            hideTooltip();
-        }, 150);
-    }
-
-    // Toucher / clic hors du nom et de l'infobulle : elle se ferme (sur tablette, elle ne doit
-    // pas masquer les lignes du dessus ; le :hover « collant » d'iOS la garderait sinon).
-    // Dans l'infobulle (faire défiler une longue description du doigt, sélectionner du texte
-    // à la souris), elle reste ouverte.
-    document.addEventListener('pointerdown', (event) => {
-        const inside = !tooltip.hidden && tooltip.contains(event.target);
-        // Au doigt, le nom perd le focus en touchant l'infobulle : elle ne doit pas se fermer pour autant
-        touchedTooltip = inside && event.pointerType !== 'mouse';
-        if (tooltip.hidden || event.target === tooltipOwner || inside) return;
-        hideTooltip();
-    }, true);
-    tooltip.addEventListener('mouseenter', () => clearTimeout(hideTimer));
-    tooltip.addEventListener('mouseleave', scheduleHide);
-    tableScroll.addEventListener('scroll', hideTooltip, { passive: true });
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && !tooltip.hidden) hideTooltip();
-    });
-    document.body.append(tooltip);
+    tableScroll.addEventListener('scroll', tooltip.hide, { passive: true });
 
     // -----------------------------------------------------------------------
     // Assemblage, abonnements
     // -----------------------------------------------------------------------
 
     const body = el('div', { class: 'spells-body', id: 'spells-body' },
-        toolbar,
+        filters.toolbar,
         limitNote,
-        slotsBox,
-        featBox,
-        subclassBox,
-        speciesBox,
+        slots.element,
+        granted.featBox,
+        granted.subclassBox,
+        granted.speciesBox,
         tableScroll,
         emptyText,
         addBtn);
