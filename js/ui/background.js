@@ -64,7 +64,8 @@ export function initBackground({ root, store, setStatus = () => {} }) {
             container.hidden = true;
             return;
         }
-        container.replaceChildren(
+        // replaceChildren écrit « null » en texte : les éléments absents sont retirés avant
+        container.replaceChildren(...[
             el('p', { class: 'subclass-title origin-title' }, icon('scroll'),
                 el('span', { text: `Historique : ${summary.name}` }),
                 foldButton(`Historique : ${summary.name}`)),
@@ -75,7 +76,7 @@ export function initBackground({ root, store, setStatus = () => {} }) {
                     on: { click: apply }
                 }, icon('plus'), el('span', { text: 'Appliquer à la fiche' })),
                 el('small', { text: ` ${summary.applyText.join(' ; ')}.` })) : null
-        );
+        ].filter(Boolean));
         container.hidden = false;
         container.dataset.foldKey = 'origin:background';
         applyFolds(container);
