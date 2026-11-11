@@ -10,3 +10,11 @@ saves/
 tests/fixtures/local/
 .claude/worktrees/
 .claude/scheduled_tasks.lock
+# Fiches exportées par le site (js/state/persistence.js exportFileName : DD2024_<Prénom>_<jj-mm-aaaa>.json ;
+# copie de secours, js/ui/boot-notices.js : DD2024_copie_de_secours_<aaaa-mm-jj>.json), où qu'elles soient :
+# ce sont de vraies sauvegardes de joueurs, et le dépôt est public
+DD2024_*.json
+DD2024_*.json.crdownload
+# Manuels et documents PDF (droits d'auteur), où qu'ils soient
+*.pdf
+*.PDF
