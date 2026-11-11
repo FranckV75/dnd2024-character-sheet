@@ -483,13 +483,13 @@ const FEAT_RULES = {
         add('featSlot', "Visée infaillible : un jet d'attaque raté peut toucher à la place ; de nouveau possible au début de votre prochain tour. Bouton « Visée infaillible » dans le tableau des armes : allumez-le quand vous l'utilisez, éteignez-le au début de votre prochain tour.");
     },
 
-    // Faveur de récupération — « Boon of Recovery » : réserve de dix d10 (cases), Dernier rempart
+    // Faveur de récupération — « Boon of Recovery » : Regain de vitalité (dix d10, cases), Baroud d'honneur
     faveur_de_recuperation: ({ record, add }) => {
         const hpMax = parseNumber(record.hp_max, 0);
         const half = Math.floor(hpMax / 2);
-        add('featSlot', `Dernier rempart (case ci-dessous), une fois par repos long : réduit à 0 PV, vous tombez à 1 PV à la place et regagnez ${half > 0 ? `${half} PV (moitié de vos PV max)` : 'la moitié de vos PV max'}.`,
+        add('featSlot', `Baroud d'honneur (case ci-dessous), une fois par repos long : réduit à 0 PV, vous tombez à 1 PV à la place et regagnez ${half > 0 ? `${half} PV (moitié de vos PV max)` : 'la moitié de vos PV max'}.`,
             half > 0 ? { value: half } : {});
-        add('featSlot', "Réserve de dix d10 (cases ci-dessous) : action Bonus, lancez-en autant que vous voulez et regagnez le total en PV ; tous rendus au repos long.");
+        add('featSlot', "Regain de vitalité, réserve de dix d10 (cases ci-dessous) : action Bonus, lancez-en autant que vous voulez et regagnez le total en PV ; tous rendus au repos long.");
     },
 
     // Faveur de résistance aux énergies — « Boon of Energy Resistance »
@@ -502,7 +502,7 @@ const FEAT_RULES = {
         if (chosen.length === 2 && chosen[0] === chosen[1]) {
             add('featSlot', 'Deux types de dégâts différents : choisissez-en un autre.', { check: true });
         }
-        add('featSlot', `Redirection (Réaction) : quand vous subissez des dégâts d'un de ces types, une créature que vous voyez à 18 m fait un jet de sauvegarde de Dextérité DD ${dc}, sinon elle subit 2d12 ${signed(derived.mods.con)} dégâts de ce type.`,
+        add('featSlot', `Détournement d'énergie (Réaction) : quand vous subissez des dégâts d'un de ces types, une créature que vous voyez à 18 m fait un jet de sauvegarde de Dextérité DD ${dc}, sinon elle subit 2d12 ${signed(derived.mods.con)} dégâts de ce type.`,
             { value: dc });
     },
 
@@ -522,13 +522,13 @@ const FEAT_RULES = {
     faveur_de_vitesse: ({ add }) => {
         add('speed', "+9 m grâce à Faveur de vitesse. La Vitesse saisie n'est pas modifiée : ajoutez-les vous-même s'ils n'y sont pas déjà.",
             { value: 9, manual: true });
-        add('featSlot', 'Vitesse +9 m : à reporter vous-même dans la Vitesse saisie (repère à côté).', { value: 9, manual: true });
-        add('featSlot', "Action Bonus : vous vous Désengagez, ce qui met aussi fin à l'état Agrippé pour vous.");
+        add('featSlot', 'Prestesse, Vitesse +9 m : à reporter vous-même dans la Vitesse saisie (repère à côté).', { value: 9, manual: true });
+        add('featSlot', "Expert en désengagement : par une action Bonus, vous vous Désengagez, ce qui met aussi fin à l'état Agrippé pour vous.");
     },
 
     // Faveur du destin — « Boon of Fate » (case : feat-uses.js)
     faveur_du_destin: ({ add }) => {
-        add('featSlot', "Une créature à 18 m (vous compris) réussit ou rate un test d20 : lancez 2d4 et ajoutez-les ou retirez-les au résultat. Case ci-dessous : rendue au repos court ou long, ou quand vous lancez l'Initiative (décochez-la alors vous-même).");
+        add('featSlot', "Destin aiguillé : une créature à 18 m (vous compris) réussit ou rate un test d20, lancez 2d4 et ajoutez-les ou retirez-les au résultat. Case ci-dessous : rendue au repos court ou long, ou quand vous lancez l'Initiative (décochez-la alors vous-même).");
     },
 
     // ----- Lot 7 — règles vérifiées dans le PHB 2024 anglais (le +1 : js/rules/feat-choices.js) -----

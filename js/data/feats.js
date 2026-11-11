@@ -227,21 +227,21 @@ const FEATS_DATA = {
         "type": "Épique",
         "prereq": "niveau 19 ou supérieur",
         "asi": "+1 au choix (max 30)",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Adepte polyvalent</strong>. Vous maîtrisez toutes les compétences. <br><strong>Expertise</strong>. Choisissez une compétence pour laquelle vous n'avez pas Expertise. Vous gagnez Expertise pour celle-ci."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Polyvalence totale</strong>. Vous maîtrisez toutes les compétences. <br><strong>Expertise</strong>. Choisissez une compétence pour laquelle vous n'avez pas Expertise. Vous gagnez Expertise pour celle-ci."
     },
     "faveur_de_deplacement_dimensionnel": {
         "name": "Faveur de déplacement dimensionnel",
         "type": "Épique",
         "prereq": "niveau 19 ou supérieur",
         "asi": "+1 au choix (max 30)",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Pas clignotants</strong>. Immédiatement après avoir pris l'action Attaque ou l'action Magie, vous pouvez vous téléporter jusqu'à 9 mètres vers un espace inoccupé que vous pouvez voir."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Entrechats dimensionnels</strong>. Immédiatement après avoir pris l'action Attaque ou l'action Magie, vous pouvez vous téléporter jusqu'à 9 mètres vers un espace inoccupé que vous pouvez voir."
     },
     "faveur_de_l_esprit_nocturne": {
         "name": "Faveur de l'esprit nocturne",
         "type": "Épique",
         "prereq": "niveau 19 ou supérieur",
         "asi": "+1 au choix (max 30)",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Fusion avec les ombres</strong>. Lorsque vous vous trouvez dans une zone de Lumière faible ou de Ténèbres, vous pouvez vous donner l'état Invisible par une action Bonus. Cet état prend fin immédiatement après que vous avez pris une action, une action Bonus ou une Réaction. <br><strong>Forme ombreuse</strong>. Lorsque vous vous trouvez dans une zone de Lumière faible ou de Ténèbres, vous avez la Résistance à tous les dégâts, sauf psychiques et radiants."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Fusion avec l'ombre</strong>. Lorsque vous vous trouvez dans une zone de Lumière faible ou de Ténèbres, vous pouvez vous donner l'état Invisible par une action Bonus. Cet état prend fin immédiatement après que vous avez pris une action, une action Bonus ou une Réaction. <br><strong>Forme ombreuse</strong>. Lorsque vous vous trouvez dans une zone de Lumière faible ou de Ténèbres, vous avez la Résistance à tous les dégâts, sauf psychiques et radiants."
     },
     "faveur_de_memoire_magique": {
         "name": "Faveur de mémoire magique",
@@ -262,21 +262,21 @@ const FEATS_DATA = {
         "type": "Épique",
         "prereq": "niveau 19 ou supérieur",
         "asi": "+1 au choix (max 30)",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Dernier rempart</strong>. Lorsque vous devriez tomber à 0 point de vie, vous pouvez tomber à 1 point de vie à la place et regagner un nombre de points de vie égal à la moitié de vos points de vie maximum. Une fois cet avantage utilisé, vous ne pouvez plus l'utiliser avant d'avoir terminé un Repos long. <br><strong>Vitalité retrouvée</strong>. Vous disposez d'une réserve de dix d10. Par une action Bonus, vous pouvez dépenser des dés de cette réserve, les lancer et regagner un nombre de points de vie égal au total obtenu. Vous récupérez tous les dés dépensés à la fin d'un Repos long."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Baroud d'honneur</strong>. Lorsque vous devriez tomber à 0 point de vie, vous pouvez tomber à 1 point de vie à la place et regagner un nombre de points de vie égal à la moitié de vos points de vie maximum. Une fois cet avantage utilisé, vous ne pouvez plus l'utiliser avant d'avoir terminé un Repos long. <br><strong>Regain de vitalité</strong>. Vous disposez d'une réserve de dix d10. Par une action Bonus, vous pouvez dépenser des dés de cette réserve, les lancer et regagner un nombre de points de vie égal au total obtenu. Vous récupérez tous les dés dépensés à la fin d'un Repos long."
     },
     "faveur_de_resistance_aux_energies": {
         "name": "Faveur de résistance aux énergies",
         "type": "Épique",
         "prereq": "niveau 19 ou supérieur",
         "asi": "+1 au choix (max 30)",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Résistances aux énergies</strong>. Vous obtenez la Résistance aux dégâts de deux des types suivants, au choix : Acide, Froid, Feu, Foudre, Nécrotique, Poison, Psychique, Radiant ou Tonnerre. À la fin de chaque Repos long, vous pouvez modifier vos choix. <br><strong>Redirection d'énergie</strong>. Lorsque vous subissez des dégâts de l'un des types choisis pour Résistances aux énergies, vous pouvez prendre une Réaction pour diriger des dégâts du même type vers une autre créature que vous pouvez voir dans un rayon de 18 mètres et qui ne se trouve pas derrière un Abri total. Cette créature doit réussir un jet de sauvegarde de Dextérité (DD 8 plus votre modificateur de Constitution et votre bonus de maîtrise) ou subir des dégâts égaux à 2d12 plus votre modificateur de Constitution."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Résistance aux énergies</strong>. Vous obtenez la Résistance aux dégâts de deux des types suivants, au choix : Acide, Froid, Feu, Foudre, Nécrotique, Poison, Psychique, Radiant ou Tonnerre. À la fin de chaque Repos long, vous pouvez modifier vos choix. <br><strong>Détournement d'énergie</strong>. Lorsque vous subissez des dégâts de l'un des types choisis pour Résistance aux énergies, vous pouvez prendre une Réaction pour diriger des dégâts du même type vers une autre créature que vous pouvez voir dans un rayon de 18 mètres et qui ne se trouve pas derrière un Abri total. Cette créature doit réussir un jet de sauvegarde de Dextérité (DD 8 plus votre modificateur de Constitution et votre bonus de maîtrise) ou subir des dégâts égaux à 2d12 plus votre modificateur de Constitution."
     },
     "faveur_de_vigueur": {
         "name": "Faveur de vigueur",
         "type": "Épique",
         "prereq": "niveau 19 ou supérieur",
         "asi": "+1 au choix (max 30)",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Santé renforcée</strong>. Vos points de vie maximum augmentent de 40. De plus, chaque fois que vous regagnez des points de vie, vous pouvez regagner un nombre de points de vie supplémentaires égal à votre modificateur de Constitution. Une fois ces points de vie supplémentaires regagnés, vous ne pouvez plus le refaire avant le début de votre prochain tour."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Santé fortifiée</strong>. Vos points de vie maximum augmentent de 40. De plus, chaque fois que vous regagnez des points de vie, vous pouvez regagner un nombre de points de vie supplémentaires égal à votre modificateur de Constitution. Une fois ces points de vie supplémentaires regagnés, vous ne pouvez plus le refaire avant le début de votre prochain tour."
     },
     "faveur_de_vision_veritable_vision_lucide": {
         "name": "Faveur de vision lucide",
@@ -291,14 +291,14 @@ const FEATS_DATA = {
         "type": "Épique",
         "prereq": "niveau 19 ou supérieur",
         "asi": "+1 au choix (max 30)",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Artiste de l'évasion</strong>. Par une action Bonus, vous pouvez prendre l'action Désengagement, qui met également fin à l'état Agrippé vous concernant. <br><strong>Rapidité</strong>. Votre vitesse augmente de 9 mètres."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Expert en désengagement</strong>. Par une action Bonus, vous pouvez prendre l'action Désengagement, qui met également fin à l'état Agrippé vous concernant. <br><strong>Prestesse</strong>. Votre vitesse augmente de 9 mètres."
     },
     "faveur_du_destin": {
         "name": "Faveur du destin",
         "type": "Épique",
         "prereq": "niveau 19 ou supérieur",
         "asi": "+1 au choix (max 30)",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Destin amélioré</strong>. Lorsque vous-même ou une autre créature située dans un rayon de 18 mètres autour de vous réussissez ou ratez un Test d20, vous pouvez lancer 2d4 et appliquer le total obtenu comme bonus ou malus au résultat du d20. Une fois cet avantage utilisé, vous ne pouvez plus l'utiliser avant d'avoir lancé l'Initiative ou terminé un Repos court ou long."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Destin aiguillé</strong>. Lorsque vous-même ou une autre créature située dans un rayon de 18 mètres autour de vous réussissez ou ratez un Test d20, vous pouvez lancer 2d4 et appliquer le total obtenu comme bonus ou malus au résultat du d20. Une fois cet avantage utilisé, vous ne pouvez plus l'utiliser avant d'avoir lancé l'Initiative ou terminé un Repos court ou long."
     },
     "figure_de_proue": {
         "name": "Figure de proue",

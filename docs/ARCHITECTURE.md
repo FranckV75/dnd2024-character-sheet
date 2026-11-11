@@ -259,7 +259,7 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
 - Faveurs épiques (lot 8) : leur +1 (jusqu'à 30) et leurs autres choix sont dans `feat_choices`
   (`ability`, `expertise` pour Faveur de compétence, `energy1` / `energy2` pour Faveur de résistance
   aux énergies) ; leurs cases dans `feat_uses` (`faveur_de_recuperation` : dés dépensés sur 10,
-  `faveur_de_recuperation_rempart` : Dernier rempart, `faveur_du_destin`). Un compteur a sa propre clé
+  `faveur_de_recuperation_rempart` : Baroud d'honneur, `faveur_du_destin`). Un compteur a sa propre clé
   quand un don en a plusieurs (champ `feat` de FEAT_COUNTERS).
 - Frappe à mains nues : une entrée du catalogue `DD_RULES.weapons` (catégorie « Mains nues », hors table
   des armes du Manuel), reconnue par `isUnarmedStrike` (`js/rules/weapons.js` : sa catégorie, ou son nom).

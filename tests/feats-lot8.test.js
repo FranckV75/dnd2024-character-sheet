@@ -83,7 +83,7 @@ describe('Faveurs épiques : effets', () => {
             .find(g => g.featId === 'faveur_de_competence').skills.some(s => s.skill === 'stealth' && s.kind === 'expertise'));
     });
 
-    test('Résistance aux énergies : types choisis, doublon signalé, DD de la Redirection', () => {
+    test("Résistance aux énergies : types choisis, doublon signalé, DD du Détournement d'énergie", () => {
         assert.equal(ENERGY_TYPES.length, 9);
         const texts = slotTexts(boon('faveur_de_resistance_aux_energies', { ability: 'con', energy1: 'fire', energy2: 'cold' }));
         assert.ok(texts.some(t => /Résistance : feu et froid/.test(t)));
@@ -107,15 +107,15 @@ describe('Faveurs épiques : effets', () => {
         assert.equal(c.speed, '9 m');
     });
 
-    test('Récupération : dix d10 et Dernier rempart rendus au repos long ; Dernier rempart = moitié des PV max', () => {
+    test("Récupération : dix d10 et Baroud d'honneur rendus au repos long ; Baroud d'honneur = moitié des PV max", () => {
         const c = boon('faveur_de_recuperation', {}, { feat_uses: { faveur_de_recuperation: 4, faveur_de_recuperation_rempart: 1 } });
         const [dice, lastStand] = featCounters(c, deriveCharacter(c));
         assert.deepEqual([dice.key, dice.max, dice.used], ['faveur_de_recuperation', 10, 4]);
         assert.deepEqual([lastStand.key, lastStand.featId, lastStand.max, lastStand.used, lastStand.label],
-            ['faveur_de_recuperation_rempart', 'faveur_de_recuperation', 1, 1, 'Dernier rempart']);
+            ['faveur_de_recuperation_rempart', 'faveur_de_recuperation', 1, 1, "Baroud d'honneur"]);
         assert.equal(restFeatUses(c, deriveCharacter(c), 'short').restored.length, 0);
         const long = restFeatUses(c, deriveCharacter(c), 'long');
-        assert.deepEqual(long.restored.map(r => [r.label, r.count]), [['Dés de vitalité (d10)', 4], ['Dernier rempart', 1]]);
+        assert.deepEqual(long.restored.map(r => [r.label, r.count]), [['Regain de vitalité (d10)', 4], ["Baroud d'honneur", 1]]);
         assert.deepEqual(long.patch.feat_uses, { faveur_de_recuperation: 0, faveur_de_recuperation_rempart: 0 });
         assert.ok(slotTexts(c).some(t => /regagnez 90 PV/.test(t)));
     });
@@ -159,5 +159,51 @@ describe('Faveurs épiques : effets', () => {
 
     test('chaque faveur a au moins une note dans son encadré', () => {
         for (const id of EPIC) assert.ok(slotTexts(boon(id)).length > 0, id);
+    });
+});
+
+describe('Faveurs épiques : noms des bénéfices du Manuel des joueurs français (p. 210-211)', () => {
+    const strongNames = (id) => [...FEATS_DATA[id].desc.matchAll(/<strong>([^<]+)<\/strong>/g)].map(m => m[1]);
+    const BOOK = {
+        faveur_d_attaque_irresistible: ['Défenses surmontées', 'Frappe écrasante'],
+        faveur_de_competence: ['Polyvalence totale', 'Expertise'],
+        faveur_de_deplacement_dimensionnel: ['Entrechats dimensionnels'],
+        faveur_de_l_esprit_nocturne: ["Fusion avec l'ombre", 'Forme ombreuse'],
+        faveur_de_memoire_magique: ['Incantation gratuite'],
+        faveur_de_prouesse_martiale: ['Visée infaillible'],
+        faveur_de_recuperation: ["Baroud d'honneur", 'Regain de vitalité'],
+        faveur_de_resistance_aux_energies: ['Résistance aux énergies', "Détournement d'énergie"],
+        faveur_de_vigueur: ['Santé fortifiée'],
+        faveur_de_vision_veritable_vision_lucide: ['Vision lucide'],
+        faveur_de_vitesse: ['Expert en désengagement', 'Prestesse'],
+        faveur_du_destin: ['Destin aiguillé']
+    };
+
+    test('les 12 faveurs : bénéfices nommés comme dans le livre', () => {
+        assert.deepEqual(Object.keys(BOOK).sort(), [...EPIC].sort());
+        for (const [id, names] of Object.entries(BOOK)) {
+            assert.deepEqual(strongNames(id), ['Augmentation de caractéristique', ...names], id);
+        }
+    });
+
+    test('cases et rappels : noms du livre, clés enregistrées inchangées', () => {
+        const recovery = boon('faveur_de_recuperation');
+        const counters = featCounters(recovery, deriveCharacter(recovery));
+        assert.deepEqual(counters.map(c => [c.key, c.label]),
+            [['faveur_de_recuperation', 'Regain de vitalité (d10)'], ['faveur_de_recuperation_rempart', "Baroud d'honneur"]]);
+        const fate = boon('faveur_du_destin');
+        assert.deepEqual(featCounters(fate, deriveCharacter(fate)).map(c => [c.key, c.label]),
+            [['faveur_du_destin', 'Destin aiguillé']]);
+        assert.ok(slotTexts(recovery).some(t => /^Baroud d'honneur/.test(t)));
+        assert.ok(slotTexts(recovery).some(t => /^Regain de vitalité/.test(t)));
+        assert.ok(slotTexts(boon('faveur_de_resistance_aux_energies', { energy1: 'fire', energy2: 'cold' }))
+            .some(t => /^Détournement d'énergie/.test(t)));
+        const speed = slotTexts(boon('faveur_de_vitesse'));
+        assert.ok(speed.some(t => /^Prestesse/.test(t)) && speed.some(t => /^Expert en désengagement/.test(t)));
+        const old = /Dernier rempart|Vitalité retrouvée|Dés de vitalité|Destin amélioré|Artiste de l'évasion|Rapidité|Santé renforcée|Redirection|Adepte polyvalent|Pas clignotants|Fusion avec les ombres|Résistances aux énergies/;
+        for (const id of EPIC) {
+            assert.ok(!old.test(FEATS_DATA[id].desc), id);
+            assert.ok(!slotTexts(boon(id)).some(t => old.test(t)), id);
+        }
     });
 });

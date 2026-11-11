@@ -13,11 +13,11 @@
 //    nouveau disponible à la fin d'un Repos court ou long ;
 //  - Magie rituelle (« Ritual Caster », p. 206) : Rituel rapide (« Quick Ritual »), une fois par
 //    Repos long ;
-//  - Faveur de récupération (« Boon of Recovery », p. 211) : réserve de dix d10 (« Recover
-//    Vitality »), toute rendue à la fin d'un Repos long ; Dernier rempart (« Last Stand »), une fois
-//    par Repos long ;
-//  - Faveur du destin (« Boon of Fate », p. 210) : une fois, de nouveau disponible quand vous lancez
-//    l'Initiative ou à la fin d'un Repos court ou long.
+//  - Faveur de récupération (« Boon of Recovery », p. 211) : Regain de vitalité, réserve de dix d10
+//    (« Recover Vitality »), toute rendue à la fin d'un Repos long ; Baroud d'honneur (« Last Stand »),
+//    une fois par Repos long ;
+//  - Faveur du destin (« Boon of Fate », p. 210) : Destin aiguillé (« Improve Fate »), une fois, de
+//    nouveau disponible quand vous lancez l'Initiative ou à la fin d'un Repos court ou long.
 // Les lancers gratuits des sorts de dons (lot 6) sont rangés dans la même clé, sous des clés
 // « <don>@<niveau>:<partie> » : voir js/rules/feat-spells.js (ils n'ont pas de compteur ici).
 // Fonctions pures : le personnage reçu n'est jamais modifié, elles renvoient un patch.
@@ -64,23 +64,23 @@ export const FEAT_COUNTERS = Object.freeze({
         use: 'Lancer un sort rituel préparé en temps normal, sans emplacement de sort.'
     },
     faveur_de_recuperation: {
-        label: 'Dés de vitalité (d10)',
-        inText: 'dés de vitalité',
+        label: 'Regain de vitalité (d10)',
+        inText: 'dés de Regain de vitalité',
         max: () => 10,
         reset: 'long',
         use: 'Action Bonus : lancez autant de ces d10 que vous voulez et regagnez le total en PV.'
     },
     faveur_de_recuperation_rempart: {
         feat: 'faveur_de_recuperation',
-        label: 'Dernier rempart',
-        inText: 'Dernier rempart',
+        label: "Baroud d'honneur",
+        inText: "Baroud d'honneur",
         max: () => 1,
         reset: 'long',
         use: 'Réduit à 0 PV : vous tombez à 1 PV à la place et regagnez la moitié de vos PV max.'
     },
     faveur_du_destin: {
-        label: 'Destin amélioré',
-        inText: 'Destin amélioré',
+        label: 'Destin aiguillé',
+        inText: 'Destin aiguillé',
         max: () => 1,
         reset: 'short',
         use: "2d4 en bonus ou en malus au test d20 réussi ou raté d'une créature à 18 m (vous compris) ; aussi rendu quand vous lancez l'Initiative."
