@@ -23,7 +23,7 @@ import { openModal, confirmModal } from './modal.js';
 import { createDefaultCharacter } from '../state/schema.js';
 import { parseCharacterFile, serializeCharacter, exportFileName, STORAGE_KEYS } from '../state/persistence.js';
 
-/** Écrans où la barre démarre repliée : tablettes (même seuil que sheet.css), et tablettes tactiles
+/** Écrans où la barre démarre repliée : tablettes (même seuil que sheet-tablet.css), et tablettes tactiles
  *  en paysage (Lenovo 1280 px, iPad 1180 px). Même condition que css/toolbar.css. */
 const COMPACT_QUERY = '(max-width: 1100px), (pointer: coarse) and (max-width: 1400px)';
 const COLLAPSED_CLASS = 'app-bar--collapsed';

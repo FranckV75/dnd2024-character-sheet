@@ -1,7 +1,7 @@
 /* =============================================================================
    ORIGINS.CSS - Encadré « Espèce & historique » (onglet Aptitudes & Traits)
    Traits et option de l'espèce (js/ui/species.js), historique (js/ui/background.js).
-   Même présentation que les aptitudes de classe (css/sheet.css, .subclass-*).
+   Même présentation que les aptitudes de classe (css/subclass.css, .subclass-*).
    ============================================================================= */
 
 .origins .origin-block:not([hidden]) ~ .origin-block:not([hidden]) {

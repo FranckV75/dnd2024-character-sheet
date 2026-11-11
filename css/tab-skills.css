@@ -1,0 +1,180 @@
+/* =============================================================================
+   TAB-SKILLS.CSS - Onglet 3 « Compétences & Histoire » : compétences, légende, Odyssée.
+   Règles : aucune couleur en dur (variables de base.css), aucun !important.
+   ============================================================================= */
+
+/* ---------- Onglet 3 : compétences & Odyssée ---------- */
+
+/* Légende « maîtrise / expertise », juste au-dessus des compétences : encre calme, comme
+   les compétences sans maîtrise (lisible même sur une fiche très transparente) */
+.legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 8px;
+    font-size: 0.9rem;
+    color: var(--quiet-ink);
+}
+
+.skills {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.skill-group {
+    padding: 6px 8px;
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    background: var(--box);
+}
+
+.skill-group-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid var(--border-soft);
+    font-family: var(--font-title);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.skill-group-head .icon {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    color: var(--gold);
+}
+
+.skill-group-head .mod {
+    margin-left: auto;
+}
+
+.skill-row {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    min-height: 26px;
+}
+
+.skill-name {
+    flex: 1;
+    margin-left: 4px;
+    font-size: 0.95rem;
+}
+
+.skill-bonus {
+    min-width: 32px;
+    font-family: var(--font-title);
+    font-weight: 700;
+    font-variant-numeric: lining-nums;
+    text-align: right;
+    color: var(--number);
+}
+
+/* Lecture en un coup d'œil (data-rank posé par sheet.js) :
+   - maîtrisée : nom en demi-gras, bonus à l'encre d'accent, ligne à peine dorée ;
+   - experte : un cran au-dessus (lueur un peu plus franche, bonus souligné d'un filet d'or) ;
+   - sans maîtrise : nom et bonus plus calmes (graisse normale, encre calme), toujours lisibles.
+   La ligne déborde de 4 px de chaque côté pour que la lueur ne colle pas aux cases. */
+.skill-row {
+    margin: 0 -4px;
+    padding: 0 4px;
+    border-radius: 4px;
+}
+
+.skill-row:is([data-rank="proficient"], [data-rank="expertise"]) .skill-name {
+    font-weight: 600;
+}
+
+.skill-row[data-rank="none"] .skill-bonus {
+    font-weight: 400;
+}
+
+.skill-row[data-rank="expertise"] .skill-bonus {
+    text-decoration: underline 1px var(--gold);
+    text-underline-offset: 3px;
+}
+
+@media screen {
+    .skill-row {
+        transition: background-color 0.25s ease;
+    }
+
+    .skill-row[data-rank="proficient"] {
+        background-color: var(--skill-prof-tint);
+    }
+
+    .skill-row[data-rank="expertise"] {
+        background-color: var(--skill-exp-tint);
+    }
+
+    .skill-row:is([data-rank="proficient"], [data-rank="expertise"]) .skill-name {
+        color: var(--text);
+    }
+
+    .skill-row:is([data-rank="proficient"], [data-rank="expertise"]) .skill-bonus {
+        color: var(--accent-ink);
+    }
+
+    .skill-row[data-rank="none"] :is(.skill-name, .skill-bonus) {
+        color: var(--quiet-ink);
+    }
+}
+
+.skills-extra {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.odyssey-grid {
+    display: grid;
+    grid-template-columns: 1.8fr 0.8fr 1.4fr;
+    /* Deux rangées communes à toutes les cases : les titres sur la première (calés en bas,
+       même si l'un passe sur deux lignes), les valeurs sur la seconde */
+    grid-template-rows: auto auto;
+    grid-auto-flow: column;
+    gap: 4px 18px;
+}
+
+/* Le libellé et la valeur de chaque case deviennent des cellules directes de la grille */
+.odyssey-grid .field {
+    display: contents;
+}
+
+.odyssey-grid .field > :is(label, .field-label) {
+    align-self: end;
+    margin: 0;
+    text-align: center;
+}
+
+/* Valeurs : même hauteur pour les trois (la liste déroulante est plus haute sur tablette,
+   44 px pour le doigt), texte centré verticalement : les contenus restent alignés */
+.odyssey-grid .field > :is(.input, output) {
+    align-self: stretch;
+    width: 100%;
+    text-align: center;
+    text-align-last: center;
+}
+
+.odyssey-grid .field > output {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Palier calculé : mêmes police, taille, graisse et couleur que les champs voisins (.input) */
+.odyssey-grid output.value-md {
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: normal;
+    padding: 2px 4px;
+    border-bottom: 1px solid transparent;
+    line-height: normal;
+    color: var(--text);
+    text-shadow: none;
+}

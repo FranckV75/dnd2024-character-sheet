@@ -1,0 +1,177 @@
+/* =============================================================================
+   COMPANIONS.CSS - Cartes des compagnons de sous-classe (js/ui/companions.js, lot 7).
+   Règles : aucune couleur en dur (variables de base.css), aucun !important.
+   ============================================================================= */
+
+/* ---------- Cartes des compagnons de sous-classe (js/ui/companions.js, lot 7) ----------
+   Même encadré que le bloc Sous-classe ; libellés et chiffres en Cinzel, textes en Alegreya. */
+.companion-cards {
+    display: grid;
+    gap: 8px;
+    margin: 0 0 8px;
+}
+
+.companion-cards[hidden] {
+    display: none;
+}
+
+.companion-card {
+    min-width: 0;
+    padding: 6px 10px 8px;
+    border-left: 3px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+    background: var(--feat-invite-bg);
+    break-inside: avoid;
+}
+
+.companion-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 10px;
+}
+
+.companion-name {
+    margin: 0;
+    font-family: var(--font-title);
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+}
+
+.companion-type,
+.companion-entry-text,
+.companion-missing,
+.companion-note {
+    margin: 0;
+    font-family: var(--font-text);
+    font-size: 0.95rem;
+    color: var(--text);
+}
+
+.companion-type,
+.companion-missing,
+.companion-note {
+    font-style: italic;
+    color: var(--quiet-ink);
+}
+
+.companion-missing {
+    margin-top: 4px;
+}
+
+.companion-note {
+    margin-top: 3px;
+    font-size: 0.88rem;
+}
+
+/* CA, PV, Vitesse, Initiative : petites cases sur une ligne qui passe à la ligne si besoin */
+.companion-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    margin: 6px 0 4px;
+}
+
+.companion-stats:empty {
+    display: none;
+}
+
+.companion-stat {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.companion-stat-label,
+.companion-line-label,
+.companion-section,
+.companion-abilities-label,
+.companion-abilities-row.is-head {
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--accent-ink);
+}
+
+.companion-stat-value,
+.companion-abilities-row,
+.companion-entry-name {
+    font-family: var(--font-title);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--number);
+}
+
+.companion-stat-detail {
+    font-family: var(--font-text);
+    font-size: 0.85rem;
+    color: var(--quiet-ink);
+}
+
+/* PV actuels : saisie modifiable même fiche verrouillée, puis « / max » */
+.companion-hp {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.companion-hp-input.input {
+    width: 4.5em;
+    min-height: 32px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--number);
+    text-align: center;
+}
+
+/* Six caractéristiques : score (modificateur) et sauvegarde */
+.companion-abilities {
+    display: grid;
+    gap: 1px;
+    margin: 4px 0;
+}
+
+.companion-abilities-row {
+    display: grid;
+    grid-template-columns: 3.4em repeat(6, minmax(0, 1fr));
+    gap: 4px;
+    align-items: baseline;
+    text-align: center;
+}
+
+.companion-abilities-row + .companion-abilities-row {
+    border-top: 1px solid var(--border-soft);
+}
+
+.companion-abilities-label {
+    text-align: left;
+}
+
+.companion-lines,
+.companion-entries {
+    margin: 2px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.companion-lines li + li,
+.companion-entries li + li {
+    margin-top: 2px;
+}
+
+.companion-section {
+    margin: 6px 0 0;
+}
+
+.companion-entry.is-inactive {
+    opacity: 0.55;
+}
+
+@media print {
+    .companion-card {
+        background: none;
+    }
+}

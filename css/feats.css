@@ -1,0 +1,558 @@
+/* =============================================================================
+   FEATS.CSS - Onglet 2 : dons (emplacements, pastilles), mentions près des valeurs,
+   encadré « Dans la fiche » et fenêtre de détail (js/ui/sheet.js).
+   Règles : aucune couleur en dur (variables de base.css), aucun !important.
+   ============================================================================= */
+
+/* ---------- Onglet 2 : dons ---------- */
+
+.feats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Trois colonnes fixes, les mêmes pour chaque emplacement : pastille, liste du don, puis
+   gain de caractéristique ou légende du niveau. Les listes commencent et finissent toutes
+   au même endroit, les sabliers et les gains s'alignent (calés à gauche de leur colonne). */
+.feat-head {
+    display: grid;
+    grid-template-columns: 4.9rem minmax(0, 1fr) 9rem;
+    align-items: center;
+    column-gap: 10px;
+}
+
+.feat-head > .feat-asi,
+.feat-head > .feat-when {
+    grid-column: 3;
+    grid-row: 1;
+    min-width: 0;
+}
+
+/* Pastille gravée, cerclée d'or (l'or plein reste réservé aux états actifs : filtre choisi,
+   Rage, bouton enfoncé) ; elle remplit sa colonne, de largeur fixe. C'est un bouton : la toucher
+   replie le don (seul le titre reste) ; sans don choisi, rien à replier (désactivée, sans chevron). */
+.feat-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 0;
+    padding: 3px 8px;
+    cursor: pointer;
+    line-height: 1.3;
+    border: 1px solid var(--gold-soft);
+    border-radius: 4px;
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
+    color: var(--accent);
+    font-family: var(--font-title);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+    text-shadow: var(--engrave);
+}
+
+.feat-badge:disabled {
+    cursor: default;
+}
+
+.feat-badge .icon {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    stroke-width: 2;
+    transition: transform 0.2s ease;
+}
+
+.feat-badge:disabled .icon {
+    display: none;
+}
+
+.feat-badge:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+/* Don replié : chevron tourné vers la droite (« il y a une suite ») */
+.feat[data-folded="true"] .feat-badge .icon {
+    transform: rotate(-90deg);
+}
+
+/* Second don d'origine de l'Humain : masqué pour les autres espèces (sauf s'il garde un don) */
+.feat[hidden] {
+    display: none;
+}
+
+.feat-asi {
+    font-family: var(--font-title);
+    font-size: 0.75rem;
+    text-align: left;
+    /* encre calme plutôt qu'estompée : reste lisible sur la fiche transparente */
+    color: var(--quiet-ink);
+}
+
+.feat-desc {
+    margin-top: 6px;
+    padding: 8px 10px;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+    background: var(--input-bg);
+    font-size: 0.95rem;
+}
+
+/* Légende des niveaux pas encore atteints (« À venir », « Actif au niveau 12 ») : petite
+   capitale calme précédée d'un sablier ; imprimée aussi pour un don prévu en avance */
+.feat-when {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    font-family: var(--font-title);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    color: var(--quiet-ink);
+}
+
+.feat-when[hidden] {
+    display: none;
+}
+
+.feat-when .icon {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    color: var(--gold);
+}
+
+/* Emplacement à venir : pas de gain de caractéristique, la légende prend sa place */
+.feat[data-feat-state="upcoming"] .feat-asi {
+    display: none;
+}
+
+/* Don prévu en avance, ou don de classe en plus (« Guerrier : don en plus ») : la légende, puis
+   le gain de caractéristique juste dessous */
+.feat[data-feat-state="planned"] .feat-head > .feat-asi,
+.feat-head:has(> .feat-when:not([hidden])) > .feat-asi {
+    grid-row: 2;
+}
+
+@media screen {
+    /* Don replié (pastille touchée) : seul le titre reste ; imprimé en entier */
+    .feat[data-folded="true"] > .feat-desc,
+    .feat[data-folded="true"] > .feat-sheet {
+        display: none;
+    }
+
+    /* Don actif (choisi, niveau atteint) : un en-tête de chapitre, repérable en faisant
+       défiler. Bandeau doré qui s'estompe vers la droite, pastille du niveau en or plein,
+       titre en or et en gras souligné d'un trait d'or. Imprimé sobre (rien de tout cela). */
+    .feat[data-feat-state="active"] .feat-head {
+        margin: 0 -6px;
+        padding: 4px 6px;
+        border-radius: 6px;
+        background: linear-gradient(90deg, var(--feat-band), var(--feat-band-fade) 70%, transparent);
+    }
+
+    .feat[data-feat-state="active"] .feat-badge {
+        border-color: var(--gold);
+        background: linear-gradient(var(--feat-badge-top), var(--feat-badge-bottom));
+        color: var(--feat-badge-ink);
+        text-shadow: none;
+    }
+
+    /* Titre seulement (pas les menus de choix de l'encadré « Dans la fiche ») ; plus fort que la
+       couleur d'une liste figée (fiche verrouillée, components.css) */
+    .feat[data-feat-state="active"] .feat-head > select.input {
+        border-bottom: 2px solid var(--gold);
+        color: var(--feat-title-ink);
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    /* Niveau atteint, don à choisir : invitation dorée discrète (cadre en pointillés,
+       « — Choisir un don — » à l'encre d'accent, pastille cerclée d'or plein) */
+    .feat[data-feat-state="pending"] .feat-badge {
+        border-color: var(--gold);
+    }
+
+    .feat[data-feat-state="pending"] select.input {
+        padding-left: 8px;
+        border: 1px dashed var(--gold);
+        border-radius: 5px;
+        background-color: var(--feat-invite-bg);
+        color: var(--accent-ink);
+        transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .feat[data-feat-state="pending"] select.input:hover:not(:disabled) {
+        border-style: solid;
+        background-color: var(--input-bg);
+    }
+
+    /* Niveau pas encore atteint : rangée calme et resserrée (pastille en pointillés,
+       texte plus petit à l'encre calme, chevron estompé). Toujours modifiable. */
+    .feat:is([data-feat-state="upcoming"], [data-feat-state="planned"]) .feat-badge {
+        border-style: dashed;
+        border-color: var(--border-soft);
+        background: transparent;
+        box-shadow: none;
+        color: var(--quiet-ink);
+        text-shadow: none;
+    }
+
+    .feat:is([data-feat-state="upcoming"], [data-feat-state="planned"]) select.input {
+        font-size: 0.9rem;
+        color: var(--quiet-ink);
+    }
+
+    /* (fiche verrouillée : pas de chevron du tout, voir plus haut) */
+    .feat:is([data-feat-state="upcoming"], [data-feat-state="planned"]) select.input:not(:disabled) {
+        background-image:
+            linear-gradient(to top right, transparent 42%, var(--gold-soft) 42% 58%, transparent 58%),
+            linear-gradient(to top left, transparent 42%, var(--gold-soft) 42% 58%, transparent 58%);
+    }
+
+    .feat[data-feat-state="upcoming"] + .feat[data-feat-state="upcoming"] {
+        margin-top: -4px;
+    }
+
+    /* Don prévu en avance : il reste lisible, mais signalé comme pas encore actif
+       (légende à l'encre d'accent, gain de caractéristique et description à l'encre calme,
+       liseré en pointillés au lieu du trait d'accent) */
+    .feat[data-feat-state="planned"] .feat-when {
+        color: var(--accent-ink);
+    }
+
+    .feat[data-feat-state="planned"] .feat-desc {
+        border-left-style: dashed;
+        border-left-color: var(--gold-soft);
+        color: var(--quiet-ink);
+        font-size: 0.88rem;
+    }
+
+    /* Fiche verrouillée : plus d'invitation à cliquer, le cadre devient un simple filet */
+    [data-locked="true"] .feat[data-feat-state="pending"] select.input:disabled {
+        border-style: dashed;
+        border-color: var(--gold-soft);
+    }
+}
+
+/* ---------- Dons : mentions près des valeurs (js/ui/sheet.js, renderFeatMentions) ---------- */
+
+/* Petite pastille dorée sous une valeur (« Vigilant », « dont +8 grâce à Robuste »,
+   « Avantage Concentration ») : texte à l'encre d'accent (contraste AA), étoile et liseré
+   dorés. C'est un bouton : un toucher ouvre le détail des dons (pas d'infobulle sur tablette).
+   La valeur saisie à côté n'est jamais modifiée. */
+.feat-mention {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    gap: 1px;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 1px 8px 2px;
+    border: 1px solid var(--gold-soft);
+    border-radius: 10px;
+    background: var(--feat-invite-bg);
+    color: var(--accent-ink);
+    font-family: var(--font-text);
+    font-size: 0.8rem;
+    font-style: italic;
+    font-weight: 600;
+    line-height: 1.15;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feat-mention[hidden] {
+    display: none;
+}
+
+.feat-mention:hover {
+    border-color: var(--gold);
+    box-shadow: 0 0 6px var(--gold-glow);
+}
+
+.feat-mention-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.feat-mention .icon {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    color: var(--gold);
+}
+
+/* Sous le jet de sauvegarde, dans la colonne étroite des caractéristiques */
+.ability .feat-mention {
+    margin-top: 3px;
+    padding-inline: 5px;
+    font-size: 0.74rem;
+}
+
+/* Sous le bouclier de la CA (case étroite) : le bouclier garde toute la hauteur restante */
+.ac-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.ac-cell > .ac-hex {
+    flex: 1 1 auto;
+}
+
+.ac-cell > .feat-mention {
+    padding-inline: 6px;
+    font-size: 0.74rem;
+}
+
+/* Sous la Vitesse (« dont +3 m grâce à Mobile ») : libellé et valeur restent à la même hauteur que
+   dans les cases voisines du groupe, le repère se place dans l'espace libre au-dessous */
+.stat-cell:has(> .feat-mention) {
+    display: grid;
+    grid-template-rows: 1fr auto auto 1fr;
+    justify-items: center;
+    row-gap: 6px;
+}
+
+.stat-cell:has(> .feat-mention) > .label {
+    grid-row: 2;
+}
+
+.stat-cell:has(> .feat-mention) > :is(.input, output) {
+    grid-row: 3;
+}
+
+.stat-cell > .feat-mention {
+    grid-row: 4;
+    align-self: start;
+    padding-inline: 6px;
+    font-size: 0.74rem;
+}
+
+/* ---------- Dons : encadré « Dans la fiche » sous la description (renderFeatSheet) ---------- */
+
+/* Même filet que la description, en or : ce que la fiche calcule ou rappelle pour ce don */
+.feat-sheet {
+    margin-top: 4px;
+    padding: 6px 10px 7px;
+    border-left: 3px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+    background: var(--feat-invite-bg);
+    font-size: 0.92rem;
+}
+
+.feat-sheet[hidden] {
+    display: none;
+}
+
+.feat-sheet-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-title);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+}
+
+.feat-sheet-title .icon {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    color: var(--gold);
+}
+
+.feat-sheet-list {
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.feat-sheet-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.feat-sheet-list li + li {
+    margin-top: 4px;
+}
+
+/* Étiquette « Calculé / Rappel / En attente » : largeur fixe, les textes s'alignent */
+.feat-tag {
+    flex: none;
+    display: inline-block;
+    min-width: 5.4rem;
+    padding: 0 6px;
+    border: 1px solid var(--gold-soft);
+    border-radius: 8px;
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+    text-align: center;
+    color: var(--accent-ink);
+}
+
+.feat-sheet-list li[data-kind="reminder"] .feat-tag {
+    border-style: dashed;
+    color: var(--quiet-ink);
+}
+
+/* « À reporter » : chiffre que le joueur ajoute lui-même à une valeur saisie (Robuste) */
+.feat-sheet-list li[data-kind="manual"] .feat-tag,
+.feat-notes .feat-tag[data-kind="manual"] {
+    border-color: var(--gold);
+    color: var(--accent);
+}
+
+.feat-sheet-list li[data-kind="waiting"] {
+    color: var(--quiet-ink);
+}
+
+.feat-sheet-list li[data-kind="waiting"] .feat-tag {
+    border-style: dotted;
+    color: var(--quiet-ink);
+}
+
+.feat-sheet-none {
+    margin: 4px 0 0;
+    font-style: italic;
+    color: var(--quiet-ink);
+}
+
+/* Choix d'un don (lot 3) : un libellé au-dessus de chaque menu, côte à côte quand il y a la place */
+.feat-choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 6px 12px;
+    margin: 6px 0 4px;
+}
+
+.feat-choice {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.feat-choice-label {
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--accent-ink);
+}
+
+.feat-choice select {
+    width: 100%;
+}
+
+/* Menu pas encore utile au niveau du personnage (Magie rituelle : un sort de plus au niveau 5...) */
+.feat-choice[hidden] {
+    display: none;
+}
+
+/* « Force +1, Constitution +1 » : le menu prend toute la largeur pour être lu en entier */
+.feat-choice.is-wide {
+    grid-column: 1 / -1;
+    max-width: 420px;
+}
+
+/* Choix pas encore fait : liseré en pointillés, comme les notes « En attente » */
+.feat-choice select:has(option[value=""]:checked) {
+    border-style: dashed;
+}
+
+/* « À vérifier » : case due au don pas cochée, valeur au-delà de 20… (la fiche ne corrige rien) */
+.feat-sheet-list li[data-kind="check"] .feat-tag,
+.feat-notes .feat-tag[data-kind="check"] {
+    border-color: var(--warn);
+    color: var(--warn);
+}
+
+/* « Coché » : la case due au don est bien cochée */
+.feat-sheet-list li[data-kind="done"] .feat-tag,
+.feat-notes .feat-tag[data-kind="done"] {
+    color: var(--quiet-ink);
+}
+
+.feat-mention[data-check] {
+    border-color: var(--warn);
+}
+
+.feat-mention-check,
+.feat-mention-check .icon {
+    color: var(--warn);
+}
+
+/* Compétence : mention sur la même ligne que le nom, petite pour ne pas rehausser la ligne */
+.skill-row .feat-mention {
+    flex: 0 1 auto;
+    min-width: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0 6px;
+    margin: 0 4px;
+    padding: 0 6px;
+    font-size: 0.72rem;
+}
+
+/* Deux rangs si la ligne est étroite (tablette), sans couper un mot */
+.skill-row .feat-mention-line {
+    white-space: nowrap;
+}
+
+/* ---------- Dons : fenêtre de détail (toucher d'une mention) ---------- */
+
+.feat-notes-intro {
+    margin: 0 0 10px;
+    color: var(--text-muted);
+}
+
+.modal-body .feat-notes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.feat-notes li {
+    padding-left: 10px;
+    border-left: 2px solid var(--gold);
+}
+
+.feat-notes-name {
+    display: block;
+    font-family: var(--font-title);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+}
+
+.feat-notes .feat-tag {
+    min-width: 0;
+    margin-left: 6px;
+}
+
+.feat-notes li.is-inactive {
+    border-left-style: dashed;
+    border-left-color: var(--gold-soft);
+    color: var(--quiet-ink);
+}

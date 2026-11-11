@@ -1,0 +1,413 @@
+/* =============================================================================
+   TAB-COMBAT.CSS - Onglet 1 « Caractéristiques & Combat » : caractéristiques, sauvegardes, vitaux,
+   dons à usages limités (js/ui/sheet.js), épuisement, tableaux.
+   Règles : aucune couleur en dur (variables de base.css), aucun !important.
+   ============================================================================= */
+
+/* ---------- Onglet 1 : caractéristiques & combat ---------- */
+
+.combat-layout {
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+}
+
+.abilities {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ability {
+    padding: 6px 4px 8px;
+    text-align: center;
+    background: var(--box);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+}
+
+/* Nom de la caractéristique : petit libellé, mais jamais sous la taille minimale ; « Constitution »
+   tient sur une ligne (lettres moins espacées que les autres libellés) */
+.ability .label {
+    font-size: 0.68rem;
+    letter-spacing: 0;
+    overflow-wrap: anywhere;
+}
+
+/* Valeur de caractéristique gravée, modificateur dans une pastille bombée cerclée d'or */
+.ability .score {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-variant-numeric: lining-nums;
+    color: var(--number);
+    text-shadow: var(--engrave);
+}
+
+.ability .mod {
+    display: inline-block;
+    min-width: 44px;
+    margin: 2px 0 6px;
+    padding: 1px 8px;
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
+    font-family: var(--font-title);
+    font-weight: 700;
+    color: var(--number);
+    text-shadow: var(--engrave);
+}
+
+.ability .save {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-family: var(--font-title);
+    font-size: 0.72rem;
+}
+
+/* Jet de sauvegarde (demandé sans cesse en jeu) : la valeur un cran plus grande que « Sauv. » ;
+   maîtrisé, il se lit comme une compétence maîtrisée (gras, encre d'accent), sinon plus calme.
+   Sur le papier, seule la graisse change. */
+.ability .save output {
+    font-size: 0.85rem;
+    font-variant-numeric: lining-nums;
+}
+
+.ability .save:has(.round-check:checked) output {
+    font-weight: 700;
+}
+
+@media screen {
+    .ability .save:has(.round-check:checked) output {
+        color: var(--accent-ink);
+    }
+
+    .ability .save:not(:has(.round-check:checked)) :is(span, output) {
+        color: var(--quiet-ink);
+    }
+}
+
+.combat-main {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.vitals {
+    display: grid;
+    gap: 10px;
+}
+
+.vitals-1 {
+    grid-template-columns: 130px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2.6fr) minmax(0, 1.5fr);
+}
+
+.vitals-2 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 2fr) minmax(0, 1.5fr);
+}
+
+.stat-tile {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
+}
+
+.stat-tile .label {
+    text-align: center;
+}
+
+.stat-group {
+    display: flex;
+    align-items: stretch;
+}
+
+.stat-cell {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 6px;
+    text-align: center;
+}
+
+/* Libellé et valeur groupés au centre de la case ; dans un même groupe, les libellés de
+   longueurs différentes (« Inspiration héroïque ou points de Foi » sur 3 lignes, « Vitesse »
+   sur 1) se calent en bas d'une même hauteur, pour que les valeurs restent alignées */
+.stat-group .stat-cell .label {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-height: calc(3 * 1.2em);
+    line-height: 1.2;
+}
+
+.vitals-2 .stat-group .stat-cell .label {
+    min-height: 0;
+}
+
+.stat-cell .label {
+    font-size: var(--label-min);
+}
+
+.stat-cell + .stat-cell {
+    border-left: 1px dashed var(--border-soft);
+}
+
+.ac-hex {
+    /* Bouclier : la forme vient de deux masques SVG (seule leur opacité compte, pas leur
+       couleur). L'élément porte le remplissage, découpé en bouclier ; ::before trace le
+       contour (trait de 2,5 px et filet intérieur plus fin). Le contenu reste dans la
+       partie large du bouclier, au-dessus de la pointe. */
+    --shield-fill: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M50 3C62 9 79 11 95 8V44C95 70 76 87 50 97C24 87 5 70 5 44V8C21 11 38 9 50 3Z' fill='black'/%3E%3C/svg%3E");
+    --shield-ring: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='black' vector-effect='non-scaling-stroke'%3E%3Cpath d='M50 3C62 9 79 11 95 8V44C95 70 76 87 50 97C24 87 5 70 5 44V8C21 11 38 9 50 3Z' stroke-width='2.5' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M50 10C61 15 76 17 88 15V45C88 66 72 80 50 89C28 80 12 66 12 45V15C24 17 39 15 50 10Z' stroke-width='1' stroke-opacity='0.55' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/svg%3E");
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    padding: 18px 16px 30px;
+    border: none;
+    background: radial-gradient(ellipse at 50% 22%, var(--hex-light), var(--hex-bg) 72%);
+    -webkit-mask: var(--shield-fill) center / 100% 100% no-repeat;
+    mask: var(--shield-fill) center / 100% 100% no-repeat;
+    position: relative;
+}
+
+.ac-hex::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--border);
+    -webkit-mask: var(--shield-ring) center / 100% 100% no-repeat;
+    mask: var(--shield-ring) center / 100% 100% no-repeat;
+    pointer-events: none;
+}
+
+.ac-hex > * {
+    position: relative;
+}
+
+.ac-hex .label {
+    font-size: var(--label-min);
+    text-align: center;
+}
+
+.death-saves {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+}
+
+.death-saves legend {
+    float: left;
+    width: 100%;
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+.check-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-size: 0.85rem;
+}
+
+.check-row span {
+    min-width: 52px;
+}
+
+.hd-used {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-title);
+    font-weight: 700;
+}
+
+.hd-used select {
+    width: auto;
+}
+
+.class-resource {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 2px solid var(--accent);
+}
+
+.resource-slots {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+}
+
+/* ---------- Dons à usages limités (Chanceux, Tueur de mages) : js/ui/sheet.js ---------- */
+.vitals-2 > .feat-counters {
+    grid-column: 1 / -1;
+}
+
+.feat-counters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 32px;
+    padding: 10px 16px;
+    border: 2px solid var(--accent);
+}
+
+.feat-counters[hidden] {
+    display: none;
+}
+
+.feat-counter {
+    flex: 1 1 260px;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-areas:
+        "name slots"
+        "use use";
+    align-items: center;
+    justify-content: start;
+    gap: 2px 14px;
+    min-width: 0;
+}
+
+.feat-counter-name {
+    grid-area: name;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.feat-counter .resource-slots {
+    grid-area: slots;
+    justify-content: flex-start;
+}
+
+.feat-counter-meta,
+.feat-counter-use {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.feat-counter-use {
+    grid-area: use;
+    font-style: italic;
+}
+
+/* Dans l'encadré « Dans la fiche » du don */
+.feat-sheet .feat-counter {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border-soft);
+}
+
+.inline-checks {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 16px;
+    margin: 0 0 8px;
+    padding: 0;
+    border: none;
+}
+
+.inline-checks legend {
+    float: left;
+    margin-right: 8px;
+}
+
+.inline-checks label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-text);
+    font-size: 0.95rem;
+    font-weight: 400;
+    text-transform: none;
+    color: var(--text);
+}
+
+.fatigue {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.fatigue input {
+    width: 64px;
+}
+
+/* Épuisement élevé (sheet.js, data-severity) : orange dès le niveau 3, rouge dès le niveau 5 */
+.fatigue output[data-severity] {
+    font-weight: 700;
+}
+
+.fatigue output[data-severity="warning"] {
+    color: var(--warn);
+}
+
+.fatigue output[data-severity="danger"] {
+    color: var(--ko);
+}
+
+/* ---------- Tableaux ---------- */
+
+.table-scroll {
+    overflow-x: auto;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.data-table {
+    width: 100%;
+    min-width: 620px;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.data-table th {
+    position: sticky;
+    top: 0;
+    padding: 4px 6px;
+    background: var(--head-bg);
+    font-family: var(--font-title);
+    font-size: 0.65rem;
+    text-align: left;
+    color: var(--label);
+}
+
+.data-table td {
+    padding: 4px 6px;
+    border-bottom: 1px solid var(--border-soft);
+    /* Même police que les cases de saisie des tableaux (voir components.css) */
+    font-family: var(--font-text);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.25;
+    vertical-align: top;
+    overflow-wrap: break-word;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+}
+
+.data-table td.empty {
+    font-family: var(--font-text);
+    font-size: 0.9rem;
+    font-style: italic;
+    color: var(--text-muted);
+}

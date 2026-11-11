@@ -1,0 +1,65 @@
+/* =============================================================================
+   WILD-MAGIC.CSS - Tirages de la Déferlante (Sorcellerie sauvage, js/ui/wild-magic.js), onglet 1.
+   Règles : aucune couleur en dur (variables de base.css), aucun !important.
+   ============================================================================= */
+
+/* ---------- Tirages de la Déferlante (Sorcellerie sauvage, js/ui/wild-magic.js, lot 7) ---------- */
+.vitals-2 > .wild-magic {
+    grid-column: 1 / -1;
+}
+
+.wild-magic {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 16px;
+    padding: 10px 16px;
+    border: 2px solid var(--accent);
+}
+
+.wild-magic[hidden] {
+    display: none;
+}
+
+.wild-magic-title {
+    margin: 0;
+}
+
+.wild-magic-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.wild-magic-roll {
+    min-height: 44px;
+    font-family: var(--font-title);
+    font-weight: 700;
+}
+
+/* Résultat et rappels : textes en Alegreya, sur toute la largeur */
+.wild-magic-result,
+.wild-magic-reminders {
+    flex: 1 1 100%;
+    margin: 0;
+    font-family: var(--font-text);
+    font-weight: 400;
+    color: var(--text);
+}
+
+.wild-magic-result:empty {
+    display: none;
+}
+
+.wild-magic-reminders {
+    padding-left: 18px;
+    font-size: 0.9rem;
+    font-style: italic;
+    color: var(--text-muted);
+}
+
+@media print {
+    .wild-magic {
+        display: none;
+    }
+}

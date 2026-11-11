@@ -1,0 +1,75 @@
+/* =============================================================================
+   TREASURE.CSS - Onglet 4 « Magie, équipement & trésors » : caractéristiques d'incantation, pièces.
+   Règles : aucune couleur en dur (variables de base.css), aucun !important.
+   ============================================================================= */
+
+/* ---------- Onglet 4 : magie & trésor ---------- */
+
+.spell-stats {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 12px;
+}
+
+.coins {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.coin {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Pièces frappées : métal bombé (reflet en haut à gauche), listel gravé près du bord,
+   lettres estampées. Chaque métal donne sa teinte, son reflet et son ombre (base.css). */
+.coin-icon {
+    --metal: var(--coin-gold);
+    --metal-light: var(--coin-gold-light);
+    --metal-dark: var(--coin-gold-dark);
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 1px solid var(--metal-dark);
+    font-family: var(--font-title);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--coin-ink);
+    text-shadow: 0 1px 0 var(--coin-shine);
+    background:
+        radial-gradient(circle closest-side, transparent 74%, var(--metal-dark) 77%, var(--metal-light) 83%, transparent 87%),
+        radial-gradient(circle at 32% 26%, var(--metal-light), var(--metal) 48%, var(--metal-dark));
+    box-shadow: var(--coin-shadow), inset 0 1px 1px var(--coin-shine), inset 0 -2px 3px var(--metal-dark);
+}
+
+.coin-icon.copper {
+    --metal: var(--coin-copper);
+    --metal-light: var(--coin-copper-light);
+    --metal-dark: var(--coin-copper-dark);
+}
+
+.coin-icon.silver {
+    --metal: var(--coin-silver);
+    --metal-light: var(--coin-silver-light);
+    --metal-dark: var(--coin-silver-dark);
+}
+
+.coin-icon.electrum {
+    --metal: var(--coin-electrum);
+    --metal-light: var(--coin-electrum-light);
+    --metal-dark: var(--coin-electrum-dark);
+}
+
+.coin-icon.platinum {
+    --metal: var(--coin-platinum);
+    --metal-light: var(--coin-platinum-light);
+    --metal-dark: var(--coin-platinum-dark);
+}

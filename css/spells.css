@@ -56,7 +56,7 @@
     margin-bottom: 6px;
 }
 
-/* Cases « Caractéristique d'incantation / DD / Bonus d'attaque » repliées (sheet.css leur
+/* Cases « Caractéristique d'incantation / DD / Bonus d'attaque » repliées (treasure.css leur
    donne display: grid, qui l'emporterait sur l'attribut hidden) */
 .spell-stats[hidden],
 .grimoire-toggle[hidden] {
@@ -708,7 +708,7 @@
     }
 }
 
-/* Cases C / R / M : boîte de 44 px (voir sheet.css), rond visible de 14 px */
+/* Cases C / R / M : boîte de 44 px (voir sheet-tablet.css), rond visible de 14 px */
 @media screen and (pointer: coarse) {
     .spell-flag .round-check {
         width: 44px;
