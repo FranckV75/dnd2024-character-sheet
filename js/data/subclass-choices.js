@@ -28,7 +28,7 @@
 
 import { SKILLS } from './constants.js';
 import { MANEUVERS, FIGHTER_SKILLS, ARTISAN_TOOLS } from './maneuvers.js';
-import { PRIMAL_BEASTS, BEAST_STRIKE_TYPES, STIMFEE_LOOKS } from './subclass-companions.js';
+import { PRIMAL_BEASTS, BEAST_STRIKE_TYPES, STIMFEE_LOOKS, STEED_TYPES, STEED_LEVELS } from './subclass-companions.js';
 
 /** Types de terre du Cercle de la Terre : [valeur, libellé (= group de subclass-spells.js), type de dégâts de Protégé de dame Nature] */
 export const LAND_TYPES = Object.freeze([
@@ -220,7 +220,7 @@ export const SUBCLASS_CHOICE_FIELDS = {
             options: BEAST_STRIKE_TYPES.map(([id, label]) => [id, label])
         }
     ],
-    // Conclave des Amazones (Odyssée, p. 49 et 51) : le livre ne dit pas quand le type se choisit
+    // Conclave des Amazones (Odyssée, p. 49 et 51) : le livre ne dit pas quand le type de monstres se choisit
     amazon_warrior: [
         {
             key: 'stimfee', feature: 'compagnon_stimfee', label: 'Apparence de la stimfée',
@@ -229,6 +229,16 @@ export const SUBCLASS_CHOICE_FIELDS = {
         {
             key: 'foe', feature: 'cri_de_guerre', label: 'Monstres visés', inPlay: true,
             when: 'Choisi à chaque Cri de guerre.', options: CREATURE_TYPES
+        },
+        // Magie des Amazones, niveau 5 : Trouver une monture (Find Steed, PHB 2024 p. 272) ; type et
+        // niveau du sort choisis à chaque lancement (nouvelle monture : PV pleins, subclass-companions.js)
+        {
+            key: 'steed', feature: 'magie_des_amazones', fromLevel: 5, label: 'Monture : type', inPlay: true,
+            when: 'Choisi à chaque lancement de Trouver une monture.', options: STEED_TYPES.map(([id, label]) => [id, label])
+        },
+        {
+            key: 'steed_level', feature: 'magie_des_amazones', fromLevel: 5, label: 'Monture : niveau du sort', inPlay: true,
+            when: 'Emplacement dépensé au lancement (niveau 2 sans choix).', options: STEED_LEVELS.map(level => [String(level), `Niveau ${level}`])
         }
     ],
     // Sorcellerie aberrante (PHB 2024, p. 146) : un avantage par point de sorcellerie, 10 minutes

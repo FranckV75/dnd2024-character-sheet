@@ -1,7 +1,8 @@
 // =============================================================================
 // SUBCLASS-COMPANIONS.JS (règles) - Cartes des compagnons et familiers de sous-classe (lot 7)
 //
-// Maître des bêtes (bête primordiale), Conclave des Amazones (stimfée), Serment du Seigneur Dragon
+// Maître des bêtes (bête primordiale), Conclave des Amazones (stimfée, puis monture d'Outremonde du
+// sort Trouver une monture au niveau 5), Serment du Seigneur Dragon
 // (pseudodragon, puis dragon lié au niveau 7) : la fiche calcule une carte de statistiques d'après
 // le niveau, le bonus de maîtrise et les caractéristiques du personnage, et les choix mémorisés
 // (clé subclass_choices : bête, type de la Frappe, apparence, couleur de l'œuf).
@@ -16,7 +17,8 @@
 // =============================================================================
 
 import {
-    PRIMAL_BEASTS, BEAST_STRIKE_TYPES, STIMFEE, STIMFEE_LOOKS, PSEUDODRAGON, DRAGONLINGS, DRAGONLING_SENSES, YOUNG_DRAGON_SENSES
+    PRIMAL_BEASTS, BEAST_STRIKE_TYPES, STIMFEE, STIMFEE_LOOKS, PSEUDODRAGON, DRAGONLINGS, DRAGONLING_SENSES, YOUNG_DRAGON_SENSES,
+    OTHERWORLDLY_STEED, STEED_TYPES, STEED_LEVELS
 } from '../data/subclass-companions.js';
 import { ABILITY_IDS } from '../data/constants.js';
 import { hunterMarkDie } from './character.js';
@@ -28,12 +30,19 @@ export const SUBCLASS_COMPANIONS_KEY = 'subclass_companions';
 export const COMPANION_KEYS = Object.freeze({
     primal: 'beast_master.primal_companion',
     stimfee: 'amazon_warrior.stimfee',
+    steed: 'amazon_warrior.steed',
     pseudodragon: 'oath_of_the_dragonlords.pseudodragon',
     dragon: 'oath_of_the_dragonlords.dragon'
 });
 
-/** Un choix qui fait venir une NOUVELLE créature (PV pleins) : { sous-classe: { choix: compagnon } } */
-const NEW_CREATURE_ON = { beast_master: { beast: COMPANION_KEYS.primal } };
+/**
+ * Un choix qui fait venir une NOUVELLE créature (PV pleins) : { sous-classe: { choix: compagnon } }.
+ * Monture de l'Amazone : type et niveau du sort choisis en relançant Trouver une monture.
+ */
+const NEW_CREATURE_ON = {
+    beast_master: { beast: COMPANION_KEYS.primal },
+    amazon_warrior: { steed: COMPANION_KEYS.steed, steed_level: COMPANION_KEYS.steed }
+};
 
 const ABILITY_LABELS = { str: 'FOR', dex: 'DEX', con: 'CON', int: 'INT', wis: 'SAG', cha: 'CHA' };
 const isPlainObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -123,7 +132,8 @@ export function restCompanions(character, derived = {}, kind = 'short') {
     const prefix = `${derived.subclass ?? ''}.`;
     // Dragon lié ou pseudodragon à 0 PV : mort ou disparu, un repos ne le ramène pas (thrène du
     // Seigneur Dragon, nouvel Appel de familier) : ses 0 PV restent tels que le joueur les a saisis
-    const gone = (key) => [COMPANION_KEYS.dragon, COMPANION_KEYS.pseudodragon].includes(key)
+    // La monture d'Outremonde aussi : elle disparaît à 0 PV, un nouveau lancement du sort la remplace
+    const gone = (key) => [COMPANION_KEYS.dragon, COMPANION_KEYS.pseudodragon, COMPANION_KEYS.steed].includes(key)
         && state[key] !== null && typeof state[key] === 'object' && String(state[key].hp ?? '').trim() !== '' && Number(state[key].hp) === 0;
     const stale = Object.keys(state).filter(key => key.startsWith(prefix) && !gone(key));
     if (kind !== 'long' || !derived.subclass || !stale.length) return { patch: {}, healed: [] };
@@ -280,6 +290,65 @@ function stimfeeCard(derived) {
     return card;
 }
 
+/**
+ * Niveau du sort Trouver une monture retenu pour la carte : le niveau choisi (menu « Monture : niveau
+ * du sort »), ramené au plus haut emplacement du personnage ; 2 sans choix (niveau du sort).
+ * @param {Object} derived - deriveCharacter() (subclassChoices.steed_level, spellSlots)
+ * @returns {{ level: number, chosen: number|null, max: number }}
+ */
+export function steedSpellLevel(derived = {}) {
+    const slots = Object.keys(derived.spellSlots ?? {}).map(Number).filter(Number.isInteger);
+    const max = Math.max(STEED_LEVELS[0], Math.min(STEED_LEVELS.at(-1), ...(slots.length ? [Math.max(...slots)] : [STEED_LEVELS[0]])));
+    const raw = Number(derived.subclassChoices?.steed_level);
+    const chosen = STEED_LEVELS.includes(raw) ? raw : null;
+    return { level: chosen === null ? STEED_LEVELS[0] : Math.min(chosen, max), chosen, max };
+}
+
+/**
+ * Conclave des Amazones, Magie des Amazones (niveau 5) : monture d'Outremonde du sort Trouver une
+ * monture (bloc du PHB 2024, p. 272). Attaque et DD : ceux des sorts du personnage (Sagesse sans
+ * caractéristique d'incantation choisie, celle du Rôdeur).
+ */
+function steedCard(derived) {
+    const pb = Number(derived.pb) || 2;
+    const { level, chosen, max } = steedSpellLevel(derived);
+    const type = STEED_TYPES.find(([id]) => id === derived.subclassChoices?.steed) ?? null;
+    const wis = Number(derived.mods?.wis) || 0;
+    const cast = derived.spellcasting ?? { attack: pb + wis, dc: 8 + pb + wis };
+    const card = emptyCard(COMPANION_KEYS.steed, 'magie_des_amazones',
+        type ? `Monture d'Outremonde (${type[1]})` : "Monture d'Outremonde",
+        `${type ? type[1] : 'Céleste, Fée ou Fiélon'} de taille ${OTHERWORLDLY_STEED.size.toLowerCase()}, ${OTHERWORLDLY_STEED.alignment} ; sort Trouver une monture de niveau ${level}`,
+        'monture');
+    if (!type) {
+        card.missing = 'Choisissez le type de la monture (Céleste, Fée ou Fiélon) dans le menu « Monture : type » du bloc Sous-classe (onglet Aptitudes & Traits) : il donne les dégâts de son Coup et son action bonus.';
+    }
+    card.ac = { value: OTHERWORLDLY_STEED.acBase + level, detail: `${OTHERWORLDLY_STEED.acBase} + ${level} (niveau du sort)` };
+    const hp = OTHERWORLDLY_STEED.hpBase + OTHERWORLDLY_STEED.hpPerLevel * level;
+    card.hp = { max: hp, current: hp, dice: `${level}${OTHERWORLDLY_STEED.hitDie} ; ${OTHERWORLDLY_STEED.hpBase} + ${OTHERWORLDLY_STEED.hpPerLevel} × ${level}` };
+    card.speed = level >= OTHERWORLDLY_STEED.flyFromLevel ? `${OTHERWORLDLY_STEED.speed}, ${OTHERWORLDLY_STEED.fly}` : OTHERWORLDLY_STEED.speed;
+    card.initiative = 'Partage la vôtre';
+    card.abilities = abilityRows(OTHERWORLDLY_STEED.scores, (id, mod) => mod);
+    card.lines = [
+        ['Sens', OTHERWORLDLY_STEED.senses],
+        ['Langues', OTHERWORLDLY_STEED.languages],
+        ['Bonus de maîtrise', `${signed(pb)} (le vôtre)`]
+    ];
+    card.traits = OTHERWORLDLY_STEED.traits.map(([name, text]) => ({ name, text }));
+    const damage = type ? type[2] : 'radiants (Céleste), psychiques (Fée) ou nécrotiques (Fiélon)';
+    const bonus = (entry) => ({
+        name: `${entry[3][0]} (action bonus${type ? '' : `, ${entry[1]} seulement`})`,
+        text: `${entry[3][1].replace('{level}', String(level)).replace('{dc}', `DD ${cast.dc}`)} Une fois, de nouveau après un repos long.`
+    });
+    card.actions = [
+        { name: "Coup d'Outremonde", text: `Corps à corps ${signed(cast.attack)} (votre bonus d'attaque des sorts), allonge 1,5 m. Touché : ${dice('1d8', level)} ${damage}.` },
+        ...(type ? [bonus(type)] : STEED_TYPES.map(bonus))
+    ];
+    if (level < OTHERWORLDLY_STEED.flyFromLevel) card.notes.push(`Vol 18 m seulement avec un sort de niveau ${OTHERWORLDLY_STEED.flyFromLevel} ou plus.`);
+    if (chosen !== null && chosen > max) card.notes.push(`Niveau ${chosen} choisi, mais votre plus haut emplacement est de niveau ${max} : la carte suit le niveau ${max}.`);
+    if (!derived.spellcasting) card.notes.push(`Attaque et DD calculés avec la Sagesse (caractéristique d'incantation du Rôdeur, à choisir en haut du grimoire).`);
+    return card;
+}
+
 /** Serment du Seigneur Dragon : pseudodragon, familier (PHB 2024, p. 354 et Appel de familier) */
 function pseudodragonCard(derived) {
     const level = Number(derived.level) || 1;
@@ -377,6 +446,7 @@ export function companionCards(derived = {}, record = {}) {
     const cards = [];
     if (derived.subclass === 'beast_master' && level >= 3) cards.push(primalCompanion(derived, record));
     if (derived.subclass === 'amazon_warrior' && level >= 3) cards.push(stimfeeCard(derived));
+    if (derived.subclass === 'amazon_warrior' && level >= 5) cards.push(steedCard(derived));
     if (derived.subclass === 'oath_of_the_dragonlords' && level >= 3) {
         cards.push(pseudodragonCard(derived));
         if (level >= 7) cards.push(dragonCard(derived));

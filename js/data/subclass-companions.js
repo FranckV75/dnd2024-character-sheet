@@ -4,7 +4,8 @@
 // Blocs constants des créatures que donne une sous-classe ; les chiffres qui dépendent du personnage
 // (PV, CA, bonus d'attaque, DD, sauvegardes) sont calculés par js/rules/subclass-companions.js.
 //  - Maître des bêtes (PHB 2024, p. 122-124) : bête primordiale des terres, des mers ou des cieux ;
-//  - Conclave des Amazones (Odyssée, p. 49 et 51) : stimfée, oiseau mécanique ;
+//  - Conclave des Amazones (Odyssée, p. 49 et 51) : stimfée, oiseau mécanique ; monture d'Outremonde
+//    du sort Trouver une monture (Magie des Amazones, niveau 5 ; bloc du PHB 2024, p. 272) ;
 //  - Serment du Seigneur Dragon (Odyssée, p. 47 et 49, sort pacte du Seigneur Dragon p. 55) :
 //    pseudodragon (PHB 2024, p. 354), puis dragon lié = dragonnet métallique du Manuel des monstres
 //    (airain, bronze, cuivre ou argent). Blocs : Manuel des monstres 2024 / SRD 5.2, vérifié le 11/11/2026.
@@ -78,6 +79,41 @@ export const STIMFEE = Object.freeze({
         ['Automate de soutien', 'Action : fait boire une potion qu\'elle porte à une créature consentante. Action bonus : stabilise une créature mourante à son contact.'],
         ['Éclaireuse', 'En extérieur, surveille une zone de 1 500 m de rayon pendant 10 minutes, puis vous fait son rapport.'],
         ['Entretien', 'Récupère tous ses PV après un repos long ; détruite, 8 heures de réparation.']
+    ]
+});
+
+/**
+ * Types de la monture d'Outremonde (choix « steed » du Conclave des Amazones), choisis à chaque
+ * lancement du sort : [valeur, libellé, dégâts du Coup d'Outremonde, action bonus [nom, effet]].
+ * Effets résumés du bloc « Otherworldly Steed » (PHB 2024, p. 272, sort Find Steed).
+ */
+export const STEED_TYPES = Object.freeze([
+    ['celestial', 'Céleste', 'radiants', ['Toucher guérisseur', 'Une créature à 1,5 m de la monture récupère 2d8 + {level} PV.']],
+    ['fey', 'Fée', 'psychiques', ['Pas féerique', 'La monture se téléporte, avec son cavalier, dans un espace libre de votre choix à 18 m ou moins.']],
+    ['fiend', 'Fiélon', 'nécrotiques', ['Regard effrayant', 'Une créature que la monture voit à 18 m ou moins : sauvegarde de Sagesse contre le DD de vos sorts ({dc}) ; échec : Effrayée jusqu\'à la fin de votre prochain tour.']]
+]);
+
+/** Niveaux d'emplacement permis pour Trouver une monture (choix « steed_level ») : sort de niveau 2 à 5 */
+export const STEED_LEVELS = Object.freeze([2, 3, 4, 5]);
+
+/**
+ * Monture d'Outremonde (PHB 2024, p. 272, sort Find Steed = « Appel de destrier » dans
+ * data/spells.json ; « trouver une monture » dans le guide de l'Odyssée, Magie des Amazones,
+ * niveau 5). Les chiffres qui dépendent du niveau du sort (L) sont calculés :
+ * CA 10 + L ; PV 5 + 10 × L (L dés d10) ; vol à partir d'un sort de niveau 4 ;
+ * Coup d'Outremonde : bonus d'attaque des sorts, 1d8 + L. Bonus de maîtrise = le vôtre.
+ */
+export const OTHERWORLDLY_STEED = Object.freeze({
+    size: 'Grande', alignment: 'neutre',
+    acBase: 10, hpBase: 5, hpPerLevel: 10, hitDie: 'd10', flyFromLevel: 4,
+    speed: '18 m', fly: 'vol 18 m',
+    scores: { str: 18, dex: 12, con: 14, int: 6, wis: 12, cha: 8 },
+    senses: 'Perception passive 11',
+    languages: 'télépathie à 1,5 km, seulement avec vous',
+    traits: [
+        ['Lien vital', 'Quand vous récupérez des PV grâce à un sort de niveau 1 ou plus, la monture en récupère autant si vous êtes à 1,5 m d\'elle.'],
+        ['Monture contrôlée', 'Elle partage votre Initiative ; montée, c\'est une monture contrôlée (combat monté). Si vous êtes Neutralisé, elle joue juste après vous et agit seule pour vous protéger.'],
+        ['Disparition', 'Elle disparaît à 0 PV ou si vous mourez, en laissant ce qu\'elle portait. Un nouveau lancement la remplace (la même ou une autre).']
     ]
 });
 

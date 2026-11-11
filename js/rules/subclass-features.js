@@ -167,6 +167,13 @@ const MANUAL_AUTOMATION = {
         partage_des_sorts: { text: `${cardOf('du compagnon')} : rappel.`, partial: true }
     },
     amazon_warrior: {
+        // Trouver une monture (niveau 5) : carte de la monture d'Outremonde (subclass-companions.js)
+        magie_des_amazones: {
+            text: (d) => (d.level >= 5
+                ? `Trouver une monture : ${cardOf("de la monture d'Outremonde")}, selon le type et le niveau du sort choisis ci-dessous ; PV actuels à suivre sur la carte. Les sorts eux-mêmes sont à noter au grimoire.`
+                : "Trouver une monture au niveau 5 : la carte de la monture s'affichera alors dans « Compagnons & familiers ». Les sorts eux-mêmes sont à noter au grimoire."),
+            partial: true
+        },
         compagnon_stimfee: {
             text: (d) => `${cardOf('de la stimfée')} : PV ${(d.level >= 11 ? 30 : 15) + d.level}, attaques ${signed(4 + (Number(d.pb) || 2))} et DD ${10 + (Number(d.pb) || 2)} avec votre bonus de maîtrise ; PV actuels à suivre sur la carte.`,
             partial: true
