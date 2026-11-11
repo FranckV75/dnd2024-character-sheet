@@ -108,6 +108,14 @@ describe('Noms lus dans un attribut (data-out)', () => {
         assert.equal(outputValue('mod:str', d, character), '+0');
     });
 
+    test('Rappel de la case « Maîtrises d\'armes » : une ligne par source, rien sans classe', () => {
+        assert.equal(outputValue('classWeaponProfs', d, character), '');
+        const cleric = { ...character, char_class: 'Clerc' };
+        const lines = outputValue('classWeaponProfs', deriveCharacter(cleric), cleric).split('\n');
+        assert.equal(lines.length, 2);
+        assert.equal(lines[0], 'Par la classe (Clerc) : armes courantes.');
+    });
+
     for (const name of ['__proto__', 'constructor', 'toString', 'hasOwnProperty', '__proto__:x', '', 'inconnu']) {
         test(`« ${name} » : rien d'affiché, aucune erreur`, () => {
             assert.equal(outputValue(name, d, character), '');

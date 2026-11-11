@@ -16,6 +16,7 @@ import { FEAT_SLOT_ORDER, HUMAN_FEAT_SLOT, STYLE_FEAT_SLOT, featSlotLevel } from
 import { stripHTML } from '../state/migrate.js';
 import { featSlotState, hitDieForClass, exhaustionSeverity, classSlug } from '../rules/character.js';
 import { featEffects, AUTOMATED_FEATS } from '../rules/feat-effects.js';
+import { classWeaponTrainingLines } from '../rules/class-features.js';
 import { featCounters, setFeatUsesPatch } from '../rules/feat-uses.js';
 import { subclassCounters, setSubclassUsesPatch } from '../rules/subclass-uses.js';
 import { FEAT_CHOICE_RULES, slotChoice, setFeatChoicePatch, fieldOptions, fieldActive } from '../rules/feat-choices.js';
@@ -437,6 +438,8 @@ const OUTPUTS = {
     exhaustion: (d) => d.exhaustion.dead ? 'Mort'
         : d.exhaustion.level ? `${d.exhaustion.d20Penalty} aux Tests d20 ; vitesse -${String(d.exhaustion.speedPenaltyM).replace('.', ',')} m` : 'Aucun effet',
     renownTier: (d) => d.renownTier,
+    // Case « Maîtrises d'armes » : une ligne par source (classe, don, sous-classe)
+    classWeaponProfs: (d) => classWeaponTrainingLines(d).join('\n'),
     spellDc: (d) => d.spellcasting ? d.spellcasting.dc : '—',
     spellAttack: (d) => d.spellcasting ? signed(d.spellcasting.attack) : '—',
     mod: (d, id) => signed(d.mods[id]),

@@ -365,6 +365,19 @@
                     <div class="skills" id="skills">
                         <div class="skills-extra">
                             <section class="box box-inner">
+                                <h4 id="h-weapon-profs">Maîtrises d'armes</h4>
+                                <!-- Rappel calculé : ce que donnent la classe, un don, la sous-classe
+                                     (classWeaponTrainingLines, js/rules/class-features.js) -->
+                                <output class="muted weapon-profs-class" data-out="classWeaponProfs"
+                                    id="weapon-profs-class"></output>
+                                <div class="rich rich-xs" data-field="profs_weapons" data-kind="rich"
+                                    aria-labelledby="h-weapon-profs" aria-describedby="weapon-profs-class weapon-profs-help">
+                                </div>
+                                <p class="muted weapon-profs-help edit-only" id="weapon-profs-help">Une maîtrise en plus
+                                    (don, espèce…) compte dans l'attaque avec le réglage&nbsp;⚙ de l'arme «&nbsp;Arme maîtrisée&nbsp;: Oui&nbsp;»
+                                    (onglet Combat).</p>
+                            </section>
+                            <section class="box box-inner">
                                 <h4 id="h-tools">Outils</h4>
                                 <div class="rich rich-xs" data-field="profs_tools" data-kind="rich"
                                     aria-labelledby="h-tools"></div>
