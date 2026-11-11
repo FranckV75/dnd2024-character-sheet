@@ -174,3 +174,23 @@ describe('Vitesses, jets contre la mort, textes chiffrés', () => {
         assert.match(feature(assassin, 'frappe_mortelle').automation.text, /DD 19 /);
     });
 });
+
+describe('Errant féerique : Charme mystique rappelé aux compétences de Charisme (lot D)', () => {
+    const zones = (r) => subclassNotes(deriveCharacter(r), r);
+    test('Sagesse +3 : note « déjà compté » sur Tromperie, Intimidation, Représentation et Persuasion', () => {
+        const z = zones(record('Rôdeur', 'Errant Féerique', 3, { wis_score: '16' }));
+        for (const id of ['deception', 'intimidation', 'performance', 'persuasion']) {
+            const notes = z[`skills.${id}`] ?? [];
+            assert.equal(notes.length, 1, id);
+            assert.equal(notes[0].featId, 'charme_surnaturel');
+            assert.equal(notes[0].value, 3);
+            assert.ok(notes[0].applied);
+            assert.match(notes[0].text, /^Vagabond féerique niveau 3 : \+3 \(modificateur de Sagesse, minimum \+1\) déjà compté/);
+        }
+        assert.equal(z['skills.insight'], undefined);
+    });
+    test('Sagesse 8 : minimum +1 ; autre sous-classe : aucune note', () => {
+        assert.equal(zones(record('Rôdeur', 'Errant Féerique', 3, { wis_score: '8' }))['skills.persuasion'][0].value, 1);
+        assert.equal(zones(record('Rôdeur', 'Chasseur', 3, { wis_score: '16' }))['skills.persuasion'], undefined);
+    });
+});

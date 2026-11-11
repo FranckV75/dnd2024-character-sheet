@@ -314,3 +314,19 @@ describe('Œuf du pseudodragon, Affinité élémentaire, choix descriptifs', () 
         assert.deepEqual(deriveCharacter(clock).subclassChoices, { manifestation: 'ticking' });
     });
 });
+
+describe('Textes des capacités selon le choix noté (lot D)', () => {
+    test('Prédictions des Moires : résultat noté ou rappel de le noter', () => {
+        assert.ok(auto(fates(6), 'predictions_des_moires').startsWith(
+            'Notez le d20 lancé à la fin de chaque repos dans le menu ci-dessous ; effacé au repos suivant.'));
+        assert.ok(auto(fates(6, { prediction: '7' }), 'predictions_des_moires').startsWith(
+            'Résultat noté : 7, rappelé sous la case ; effacé au repos suivant.'));
+    });
+    test('Troisième œil : texte selon l\'avantage choisi, rappel sinon', () => {
+        assert.match(auto(diviner(10, { eye: 'darkvision' }), 'troisieme_il'), /^Vision dans le noir à 36 m choisie/);
+        assert.match(auto(diviner(10, { eye: 'comprehension' }), 'troisieme_il'), /^Lire toutes les langues choisi/);
+        assert.match(auto(diviner(10, { eye: 'see' }), 'troisieme_il'), /^Voir l'invisible choisi/);
+        assert.ok(auto(diviner(10), 'troisieme_il').startsWith('Avantage à choisir dans le menu ci-dessous à chaque utilisation ; effacé au repos.'));
+        assert.ok(auto(diviner(10, { eye: 'xray' }), 'troisieme_il').startsWith('Avantage à choisir dans le menu ci-dessous à chaque utilisation ; effacé au repos.'));
+    });
+});

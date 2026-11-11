@@ -11,6 +11,7 @@ import { fakeSupabase } from './helpers/fake-supabase.js';
 import { sheetFingerprint, SYNC_KEY } from '../js/cloud/controller.js';
 import { STORAGE_KEYS } from '../js/state/persistence.js';
 import { createDefaultCharacter } from '../js/state/schema.js';
+import { createLocalSave } from '../js/state/local-save.js';
 
 const U = { id: 'user-1', email: 'joueur@example.com' };
 const T0 = '2026-10-20T10:00:00.000Z';
@@ -277,5 +278,51 @@ describe('Deux onglets : lien avec le compte en ligne', () => {
         await settle();
         await browser.deliver();
         assert.deepEqual(db.table.map(r => r.name), []);
+    });
+});
+
+describe('Stockage du navigateur plein (createLocalSave seul)', () => {
+    /** Faux store et faux stockage : setItem échoue pour les clés de `full` */
+    function setup({ sheetSaved = true, full = [] } = {}) {
+        const sheet = { ...K };
+        const store = { get: () => sheet, subscribe() {} };
+        const data = new Map([['lien', 'ancien lien']]);
+        const storage = {
+            getItem: (key) => (data.has(key) ? data.get(key) : null),
+            setItem(key, value) {
+                if (full.includes(key)) throw new Error('QuotaExceededError');
+                data.set(key, String(value));
+            },
+            removeItem: (key) => { data.delete(key); }
+        };
+        const calls = [];
+        const status = { saved: () => calls.push('saved'), failed: () => calls.push('failed') };
+        const save = createLocalSave({
+            store, storage, writeSheet: () => sheetSaved, status,
+            setTimer: () => 1, clearTimer: () => {}, now: () => 0
+        });
+        save.saveWithCharacter('lien', () => 'nouveau lien');
+        return { save, data, calls };
+    }
+
+    test('fiche non enregistrée : « échec » signalé, les données associées ne sont pas touchées', () => {
+        const { save, data, calls } = setup({ sheetSaved: false });
+        save.saveNow();
+        assert.deepEqual(calls, ['failed']);
+        assert.equal(data.get('lien'), 'ancien lien');
+    });
+
+    test('donnée associée impossible à écrire : l\'ancienne valeur est effacée, pas laissée à côté de la nouvelle fiche', () => {
+        const { save, data, calls } = setup({ full: ['lien'] });
+        save.saveNow();
+        assert.equal(data.has('lien'), false);
+        assert.deepEqual(calls, ['saved']);
+    });
+
+    test('stockage disponible : la donnée associée est écrite après la fiche', () => {
+        const { save, data, calls } = setup();
+        save.saveNow();
+        assert.equal(data.get('lien'), 'nouveau lien');
+        assert.deepEqual(calls, ['saved']);
     });
 });

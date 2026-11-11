@@ -463,3 +463,26 @@ describe("Maître des armures intermédiaires : mention seulement si l'armure in
         assert.ok(!notes[0].applied);
     });
 });
+
+describe('Maître des armures intermédiaires : cas sans effet (lot D)', () => {
+    const base = {
+        char_class: 'Guerrier', char_level: '4', dex_score: '16', feat_4: 'maitre_des_armures_intermediaires',
+        prof_armor_heavy: true, prof_armor_med: true
+    };
+    const armor = (name, type, ca) => ({ name, type, ca, equipped: true });
+    const notesOf = (c) => featEffects(c);
+    test('Dextérité 15 en Demi-plate : il faut 16 ou plus, en attente', () => {
+        const effects = notesOf({ ...base, dex_score: '15', dynamic_armors: [armor('Demi-plate', 'Interméd.', '15')] });
+        const ac = effects.armorClass.filter(n => n.featId === 'maitre_des_armures_intermediaires');
+        assert.deepEqual(ac.map(n => n.text), ['Porteur agile : il faut une valeur de Dextérité de 16 ou plus.']);
+        assert.ok(ac[0].inactive && !ac[0].applied);
+        assert.ok(effects['featSlot:4'].some(n => n.inactive && n.text === 'Sans effet pour le moment : Dextérité inférieure à 16.'));
+    });
+    test('aucune armure intermédiaire : seulement en armure intermédiaire, en attente', () => {
+        for (const armors of [[], [armor('Harnois', 'Lourde', '18')]]) {
+            const ac = notesOf({ ...base, dynamic_armors: armors }).armorClass.filter(n => n.featId === 'maitre_des_armures_intermediaires');
+            assert.deepEqual(ac.map(n => n.text), ['Porteur agile : seulement en armure intermédiaire (aucune équipée).']);
+            assert.ok(ac[0].inactive);
+        }
+    });
+});

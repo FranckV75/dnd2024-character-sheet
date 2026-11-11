@@ -191,3 +191,37 @@ describe('Sauvegarde', () => {
         assert.ok(V4_ONLY_KEYS.includes('feat_7'));
     });
 });
+
+describe('Textes des styles sous l\'emplacement (lot D : chemins non testés)', () => {
+    test('Défense sans armure : mention « seulement en armure », en attente, sans valeur', () => {
+        const notes = featEffects(hero({ feat_2: 'defense' }));
+        const ac = notes.armorClass.filter(n => n.featId === 'defense');
+        assert.deepEqual(ac.map(n => n.text), ['Défense : seulement en armure (aucune équipée).']);
+        assert.ok(ac[0].inactive && !ac[0].applied);
+        assert.deepEqual(slotTexts(hero({ feat_2: 'defense' }), 2), ['Sans effet pour le moment : aucune armure légère, intermédiaire ou lourde équipée.']);
+    });
+
+    test('Défense en armure : +1 compté, rappelé sous l\'emplacement', () => {
+        const c = hero({ feat_2: 'defense', dynamic_armors: [armor('Cotte de mailles')] });
+        const ac = featEffects(c).armorClass.filter(n => n.featId === 'defense');
+        assert.equal(ac.length, 1);
+        assert.ok(ac[0].applied);
+        assert.equal(ac[0].value, 1);
+    });
+
+    const expected = {
+        archerie: /^\+2 aux jets d'attaque avec les armes à distance .*déjà compté dans le tableau des armes/,
+        duel: /^\+2 aux dégâts avec une arme de corps à corps tenue à une main.*Bouton « Duel \(\+2\) »/,
+        arme_a_deux_mains: /chaque 1 ou 2 sur un dé de dégâts compte comme un 3/,
+        arme_de_lancer: /^\+2 aux dégâts quand vous touchez avec une attaque à distance d'une arme de Lancer/,
+        combat_a_deux_armes: /arme Légère ajoute votre modificateur aux dégâts/,
+        combat_en_aveugle: /^Vision aveugle à 3 m/
+    };
+    for (const [style, pattern] of Object.entries(expected)) {
+        test(`${style} : un seul rappel sous l'emplacement`, () => {
+            const texts = slotTexts(hero({ feat_2: style }), 2);
+            assert.equal(texts.length, 1, texts.join(' | '));
+            assert.match(texts[0], pattern);
+        });
+    }
+});
