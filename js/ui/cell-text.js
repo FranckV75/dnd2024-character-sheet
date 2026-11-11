@@ -6,7 +6,8 @@
 // n'insère pas de saut de ligne (une case = une valeur), et un texte collé
 // sur plusieurs lignes est remis sur une seule.
 // La hauteur est recalculée : à la saisie, quand la largeur change (onglet
-// affiché, rotation de la tablette), après chaque mise à jour de la fiche
+// affiché, rotation de la tablette), quand les marges intérieures ou la taille du
+// texte changent (ligne de saisie des sorts devenue un sort), après chaque mise à jour de la fiche
 // (fitCellTexts, appelé par main.js) et autour de l'impression.
 // =============================================================================
 
@@ -15,11 +16,21 @@ import { el } from './dom.js';
 const CLASS = 'cell-text';
 
 /**
- * Dernier ajustement de chaque case : texte et largeur (la hauteur n'en dépend pas d'autre chose,
- * hors chargement des polices et impression, qui réajustent tout).
+ * Dernier ajustement de chaque case : texte, largeur, marges intérieures et taille du texte.
+ * Les marges comptent : sur tablette, la ligne de saisie des sorts a des marges de 12,5 px
+ * qu'elle perd en devenant un sort, sans que son texte ni sa largeur changent.
+ * (Le chargement des polices et l'impression réajustent tout.)
+ * Lu juste après offsetWidth, qui a déjà calculé les styles : la lecture ne coûte presque rien.
  */
 const fitted = new WeakMap();
-const fitKey = (textarea) => `${textarea.offsetWidth}|${textarea.value}`;
+function fitKey(textarea) {
+    const width = textarea.offsetWidth;
+    const style = typeof getComputedStyle === 'function' ? getComputedStyle(textarea) : null;
+    const box = style
+        ? `${style.paddingTop}|${style.paddingBottom}|${style.fontSize}|${style.lineHeight}`
+        : '';
+    return `${width}|${box}|${textarea.value}`;
+}
 
 /** Ajuste la hauteur d'une case à son contenu */
 export function fitCellText(textarea) {
@@ -35,8 +46,8 @@ export function fitCellText(textarea) {
  * Ajuste toutes les cases de `root`, par lots : on lit tout, puis on écrit tout.
  * Alterner lecture et écriture case par case forçait le navigateur à recalculer
  * la mise en page à chaque case (environ 7 fois plus lent sur l'onglet Combat).
- * Après une mise à jour de la fiche, seules les cases dont le texte ou la largeur a changé
- * sont réajustées : remettre toutes les hauteurs à « auto » à chaque frappe forçait une mise
+ * Après une mise à jour de la fiche, seules les cases dont le texte, la largeur, les marges
+ * intérieures ou la taille du texte ont changé sont réajustées : remettre toutes les hauteurs à « auto » à chaque frappe forçait une mise
  * en page complète en plus (environ 9 ms par lettre sur une tablette lente).
  * @param {ParentNode} [root]
  * @param {{ all?: boolean }} [options] - all : réajuster toutes les cases (polices, impression)

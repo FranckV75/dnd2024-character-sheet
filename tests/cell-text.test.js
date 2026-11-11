@@ -33,3 +33,33 @@ test('fitCellTexts : toutes les lectures avant les écritures finales (une seule
     assert.ok(lastAuto < firstRead, 'toutes les hauteurs remises à « auto » avant la première lecture');
     assert.ok(lastRead < firstPx, 'toutes les lectures avant la première hauteur écrite');
 });
+
+test('fitCellTexts : seule une case changée est réajustée, y compris quand seules ses marges changent', (t) => {
+    // Ligne de saisie des sorts sur tablette : marges de 12,5 px, perdues quand elle devient un sort
+    const padding = new Map();
+    const original = globalThis.getComputedStyle;
+    globalThis.getComputedStyle = (cell) => ({
+        paddingTop: padding.get(cell), paddingBottom: padding.get(cell), fontSize: '16px', lineHeight: 'normal'
+    });
+    t.after(() => { globalThis.getComputedStyle = original; });
+    const log = [];
+    const entry = fakeCell(log, 'entry', { contentHeight: 44 });
+    const other = fakeCell(log, 'other', { contentHeight: 23 });
+    entry.value = 'Boule de feu';
+    other.value = 'Lumière';
+    padding.set(entry, '12.5px');
+    padding.set(other, '2px');
+    const root = { querySelectorAll: () => [entry, other] };
+    fitCellTexts(root);
+    assert.equal(entry.style.height, '44px');
+
+    log.length = 0;
+    fitCellTexts(root);
+    assert.ok(!log.some((l) => l.startsWith('write')), 'rien n\'a changé : aucune hauteur réécrite');
+
+    padding.set(entry, '2px');
+    Object.defineProperty(entry, 'scrollHeight', { get() { log.push('read entry'); return 23; } });
+    fitCellTexts(root);
+    assert.equal(entry.style.height, '23px', 'marges perdues : la case reprend la hauteur de son texte');
+    assert.ok(!log.some((l) => l.startsWith('write other')), 'la case voisine, inchangée, n\'est pas touchée');
+});
