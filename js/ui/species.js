@@ -87,25 +87,30 @@ function traitItem(view, trait, { upcoming = false, locked = false, pb = 2 } = {
         ...extra);
 }
 
-/** Contenu du bloc (pur DOM) */
+/** Contenu du bloc (pur DOM) ; les éléments ne sont construits (nodes()) que si la signature change */
 function build(character) {
     const derived = derivedOf(character);
     const view = speciesView(character, derived);
-    if (!view) return { signature: 'none', nodes: [], slug: '' };
+    if (!view) return { signature: 'none', nodes: () => [], slug: '' };
     const locked = isLocked();
     const pb = Number(derived.pb) || 2;
     const signature = JSON.stringify([view, locked, pb]);
-    const title = el('p', { class: 'subclass-title origin-title' }, icon('paw'),
+    const title = () => el('p', { class: 'subclass-title origin-title' }, icon('paw'),
         el('span', { text: `Espèce : ${view.name}` }),
         foldButton(`Traits de l'espèce ${view.name}`));
     if (!view.known) {
         return {
-            signature, slug: view.slug, nodes: [title, el('p', {
+            signature, slug: view.slug, nodes: () => [title(), el('p', {
                 class: 'subclass-empty',
                 text: "Espèce de L'Odyssée des Seigneurs Dragons : ses traits ne sont pas encore repris ici. Voir le livre."
             })]
         };
     }
+    return { signature, slug: view.slug, nodes: () => knownNodes(view, title(), { locked, pb }) };
+}
+
+/** Éléments du bloc d'une espèce reprise dans la fiche */
+function knownNodes(view, title, { locked, pb }) {
     const hint = view.option && !view.option.perUse && !view.option.selected
         ? el('p', { class: 'origin-check' }, icon('warning'),
             el('span', { class: 'feat-tag', 'data-kind': 'check', text: 'À choisir' }),
@@ -128,7 +133,7 @@ function build(character) {
             })),
             el('ul', { class: 'subclass-list' }, view.upcoming.map(trait => traitItem(view, trait, { upcoming: true })))) : null
     ];
-    return { signature, nodes: nodes.filter(Boolean), slug: view.slug };
+    return nodes.filter(Boolean);
 }
 
 /**
@@ -139,9 +144,10 @@ export function initSpecies({ root, store }) {
     if (!container) return;
     let rendered = null;
     const render = (character) => {
-        const { signature, nodes, slug } = build(character);
+        const { signature, nodes: makeNodes, slug } = build(character);
         if (signature === rendered) return;
         rendered = signature;
+        const nodes = makeNodes();
         const focused = container.contains(document.activeElement) ? document.activeElement.dataset?.speciesChoice : null;
         container.replaceChildren(...nodes);
         container.hidden = nodes.length === 0;

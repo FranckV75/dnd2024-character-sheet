@@ -596,9 +596,10 @@ export function initWeapons(ctx) {
         });
 
         emptyRow.hidden = visible > 0;
-        emptyRow.firstElementChild.textContent = list.length === 0
+        const emptyText = list.length === 0
             ? "Aucune arme pour l'instant."
             : 'Aucune arme ne correspond à ce filtre.';
+        if (emptyRow.firstElementChild.textContent !== emptyText) emptyRow.firstElementChild.textContent = emptyText;
     }
 
     // ---------------------------------------------------------------------

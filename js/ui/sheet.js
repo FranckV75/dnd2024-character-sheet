@@ -368,6 +368,10 @@ function writeField(field, value, force = false) {
     }
     if (field.tagName === 'SELECT') {
         const raw = String(value ?? '');
+        // Déjà affichée, option ordinaire, aucune option « (valeur enregistrée) » : rien à faire
+        // (évite de reparcourir à chaque frappe les longues listes de dons, d'espèces…)
+        const selected = field.options[field.selectedIndex];
+        if (selected && selected.value === raw && !selected.dataset.legacy && !field.querySelector('option[data-legacy]')) return;
         // Ancienne sauvegarde avec un peu de HTML (« <font …>4</font> ») : l'option du même texte est
         // choisie, sans réécrire la valeur enregistrée
         const plain = stripHTML(raw).trim();
@@ -501,7 +505,9 @@ export function outputValue(spec, d, character) {
 
 function renderOutputs(root, character, d) {
     for (const out of sheetElements(root, '[data-out]')) {
-        out.textContent = outputValue(out.dataset.out, d, character);
+        // Réécrire un texte identique coûte un recalcul de mise en page à chaque frappe
+        const text = String(outputValue(out.dataset.out, d, character));
+        if (out.textContent !== text) out.textContent = text;
     }
     lastArmorClass = d.armorClass;
     root.querySelector('.ac-hex').setAttribute('aria-label', `Classe d'armure ${d.armorClass.value} : détail du calcul`);
@@ -570,7 +576,14 @@ function renderFeats(root, character, d, effects, counters) {
             : alternative ? { prereq: `${alternative.className} niveau 2`, desc: alternative.desc } : undefined;
         box.hidden = !feat;
         if (feat) {
-            box.innerHTML = sanitizeRulesText(`<strong>Prérequis :</strong> ${feat.prereq}<br>${feat.desc || '<em>Description à compléter.</em>'}`);
+            // Réécrite seulement si le don change (pas à chaque frappe ailleurs dans la fiche), ou si
+            // la mise en forme devient disponible (DOMPurify chargé tardivement)
+            const source = `<strong>Prérequis :</strong> ${feat.prereq}<br>${feat.desc || '<em>Description à compléter.</em>'}`;
+            const signature = `${richTextAvailable()}|${source}`;
+            if (renderedSignatures.get(box) !== signature) {
+                renderedSignatures.set(box, signature);
+                box.innerHTML = sanitizeRulesText(source);
+            }
         }
         const badge = slot.querySelector('.feat-badge');
         if (badge.disabled !== !feat) badge.disabled = !feat;

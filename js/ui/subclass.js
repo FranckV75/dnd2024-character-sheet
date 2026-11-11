@@ -165,16 +165,17 @@ function emptyMessage(character, derived) {
 }
 
 /**
- * Contenu du bloc pour un personnage (pur DOM, sans état).
+ * Contenu du bloc pour un personnage (pur DOM, sans état). Les éléments ne sont construits
+ * (nodes()) que si la signature a changé : pas à chaque frappe ailleurs dans la fiche.
  * @param {Object} character
- * @returns {{ nodes: Node[], signature: string }}
+ * @returns {{ nodes: () => Node[], signature: string, subclass?: string }}
  */
 function build(character) {
     const derived = derivedOf(character);
     const { subclass, reached, upcoming } = subclassFeatures(derived);
     if (!subclass) {
         const message = emptyMessage(character, derived);
-        return { signature: JSON.stringify(['empty', message]), nodes: message ? [el('p', { class: 'subclass-empty', text: message })] : [] };
+        return { signature: JSON.stringify(['empty', message]), nodes: () => (message ? [el('p', { class: 'subclass-empty', text: message })] : []) };
     }
     const fields = subclassChoiceFields(derived);
     const choice = derived.subclassChoices ?? {};
@@ -183,7 +184,7 @@ function build(character) {
         reached.map(f => [f.id, f.automation?.text, f.automation?.list, f.options.map(o => [o.id, o.chosen, o.second, o.automation?.text])]),
         upcoming.map(f => f.id),
         fields.map(field => [field.key, field.inPlay]), choice]);
-    const nodes = [
+    const nodes = () => [
         // Titre : sa pastille replie tout le bloc (seul le titre reste)
         el('p', { class: 'subclass-title' }, icon('star'),
             el('span', { text: `Sous-classe : ${subclass.name}` }),
@@ -197,8 +198,8 @@ function build(character) {
                 text: `À venir : ${upcoming.length} capacité${upcoming.length > 1 ? 's' : ''} (niveau${upcoming.length > 1 ? 'x' : ''} ${[...new Set(upcoming.map(f => f.level))].join(', ')})`
             })),
             el('ul', { class: 'subclass-list' }, upcoming.map(feature => featureItem(feature, { upcoming: true })))) : null
-    ];
-    return { signature, nodes: nodes.filter(Boolean), subclass: subclass.key };
+    ].filter(Boolean);
+    return { signature, nodes, subclass: subclass.key };
 }
 
 /**
@@ -210,9 +211,10 @@ export function initSubclassFeatures({ root, store }) {
     let rendered = null;
     let current = '';
     const render = (character) => {
-        const { signature, nodes, subclass = '' } = build(character);
+        const { signature, nodes: makeNodes, subclass = '' } = build(character);
         if (signature === rendered) return;
         rendered = signature;
+        const nodes = makeNodes();
         // Blocs repliables ouverts (« À venir », « Autres écoles ») : rouverts si la sous-classe ne change pas
         const opened = subclass === current
             ? [...container.querySelectorAll('details[open]')].map(details => details.className) : [];
