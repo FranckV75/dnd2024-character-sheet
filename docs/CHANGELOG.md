@@ -2,6 +2,25 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.38.0] - 2026-11-11 (Corrections de l'audit)
+### Fixed
+- Le mot « null » ne s'affiche plus sous l'Équipement de l'historique (écran et impression).
+- Saisie plus rapide sur tablette : statistiques calculées une fois par changement, textes riches
+  déjà nettoyés réutilisés, valeurs et blocs réécrits seulement s'ils changent (environ 90 → 50 ms
+  par lettre sur la fiche de Korgul, tablette lente simulée). Appui long sur + / − régulier.
+- Un onglet de l'ancien site qui réenregistre la fiche sans rien changer ne fait plus apparaître
+  la question « Deux versions ».
+- Rapport d'import : l'ancien champ « Armes » est dit conservé, mais plus affiché.
+- En-tête sur trois lignes à toutes les largeurs : le nom et les PX ne sont plus coupés.
+- Fenêtres et liste des sorts à la hauteur visible de l'écran (barre d'adresse de Safari).
+- Noms du Manuel des joueurs français : bénéfices des Faveurs épiques, styles « Armes à deux
+  mains » et « Armes de lancer », « Attaque à mains nues » (les lignes enregistrées sous l'ancien
+  nom restent reconnues), pages françaises des bottes d'arme, du Maître d'armes et des styles.
+### Changed
+- Rangement du code sans changement visible : `css/sheet.css`, `js/rules/feat-effects.js` et
+  `js/ui/spells.js` découpés par sujet, fonctions en double réunies, code inutilisé retiré,
+  nouveaux tests, `.gitignore` renforcé (sauvegardes exportées, PDF), DOMPurify 3.4.17.
+
 ## [4.37.0] - 2026-11-10 (Rappels des capacités, Concentration)
 ### Added
 - Rappels des capacités de classe et de sous-classe près des valeurs concernées, comme ceux des

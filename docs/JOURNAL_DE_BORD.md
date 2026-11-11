@@ -12,9 +12,11 @@ en fin de session :
 
 ## En ce moment
 
-- **En ligne** : version **4.37.0** (`master` = `v4` = `e1ea8a8`), publiée le 10/11/2026 avec
-  l'accord de Franck. Sur `v4`, 6 commits de documentation locaux, non poussés, sans effet pour
-  les joueurs.
+- **En ligne** : version **4.37.0** (`master` = `e1ea8a8`), publiée le 10/11/2026.
+- **Prête, non publiée** : **4.38.0** sur `v4` (corrections de l'audit du 11/11, lots A, E, C, D).
+  Attend l'accord de Franck pour « Publie ».
+- **GitHub** : Franck a demandé au support de purger les anciens commits (PDF, vieilles
+  sauvegardes, adresse Gmail) ; réponse attendue.
 - **Emplacement** : le dépôt est désormais `E:\2 - CODE\Feuille de perso\Code\` (voir
   `E:\2 - CODE\LISEZ-MOI.md`).
 - **Manuel français** : les photos de Franck font foi pour les noms français. Elles sont rangées,
@@ -24,6 +26,11 @@ en fin de session :
   jamais le texte du livre (le dépôt est public).
 
 ### À vérifier par Franck (tablette Android, iPad de Catherine)
+
+- 4.38.0 : saisie plus fluide (taper le nom, les PV) ; en-tête sur trois lignes (nom et PX
+  entiers) ; plus de « null » sous l'historique ; fenêtres pas coupées sur l'iPad.
+- iPad : Safari zoome-t-il quand on touche les petits champs (notes des armes, listes des dons,
+  Outils et Langues) ? Si oui, décider s'il faut agrandir leur police.
 
 - Onglet Aptitudes & Traits, encadré « Espèce & historique » : choisir l'option de l'espèce (fiche
   déverrouillée), voir la Vision dans le noir et les Résistances ; bouton « Appliquer à la fiche »
@@ -41,13 +48,26 @@ en fin de session :
 ### Ensuite, sur demande de Franck seulement
 
 Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
-1. audit `/audit-fiche`, puis découpage des gros fichiers ;
-2. restes et points relevés (pages des Bottes d'arme : Franck fait les photos du chapitre
-   Équipement ; espèces de l'Odyssée, dragonnets, restes des sous-classes) ;
+1. ~~audit et découpage~~ : faits (4.38.0) ;
+2. restes et points relevés (espèces de l'Odyssée, dragonnets, restes des sous-classes) ;
 3. discussion pour trier toutes les idées, regroupées au même niveau (le lanceur de dés et la
    fiche sans wifi n'y sont plus prioritaires).
 
 ## Sessions
+
+### 11/11/2026 — Audit de santé et corrections (4.38.0)
+
+- Audit `/audit-fiche` (7 angles, ultracode) : calculs, sauvegardes et sécurité en ordre.
+  Défauts confirmés : « null » sous l'historique, saisie lente, anciens commits encore visibles
+  sur GitHub (Franck a écrit au support : lot B, en attente).
+- Corrigés : lot A (null, vitesse), lot E (fausse question « Deux versions », en-tête sur trois
+  lignes partout, hauteur des fenêtres sur iPad), lot C (noms et pages du livre français), lot D
+  (découpage des gros fichiers, doublons, DOMPurify 3.4.17). Chaque lot relu par deux vérificateurs.
+- Laissé de côté, à décider : police des petits champs sur iPad ; retour à l'ancien site qui
+  efface une classe ou un don qu'il ne connaît pas (aucune parade sans toucher à la v3) ; ancien
+  champ « Armes » non affiché ; textes des sorts repris d'AideDD ; réunir les lectures de
+  sous-classe et les deux mécanismes de repli (changeraient la fiche).
+- Ordre des chantiers revu par Franck : audit, puis restes, puis tri de toutes les idées.
 
 ### 11/11/2026 — Journal de bord et rangement des dossiers
 
