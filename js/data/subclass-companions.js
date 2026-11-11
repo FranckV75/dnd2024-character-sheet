@@ -5,9 +5,9 @@
 // (PV, CA, bonus d'attaque, DD, sauvegardes) sont calculés par js/rules/subclass-companions.js.
 //  - Maître des bêtes (PHB 2024, p. 122-124) : bête primordiale des terres, des mers ou des cieux ;
 //  - Conclave des Amazones (Odyssée, p. 49 et 51) : stimfée, oiseau mécanique ;
-//  - Serment du Seigneur Dragon (Odyssée, p. 47 et 49) : pseudodragon (PHB 2024, p. 354), puis dragon
-//    lié. Le guide renvoie au Manuel des monstres pour le dragon : blocs des dragonnets repris du
-//    Manuel des monstres 2014, marqués verify: true (« à vérifier par Franck »).
+//  - Serment du Seigneur Dragon (Odyssée, p. 47 et 49, sort pacte du Seigneur Dragon p. 55) :
+//    pseudodragon (PHB 2024, p. 354), puis dragon lié = dragonnet métallique du Manuel des monstres
+//    (airain, bronze, cuivre ou argent). Blocs : Manuel des monstres 2024 / SRD 5.2, vérifié le 11/11/2026.
 // Distances converties en mètres (1,5 m par case de 5 pieds). Objets seuls, aucune fonction.
 // Ordre des caractéristiques : str, dex, con, int, wis, cha.
 // =============================================================================
@@ -102,71 +102,80 @@ export const PSEUDODRAGON = Object.freeze({
 });
 
 /**
- * Dragonnets métalliques (Manuel des monstres 2014), dragon lié du Serment du Seigneur Dragon
- * (choix « egg ») : verify: true, à vérifier par Franck sur son livre. saves : sauvegardes maîtrisées
- * du bloc (les autres = modificateur) ; le Paladin ajoute son bonus de maîtrise à toutes.
- * youngPassive : Perception passive du jeune dragon (niveau 15, monté), à vérifier aussi.
+ * Dragonnets métalliques, dragon lié du Serment du Seigneur Dragon (choix « egg »).
+ * Source : Manuel des monstres 2024 / SRD 5.2 (CC-BY), vérifié le 11/11/2026 ; noms français des
+ * actions : AideDD (version 2024). Les deux sources donnent les mêmes chiffres. Effets résumés.
+ * saves : sauvegardes maîtrisées du bloc (les autres = modificateur) ; le Paladin ajoute son bonus de
+ * maîtrise à toutes. blockHp : PV du bloc (la fiche affiche ceux de la sous-classe, 40 + 2 × niveau).
+ * multiattack : le bloc a Attaques multiples (perdue tant qu'il se bat à vos côtés, pacte).
+ * rend : attaque Saignée. breaths[0] : souffle de dégâts (recharge 5-6 dans le bloc) ;
+ * breaths[1] : second souffle (sans recharge dans le bloc).
+ * youngPassive : Perception passive du jeune dragon (niveau 15, monté).
  */
 export const DRAGONLINGS = Object.freeze({
     brass: {
-        label: 'Airain', name: 'Dragonnet d\'airain', youngName: 'Jeune dragon d\'airain', verify: true,
-        size: 'Moyen', ac: 16, speed: '9 m, creusement 4,5 m, vol 18 m',
+        label: 'Airain', name: 'Dragonnet d\'airain', youngName: 'Jeune dragon d\'airain',
+        size: 'Moyen', ac: 15, blockHp: '22 (4d8 + 4)', cr: '1', speed: '9 m, creusement 4,5 m, vol 18 m',
         scores: { str: 15, dex: 10, con: 13, int: 10, wis: 11, cha: 13 },
-        saves: { dex: 2, con: 3, wis: 2, cha: 3 },
+        saves: { dex: 2, wis: 2 },
         skills: 'Perception +4, Discrétion +2',
-        immunity: 'feu', immunityText: 'Immunité au feu', youngPassive: 16,
+        immunity: 'fire', immunityText: 'Immunité au feu', youngPassive: 16,
+        multiattack: false,
         traits: [],
-        bite: { attack: 4, damage: '1d10 + 2' },
+        rend: { attack: 4, damage: '1d10 + 2', type: 'tranchants' },
         breaths: [
             { name: 'Souffle de feu', area: 'ligne de 6 m sur 1,5 m', save: 'Dextérité', dc: 11, effect: '4d6 dégâts de feu, moitié en cas de réussite' },
-            { name: 'Souffle de sommeil', area: 'cône de 4,5 m', save: 'Constitution', dc: 11, effect: 'Inconsciente 1 minute (prend fin si la cible subit des dégâts ou si quelqu\'un la réveille par une action)' }
+            { name: 'Souffle soporifique', area: 'cône de 4,5 m', save: 'Constitution', dc: 11, effect: 'Neutralisée jusqu\'à la fin de son prochain tour, puis nouvelle sauvegarde ; second échec : Inconsciente 1 minute (prend fin si elle subit des dégâts ou si une créature à 1,5 m la réveille par une action)' }
         ]
     },
     bronze: {
-        label: 'Bronze', name: 'Dragonnet de bronze', youngName: 'Jeune dragon de bronze', verify: true,
-        size: 'Moyen', ac: 17, speed: '9 m, nage 9 m, vol 18 m',
+        label: 'Bronze', name: 'Dragonnet de bronze', youngName: 'Jeune dragon de bronze',
+        size: 'Moyen', ac: 15, blockHp: '39 (6d8 + 12)', cr: '2', speed: '9 m, nage 9 m, vol 18 m',
         scores: { str: 17, dex: 10, con: 15, int: 12, wis: 11, cha: 15 },
-        saves: { dex: 2, con: 4, wis: 2, cha: 4 },
+        saves: { dex: 2, wis: 2 },
         skills: 'Perception +4, Discrétion +2',
         immunity: 'lightning', immunityText: 'Immunité à la foudre', youngPassive: 17,
+        multiattack: true,
         traits: [['Amphibie', 'Il respire dans l\'air et sous l\'eau.']],
-        bite: { attack: 5, damage: '1d10 + 3' },
+        rend: { attack: 5, damage: '1d10 + 3', type: 'tranchants' },
         breaths: [
             { name: 'Souffle de foudre', area: 'ligne de 12 m sur 1,5 m', save: 'Dextérité', dc: 12, effect: '3d10 dégâts de foudre, moitié en cas de réussite' },
-            { name: 'Souffle de répulsion', area: 'cône de 9 m', save: 'Force', dc: 12, effect: 'repoussée de 9 m' }
+            { name: 'Souffle répulsif', area: 'cône de 9 m', save: 'Force', dc: 12, effect: 'repoussée de 9 m en ligne droite et À terre' }
         ]
     },
     copper: {
-        label: 'Cuivre', name: 'Dragonnet de cuivre', youngName: 'Jeune dragon de cuivre', verify: true,
-        size: 'Moyen', ac: 16, speed: '9 m, escalade 9 m, vol 18 m',
+        label: 'Cuivre', name: 'Dragonnet de cuivre', youngName: 'Jeune dragon de cuivre',
+        size: 'Moyen', ac: 16, blockHp: '22 (4d8 + 4)', cr: '1', speed: '9 m, escalade 9 m, vol 18 m',
         scores: { str: 15, dex: 12, con: 13, int: 14, wis: 11, cha: 13 },
-        saves: { dex: 3, con: 3, wis: 2, cha: 3 },
+        saves: { dex: 3, wis: 2 },
         skills: 'Perception +4, Discrétion +3',
         immunity: 'acid', immunityText: 'Immunité à l\'acide', youngPassive: 17,
+        multiattack: false,
         traits: [],
-        bite: { attack: 4, damage: '1d10 + 2' },
+        rend: { attack: 4, damage: '1d10 + 2', type: 'tranchants' },
         breaths: [
             { name: 'Souffle d\'acide', area: 'ligne de 6 m sur 1,5 m', save: 'Dextérité', dc: 11, effect: '4d8 dégâts d\'acide, moitié en cas de réussite' },
-            { name: 'Souffle de lenteur', area: 'cône de 4,5 m', save: 'Constitution', dc: 11, effect: 'ralentie 1 minute (Vitesse divisée par deux, pas de réaction, une seule attaque, action ou action bonus par tour) ; nouvelle sauvegarde à la fin de chacun de ses tours' }
+            { name: 'Souffle ralentissant', area: 'cône de 4,5 m', save: 'Constitution', dc: 11, effect: 'jusqu\'à la fin de son prochain tour, Vitesse divisée par deux, pas de réaction, et une action ou une action bonus à son tour, pas les deux' }
         ]
     },
     silver: {
-        label: 'Argent', name: 'Dragonnet d\'argent', youngName: 'Jeune dragon d\'argent', verify: true,
-        size: 'Moyen', ac: 17, speed: '9 m, vol 18 m',
+        label: 'Argent', name: 'Dragonnet d\'argent', youngName: 'Jeune dragon d\'argent',
+        size: 'Moyen', ac: 17, blockHp: '45 (6d8 + 18)', cr: '2', speed: '9 m, vol 18 m',
         scores: { str: 19, dex: 10, con: 17, int: 12, wis: 11, cha: 15 },
-        saves: { dex: 2, con: 5, wis: 2, cha: 4 },
+        saves: { dex: 2, wis: 2 },
         skills: 'Perception +4, Discrétion +2',
         immunity: 'cold', immunityText: 'Immunité au froid', youngPassive: 18,
+        multiattack: true,
         traits: [],
-        bite: { attack: 6, damage: '1d10 + 4' },
+        rend: { attack: 6, damage: '1d10 + 4', type: 'perforants' },
         breaths: [
-            { name: 'Souffle de froid', area: 'cône de 4,5 m', save: 'Constitution', dc: 13, effect: '4d8 dégâts de froid, moitié en cas de réussite' },
-            { name: 'Souffle paralysant', area: 'cône de 4,5 m', save: 'Constitution', dc: 13, effect: 'Paralysée 1 minute ; nouvelle sauvegarde à la fin de chacun de ses tours' }
+            { name: 'Souffle glacial', area: 'cône de 4,5 m', save: 'Constitution', dc: 13, effect: '4d8 dégâts de froid, moitié en cas de réussite' },
+            { name: 'Souffle paralysant', area: 'cône de 4,5 m', save: 'Constitution', dc: 13, effect: 'Neutralisée jusqu\'à la fin de son prochain tour, puis nouvelle sauvegarde ; second échec : Paralysée, nouvelle sauvegarde à la fin de chacun de ses tours (réussie d\'office au bout de 1 minute)' }
         ]
     }
 });
 
-/** Sens communs des dragonnets (Manuel des monstres 2014, à vérifier) */
+/** Sens communs des dragonnets (Manuel des monstres 2024 / SRD 5.2, vérifié le 11/11/2026) */
 export const DRAGONLING_SENSES = 'vision aveugle 3 m, vision dans le noir 18 m, Perception passive 14';
-/** Sens des jeunes dragons métalliques (Manuel des monstres 2014, à vérifier) : vision aveugle 9 m, dans le noir 36 m */
+/** Sens des jeunes dragons métalliques (Manuel des monstres 2024 / SRD 5.2, vérifié le 11/11/2026) */
 export const YOUNG_DRAGON_SENSES = 'vision aveugle 9 m, vision dans le noir 36 m';

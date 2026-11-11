@@ -348,7 +348,6 @@ function dragonCard(derived) {
             }
         ];
         card.notes.push('Jeune dragon : bloc du Manuel des monstres, non recopié ; la fiche garde les PV de la sous-classe (40 + 2 × niveau de Paladin).');
-        if (dragon.verify) card.notes.push('Sens et Perception passive du jeune dragon (Manuel des monstres 2014) : à vérifier par Franck.');
         return card;
     }
     card.ac = { value: dragon.ac, detail: `Bloc du ${dragon.name.toLowerCase()}` };
@@ -357,11 +356,12 @@ function dragonCard(derived) {
     card.lines.unshift(['Compétences', dragon.skills], ['Sens', DRAGONLING_SENSES], ['Langues', 'Draconique']);
     card.traits = [...dragon.traits.map(([name, text]) => ({ name, text })), pact];
     card.actions = [
-        { name: 'Morsure', text: `Corps à corps ${signed(dragon.bite.attack)}, allonge 1,5 m. Touché : ${dragon.bite.damage} perforants.` },
+        ...(dragon.multiattack ? [{ name: 'Attaques multiples', text: 'Deux Saignées (perdue tant qu\'il se bat à vos côtés, pacte).', inactive: true }] : []),
+        { name: 'Saignée', text: `Corps à corps ${signed(dragon.rend.attack)}, allonge 1,5 m. Touché : ${dragon.rend.damage} ${dragon.rend.type}.` },
         ...dragon.breaths.map(breath => ({ name: breath.name, text: `${breath.area.charAt(0).toUpperCase()}${breath.area.slice(1)} ; sauvegarde de ${breath.save} DD ${breath.dc} ; échec : ${breath.effect}.` }))
     ];
     card.notes.push(`Sauvegardes : celles du bloc + ${pb} (votre bonus de maîtrise).`);
-    if (dragon.verify) card.notes.push('Bloc du dragonnet repris du Manuel des monstres 2014 : à vérifier par Franck.');
+    card.notes.push(`Bloc du Manuel des monstres 2024 : seul le ${dragon.breaths[0].name.toLowerCase()} y a une recharge (5-6). Lecture retenue : le pacte (un souffle, puis repos court ou long) vaut pour les deux souffles. À confirmer par Franck.`);
     return card;
 }
 

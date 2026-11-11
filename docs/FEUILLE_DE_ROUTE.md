@@ -24,8 +24,6 @@ points relevés, puis une discussion pour trier toutes les idées.
   - compteur de strophes (Poésie épique) : après avoir tapé un nombre, un toucher immédiat sur « + »
     ou « − » peut être perdu (le bloc se reconstruit).
 - Espèces de l'Odyssée (Centaure, Méduse, Minotaure, Satyre, Sirène, Nymphe) : traits pas repris.
-- Dragonnets du Seigneur Dragon : blocs repris de mémoire du Manuel des monstres 2014, à vérifier
-  sur le Manuel des monstres 2024 (photos de Franck).
 
 ### 3. Idées, toutes au même niveau (priorités à trier avec Franck après l'audit)
 

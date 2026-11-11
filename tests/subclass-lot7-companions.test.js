@@ -15,7 +15,7 @@ import { subclassChoiceFields, subclassChoice, setSubclassChoicePatch, subclassC
 import { subclassFeatures } from '../js/rules/subclass-features.js';
 import { subclassCounters, restSubclassUses } from '../js/rules/subclass-uses.js';
 import { planShortRest, planLongRest } from '../js/rules/rest.js';
-import { DRAGONLINGS, PRIMAL_BEASTS } from '../js/data/subclass-companions.js';
+import { DRAGONLINGS, DRAGONLING_SENSES, YOUNG_DRAGON_SENSES, PRIMAL_BEASTS } from '../js/data/subclass-companions.js';
 import { V4_ONLY_KEYS, withoutV4State } from '../js/cloud/sync.js';
 import { migrateCharacter } from '../js/state/migrate.js';
 import { createDefaultCharacter } from '../js/state/schema.js';
@@ -63,7 +63,7 @@ describe('Choix des compagnons', () => {
         assert.equal(amazonFields.find(f => f.key === 'stimfee').options.length, 7);
         assert.deepEqual(subclassChoiceFields({ subclass: 'oath_of_the_dragonlords', level: 7 }).map(f => f.key), ['egg']);
         assert.deepEqual(Object.keys(DRAGONLINGS), ['brass', 'bronze', 'copper', 'silver']);
-        assert.ok(Object.values(DRAGONLINGS).every(d => d.verify === true), 'blocs du Manuel des monstres 2014 à vérifier');
+        assert.ok(Object.values(DRAGONLINGS).every(d => !('verify' in d)), 'blocs vérifiés sur le Manuel des monstres 2024');
     });
 });
 
@@ -203,27 +203,75 @@ describe('Serment du Seigneur Dragon : pseudodragon et dragon lié', () => {
         assert.equal(cards(dragonlord(6, { egg: 'bronze' })).length, 1);
     });
 
-    test('niveau 7, œuf d\'airain : PV 54, CA 16, sauvegardes du bloc + 3, Morsure +4, souffles DD 11', () => {
+    test('niveau 7, œuf d\'airain : PV 54, CA 15, sauvegardes du bloc + 3, Saignée +4, souffles DD 11', () => {
         const d = card(dragonlord(7, { egg: 'brass' }), COMPANION_KEYS.dragon);
         assert.equal(d.name, 'Dragon lié : Dragonnet d\'airain');
-        assert.deepEqual([d.hp.max, d.ac.value], [54, 16]);
-        assert.deepEqual(saves(d), [5, 5, 6, 3, 5, 6]);
-        assert.match(action(d, 'Morsure').text, /\+4, allonge 1,5 m\. Touché : 1d10 \+ 2 perforants/);
+        assert.deepEqual([d.hp.max, d.ac.value], [54, 15]);
+        assert.deepEqual(saves(d), [5, 5, 4, 3, 5, 4]);
+        assert.match(action(d, 'Saignée').text, /\+4, allonge 1,5 m\. Touché : 1d10 \+ 2 tranchants/);
+        assert.equal(action(d, 'Attaques multiples'), undefined, 'pas d\'Attaques multiples dans le bloc 2024 du dragonnet d\'airain');
         assert.match(action(d, 'Souffle de feu').text, /^Ligne de 6 m sur 1,5 m ; sauvegarde de Dextérité DD 11/);
-        assert.ok(d.notes.some(n => /Manuel des monstres 2014 : à vérifier par Franck/.test(n)));
+        assert.match(action(d, 'Souffle soporifique').text, /Neutralisée.*second échec : Inconsciente 1 minute/);
+        assert.ok(!d.notes.some(n => /2014|à vérifier/.test(n)));
+        assert.ok(d.notes.some(n => /seul le souffle de feu y a une recharge.*À confirmer par Franck/.test(n)));
         assert.match(trait(d, 'Pacte').text, /case « Souffle du dragon »/);
         assert.match(trait(card(dragonlord(7, { egg: 'brass' }), COMPANION_KEYS.pseudodragon), 'Œuf').text, /L'œuf d'airain a éclos/);
     });
 
-    test('niveau 11 : PV 62 ; argent : CA 17, sauvegardes +8/+6/+9/+5/+6/+8, Morsure +6, DD 13', () => {
+    test('niveau 11 : PV 62 ; argent : CA 17, sauvegardes +8/+6/+7/+5/+6/+6, Saignée +6 perforants, DD 13', () => {
         assert.equal(card(dragonlord(11, { egg: 'brass' }), COMPANION_KEYS.dragon).hp.max, 62);
-        assert.deepEqual(saves(card(dragonlord(11, { egg: 'brass' }), COMPANION_KEYS.dragon)), [6, 6, 7, 4, 6, 7]);
+        assert.deepEqual(saves(card(dragonlord(11, { egg: 'brass' }), COMPANION_KEYS.dragon)), [6, 6, 5, 4, 6, 5]);
         const silver = card(dragonlord(11, { egg: 'silver' }), COMPANION_KEYS.dragon);
         assert.deepEqual([silver.hp.max, silver.ac.value], [62, 17]);
-        assert.deepEqual(saves(silver), [8, 6, 9, 5, 6, 8]);
-        assert.match(action(silver, 'Morsure').text, /\+6, .*1d10 \+ 4/);
-        assert.match(action(silver, 'Souffle de froid').text, /Constitution DD 13/);
+        assert.deepEqual(saves(silver), [8, 6, 7, 5, 6, 6]);
+        assert.match(action(silver, 'Saignée').text, /\+6, .*1d10 \+ 4 perforants/);
+        assert.match(action(silver, 'Souffle glacial').text, /Constitution DD 13/);
+        // Attaques multiples du bloc : grisée (perdue tant qu'il se bat à vos côtés)
+        assert.equal(action(silver, 'Attaques multiples').inactive, true);
         assert.ok(trait(card(dragonlord(7, { egg: 'bronze' }), COMPANION_KEYS.dragon), 'Amphibie'));
+    });
+
+    // Chiffres figés : Manuel des monstres 2024 / SRD 5.2 (CC-BY), vérifiés le 11/11/2026 (mêmes chiffres
+    // sur AideDD, version 2024). Une modification de ces blocs doit d'abord être revérifiée sur la source.
+    test('blocs des dragonnets : chiffres du Manuel des monstres 2024 / SRD 5.2', () => {
+        const fig = (d) => ({
+            ac: d.ac, hp: d.blockHp, cr: d.cr, speed: d.speed, scores: Object.values(d.scores), saves: d.saves,
+            skills: d.skills, immunity: d.immunity, multiattack: d.multiattack, rend: d.rend,
+            breaths: d.breaths.map(b => [b.area, b.save, b.dc, b.effect.match(/^\d+d\d+/)?.[0] ?? '']),
+            young: d.youngPassive
+        });
+        assert.deepEqual(fig(DRAGONLINGS.brass), {
+            ac: 15, hp: '22 (4d8 + 4)', cr: '1', speed: '9 m, creusement 4,5 m, vol 18 m', scores: [15, 10, 13, 10, 11, 13],
+            saves: { dex: 2, wis: 2 }, skills: 'Perception +4, Discrétion +2', immunity: 'fire', multiattack: false,
+            rend: { attack: 4, damage: '1d10 + 2', type: 'tranchants' },
+            breaths: [['ligne de 6 m sur 1,5 m', 'Dextérité', 11, '4d6'], ['cône de 4,5 m', 'Constitution', 11, '']],
+            young: 16
+        });
+        assert.deepEqual(fig(DRAGONLINGS.bronze), {
+            ac: 15, hp: '39 (6d8 + 12)', cr: '2', speed: '9 m, nage 9 m, vol 18 m', scores: [17, 10, 15, 12, 11, 15],
+            saves: { dex: 2, wis: 2 }, skills: 'Perception +4, Discrétion +2', immunity: 'lightning', multiattack: true,
+            rend: { attack: 5, damage: '1d10 + 3', type: 'tranchants' },
+            breaths: [['ligne de 12 m sur 1,5 m', 'Dextérité', 12, '3d10'], ['cône de 9 m', 'Force', 12, '']],
+            young: 17
+        });
+        assert.deepEqual(fig(DRAGONLINGS.copper), {
+            ac: 16, hp: '22 (4d8 + 4)', cr: '1', speed: '9 m, escalade 9 m, vol 18 m', scores: [15, 12, 13, 14, 11, 13],
+            saves: { dex: 3, wis: 2 }, skills: 'Perception +4, Discrétion +3', immunity: 'acid', multiattack: false,
+            rend: { attack: 4, damage: '1d10 + 2', type: 'tranchants' },
+            breaths: [['ligne de 6 m sur 1,5 m', 'Dextérité', 11, '4d8'], ['cône de 4,5 m', 'Constitution', 11, '']],
+            young: 17
+        });
+        assert.deepEqual(fig(DRAGONLINGS.silver), {
+            ac: 17, hp: '45 (6d8 + 18)', cr: '2', speed: '9 m, vol 18 m', scores: [19, 10, 17, 12, 11, 15],
+            saves: { dex: 2, wis: 2 }, skills: 'Perception +4, Discrétion +2', immunity: 'cold', multiattack: true,
+            rend: { attack: 6, damage: '1d10 + 4', type: 'perforants' },
+            breaths: [['cône de 4,5 m', 'Constitution', 13, '4d8'], ['cône de 4,5 m', 'Constitution', 13, '']],
+            young: 18
+        });
+        assert.equal(DRAGONLING_SENSES, 'vision aveugle 3 m, vision dans le noir 18 m, Perception passive 14');
+        assert.equal(YOUNG_DRAGON_SENSES, 'vision aveugle 9 m, vision dans le noir 36 m');
+        // Bronze : second souffle = repoussée de 9 m et À terre (ajout de 2024)
+        assert.match(DRAGONLINGS.bronze.breaths[1].effect, /9 m.*À terre/);
     });
 
     test('niveau 7 sans couleur : PV 54 affichés, bloc à choisir', () => {
