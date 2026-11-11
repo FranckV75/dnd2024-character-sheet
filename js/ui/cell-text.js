@@ -14,24 +14,45 @@ import { el } from './dom.js';
 
 const CLASS = 'cell-text';
 
+/**
+ * Dernier ajustement de chaque case : texte et largeur (la hauteur n'en dépend pas d'autre chose,
+ * hors chargement des polices et impression, qui réajustent tout).
+ */
+const fitted = new WeakMap();
+const fitKey = (textarea) => `${textarea.offsetWidth}|${textarea.value}`;
+
 /** Ajuste la hauteur d'une case à son contenu */
 export function fitCellText(textarea) {
     if (!textarea.isConnected || textarea.offsetWidth === 0) return;
+    // Lu avant d'écrire : relire la largeur après coup forcerait une mise en page de plus
+    const key = fitKey(textarea);
     textarea.style.height = 'auto';
     textarea.style.height = `${textarea.scrollHeight}px`;
+    fitted.set(textarea, key);
 }
 
 /**
  * Ajuste toutes les cases de `root`, par lots : on lit tout, puis on écrit tout.
  * Alterner lecture et écriture case par case forçait le navigateur à recalculer
  * la mise en page à chaque case (environ 7 fois plus lent sur l'onglet Combat).
+ * Après une mise à jour de la fiche, seules les cases dont le texte ou la largeur a changé
+ * sont réajustées : remettre toutes les hauteurs à « auto » à chaque frappe forçait une mise
+ * en page complète en plus (environ 9 ms par lettre sur une tablette lente).
+ * @param {ParentNode} [root]
+ * @param {{ all?: boolean }} [options] - all : réajuster toutes les cases (polices, impression)
  */
-export function fitCellTexts(root = document) {
+export function fitCellTexts(root = document, { all = false } = {}) {
     const visible = [...root.querySelectorAll(`textarea.${CLASS}`)]
         .filter((textarea) => textarea.isConnected && textarea.offsetWidth !== 0);
-    for (const textarea of visible) textarea.style.height = 'auto';
-    const heights = visible.map((textarea) => textarea.scrollHeight);
-    visible.forEach((textarea, i) => { textarea.style.height = `${heights[i]}px`; });
+    const stale = visible.map((textarea) => [textarea, fitKey(textarea)])
+        .filter(([textarea, key]) => all || fitted.get(textarea) !== key);
+    if (stale.length === 0) return;
+    for (const [textarea] of stale) textarea.style.height = 'auto';
+    const heights = stale.map(([textarea]) => textarea.scrollHeight);
+    stale.forEach(([textarea, key], i) => {
+        textarea.style.height = `${heights[i]}px`;
+        fitted.set(textarea, key);
+    });
 }
 
 const widths = new WeakMap();
@@ -86,5 +107,7 @@ if (typeof window !== 'undefined') {
     window.addEventListener('beforeprint', () => {
         for (const textarea of document.querySelectorAll(`textarea.${CLASS}`)) textarea.style.height = '';
     });
-    window.addEventListener('afterprint', () => fitCellTexts());
+    window.addEventListener('afterprint', () => fitCellTexts(document, { all: true }));
+    // Police chargée après le premier ajustement : les hauteurs changent sans changement de texte
+    document.fonts?.addEventListener?.('loadingdone', () => fitCellTexts(document, { all: true }));
 }
