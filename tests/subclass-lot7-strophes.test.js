@@ -114,6 +114,25 @@ describe('Poésie épique : données et compteur', () => {
         assert.deepEqual(stepSubclassChoicePatch(c3, deriveCharacter(c3), 'strophes', 'x'), {});
     });
 
+    test('« + » touché juste après une saisie : part du nombre tapé, pas encore enregistré', () => {
+        const step = (c, delta, typed) => stepSubclassChoicePatch(c, deriveCharacter(c), 'strophes', delta, typed)
+            .subclass_choices?.[EPIC]?.strophes;
+        const c = bard(3, { strophes: '14' });
+        assert.equal(step(c, 1, '20'), '21');
+        assert.equal(step(c, -1, ' 20 '), '19');
+        assert.equal(step(c, 1, 20), '21');
+        // Case vide ou illisible : la valeur enregistrée sert de départ
+        assert.equal(step(c, 1, ''), '15');
+        assert.equal(step(c, 1, 'abc'), '15');
+        assert.equal(step(c, 1, undefined), '15');
+        // Saisie hors de la plage : ramenée entre 0 et 999 avant le pas
+        assert.equal(step(c, 1, '5000'), '999');
+        assert.equal(step(c, -1, '-3'), '0');
+        assert.equal(step(c, 1, '12,7'), '13');
+        // Format de sauvegarde inchangé : toujours une chaîne dans subclass_choices
+        assert.deepEqual(Object.keys(stepSubclassChoicePatch(c, deriveCharacter(c), 'strophes', 1, '20')), ['subclass_choices']);
+    });
+
     test('changer de sous-classe puis revenir retrouve les strophes', () => {
         const c = bard(5, { strophes: '20' });
         const other = { ...c, char_subclass: 'Collège du Savoir' };

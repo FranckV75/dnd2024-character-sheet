@@ -232,18 +232,26 @@ export function setSubclassChoicePatch(character, subclass, key, value) {
  * Patch qui ajoute delta à un compteur (kind: 'number') atteint de la sous-classe du personnage
  * (boutons « − » et « + » : strophes de la Poésie épique). Une valeur absente ou illisible part du
  * minimum ; le résultat est ramené entre min et max.
+ * typed : nombre tapé dans la case et pas encore enregistré (toucher « + » juste après la saisie,
+ * avant que la case ne soit quittée) ; lisible, il remplace la valeur enregistrée comme point de
+ * départ (ramené entre min et max), pour que ni la saisie ni le toucher ne soient perdus.
  * @param {Object} character
  * @param {Object} derived - deriveCharacter(character) (subclass, level, subclassChoices)
  * @param {string} key - champ (« strophes »)
  * @param {number} delta
+ * @param {string|number} [typed] - contenu de la case (« 14 ») ; vide ou illisible : ignoré
  * @returns {Object} { subclass_choices: {...} }, ou {} si ce compteur n'est pas atteint
  */
-export function stepSubclassChoicePatch(character, derived = {}, key, delta) {
+export function stepSubclassChoicePatch(character, derived = {}, key, delta, typed) {
     const field = levelFields(derived).find(f => f.key === key && f.kind === 'number');
     const step = Math.trunc(Number(delta));
     if (!field || !Number.isFinite(step)) return {};
     const choice = derived.subclassChoices ?? subclassChoice(character, derived);
-    const current = choice[key] !== undefined ? Number(choice[key]) : field.min;
+    const text = String(typed ?? '').trim().replace(',', '.');
+    const entered = text ? Math.trunc(Number(text)) : NaN;
+    const current = Number.isFinite(entered)
+        ? Math.min(field.max, Math.max(field.min, entered))
+        : choice[key] !== undefined ? Number(choice[key]) : field.min;
     return setSubclassChoicePatch(character, derived.subclass ?? '', key, current + step);
 }
 

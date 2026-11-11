@@ -210,7 +210,18 @@ export function initSubclassFeatures({ root, store }) {
     if (!container) return;
     let rendered = null;
     let current = '';
+    // Toucher en cours sur « − » ou « + » d'un compteur : le bloc n'est pas reconstruit avant le clic
+    // qui le termine. Sinon, une saisie validée en quittant la case (au même toucher) reconstruisait
+    // le bloc et le bouton touché disparaissait : le clic était perdu.
+    let pressing = false;
+    let pending = false;
+    let releaseTimer = null;
     const render = (character) => {
+        if (pressing) {
+            pending = true;
+            return;
+        }
+        pending = false;
         const { signature, nodes: makeNodes, subclass = '' } = build(character);
         if (signature === rendered) return;
         rendered = signature;
@@ -237,13 +248,56 @@ export function initSubclassFeatures({ root, store }) {
     };
     // Pastilles de repli (bloc entier et chaque capacité), retenues sur cet appareil (fold.js)
     bindFolding(container);
-    // Compteur (strophes) : « − » et « + » ajoutent -1 ou +1, entre le minimum et le maximum
+    const stepInput = (button) => button.closest('.subclass-stepper')?.querySelector('input[data-subclass-choice]') ?? null;
+    // Compteur : un toucher sur « − » ou « + » garde le focus dans la case si elle l'a (pas de
+    // validation entre l'appui et le clic) et suspend la reconstruction du bloc jusqu'au clic ; si le
+    // clic ne vient pas (doigt glissé hors du bouton), le bloc est remis à jour peu après.
+    const unpress = (delay) => {
+        clearTimeout(releaseTimer);
+        releaseTimer = setTimeout(() => {
+            pressing = false;
+            if (pending) render(store.get());
+        }, delay);
+    };
+    container.addEventListener('pointerdown', (event) => {
+        const button = event.target.closest('button[data-subclass-step]');
+        if (!button) return;
+        if (stepInput(button) === document.activeElement) event.preventDefault();
+        pressing = true;
+        // Filet de sécurité : jamais plus de quelques secondes sans affichage à jour
+        unpress(3000);
+    });
+    container.addEventListener('mousedown', (event) => {
+        const button = event.target.closest('button[data-subclass-step]');
+        if (button && stepInput(button) === document.activeElement) event.preventDefault();
+    });
+    // Doigt levé n'importe où (même hors du bloc) : le clic, s'il vient, arrive dans ce délai
+    const release = () => {
+        if (pressing) unpress(800);
+    };
+    for (const type of ['pointerup', 'pointercancel']) document.addEventListener(type, release);
+    // Compteur (strophes) : « − » et « + » ajoutent -1 ou +1, entre le minimum et le maximum, en partant
+    // du nombre affiché dans la case (tapé juste avant, même pas encore validé)
     container.addEventListener('click', (event) => {
         const button = event.target.closest('button[data-subclass-step]');
-        if (!button || !current || (button.dataset.buildControl && isLocked())) return;
+        if (!button) return;
+        clearTimeout(releaseTimer);
+        pressing = false;
+        if (!current || (button.dataset.buildControl && isLocked())) {
+            if (pending) render(store.get());
+            return;
+        }
         const character = store.get();
-        const patch = stepSubclassChoicePatch(character, derivedOf(character), button.dataset.subclassStep, Number(button.dataset.step));
+        const input = stepInput(button);
+        const key = button.dataset.subclassStep;
+        const patch = stepSubclassChoicePatch(character, derivedOf(character), key, Number(button.dataset.step), input?.value);
+        const next = patch.subclass_choices?.[current]?.[key];
+        // La saisie est reprise dans le pas : la case affiche le résultat avant la reconstruction, sans
+        // changement en attente (sinon, retirée avec le focus, elle validerait encore l'ancien nombre)
+        if (input && next !== undefined) input.value = next;
         if (Object.keys(patch).length) store.update(patch);
+        // Rien de changé (borne atteinte) mais une saisie enregistrée pendant l'appui : affichage à jour
+        if (pending) render(store.get());
     });
     // Un choix modifié (menu ou case à cocher) : enregistré dans subclass_choices (rien d'autre ne change)
     container.addEventListener('change', (event) => {
