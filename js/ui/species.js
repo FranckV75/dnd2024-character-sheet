@@ -4,7 +4,8 @@
 // Traits de l'espèce choisie en haut de la fiche (atteints, puis « À venir »), avec :
 //  - le menu de l'option (lignage elfique, ascendance draconique…) et celui de la caractéristique
 //    de ses sorts : réglages de création, verrouillés avec la fiche (data-build-control, lock.js) ;
-//  - les repères calculés : Vision dans le noir, Vitesse, Résistances, Souffle (dés et DD).
+//  - les repères calculés : Vision dans le noir, Vitesse, vol et nage, Résistances, Souffle (dés et DD),
+//    chiffres de certains traits (Chevelure serpentine et Regard pétrifiant de la Méduse).
 // Les cases des traits à usages limités sont dans l'onglet Combat (subclass_uses), les sorts dans
 // l'onglet Magie (bloc « Sorts d'espèce »). Règles : js/rules/species.js.
 // =============================================================================
@@ -41,10 +42,13 @@ function facts(view) {
     const items = [];
     if (view.darkvision) items.push(`Vision dans le noir ${meters(view.darkvision)}`);
     if (view.speed) items.push(`Vitesse ${meters(view.speed)}`);
+    if (view.fly) items.push(`Vol ${meters(view.fly.speed)} (${view.fly.note})`);
+    if (view.swim) items.push(`Nage ${meters(view.swim)}`);
     if (view.resistances.length) items.push(`Résistance : ${view.resistances.join(', ')}`);
     if (view.breath) {
         items.push(`Souffle ${view.breath.dice}${view.breath.type ? ` ${view.breath.type}` : ''}, DD ${view.breath.dc}`);
     }
+    items.push(...view.stats);
     return items.length
         ? el('ul', { class: 'origin-facts', 'aria-label': 'Repères calculés' },
             items.map(text => el('li', { class: 'feat-tag', 'data-kind': 'calc', text })))
@@ -102,7 +106,7 @@ function build(character) {
         return {
             signature, slug: view.slug, nodes: () => [title(), el('p', {
                 class: 'subclass-empty',
-                text: "Espèce de L'Odyssée des Seigneurs Dragons : ses traits ne sont pas encore repris ici. Voir le livre."
+                text: "Les traits de cette espèce ne sont pas encore repris ici. Voir le livre."
             })]
         };
     }

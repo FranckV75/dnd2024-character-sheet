@@ -191,7 +191,7 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb }) {
                     store.update(setSubclassUsesPatch(store.get(), def.key, event.target.checked ? index + 1 : index, def.max));
                 } }
             })),
-            el('span', { text: `${def.max > 1 ? `${def.max} lancers` : '1 lancer'} sans emplacement, de nouveau après un repos long` }));
+            el('span', { text: `${def.max > 1 ? `${def.max} lancers` : '1 lancer'} sans emplacement, de nouveau après un ${def.reset === 'short' ? 'repos court ou long' : 'repos long'}` }));
     }
 
     function renderSpeciesSpells(character, d) {
