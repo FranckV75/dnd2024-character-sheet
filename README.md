@@ -26,7 +26,7 @@ incomplète) : attendre 10 minutes, puis recharger la page.
 
 ## Documentation
 
-- [Feuille de route](docs/ROADMAP.md)
+- [Feuille de route](docs/FEUILLE_DE_ROUTE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Historique des versions](docs/CHANGELOG.md)
 - Archives de la v3 : `docs/archive-v3/`

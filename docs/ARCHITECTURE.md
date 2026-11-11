@@ -112,7 +112,7 @@ scripts/serve.js        Serveur local (npm run dev)
 scripts/check.js        Garde-fous (npm run check)
 tests/                  Tests Node (npm test) ; tests/fixtures/local/ = vraies sauvegardes, non publiées
 supabase/policies.sql   Règles de sécurité de la base (inchangées depuis la v3)
-docs/ROADMAP.md         Feuille de route : ce qui reste à faire, décisions qui valent pour la suite
+docs/FEUILLE_DE_ROUTE.md Feuille de route : ce qui reste à faire, décisions qui valent pour la suite
 docs/JOURNAL_DE_BORD.md Journal des sessions (« En ce moment » + une entrée par session)
 docs/CHANGELOG.md       Détail des changements, version par version
 docs/etudes/            Études terminées (dons actifs, sous-classes), le code y renvoie

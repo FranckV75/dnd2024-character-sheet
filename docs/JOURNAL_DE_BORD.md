@@ -7,7 +7,7 @@ en fin de session :
 - **Sessions** : une entrée par session, la plus récente en premier, avec un titre qui dit sur quoi
   on a travaillé (il change si le sujet change en route). 5 à 10 lignes : décisions et choses
   laissées de côté. Le détail des changements est dans `docs/CHANGELOG.md`, les idées dans
-  `docs/ROADMAP.md`.
+  `docs/FEUILLE_DE_ROUTE.md`.
 - Quand le fichier devient long, les vieilles entrées partent dans `docs/journal/<année>.md`.
 
 ## En ce moment
@@ -39,7 +39,7 @@ en fin de session :
 
 Lanceur de dés (seul), fiche sans wifi (seule, en dernier), puis audit `/audit-fiche` et découpage
 des gros fichiers. Points relevés non traités (pages des Bottes d'arme, espèces de l'Odyssée,
-dragonnets, restes des sous-classes) et idées en attente : `docs/ROADMAP.md`.
+dragonnets, restes des sous-classes) et idées en attente : `docs/FEUILLE_DE_ROUTE.md`.
 
 ## Sessions
 
@@ -47,8 +47,9 @@ dragonnets, restes des sous-classes) et idées en attente : `docs/ROADMAP.md`.
 
 - L'ancienne note de passage `docs/PROCHAINE_SESSION.md` devient ce journal, au nom fixe (choix de
   Franck) : le sujet de chaque session est dans le titre de son entrée, pas dans le nom du fichier.
-- `docs/ROADMAP.md` allégée : il n'y reste que ce qui est à faire et les décisions qui valent pour
-  la suite ; l'historique des étapes est résumé ici.
+- `docs/ROADMAP.md` allégée et renommée `docs/FEUILLE_DE_ROUTE.md` (choix de Franck) : il n'y
+  reste que ce qui est à faire et les décisions qui valent pour la suite ; l'historique des étapes
+  est résumé ici.
 - Les deux études terminées (dons actifs, sous-classes) rangées dans `docs/etudes/`, avec la date
   et l'état en tête ; le code y renvoie toujours.
 - Entrées anciennes ajoutées ci-dessous (25/10 → 09/11), reconstituées d'après `docs/CHANGELOG.md`.

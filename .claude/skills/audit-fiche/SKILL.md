@@ -47,7 +47,7 @@ explication, captures d'écran quand c'est visuel.
 - Version (`package.json`), branche, derniers commits, `git status` propre ou non.
 - `npm run check` : résultat exact (nombre de tests).
 - Taille des fichiers JS/CSS (repérer les plus gros), nombre de tests par fichier.
-- Documentation à confronter au code : `docs/ROADMAP.md`, `docs/ARCHITECTURE.md`,
+- Documentation à confronter au code : `docs/FEUILLE_DE_ROUTE.md`, `docs/ARCHITECTURE.md`,
   `docs/etudes/DONS_ACTIFS.md`, `docs/CHANGELOG.md`, `CLAUDE.md`.
 
 ## 2. Angles d'examen
