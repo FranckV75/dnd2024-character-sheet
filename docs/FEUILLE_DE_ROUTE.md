@@ -17,13 +17,18 @@ points relevés, puis une discussion pour trier toutes les idées.
 
 ### 2. Ensuite : restes et points relevés
 
-- Sous-classes, restes du lot 7 (gardés pour plus tard, décision de Franck du 10/11/2026) :
-  - bouton « Monté sur le dragon » (Serment du Seigneur Dragon, niveau 15) et monture de l'Amazone
-    (*Trouver une monture*) ;
-  - repère de l'Affinité élémentaire dans le grimoire (« +Cha » sur les sorts du type choisi) ;
-  - compteur de strophes (Poésie épique) : après avoir tapé un nombre, un toucher immédiat sur « + »
-    ou « − » peut être perdu (le bloc se reconstruit).
-- Espèces de l'Odyssée (Centaure, Méduse, Minotaure, Satyre, Sirène, Nymphe) : traits pas repris.
+Faits en 4.39.0 (case Maîtrises d'armes, espèces de l'Odyssée, dragonnets 2024, restes des
+sous-classes). Restent des décisions de Franck :
+- Espèces de l'Odyssée : type de créature (Humanoïde ou Fée, le guide ne le dit pas) ; afficher
+  ou non les bonus de caractéristiques et langues du guide (format 2014) ; limite du Regard
+  pétrifiant ; humeur de la Sirène et chiffres du taureau (Rage maudite) restés en texte ;
+  Chevelure serpentine sans Dextérité aux dégâts (lecture du livre à confirmer).
+- Goliath : la fiche signale maintenant sa vitesse 2024 (10,5 m) ; à garder ou non.
+- Dragonnets 2024 : le second souffle (sommeil, répulsion…) n'a plus de recharge ; garder la règle
+  du pacte de l'Odyssée (une fois par repos) ? Noms des actions pris chez AideDD (Saignée…).
+- Monté sur le dragon : remplacer vraiment la Perception passive par celle du dragon ?
+- Monture d'Outremonde (Amazone) : case pour l'action bonus (une fois par repos long) ; noms
+  français des actions à vérifier dans le livre ; sorts de la Magie des Amazones pas dans le grimoire.
 
 ### 3. Idées, toutes au même niveau (priorités à trier avec Franck après l'audit)
 

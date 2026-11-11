@@ -2,6 +2,24 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.39.0] - 2026-11-11 (Maîtrises d'armes, espèces de l'Odyssée, dragonnets)
+### Added
+- Onglet Compétences & Histoire : case « Maîtrises d'armes » (ancien champ « Armes », clé
+  `profs_weapons` déjà existante), avec en tête le rappel de ce que donne la classe et une aide
+  vers le réglage « Arme maîtrisée : Oui » de l'arme.
+- Encadré « Espèce & historique » : les six espèces de L'Odyssée (Centaure, Méduse, Minotaure,
+  Satyre, Sirène, Nymphe) ont leurs traits résumés, repères (vision, vol, Chevelure serpentine,
+  Regard pétrifiant), cases au repos et sorts d'espèce ; menu « Héritage » de la Nymphe. Vitesse
+  du Centaure et du Minotaure (12 m) et du Goliath (10,5 m) signalée.
+- Serment du Seigneur Dragon, niveau 15 : bouton « Monté sur le dragon » (immunité et sens du dragon).
+- Guerrière amazone : carte « Monture d'Outremonde » (sort Trouver une monture).
+- Sorcellerie draconique : repère « +Cha » sur les sorts du type de l'Affinité élémentaire.
+### Fixed
+- Dragonnets du Seigneur Dragon vérifiés sur le Manuel des monstres 2024 / SRD 5.2 : CA,
+  sauvegardes, Saignée, Attaques multiples, seconds souffles ; mention « à vérifier » retirée.
+- Espèces de l'Odyssée : vitesses et noms des traits du guide (et non d'autres livres).
+- Compteur de strophes : un toucher sur + / − juste après avoir tapé un nombre n'est plus perdu.
+
 ## [4.38.0] - 2026-11-11 (Corrections de l'audit)
 ### Fixed
 - Le mot « null » ne s'affiche plus sous l'Équipement de l'historique (écran et impression).

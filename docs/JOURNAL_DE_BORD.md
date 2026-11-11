@@ -12,8 +12,11 @@ en fin de session :
 
 ## En ce moment
 
-- **En ligne** : version **4.38.0** (`master` = `v4` = `384b532`), publiée le 11/11/2026 avec
+- **En ligne** : version **4.38.0** (`master` = `384b532`), publiée le 11/11/2026 avec
   l'accord de Franck (corrections de l'audit, lots A, E, C, D).
+- **Prête, non publiée** : **4.39.0** sur `v4` (maîtrises d'armes, espèces de l'Odyssée,
+  dragonnets 2024, restes des sous-classes). Attend « Publie ».
+- **Petits champs sur iPad** : ne rien changer tant que Franck n'a pas d'info sur le zoom.
 - **GitHub** : Franck a demandé au support de purger les anciens commits (PDF, vieilles
   sauvegardes, adresse Gmail) ; réponse attendue.
 - **Emplacement** : le dépôt est désormais `E:\2 - CODE\Feuille de perso\Code\` (voir
@@ -48,11 +51,24 @@ en fin de session :
 
 Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 1. ~~audit et découpage~~ : faits (4.38.0) ;
-2. restes et points relevés (espèces de l'Odyssée, dragonnets, restes des sous-classes) ;
+2. ~~restes et points relevés~~ : faits (4.39.0) ; restent les décisions listées au point 2 de
+   `docs/FEUILLE_DE_ROUTE.md` ;
 3. discussion pour trier toutes les idées, regroupées au même niveau (le lanceur de dés et la
    fiche sans wifi n'y sont plus prioritaires).
 
 ## Sessions
+
+### 11/11/2026 (soir) — Maîtrises d'armes, espèces de l'Odyssée, dragonnets (4.39.0)
+
+- Case « Maîtrises d'armes » réaffichée (décision de Franck : utile pour noter une maîtrise
+  exceptionnelle ; le calcul passe par le réglage « Arme maîtrisée : Oui » de l'arme). Dans les
+  vieilles fiches de Korgul, ce champ contient une liste d'armes portées : à Franck de le revoir.
+- Espèces de l'Odyssée lues dans le guide (six lecteurs en parallèle) et ajoutées ; les anciens
+  traits venaient d'autres livres (Theros…).
+- Dragonnets vérifiés sur AideDD et le SRD 5.2 (sources identiques) : CA, sauvegardes, souffles.
+- Restes des sous-classes faits. Décisions en attente : point 2 de la feuille de route.
+- Textes des sorts d'AideDD : expliqué à Franck (site public ≠ texte libre ; seul le SRD l'est) ;
+  aucune décision, rien changé.
 
 ### 11/11/2026 — Audit de santé et corrections (4.38.0)
 
