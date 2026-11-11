@@ -212,6 +212,43 @@ export function classWeaponProficiencyText(classSlug) {
 }
 
 /**
+ * Rappel de la case « Maîtrises d'armes » (onglet Compétences & Histoire) : ce que la fiche sait
+ * des maîtrises d'armes du personnage, une phrase par source, dans l'ordre où weaponProficiency()
+ * les compte. PHB 2024, traits de base de chaque classe : Barbare, Guerrier, Paladin, Rôdeur :
+ * armes courantes et armes de guerre ; Moine : armes de guerre Légères en plus ; Roublard : armes
+ * de guerre Finesse ou Légères en plus ; les autres classes : armes courantes.
+ * Puis ce qui s'ajoute : don Formation aux armes de guerre, Collège de la Vaillance (niveau 3),
+ * L'Odysséen (trident, niveau 3), et les choix que la fiche n'enregistre pas (Clerc, Druide,
+ * Occultiste : maîtrise des armes de guerre supposée).
+ * @param {{ classSlug?: string, subclass?: string, level?: number, feats?: string[] }} derived - deriveCharacter()
+ * @returns {string[]} [] sans classe reconnue
+ */
+export function classWeaponTrainingLines({ classSlug = '', subclass = '', level = 1, feats = [] } = {}) {
+    const cls = Object.hasOwn(DD_RULES.classes, classSlug) ? DD_RULES.classes[classSlug] : null;
+    if (!cls) return [];
+    const prof = cls.weaponProf ?? [];
+    const allMartial = prof.includes('martial');
+    const martial = allMartial ? 'armes de guerre'
+        : prof.includes('martial-finesse') ? 'armes de guerre dotées de la propriété Finesse ou Légère'
+        : prof.includes('martial-light') ? 'armes de guerre dotées de la propriété Légère' : '';
+    const lines = [`Par la classe (${cls.nameFr}) : armes courantes${martial ? ` et ${martial}` : ''}.`];
+    if (allMartial) return lines;
+
+    const lvl = Number(level) || 1;
+    const hasFeat = Array.isArray(feats) && feats.includes('formation_aux_armes_de_guerre');
+    const valor = classSlug === 'bard' && subclass === 'college_of_valor' && lvl >= 3;
+    if (hasFeat) lines.push('Par le don Formation aux armes de guerre : armes de guerre.');
+    if (valor) lines.push('Par la sous-classe (Collège de la Vaillance, Formation martiale) : armes de guerre.');
+    if (classSlug === 'rogue' && subclass === 'the_odyssean' && lvl >= 3 && !hasFeat) {
+        lines.push("Par la sous-classe (L'Odysséen, Soldat vagabond) : le trident, qui compte comme une arme Finesse.");
+    }
+    if (Object.hasOwn(CHOICE_MARTIAL, classSlug) && !hasFeat) {
+        lines.push(`Armes de guerre comptées comme maîtrisées : ${CHOICE_MARTIAL[classSlug]}.`);
+    }
+    return lines;
+}
+
+/**
  * Le personnage maîtrise-t-il cette arme ? (PHB 2024 : le bonus de maîtrise ne s'ajoute au jet
  * d'attaque qu'avec une arme maîtrisée, chapitre « Weapons »). Décision de Franck : la fiche
  * applique la règle, avec des choix prudents quand elle ne peut pas savoir :

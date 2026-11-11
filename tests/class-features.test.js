@@ -10,7 +10,8 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
     subclassId, auraOfProtectionBonus, jackOfAllTradesBonus, unarmoredDefenseOptions, weaponCategory,
-    weaponProficiency, weaponProficiencySetting, weaponProficiencyNote, classFeatureNotes, classWeaponProficiencyText
+    weaponProficiency, weaponProficiencySetting, weaponProficiencyNote, classFeatureNotes, classWeaponProficiencyText,
+    classWeaponTrainingLines
 } from '../js/rules/class-features.js';
 import { deriveCharacter, computeWeapon, computeArmorClass } from '../js/rules/character.js';
 import { featEffects, weaponFeatNotes } from '../js/rules/feat-effects.js';
@@ -382,5 +383,67 @@ describe('Historique Marin (PHB 2024 « Sailor ») : Acrobaties et Perception', 
 describe('classFeatureNotes : rien pour une classe sans ces capacités', () => {
     test('Guerrier 20 : aucune note', () => {
         assert.deepEqual(classFeatureNotes(deriveCharacter(hero({ char_class: 'Guerrier', char_level: '20' }))), {});
+    });
+});
+
+describe("Case « Maîtrises d'armes » : rappel de ce que donne la classe", () => {
+    const lines = (extra) => classWeaponTrainingLines(deriveCharacter(hero(extra)));
+
+    test("classes martiales : armes courantes et armes de guerre, rien d'autre", () => {
+        for (const cls of ['Barbare', 'Guerrier', 'Paladin', 'Rôdeur']) {
+            assert.deepEqual(lines({ char_class: cls }), [`Par la classe (${cls}) : armes courantes et armes de guerre.`]);
+        }
+        // Don sans effet de plus : la classe donne déjà les armes de guerre
+        assert.equal(lines({ char_class: 'Guerrier', feat_4: 'formation_aux_armes_de_guerre' }).length, 1);
+    });
+
+    test('Moine et Roublard : restrictions du PHB 2024', () => {
+        assert.deepEqual(lines({ char_class: 'Moine' }),
+            ['Par la classe (Moine) : armes courantes et armes de guerre dotées de la propriété Légère.']);
+        assert.deepEqual(lines({ char_class: 'Roublard' }),
+            ['Par la classe (Roublard) : armes courantes et armes de guerre dotées de la propriété Finesse ou Légère.']);
+    });
+
+    test('lanceurs de sorts : armes courantes ; choix non enregistrés rappelés', () => {
+        for (const cls of ['Barde', 'Ensorceleur', 'Magicien']) {
+            assert.deepEqual(lines({ char_class: cls }), [`Par la classe (${cls}) : armes courantes.`]);
+        }
+        const cleric = lines({ char_class: 'Clerc' });
+        assert.equal(cleric[0], 'Par la classe (Clerc) : armes courantes.');
+        assert.match(cleric[1], /^Armes de guerre comptées comme maîtrisées : .*Protecteur\.$/);
+        assert.match(lines({ char_class: 'Druide' })[1], /Gardien/);
+        assert.match(lines({ char_class: 'Occultiste' })[1], /Pacte de la lame/);
+        // Ancien nom v3 de l'Occultiste
+        assert.equal(lines({ char_class: 'Sorcier' })[0], 'Par la classe (Occultiste) : armes courantes.');
+    });
+
+    test('don et sous-classes qui ajoutent des armes de guerre', () => {
+        assert.deepEqual(lines({ char_class: 'Magicien', feat_4: 'formation_aux_armes_de_guerre' }), [
+            'Par la classe (Magicien) : armes courantes.',
+            'Par le don Formation aux armes de guerre : armes de guerre.'
+        ]);
+        // Le don remplace la supposition (la fiche n'a plus rien à supposer)
+        assert.equal(lines({ char_class: 'Clerc', feat_4: 'formation_aux_armes_de_guerre' }).length, 2);
+        assert.match(lines({ char_class: 'Barde', char_subclass: 'Collège de la Vaillance', char_level: '3' })[1], /Collège de la Vaillance/);
+        assert.equal(lines({ char_class: 'Barde', char_subclass: 'Collège de la Vaillance', char_level: '2' }).length, 1);
+        assert.match(lines({ char_class: 'Roublard', char_subclass: "L'Odysséen", char_level: '3' })[1], /trident/);
+        assert.equal(lines({ char_class: 'Roublard', char_subclass: "L'Odysséen", char_level: '2' }).length, 1);
+    });
+
+    test('aucune classe, classe inconnue ou nom piège : rien', () => {
+        assert.deepEqual(lines({ char_class: '' }), []);
+        assert.deepEqual(lines({ char_class: 'Artificier' }), []);
+        assert.deepEqual(classWeaponTrainingLines({ classSlug: '__proto__' }), []);
+        assert.deepEqual(classWeaponTrainingLines(), []);
+    });
+
+    test("même verdict que le calcul de l'attaque (weaponProficiency)", () => {
+        // Chaque phrase « armes de guerre » correspond à une épée longue comptée maîtrisée
+        for (const [cls, extra] of [['Moine', {}], ['Roublard', {}], ['Magicien', {}], ['Clerc', {}],
+            ['Magicien', { feat_4: 'formation_aux_armes_de_guerre' }], ['Barde', { char_subclass: 'Collège de la Vaillance' }]]) {
+            const derived = deriveCharacter(hero({ char_class: cls, ...extra }));
+            const saysMartial = classWeaponTrainingLines(derived).some(line => /armes de guerre(\.|$| comptées)/i.test(line) && !/dotées/.test(line));
+            assert.equal(weaponProficiency(weapon('Épée longue'), derived).proficient, saysMartial, `${cls} ${JSON.stringify(extra)}`);
+        }
     });
 });
