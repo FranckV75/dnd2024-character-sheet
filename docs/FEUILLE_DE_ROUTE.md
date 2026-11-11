@@ -24,8 +24,11 @@ points relevés, puis une discussion pour trier toutes les idées.
   - compteur de strophes (Poésie épique) : après avoir tapé un nombre, un toucher immédiat sur « + »
     ou « − » peut être perdu (le bloc se reconstruit).
 - Bottes d'arme : la page 214 (liste des bottes) et la page 209 (Maître d'armes) citent encore le
-  livre anglais ; Franck prend les photos du chapitre Équipement du livre français et les range
-  dans `..\Ressources\Photos Manuel des joueurs FR\`.
+  livre anglais (Styles de combat aussi). Photos faites par Franck le 11/11/2026 : chapitre 6
+  Équipement (21, dossier `Equipement\`) et chapitre 5 Dons (13, dossier `Dons\`) dans
+  `..\Ressources\Photos Manuel des joueurs FR\`, encore aux noms WhatsApp : les renommer
+  (`Equipement_NN_sujet.jpeg`, `Dons_NN_sujet.jpeg`), compléter `INDEX.md` (retirer « Non
+  photographié : chapitres 5 et 6 »), puis remplacer les renvois au livre anglais.
 - Espèces de l'Odyssée (Centaure, Méduse, Minotaure, Satyre, Sirène, Nymphe) : traits pas repris.
 - Dragonnets du Seigneur Dragon : blocs repris de mémoire du Manuel des monstres 2014, à vérifier
   sur le Manuel des monstres 2024 (photos de Franck).
