@@ -17,6 +17,8 @@ import { featSpellGroups, setFeatSpellUsePatch } from '../../rules/feat-spells.j
 import { subclassSpells, subclassFeatures, markListedSpells } from '../../rules/subclass-features.js';
 import { speciesView, speciesCounterDefs } from '../../rules/species.js';
 import { subclassUsesState, setSubclassUsesPatch } from '../../rules/subclass-uses.js';
+import { elementalAffinity } from '../../rules/subclass-combat.js';
+import { affinityApplies } from './tooltip.js';
 import { HUMAN_FEAT_SLOT } from '../../state/schema.js';
 import { el, icon, signed } from '../dom.js';
 import { foldButton, bindFolding, applyFolds } from '../fold.js';
@@ -39,6 +41,10 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb }) {
     const speciesBox = el('section', { class: 'feat-spells species-spells', 'aria-labelledby': 'species-spells-title', 'data-fold-key': 'species-spells', hidden: true });
     bindFolding(speciesBox);
     let speciesSignature = null;
+    // Affinité élémentaire (Sorcellerie draconique) du dernier affichage, et base des sorts chargée :
+    // le repère « +Cha » d'un sort donné en dépend (comptés dans les signatures des blocs)
+    let affinity = null;
+    const affinityKey = () => JSON.stringify([affinity, getSpellsDb().length > 0]);
 
     function featSpellLine(spell) {
         const name = el('button', { type: 'button', class: 'feat-spell-name', text: spell.name });
@@ -64,12 +70,15 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb }) {
                 el('span', { text: spell.free.text }))
             : null;
         const details = [spell.slotText ? `Toujours préparé ; ${spell.slotText}.` : '', spell.note].filter(Boolean).join(' ');
+        // Sort du type d'Affinité élémentaire (Orbe chromatique, Souffle du dragon…) : « +Cha (+4, feu) »
+        const affine = affinityApplies(getSpellsDb().find(s => s.vo === spell.vo), affinity);
         return el('li', { class: 'feat-spell' },
             el('div', { class: 'feat-spell-head' },
                 name,
                 el('span', { class: 'feat-spell-level', text: spellLevelLabel(spell.level) }),
                 spell.ritual ? el('span', { class: 'feat-spell-tag', text: 'Rituel' }) : null,
-            spell.listed ? el('span', { class: 'feat-spell-tag', 'data-kind': 'listed', text: 'Aussi dans votre liste' }) : null),
+            spell.listed ? el('span', { class: 'feat-spell-tag', 'data-kind': 'listed', text: 'Aussi dans votre liste' }) : null,
+            affine ? el('span', { class: 'feat-spell-tag', 'data-kind': 'affinity', title: affinity.rule, text: affinity.mention }) : null),
             free,
             details ? el('p', { class: 'feat-spell-note', text: details }) : null);
     }
@@ -100,7 +109,7 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb }) {
         const groups = featSpellGroups(character, d);
         featBox.hidden = groups.length === 0;
         // Les cases cochées ne reconstruisent pas le bloc : seul leur état change
-        const signature = JSON.stringify(groups.map(g => ({ ...g, spells: g.spells.map(s => ({ ...s, free: s.free?.key ?? null })) })));
+        const signature = JSON.stringify([groups.map(g => ({ ...g, spells: g.spells.map(s => ({ ...s, free: s.free?.key ?? null })) })), affinityKey()]);
         if (signature !== featSignature) {
             featSignature = signature;
             featBox.replaceChildren(...(groups.length ? [
@@ -139,7 +148,7 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb }) {
                 .map(spell => (spell.group ? `${spell.name} (${spell.group})` : spell.name)).join(', ')}`);
         // Sorts rangés par terrain (Cercle de la Terre), sinon une seule liste
         const groups = [...new Set(spells.map(spell => spell.group ?? ''))];
-        const signature = JSON.stringify([name, spells, next, othersListed]);
+        const signature = JSON.stringify([name, spells, next, othersListed, affinityKey()]);
         subclassBox.hidden = spells.length === 0;
         if (signature === subclassSignature) return;
         subclassSignature = signature;
@@ -199,7 +208,7 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb }) {
         const spells = (view?.spells ?? []).filter(spell => spell.reached);
         const upcoming = (view?.spells ?? []).filter(spell => !spell.reached);
         const defs = speciesCounterDefs(character, d);
-        const signature = JSON.stringify([view?.name, spells, upcoming.map(spell => spell.name), defs.map(def => [def.key, def.max])]);
+        const signature = JSON.stringify([view?.name, spells, upcoming.map(spell => spell.name), defs.map(def => [def.key, def.max]), affinityKey()]);
         speciesBox.hidden = spells.length === 0;
         if (signature !== speciesSignature) {
             speciesSignature = signature;
@@ -237,6 +246,7 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb }) {
         subclassBox,
         speciesBox,
         render(character, d) {
+            affinity = elementalAffinity(d);
             renderFeatSpells(character, d);
             renderSubclassSpells(character, d);
             renderSpeciesSpells(character, d);

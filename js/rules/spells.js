@@ -209,37 +209,45 @@ export function searchSpells(spells, query, { classSlug = '', limit = 15 } = {})
 }
 
 // ---------------------------------------------------------------------------
-// Types de dégâts (Adepte élémentaire)
+// Types de dégâts (Adepte élémentaire, Affinité élémentaire)
 // ---------------------------------------------------------------------------
+
+/**
+ * Types lus dans les descriptions : ceux d'Adepte élémentaire (ELEMENTS), plus le poison, qu'Affinité
+ * élémentaire (Sorcellerie draconique) peut choisir. Adepte élémentaire ne garde que ses types.
+ */
+const DAMAGE_WORDS = [...ELEMENTS, ['poison', 'Poison', 'poison']];
 
 /**
  * Un sort inflige des dégâts de ce type si sa description dit « 8d6 dégâts de feu », « 5 dégâts
  * de froid » ou « subit des dégâts de feu égaux… » ; « Résistance / Immunité aux dégâts de feu »
  * ne compte pas (aucun nombre ni « subit des » juste avant, dans la même phrase).
  */
-const DAMAGE_PATTERNS = ELEMENTS.map(([id, , word]) => [id, new RegExp(
+const DAMAGE_PATTERNS = DAMAGE_WORDS.map(([id, , word]) => [id, new RegExp(
     String.raw`(?:\b\d+(?:d\d+)?|\bsubit des|\binflige des)[^.;:\n]{0,60}?\bdégâts (?:de |d['’])${word}\b`, 'i')]);
 const damageTypesCache = new WeakMap();
 
 /**
  * Sorts dont le lanceur choisit le type de dégâts (la description donne une liste, que le motif
- * ci-dessus ne lit pas) : types d'Adepte élémentaire possibles, par nom anglais (clé « vo »).
+ * ci-dessus ne lit pas) : types possibles parmi DAMAGE_WORDS, par nom anglais (clé « vo ») ; listes
+ * du Player's Handbook 2024 (Orbe chromatique, Éruption ensorcelée, Souffle du dragon : poison aussi).
  * Convocation d'élémentaire n'y est pas : ce sont les attaques de la créature, pas le sort, qui blessent.
  */
 const CHOSEN_DAMAGE = Object.freeze({
-    'Chromatic Orb': ['acid', 'cold', 'fire', 'lightning', 'thunder'],
-    'Sorcerous Burst': ['acid', 'cold', 'fire', 'lightning', 'thunder'],
+    'Chromatic Orb': ['acid', 'cold', 'fire', 'lightning', 'thunder', 'poison'],
+    'Sorcerous Burst': ['acid', 'cold', 'fire', 'lightning', 'thunder', 'poison'],
     'Glyph of Warding': ['acid', 'cold', 'fire', 'lightning', 'thunder'],
     'Elemental Weapon': ['acid', 'cold', 'fire', 'lightning', 'thunder'],
     'Conjure Minor Elementals': ['acid', 'cold', 'fire', 'lightning'],
-    "Dragon's Breath": ['acid', 'cold', 'fire', 'lightning'],
+    "Dragon's Breath": ['acid', 'cold', 'fire', 'lightning', 'poison'],
     'Conjure Elemental': ['cold', 'fire', 'lightning', 'thunder']
 });
 
 /**
- * Types de dégâts d'Adepte élémentaire infligés par un sort de la base (lus dans sa description).
+ * Types de dégâts infligés par un sort de la base (lus dans sa description) : acide, froid, feu,
+ * foudre, tonnerre et poison.
  * @param {Object} spell - sort de la base (data/spells.json)
- * @returns {string[]} identifiants ('fire', 'cold'…), dans l'ordre d'ELEMENTS
+ * @returns {string[]} identifiants ('fire', 'cold'…), dans l'ordre de DAMAGE_WORDS (ELEMENTS, puis 'poison')
  */
 export function spellDamageTypes(spell) {
     if (!spell || typeof spell !== 'object') return [];

@@ -59,7 +59,8 @@ import { confirmModal } from './modal.js';
 import { isLocked } from './lock.js';
 import { motionOff } from './motion-pref.js';
 import { readGrimoireOpen, saveGrimoireOpen } from './spells/prefs.js';
-import { createSpellTooltip, adeptTypes, adeptRule } from './spells/tooltip.js';
+import { createSpellTooltip, adeptTypes, adeptRule, affinityApplies } from './spells/tooltip.js';
+import { elementalAffinity } from '../rules/subclass-combat.js';
 import { createSpellFilters } from './spells/filters.js';
 import { createSpellSlots, slotStateOf } from './spells/slots.js';
 import { createGrantedSpells } from './spells/granted.js';
@@ -284,6 +285,8 @@ export function initSpells(ctx) {
         r.name.placeholder = 'Nom…';
         // Repère « Adepte (feu) » : sort du type choisi avec Adepte élémentaire (writeRow)
         r.adept = el('span', { class: 'spell-adept', hidden: true });
+        // Repère « +Cha (+4, feu) » : sort du type choisi avec Affinité élémentaire (writeRow)
+        r.affinity = el('span', { class: 'spell-adept', hidden: true });
         r.texts = {};
         for (const [key] of TEXT_COLUMNS) r.texts[key] = textInput(key);
         r.note = textInput('note');
@@ -332,7 +335,7 @@ export function initSpells(ctx) {
         r.tr = el('tr', {},
             el('td', { class: 'col-prep' }, r.prep),
             el('td', { class: 'col-lvl' }, r.lvl),
-            el('td', { class: 'col-name' }, r.name, r.adept),
+            el('td', { class: 'col-name' }, r.name, r.adept, r.affinity),
             el('td', { class: 'col-school' }, r.texts.school),
             el('td', { class: 'col-time' }, r.texts.time),
             el('td', { class: 'col-range' }, r.texts.range),
@@ -422,13 +425,19 @@ export function initSpells(ctx) {
      * @param {{ force: boolean, locked: boolean, entry: boolean, line: number }} options
      *        entry : ligne de saisie ; line : rang de la ligne dans le tableau affiché
      */
-    function writeRow(r, row, { force, locked, entry, line, elements = [] }) {
+    function writeRow(r, row, { force, locked, entry, line, elements = [], affinity = null }) {
         const name = plainText(row.name);
-        const types = entry ? [] : adeptTypes(elements.length ? findSpellByName(spellsDb, row.name) : null, elements);
+        const known = entry || (!elements.length && !affinity) ? null : findSpellByName(spellsDb, row.name);
+        const types = adeptTypes(known, elements);
         r.adept.hidden = types.length === 0;
         const adeptText = types.length ? `Adepte (${types.map(elementWord).join(', ')})` : '';
         if (r.adept.textContent !== adeptText) r.adept.textContent = adeptText;
         if (types.length) r.adept.title = adeptRule(types);
+        const affine = affinityApplies(known, affinity);
+        r.affinity.hidden = !affine;
+        const affinityText = affine ? affinity.mention : '';
+        if (r.affinity.textContent !== affinityText) r.affinity.textContent = affinityText;
+        if (affine) r.affinity.title = affinity.rule;
         const level = rowLevel(row);
         const what = entry ? 'nouveau sort' : name ? `« ${name} »` : `ligne ${line}`;
         const prepared = row.prep === true;
@@ -519,11 +528,12 @@ export function initSpells(ctx) {
         const { order, shown, hasDraft } = spellRowsView(rows, { level: view.level, sort: view.sort, pinned });
         const lines = new Map(order.filter(i => shown.has(i)).map((i, rank) => [i, rank + 1]));
         const elements = adeptElements(character);
+        const affinity = elementalAffinity(derivedOf(character));
 
         rowEls.forEach((r, i) => {
             const isEntry = r === entry;
             writeRow(r, isEntry ? newSpellRow(EMPTY_SPELL, entryLevel ?? view.level) : rows[i], {
-                force, locked, entry: isEntry, line: isEntry ? lines.size + 1 : lines.get(i) ?? i + 1, elements
+                force, locked, entry: isEntry, line: isEntry ? lines.size + 1 : lines.get(i) ?? i + 1, elements, affinity
             });
             if (!isEntry) r.tr.hidden = !shown.has(i);
         });
@@ -754,8 +764,8 @@ export function initSpells(ctx) {
     loadSpells().then((list) => {
         spellsDb = Array.isArray(list) ? list : [];
         if (spellsDb.length === 0) setStatus('⚠️ Base de sorts indisponible : pas de suggestions ni d\'infobulles');
-        // Base chargée : les repères « Adepte » peuvent maintenant s'afficher
-        else if (adeptElements(store.get()).length) render(store.get(), ['dynamic_spells']);
+        // Base chargée : les repères « Adepte » et « +Cha » (Affinité élémentaire) peuvent maintenant s'afficher
+        else if (adeptElements(store.get()).length || elementalAffinity(derivedOf(store.get()))) render(store.get(), ['dynamic_spells']);
     });
 }
 

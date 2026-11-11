@@ -231,10 +231,11 @@ describe('Sorts : types de dégâts lus dans la description', () => {
         assert.deepEqual(types('Lame de feu'), ['fire']);
     });
     test('Sorts à type de dégâts choisi : tous les types possibles', () => {
-        assert.deepEqual(types('Orbe chromatique'), ['acid', 'cold', 'fire', 'lightning', 'thunder']);
-        assert.deepEqual(types('Éruption ensorcelée'), ['acid', 'cold', 'fire', 'lightning', 'thunder']);
+        // Poison aussi (PHB 2024) : utile à Affinité élémentaire, jamais à Adepte élémentaire
+        assert.deepEqual(types('Orbe chromatique'), ['acid', 'cold', 'fire', 'lightning', 'thunder', 'poison']);
+        assert.deepEqual(types('Éruption ensorcelée'), ['acid', 'cold', 'fire', 'lightning', 'thunder', 'poison']);
         assert.deepEqual(types('Glyphe de garde'), ['acid', 'cold', 'fire', 'lightning', 'thunder']);
-        assert.deepEqual(types('Souffle du dragon'), ['acid', 'cold', 'fire', 'lightning']);
+        assert.deepEqual(types('Souffle du dragon'), ['acid', 'cold', 'fire', 'lightning', 'poison']);
         assert.deepEqual(types("Protection contre l'énergie"), []);
         assert.deepEqual(types("Convocation d'élémentaire"), []);
     });

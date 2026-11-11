@@ -9,11 +9,23 @@
 import { el } from '../dom.js';
 import { spellDisplayName, spellLevelLabel, descToPlainText, spellDamageTypes } from '../../rules/spells.js';
 import { adeptElements, elementWord } from '../../rules/feat-choices.js';
+import { elementalAffinity } from '../../rules/subclass-combat.js';
+import { derivedOf } from '../derived.js';
 import { readTooltipSetting, saveTooltipSetting } from './prefs.js';
 
 /** « Adepte (feu) » : types d'Adepte élémentaire infligés par ce sort */
 export function adeptTypes(spell, elements) {
     return spell && elements.length ? spellDamageTypes(spell).filter(type => elements.includes(type)) : [];
+}
+
+/**
+ * Affinité élémentaire (Sorcellerie draconique) : le sort inflige des dégâts du type choisi.
+ * @param {Object|null} spell - sort de la base
+ * @param {Object|null} affinity - elementalAffinity(derived)
+ * @returns {boolean}
+ */
+export function affinityApplies(spell, affinity) {
+    return Boolean(spell && affinity && spellDamageTypes(spell).includes(affinity.type));
 }
 
 /** Règle d'Adepte élémentaire pour ces types (infobulle et repère) */
@@ -53,7 +65,14 @@ export function createSpellTooltip({ store }) {
             el('dl', { class: 'spell-tooltip-meta' }, meta.map(([label, value]) => el('div', {},
                 el('dt', { text: label }), el('dd', { text: String(value) })))),
             el('p', { class: 'spell-tooltip-desc', text: descToPlainText(spell.desc) || 'Description non disponible.' }),
-            ...adeptLine(spell));
+            ...adeptLine(spell),
+            ...affinityLine(spell));
+    }
+
+    /** Ligne Affinité élémentaire de l'infobulle (sort du type choisi, Sorcellerie draconique) */
+    function affinityLine(spell) {
+        const affinity = elementalAffinity(derivedOf(store.get()));
+        return affinityApplies(spell, affinity) ? [el('p', { class: 'spell-tooltip-adept', text: affinity.rule })] : [];
     }
 
     /** Ligne Adepte élémentaire de l'infobulle (sort du type choisi) */

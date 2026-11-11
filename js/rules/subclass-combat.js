@@ -10,7 +10,9 @@
 //  - Résistances et immunités données par la sous-classe : repères près de la CA (zone armorClass
 //    de featEffects), avec la condition quand elle existe (Rage, Forme stellaire…) ;
 //  - bouton « Monté sur le dragon » (Serment du Seigneur Dragon, niveau 15) : immunité et sens du
-//    jeune dragon rappelés près de la CA et de la Perception.
+//    jeune dragon rappelés près de la CA et de la Perception ;
+//  - Affinité élémentaire (Sorcellerie draconique, niveau 6) : repère « +Cha » des sorts du type
+//    choisi, dans le grimoire (js/ui/spells.js, js/ui/spells/).
 // Règles du Player's Handbook 2024 anglais (chapitre des classes) ; Odyssée des Seigneurs Dragons
 // pour la Voie herculéenne, la Guerrière amazone et L'Hoplite.
 // Règle validée par Franck : une valeur saisie à la main n'est jamais modifiée.
@@ -294,6 +296,30 @@ export function dragonMountNotes(derived, record = {}) {
             text: `Monté : ${mount.senses} ; Perception passive ${mount.passive} (celle du dragon) ${mount.better
                 ? `au lieu de la vôtre (${own}).` : `moins bonne que la vôtre (${own}), qui reste.`}`
         }]
+    };
+}
+
+/** Types qu'Affinité élémentaire permet de choisir (PHB 2024, p. 148) */
+const AFFINITY_TYPES = ['acid', 'cold', 'fire', 'lightning', 'poison'];
+
+/**
+ * Affinité élémentaire (Sorcellerie draconique, niveau 6, PHB 2024 p. 148) : quand vous lancez un
+ * sort qui inflige des dégâts du type choisi, vous ajoutez votre modificateur de Charisme à un jet
+ * de dégâts de ce sort. Repère « +Cha » du grimoire, sur les sorts de ce type.
+ * @param {Object} derived - deriveCharacter() (subclass, level, subclassChoices.element, mods.cha)
+ * @returns {{ type: string, word: string, bonus: number, mention: string, rule: string } | null}
+ *   null hors de la sous-classe, avant le niveau 6 ou sans type choisi
+ */
+export function elementalAffinity(derived) {
+    if (!has(derived, 'draconic_sorcery', 6)) return null;
+    const type = derived.subclassChoices?.element ?? '';
+    if (!AFFINITY_TYPES.includes(type)) return null;
+    const word = (DAMAGE_TYPES.find(([id]) => id === type)?.[1] ?? '').toLowerCase();
+    const bonus = mod(derived, 'cha');
+    return {
+        type, word, bonus,
+        mention: `+Cha (${signed(bonus)}, ${word})`,
+        rule: `Affinité élémentaire (${word}) : quand ce sort inflige des dégâts ${type === 'acid' ? 'd\'acide' : `de ${word}`}, ajoutez votre modificateur de Charisme (${signed(bonus)}) à un de ses jets de dégâts.`
     };
 }
 

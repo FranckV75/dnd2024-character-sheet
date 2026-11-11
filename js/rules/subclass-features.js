@@ -281,7 +281,7 @@ const MANUAL_AUTOMATION = {
                 const chosen = choiceDefense('draconic_sorcery', d.subclassChoices);
                 const type = DAMAGE_TYPES.find(([id]) => id === d.subclassChoices?.element)?.[1] ?? '';
                 return chosen
-                    ? `Type choisi : ${type.toLowerCase()}. Bonus à un jet de dégâts d'un sort de ce type : ${signed(mod(d, 'cha'))} (Charisme) ; repère « ${chosen.mention} » près de la CA.`
+                    ? `Type choisi : ${type.toLowerCase()}. Bonus à un jet de dégâts d'un sort de ce type : ${signed(mod(d, 'cha'))} (Charisme), repère « +Cha » sur ces sorts dans le grimoire (onglet Magie) ; repère « ${chosen.mention} » près de la CA.`
                     : `Type à choisir dans le menu ci-dessous. Bonus à un jet de dégâts du type choisi : ${signed(mod(d, 'cha'))} ; Résistance rappelée près de la CA.`;
             },
             partial: true

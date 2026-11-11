@@ -957,6 +957,11 @@
     border-radius: 8px;
 }
 
+/* Affinité élémentaire (Sorcellerie draconique) : même encre que le repère « Adepte » du tableau */
+.feat-spell-tag[data-kind="affinity"] {
+    color: var(--accent-ink);
+}
+
 .feat-spell-free {
     display: inline-flex;
     align-items: center;
