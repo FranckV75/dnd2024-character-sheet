@@ -36,6 +36,14 @@ sous-classes). Restent des décisions de Franck :
   dé et affiche le total. Pas prioritaire pour l'instant.
 - Fiche utilisable sans wifi, installée comme une application sur la tablette (attention aux
   mises à jour, qui doivent toujours arriver). Chantier seul. Pas prioritaire pour l'instant.
+- Armes : dans le réglage ⚙ d'une arme, pouvoir ajouter des dégâts supplémentaires avec leur
+  raison (ex. « +2d6 contre les dragons » d'une arme tueuse, « +1d6 radiants contre les
+  morts-vivants »), affichés à côté des dégâts comme le fait déjà Fureur divine en Rage
+  (demande de Franck, 11/11/2026).
+- Outils : choisir les outils dans une liste (outils d'artisan, boîtes de jeux, instruments)
+  au lieu de les écrire à la main, et faire le lien avec l'outil donné par l'historique (Korgul,
+  Soldat : « une boîte de jeux au choix », signalée « À vérifier » dans l'encadré de l'historique ;
+  à expliquer à Franck) (demande de Franck, 11/11/2026).
 - Grimoire : comme les objets magiques, un aspect qui monte en puissance avec le niveau du sort.
 - Bilan des capacités pour les autres joueurs (Iria, personnage de Catherine), comme pour Korgul.
 - Vue du groupe (demande « synergies entre joueurs ») : PV, CA et perception passive de chaque
