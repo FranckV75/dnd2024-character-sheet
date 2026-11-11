@@ -21,6 +21,9 @@ ne jamais publier (push, déploiement) sans son accord explicite.
 - Les joueurs (Franck, Catherine) jouent sur tablette (Android, iPad) : un changement du format de
   sauvegarde ou de la synchronisation doit rester lisible par les fiches déjà enregistrées.
 - Feuille de route : `docs/ROADMAP.md`. Architecture : `docs/ARCHITECTURE.md`.
+- **Journal de bord** : `docs/JOURNAL_DE_BORD.md` (nom fixe). À lire en début de session ; en fin
+  de session, réécrire « En ce moment » et ajouter en tête des « Sessions » une entrée courte dont
+  le titre dit sur quoi on a travaillé (à corriger si le sujet change en route).
 
 ## Commandes
 
