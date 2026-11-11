@@ -13,7 +13,10 @@ en fin de session :
 ## En ce moment
 
 - **En ligne** : version **4.37.0** (`master` = `v4` = `e1ea8a8`), publiée le 10/11/2026 avec
-  l'accord de Franck. Rien n'attend de publication.
+  l'accord de Franck. Sur `v4`, 6 commits de documentation locaux, non poussés, sans effet pour
+  les joueurs.
+- **Emplacement** : le dépôt est désormais `E:\2 - CODE\Feuille de perso\Code\` (voir
+  `E:\2 - CODE\LISEZ-MOI.md`).
 - **Manuel français** : les photos de Franck font foi pour les noms français. Elles sont rangées,
   avec un index (`INDEX.md`), dans
   `..\Ressources\Photos Manuel des joueurs FR\` (à côté du dépôt).
@@ -43,7 +46,14 @@ dragonnets, restes des sous-classes) et idées en attente : `docs/FEUILLE_DE_ROU
 
 ## Sessions
 
-### 11/11/2026 — Journal de bord et rangement des documents
+### 11/11/2026 — Journal de bord et rangement des dossiers
+
+- `E:\2 - CODE` réorganisé avec un dossier par projet, chacun avec `Code\` (le dépôt),
+  `Ressources\` (manuels, photos du manuel FR, idées des joueurs, fonds d'écran, sauvegardes) et
+  `Archives\` (anciennes versions, dépôt d'avant le nettoyage). Description dans
+  `E:\2 - CODE\LISEZ-MOI.md`. Les documents du dépôt renvoient à `..\Ressources\` en chemins relatifs.
+- Copie de sécurité complète avant le rangement : `E:\2 - CODE - Copie 11-11-26` (Franck la
+  supprimera lui-même dans quelques semaines).
 
 - L'ancienne note de passage `docs/PROCHAINE_SESSION.md` devient ce journal, au nom fixe (choix de
   Franck) : le sujet de chaque session est dans le titre de son entrée, pas dans le nom du fichier.
