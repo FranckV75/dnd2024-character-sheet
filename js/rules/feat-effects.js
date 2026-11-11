@@ -113,7 +113,7 @@ export const AUTOMATED_FEATS = Object.freeze([
     'combat_a_mains_nues', 'combat_en_aveugle', 'interception', 'protection', 'guerrier_beni', 'guerrier_druidique',
     // Sous-classes, lot 0 : style de combat de l'Odyssée
     'hoplite',
-    // Lot 7 : Frappe à mains nues, armes et rappels
+    // Lot 7 : Attaque à mains nues, armes et rappels
     'athlete', 'bagarreur_de_tavernes', 'combattant_a_deux_armes', 'combattant_monte', 'comedien', 'discret',
     'empoigneur', 'faconneur', 'formation_aux_armes_de_guerre', 'maitre_d_armes', 'maitre_arbaletrier', 'tireur_d_elite',
     // Lot 8 : faveurs épiques (niveau 19)
@@ -540,9 +540,9 @@ const FEAT_RULES = {
         add('featSlot', 'À terre : vous vous relevez avec seulement 1,50 m de mouvement. Saut en longueur ou en hauteur avec élan après 1,50 m seulement.');
     },
 
-    // Bagarreur de tavernes — PHB 2024 « Tavern Brawler », p. 202 : Frappe à mains nues 1d4 + For
+    // Bagarreur de tavernes — PHB 2024 « Tavern Brawler », p. 202 : Attaque à mains nues 1d4 + For
     bagarreur_de_tavernes: ({ record, add }) => {
-        add('featSlot', 'Frappe à mains nues : 1d4 + mod. de Force contondants au lieu de 1 + Force, et vous relancez les 1 sur ses dés de dégâts. Une fois par tour, touchée pendant l\'action Attaque : vous pouvez aussi repousser la cible de 1,50 m.');
+        add('featSlot', 'Attaque à mains nues : 1d4 + mod. de Force contondants au lieu de 1 + Force, et vous relancez les 1 sur ses dés de dégâts. Une fois par tour, touchée pendant l\'action Attaque : vous pouvez aussi repousser la cible de 1,50 m.');
         add('featSlot', 'Vous maîtrisez les armes improvisées.');
         unarmedRowHint(record, add);
     },
@@ -580,7 +580,7 @@ const FEAT_RULES = {
     // Empoigneur — PHB 2024 « Grappler », p. 204 : DD de Lutte = 8 + mod. For + bonus de maîtrise
     empoigneur: ({ derived, record, add }) => {
         const dc = grappleDC(derived);
-        add('featSlot', `Frappe à mains nues pendant l'action Attaque, une fois par tour : dégâts et Lutte en même temps (sauvegarde de Force ou de Dextérité DD ${dc}, au choix de la cible).`, { value: dc });
+        add('featSlot', `Attaque à mains nues pendant l'action Attaque, une fois par tour : dégâts et Lutte en même temps (sauvegarde de Force ou de Dextérité DD ${dc}, au choix de la cible).`, { value: dc });
         add('featSlot', "Avantage aux attaques contre une créature que vous agrippez. La déplacer (votre taille ou plus petite) ne divise pas votre Vitesse.");
         unarmedRowHint(record, add);
     },
@@ -653,10 +653,10 @@ const FEAT_RULES = {
         add('featSlot', "L'attaque en plus (action Bonus) avec une arme Légère ajoute votre modificateur aux dégâts : dégâts calculés sous chaque arme Légère du tableau.");
     },
 
-    // Combat à mains nues : Frappe à mains nues 1d6 + For (1d8 sans arme ni bouclier), 1d4 à l'agrippé
+    // Combat à mains nues : Attaque à mains nues 1d6 + For (1d8 sans arme ni bouclier), 1d4 à l'agrippé
     combat_a_mains_nues: ({ derived: { mods }, add }) => {
         const str = signed(mods.str);
-        add('featSlot', `Frappe à mains nues : 1d6 ${str} contondants, ou 1d8 ${str} si vous ne tenez ni arme ni bouclier (au lieu de 1 ${str}). Au début de chacun de vos tours : 1d4 contondants à une créature que vous Agrippez.`, { value: mods.str });
+        add('featSlot', `Attaque à mains nues : 1d6 ${str} contondants, ou 1d8 ${str} si vous ne tenez ni arme ni bouclier (au lieu de 1 ${str}). Au début de chacun de vos tours : 1d4 contondants à une créature que vous Agrippez.`, { value: mods.str });
     },
 
     // Combat en aveugle : Vision aveugle à 3 m
@@ -737,12 +737,12 @@ export function grappleDC(derived) {
     return 8 + (martialArts ? Math.max(str, dex) : str) + derived.pb;
 }
 
-/** Rappel : pas de ligne « Frappe à mains nues » dans le tableau des armes (ses dégâts n'y sont pas calculés) */
+/** Rappel : pas de ligne « Attaque à mains nues » dans le tableau des armes (ses dégâts n'y sont pas calculés) */
 function unarmedRowHint(record, add) {
     const weapons = Array.isArray(record.dynamic_weapons) ? record.dynamic_weapons : [];
     // Ligne rattachée au manuel seulement (sinon ses dégâts ne sont pas calculés)
     if (!weapons.some(weapon => isUnarmedStrike(weapon) && weapon.atkKey)) {
-        add('featSlot', '« Frappe à mains nues » peut être ajoutée au tableau des armes (liste du manuel) : ses dégâts y sont alors calculés.', { inactive: true });
+        add('featSlot', '« Attaque à mains nues » peut être ajoutée au tableau des armes (liste du manuel) : ses dégâts y sont alors calculés.', { inactive: true });
     }
 }
 
@@ -938,7 +938,7 @@ function choiceNotes(grant, { derived, grants, record, add }) {
 
 /** Rappel court d'un don sur une arme : condition (arme de corps à corps, type de dégâts…) et texte */
 /**
- * Dons dont le rappel ne vaut qu'avec une arme, pas avec la Frappe à mains nues (PHB 2024 :
+ * Dons dont le rappel ne vaut qu'avec une arme, pas avec l'attaque à mains nues (PHB 2024 :
  * Sauvagerie martiale « with a weapon », Abattage « with a Melee weapon », Coup de bouclier « with a
  * Melee weapon », Poison « weapon or ammunition », Duel « a Melee weapon »).
  */
@@ -947,14 +947,14 @@ const WEAPON_ONLY_FEATS = new Set([
 ]);
 
 const WEAPON_RULES = [
-    // Lot 8 : Faveur d'attaque irrésistible, sur toute arme (et la Frappe à mains nues)
+    // Lot 8 : Faveur d'attaque irrésistible, sur toute arme (et l'attaque à mains nues)
     { featId: 'faveur_d_attaque_irresistible', applies: () => true,
         value: ({ record, derived }) => irresistibleBoost(record, derived)?.score,
         text: ({ record, derived }) => {
             const boost = irresistibleBoost(record, derived);
             return `Sur un 20 au d20 : +${boost ? boost.score : '(valeur de la caractéristique du don)'} dégâts ; dégâts contondants, perforants et tranchants sans Résistance.`;
         } },
-    // Lot 7 : Frappe à mains nues (PHB 2024 p. 377)
+    // Lot 7 : Attaque à mains nues (PHB 2024 p. 377)
     { featId: 'bagarreur_de_tavernes', applies: ({ weapon }) => isUnarmedStrike(weapon),
         text: () => '1d4 au lieu de 1 (le plus gros dé est compté), relancez les 1 ; une fois par tour (action Attaque), vous pouvez aussi repousser la cible de 1,50 m.' },
     { featId: 'empoigneur', applies: ({ weapon }) => isUnarmedStrike(weapon),
@@ -1058,7 +1058,7 @@ export function weaponFeatNotes(weapon, character, derived = deriveCharacter(cha
     if (isBlankWeapon(weapon) || !weapon.atkKey || !String(weapon.name ?? '').replace(/<[^>]*>/g, '').trim()) return [];
     const feats = new Set(derived.feats ?? reachedFeatIds(character));
     const ctx = { derived, record: character || {}, weapon, buffs: buffs || {}, melee: weaponReach(weapon).melee, type: weaponDamageType(weapon) };
-    // La Frappe à mains nues n'est pas une arme : pas les rappels réservés aux armes
+    // L'attaque à mains nues n'est pas une arme : pas les rappels réservés aux armes
     const unarmed = isUnarmedStrike(weapon);
     // Arme non maîtrisée (ou maîtrise supposée) : rappel en tête, avant ceux des dons
     const proficiency = weaponProficiency(weapon, derived);

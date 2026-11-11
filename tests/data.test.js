@@ -170,8 +170,8 @@ describe('Armes et armures', () => {
         for (const w of DD_RULES.weapons) {
             assert.ok(['FOR', 'DEX'].includes(w.atk), w.name);
             assert.match(w.dmg, DICE, w.name);
-            // « Frappe à mains nues » : pas une arme du Manuel, mais une attaque du tableau (lot 7)
-            assert.ok(['Courante', 'Guerre'].includes(w.category) || (w.name === 'Frappe à mains nues' && w.category === 'Mains nues'), w.name);
+            // « Attaque à mains nues » : pas une arme du Manuel, mais une attaque du tableau (lot 7)
+            assert.ok(['Courante', 'Guerre'].includes(w.category) || (w.name === 'Attaque à mains nues' && w.category === 'Mains nues'), w.name);
         }
     });
 
@@ -231,9 +231,9 @@ describe('Armes et armures', () => {
         }
     });
 
-    test('Frappe à mains nues (PHB 2024 p. 377) : seule entrée hors table, 1 contondant, Force', () => {
+    test('Attaque à mains nues (PHB 2024 p. 377) : seule entrée hors table, 1 contondant, Force', () => {
         const extra = DD_RULES.weapons.filter(w => w.category === 'Mains nues');
-        assert.deepEqual(extra, [{ name: 'Frappe à mains nues', atk: 'FOR', dmg: '1 cont.', prop: '-', prof: '-', ammo: '-', category: 'Mains nues' }]);
+        assert.deepEqual(extra, [{ name: 'Attaque à mains nues', atk: 'FOR', dmg: '1 cont.', prop: '-', prof: '-', ammo: '-', category: 'Mains nues' }]);
     });
 
     test('Coutille : arme de guerre lourde à allonge, reconnue par les filtres, Cogneur lourd et le manuel', () => {

@@ -138,13 +138,20 @@ function normalizeWeaponName(name) {
 const singular = (text) => text.split(' ').map(word => (word.length > 3 ? word.replace(/s$/, '') : word)).join(' ');
 
 /**
+ * Anciens noms d'entrées du catalogue → nom actuel (normalisés). « Frappe à mains nues » s'appelle
+ * « Attaque à mains nues » depuis qu'elle suit le Manuel des joueurs français.
+ */
+const RENAMED_WEAPONS = { 'frappe à mains nues': 'attaque à mains nues', 'frappes à mains nues': 'attaque à mains nues' };
+
+/**
  * Retrouve une arme du manuel à partir du nom saisi
- * (correspondance exacte après normalisation, au singulier comme au pluriel).
+ * (correspondance exacte après normalisation, au singulier comme au pluriel, ou ancien nom).
  * @param {string} name
  * @returns {Object|null}
  */
 export function findRulebookWeapon(name) {
-    const clean = normalizeWeaponName(name);
+    const typed = normalizeWeaponName(name);
+    const clean = Object.hasOwn(RENAMED_WEAPONS, typed) ? RENAMED_WEAPONS[typed] : typed;
     if (!clean) return null;
     return DD_RULES.weapons.find(w => w.name.toLowerCase() === clean)
         || DD_RULES.weapons.find(w => singular(w.name.toLowerCase()) === singular(clean))

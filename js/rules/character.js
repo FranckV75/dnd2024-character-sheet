@@ -514,7 +514,7 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     // Style Duel (PHB 2024 p. 209) : +2 aux dégâts, arme de corps à corps tenue à une main sans autre
     // arme ; bouton allumé par le joueur (la fiche ne sait pas ce qu'il tient en main)
     const reach = weaponReach(weapon);
-    // (la Frappe à mains nues n'est pas une arme : pas de Duel)
+    // (l'attaque à mains nues n'est pas une arme : pas de Duel)
     if (buffs.dueling && reach.melee && !unarmed && !prop.toLowerCase().includes('deux mains')) extraDmg.push({ die: '2', type: 'Duel' });
     // Style Armes de lancer (PHB 2024 p. 210) : +2 aux dégâts d'une attaque à distance avec une arme de
     // Lancer (rappel sous l'arme, featEffects)
@@ -527,7 +527,7 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     let dieOverride = config.dmgDieOverride || '';
     // Arts martiaux : le dé « à la place » de celui de l'arme, donc seulement s'il est plus gros
     if (monkWeapon && !dieOverride) dieOverride = biggerDie(getMartialArtsDie(level), (weapon.baseDmg || '').toString());
-    // Frappe à mains nues : le plus gros dé parmi Arts martiaux, Bagarreur de tavernes (1d4) et
+    // Attaque à mains nues : le plus gros dé parmi Arts martiaux, Bagarreur de tavernes (1d4) et
     // le style Combat à mains nues (1d6 ; 1d8 sans arme ni bouclier, rappel sous la ligne)
     if (unarmed && !config.dmgDieOverride) dieOverride = unarmedDie(dieOverride, stats.feats ?? []);
     // Collège de la Danse (Dégâts bardiques) : dé d'Inspiration bardique, s'il est plus gros
@@ -543,7 +543,7 @@ export function computeWeapon(weapon, stats, buffs = {}) {
 }
 
 /**
- * Frappe à mains nues ou arme de Moine, pour un Moine qui profite des Arts martiaux (PHB 2024
+ * Attaque à mains nues ou arme de Moine, pour un Moine qui profite des Arts martiaux (PHB 2024
  * p. 101-102) : sans armure ni bouclier équipés ; armes de Moine = armes courantes de corps à corps
  * et armes de guerre de corps à corps Légères (pas la Fléchette, arme à distance).
  * La Voie du bouclier (Odyssée, guide du joueur p. 46, Technique arésienne, niveau 3) garde les Arts
@@ -588,7 +588,7 @@ export function weaponStatOverride(weapon, stats) {
 }
 
 /**
- * Dé de la Frappe à mains nues : le plus gros parmi celui des Arts martiaux (déjà choisi, ou ''),
+ * Dé de l'attaque à mains nues : le plus gros parmi celui des Arts martiaux (déjà choisi, ou ''),
  * Bagarreur de tavernes (PHB 2024 p. 202 : 1d4) et Combat à mains nues (p. 210 : 1d6).
  * '' si aucun : la frappe fait alors 1 + mod. de Force.
  * @param {string} current - '' ou dé déjà retenu (« 1d8 »)

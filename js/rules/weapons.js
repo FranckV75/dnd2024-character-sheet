@@ -115,14 +115,21 @@ export function weaponReach(weapon) {
     return { melee: true, ranged: false };
 }
 
+/** Noms reconnus de la ligne à mains nues, sans accents : celui du livre français, puis l'ancien */
+const UNARMED_NAMES = ['attaque a mains nues', 'frappe a mains nues'];
+
 /**
- * Ligne « Frappe à mains nues » (catalogue DD_RULES.weapons, PHB 2024 « Unarmed Strike ») ? Par sa
- * catégorie « Mains nues » (nom au pluriel ou retouché, rattaché au manuel) ou par son nom.
+ * Ligne « Attaque à mains nues » (catalogue DD_RULES.weapons, PHB 2024 « Unarmed Strike ») ? Par sa
+ * catégorie « Mains nues » (nom au pluriel ou retouché, rattaché au manuel) ou par son nom. Jusqu'à la
+ * 4.37.0, la ligne s'appelait « Frappe à mains nues » : les lignes déjà enregistrées gardent ce nom,
+ * qui reste reconnu (le nom enregistré n'est jamais modifié).
  * @param {{ name?: string, category?: string }} weapon
  * @returns {boolean}
  */
 export function isUnarmedStrike(weapon) {
-    return fold(weapon?.category) === 'mains nues' || fold(weapon?.name).startsWith('frappe a mains nues');
+    const name = fold(weapon?.name);
+    return fold(weapon?.category) === 'mains nues'
+        || UNARMED_NAMES.some(prefix => name.startsWith(prefix));
 }
 
 /**

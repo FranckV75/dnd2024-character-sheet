@@ -65,7 +65,7 @@ const FEATS_DATA = {
         "type": "Origine",
         "prereq": "Niv 1+",
         "asi": "Aucune",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Frappe à mains nues améliorée</strong>. Lorsque vous touchez avec votre Frappe à mains nues et infligez des dégâts, vous pouvez infliger des dégâts contondants égaux à 1d4 plus votre modificateur de Force au lieu des dégâts normaux d'une Frappe à mains nues. <br><strong>Relancer des dégâts</strong>. Chaque fois que vous lancez un dé de dégâts pour votre Frappe à mains nues, vous pouvez relancer le dé si vous avez obtenu un 1, et devez utiliser le nouveau résultat. <br><strong>Armement improvisé</strong>. Vous maîtrisez les armes improvisées. <br><strong>Bourrade</strong>. Lorsque vous touchez une créature avec une Frappe à mains nues lors d'une action Attaque à votre tour, vous pouvez infliger des dégâts à la cible et la repousser à 1,50 m de vous. Vous ne pouvez utiliser cet avantage qu'une seule fois par tour."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Attaque à mains nues améliorée</strong>. Lorsque vous touchez avec votre attaque à mains nues et infligez des dégâts, vous pouvez infliger des dégâts contondants égaux à 1d4 plus votre modificateur de Force au lieu des dégâts normaux d'une attaque à mains nues. <br><strong>Relancer des dégâts</strong>. Chaque fois que vous lancez un dé de dégâts pour votre attaque à mains nues, vous pouvez relancer le dé si vous avez obtenu un 1, et devez utiliser le nouveau résultat. <br><strong>Armement improvisé</strong>. Vous maîtrisez les armes improvisées. <br><strong>Bourrade</strong>. Lorsque vous touchez une créature avec une attaque à mains nues lors d'une action Attaque à votre tour, vous pouvez infliger des dégâts à la cible et la repousser à 1,50 m de vous. Vous ne pouvez utiliser cet avantage qu'une seule fois par tour."
     },
     "broyeur": {
         "name": "Broyeur",
@@ -100,7 +100,7 @@ const FEATS_DATA = {
         "type": "Style de combat",
         "prereq": "capacité Style de combat",
         "asi": "Aucune",
-        "desc": "Lorsque vous touchez avec votre Frappe à mains nues et infligez des dégâts, vous pouvez infliger des dégâts contondants égaux à 1d6 plus votre modificateur de Force au lieu des dégâts normaux d'une Frappe à mains nues. Si vous ne tenez ni arme ni bouclier lors du jet d'attaque, le d6 devient un d8. <br>Au début de chacun de vos tours, vous pouvez infliger 1d4 dégâts contondants à une créature que vous agrippez."
+        "desc": "Lorsque vous touchez avec votre attaque à mains nues et infligez des dégâts, vous pouvez infliger des dégâts contondants égaux à 1d6 plus votre modificateur de Force au lieu des dégâts normaux d'une attaque à mains nues. Si vous ne tenez ni arme ni bouclier lors du jet d'attaque, le d6 devient un d8. <br>Au début de chacun de vos tours, vous pouvez infliger 1d4 dégâts contondants à une créature que vous agrippez."
     },
     "combat_en_aveugle": {
         "name": "Combat en aveugle",
@@ -178,7 +178,7 @@ const FEATS_DATA = {
         "type": "Général",
         "prereq": "niveau 4 ou supérieur, Force ou Dextérité 13 ou plus",
         "asi": "+1 For ou Dex",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Force ou Dextérité de 1, jusqu'à un maximum de 20. <br><strong>Frappe et empoignade</strong>. Lorsque vous touchez une créature avec une Frappe à mains nues lors de votre action Attaque pendant votre tour, vous pouvez utiliser à la fois les options Dégâts et Lutte. Vous ne pouvez utiliser cet avantage qu'une fois par tour. <br><strong>Attaque avec Avantage</strong>. Vous bénéficiez d'un Avantage aux jets d'attaque contre une créature que vous agrippez. <br><strong>Lutteur rapide</strong>. Vous n'avez pas besoin de dépenser un mouvement supplémentaire pour déplacer une créature que vous agrippez si celle-ci est de votre taille ou plus petite."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Force ou Dextérité de 1, jusqu'à un maximum de 20. <br><strong>Frappe et empoignade</strong>. Lorsque vous touchez une créature avec une attaque à mains nues lors de votre action Attaque pendant votre tour, vous pouvez utiliser à la fois les options Dégâts et Lutte. Vous ne pouvez utiliser cet avantage qu'une fois par tour. <br><strong>Attaque avec Avantage</strong>. Vous bénéficiez d'un Avantage aux jets d'attaque contre une créature que vous agrippez. <br><strong>Lutteur rapide</strong>. Vous n'avez pas besoin de dépenser un mouvement supplémentaire pour déplacer une créature que vous agrippez si celle-ci est de votre taille ou plus petite."
     },
     "empoisonneur": {
         "name": "Empoisonneur",

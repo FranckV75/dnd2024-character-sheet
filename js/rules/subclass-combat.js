@@ -127,7 +127,7 @@ export function subclassBuffDamage(weapon, stats, buffs = {}, stat = '') {
     if (buffs.frenzy && buffs.rage && stat === 'FOR' && has(stats, 'path_of_the_berserker')) {
         out.push({ die: frenzyDice(level), type: 'Frénésie 1/tour' });
     }
-    // Manœuvres : attaque avec une arme ou une Frappe à mains nues (PHB 2024, Trip Attack…)
+    // Manœuvres : attaque avec une arme ou une attaque à mains nues (PHB 2024, Trip Attack…)
     if (buffs.superiority && has(stats, 'battle_master')) out.push({ die: `1${superiorityDie(level)}`, type: 'Supériorité' });
     if (!realWeapon) return out;
     if (buffs.dreadfulStrike && has(stats, 'gloom_stalker')) {

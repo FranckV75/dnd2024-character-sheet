@@ -98,7 +98,7 @@ const MANUAL_AUTOMATION = {
     },
     // Lot 2 : Voie du Zélote (Korgul)
     path_of_the_zealot: {
-        fureur_divine: { text: (d) => `Bouton Rage allumé (onglet Combat) : +${divineFuryDie(d) || '1d6'} (Fureur divine) sur chaque arme et la Frappe à mains nues ; une seule fois par tour, sur la première créature touchée.` },
+        fureur_divine: { text: (d) => `Bouton Rage allumé (onglet Combat) : +${divineFuryDie(d) || '1d6'} (Fureur divine) sur chaque arme et l'attaque à mains nues ; une seule fois par tour, sur la première créature touchée.` },
         guerrier_des_dieux: { text: 'Réserve de d12 en cases dans l\'onglet Combat, rendue au repos long.' },
         focalisation_fanatique: { text: (d) => `Case dans l'onglet Combat, vidée quand le bouton Rage s'éteint ou au repos ; bonus à la relance : +${getRageBonus(d.level)}.` },
         presence_zelee: { text: 'Case dans l\'onglet Combat, vidée au repos long (décochez-la si vous dépensez une Rage pour la récupérer).' },
@@ -235,7 +235,7 @@ const MANUAL_AUTOMATION = {
     },
     college_of_dance: {
         jeu_de_jambes_eblouissant_defense_sans_armure: { text: 'CA sans armure calculée (10 + Dex + Cha, sans bouclier).' },
-        jeu_de_jambes_eblouissant_degats_bardiques: { text: (d) => `Frappe à mains nues calculée (onglet Combat) : Dextérité et 1${bardicInspirationDie(d.level)} contondants, sans armure ni bouclier, quand la Dextérité est au moins égale à la Force.` },
+        jeu_de_jambes_eblouissant_degats_bardiques: { text: (d) => `Attaque à mains nues calculée (onglet Combat) : Dextérité et 1${bardicInspirationDie(d.level)} contondants, sans armure ni bouclier, quand la Dextérité est au moins égale à la Force.` },
         jeu_de_jambes_en_tandem: { text: (d) => `Dé d'Inspiration bardique : ${bardicInspirationDie(d.level)}.`, partial: true }
     },
     college_of_valor: {
@@ -667,7 +667,7 @@ export const SUBCLASS_AUTOMATION = Object.freeze(Object.fromEntries(
 
 /**
  * Fureur divine (Voie du Zélote, PHB 2024, niveau 3) : 1d6 + la moitié du niveau de Barbare, une fois
- * par tour pendant la Rage, avec une arme ou une Frappe à mains nues.
+ * par tour pendant la Rage, avec une arme ou une attaque à mains nues.
  * @param {{ classSlug: string, subclass?: string, level: number }} stats - deriveCharacter()
  * @returns {string} « 1d6+2 », ou '' si le personnage n'a pas la capacité
  */

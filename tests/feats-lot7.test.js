@@ -1,5 +1,5 @@
 // =============================================================================
-// Lot 7 : Frappe à mains nues (PHB 2024 p. 377) et dons d'armes ou de rappels
+// Lot 7 : Attaque à mains nues (PHB 2024 p. 377) et dons d'armes ou de rappels
 // (Athlète, Bagarreur de tavernes, Combattant à deux armes, Combattant monté, Comédien, Discret,
 // Empoigneur, Façonneur, Formation aux armes de guerre, Maître d'armes, Maître arbalétrier,
 // Tireur d'élite). Règles vérifiées dans le Player's Handbook 2024 anglais.
@@ -16,9 +16,10 @@ import { armorRowFromCatalogue } from '../js/rules/armors.js';
 import { DD_RULES } from '../js/data/dd-rules.js';
 import { EQUIPMENT_DATA } from '../js/data/equipment.js';
 import { EMPTY_WEAPON, createDefaultCharacter } from '../js/state/schema.js';
+import { migrateCharacter, findRulebookWeapon } from '../js/state/migrate.js';
 
 const weapon = (name) => rowFromRulebookWeapon({ ...EMPTY_WEAPON }, DD_RULES.weapons.find(w => w.name === name));
-const unarmed = () => weapon('Frappe à mains nues');
+const unarmed = () => weapon('Attaque à mains nues');
 const armor = (name) => ({ ...armorRowFromCatalogue(EQUIPMENT_DATA.armors.find(a => a.name === name)), equipped: true });
 
 // Guerrier niveau 5 : For 16 (+3), Dex 14 (+2), Cha 12 (+1), bonus de maîtrise +3
@@ -38,7 +39,7 @@ const slotTexts = (character, level) => (featEffects(character)[`featSlot:${leve
 const LOT7 = ['athlete', 'bagarreur_de_tavernes', 'combattant_a_deux_armes', 'combattant_monte', 'comedien', 'discret',
     'empoigneur', 'faconneur', 'formation_aux_armes_de_guerre', 'maitre_d_armes', 'maitre_arbaletrier', 'tireur_d_elite'];
 
-describe('Frappe à mains nues (PHB 2024 p. 377)', () => {
+describe('Attaque à mains nues (PHB 2024 p. 377)', () => {
     test('dans la liste du manuel, reconnue, au corps à corps', () => {
         const row = unarmed();
         assert.ok(isUnarmedStrike(row));
@@ -104,6 +105,25 @@ describe('Frappe à mains nues (PHB 2024 p. 377)', () => {
         }
     });
 
+    test("fiche enregistrée avec l'ancien nom « Frappe à mains nues » : nom gardé, ligne toujours reconnue", () => {
+        // Ligne choisie dans la liste du manuel jusqu'à la 4.37.0, et ligne saisie à la main dans la v3
+        const saved = { ...EMPTY_WEAPON, name: 'Frappe à mains nues', atkKey: 'FOR', baseDmg: '1 cont.', prop: '-', prof: '-', category: 'Mains nues' };
+        const typed = { ...EMPTY_WEAPON, name: 'Frappe à mains nues' };
+        const sheet = hero({ feat_1: 'bagarreur_de_tavernes', dynamic_weapons: [saved, typed] });
+        const { character } = migrateCharacter(JSON.parse(JSON.stringify(sheet)));
+        const [kept, attached] = character.dynamic_weapons;
+        assert.deepEqual([kept.name, attached.name], ['Frappe à mains nues', 'Frappe à mains nues']);
+        assert.equal(attached.category, 'Mains nues'); // rattachée au manuel (Attaque à mains nues)
+        assert.equal(findRulebookWeapon('Frappe à mains nues').name, 'Attaque à mains nues');
+        for (const row of [kept, attached, { name: 'Frappe à mains nues', atkKey: 'str', baseDmg: '1 C', prop: '' }]) {
+            assert.ok(isUnarmedStrike(row));
+            assert.match(strike(row, character).damage.text, /^1d4 \+3 C/);
+        }
+        // La ligne existe déjà : pas de rappel pour en ajouter une
+        assert.ok(!slotTexts(character, 1).some(t => /peut être ajoutée au tableau/.test(t)));
+        assert.ok(slotTexts(hero({ feat_1: 'bagarreur_de_tavernes' }), 1).some(t => /« Attaque à mains nues » peut être ajoutée/.test(t)));
+    });
+
     test('caractéristique et dé imposés dans la configuration restent prioritaires', () => {
         const row = { ...unarmed(), weaponConfig: JSON.stringify({ dmgDieOverride: '1d10', statOverride: 'str' }) };
         assert.equal(strike(row, monk({ feat_1: 'bagarreur_de_tavernes' })).damage.text, '1d10 +2 CONT');
@@ -138,12 +158,12 @@ describe('Frappe à mains nues (PHB 2024 p. 377)', () => {
         assert.equal(grappleDC(deriveCharacter(monk())), 8 + 4 + 3);
     });
 
-    test('sans ligne « Frappe à mains nues » : rappel discret pour l\'ajouter', () => {
+    test('sans ligne « Attaque à mains nues » : rappel discret pour l\'ajouter', () => {
         const hint = (c) => (featEffects(c)['featSlot:1'] ?? []).find(n => /peut être ajoutée au tableau/.test(n.text));
         assert.ok(hint(hero({ feat_1: 'bagarreur_de_tavernes' })).inactive);
         assert.equal(hint(hero({ feat_1: 'bagarreur_de_tavernes', dynamic_weapons: [unarmed()] })), undefined);
         // Ligne au bon nom mais pas rattachée au manuel : ses dégâts ne sont pas calculés, le rappel reste
-        const typed = { ...EMPTY_WEAPON, name: 'Frappe à mains nues (Moine)' };
+        const typed = { ...EMPTY_WEAPON, name: 'Attaque à mains nues (Moine)' };
         assert.ok(hint(hero({ feat_1: 'bagarreur_de_tavernes', dynamic_weapons: [typed] })));
     });
 });
@@ -171,7 +191,7 @@ describe('Dons d\'armes (lot 7)', () => {
     test('Combattant à deux armes : armes de corps à corps ni Légères ni à Deux mains', () => {
         const c = hero({ feat_4: 'combattant_a_deux_armes' });
         assert.ok(notesOf(weapon('Épée longue'), c).some(n => n.featId === 'combattant_a_deux_armes'));
-        for (const name of ['Dague', 'Hache à deux mains', 'Arc long', 'Frappe à mains nues']) {
+        for (const name of ['Dague', 'Hache à deux mains', 'Arc long', 'Attaque à mains nues']) {
             assert.ok(!notesOf(weapon(name), c).some(n => n.featId === 'combattant_a_deux_armes'), name);
         }
     });

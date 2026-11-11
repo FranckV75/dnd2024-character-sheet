@@ -23,7 +23,7 @@ const record = (cls, subclass, level, extra = {}) => ({
 const hero = (...args) => deriveCharacter(record(...args));
 const SWORD = { name: 'Épée longue', atkKey: 'str', baseDmg: '1d8 T', prop: 'Polyvalente' };
 const BOW = { name: 'Arc long', atkKey: 'dex', baseDmg: '1d8 P', prop: 'Munitions, Lourde, Deux mains' };
-const UNARMED = { name: 'Frappe à mains nues', atkKey: 'str', baseDmg: '1 C', prop: '' };
+const UNARMED = { name: 'Attaque à mains nues', atkKey: 'str', baseDmg: '1 C', prop: '' };
 const damage = (r, weapon) => {
     const d = deriveCharacter(r);
     return computeWeapon(weapon, d, effectiveBuffs(d.classSlug, r.combat_buffs, r, d)).damage.text;
@@ -211,7 +211,7 @@ describe('Résistances près de la CA', () => {
 });
 
 describe('Rappels sous les armes et textes', () => {
-    test('Maître de guerre : dé et DD sous chaque arme et la Frappe à mains nues', () => {
+    test("Maître de guerre : dé et DD sous chaque arme et l'attaque à mains nues", () => {
         const d = hero('Guerrier', 'Maître de Guerre', 3, { str_score: '16' });
         assert.match(subclassCombatWeaponNotes(SWORD, d)[0].text, /d8 ; DD des manœuvres : 13/);
         assert.equal(subclassCombatWeaponNotes(UNARMED, d)[0].featId, 'dd_des_man_uvres');

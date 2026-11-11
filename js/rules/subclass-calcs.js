@@ -3,7 +3,7 @@
 // docs/etudes/SOUS_CLASSES.md) : fonctions pures, sans DOM.
 //
 //  - valeurs calculées par la fiche : Initiative (Traqueur des ténèbres, L'Odysséen), tests de Charisme
-//    de l'Vagabond féerique, Frappe à mains nues du Collège de la Danse, armes de corps à corps de
+//    de l'Vagabond féerique, Attaque à mains nues du Collège de la Danse, armes de corps à corps de
 //    l'Ascendance divine (Charisme), arc long de la Voie herculéenne (Force) ;
 //  - rappels près des valeurs (zones de featEffects) : maîtrises données par la sous-classe à cocher,
 //    vitesses d'escalade et de nage, Avantage à l'Initiative ou aux jets contre la mort, coups
@@ -98,7 +98,7 @@ const unarmored = (stats) => {
 
 /**
  * Collège de la Danse (Barde 3, « Dazzling Footwork », Dégâts bardiques) : sans armure ni bouclier,
- * la Frappe à mains nues peut utiliser la Dextérité et infliger le dé d'Inspiration bardique +
+ * l'attaque à mains nues peut utiliser la Dextérité et infliger le dé d'Inspiration bardique +
  * Dextérité (contondant). La fiche le fait quand la Dextérité est au moins égale à la Force.
  * @param {Object} weapon
  * @param {Object} stats - deriveCharacter()
@@ -112,7 +112,7 @@ export function danceUnarmedDie(weapon, stats) {
 
 /**
  * Caractéristique imposée par la sous-classe pour une arme ('' sinon) :
- *  - Collège de la Danse : 'dex' pour la Frappe à mains nues (danceUnarmedDie) ;
+ *  - Collège de la Danse : 'dex' pour l'attaque à mains nues (danceUnarmedDie) ;
  *  - Ascendance divine (Ensorceleur 3, Odyssée, « La force en héritage ») : 'cha' pour les attaques
  *    au corps à corps, quand le Charisme dépasse la caractéristique habituelle de l'arme ;
  *  - Voie herculéenne (Barbare 6, Odyssée) : 'str' pour l'arc long, quand la Force dépasse la Dextérité.
@@ -256,7 +256,7 @@ export function subclassWeaponNotes(weapon, derived) {
     if (!crit) return [];
     return [{
         featId: crit.featId, featName: crit.featName, classFeature: true, value: crit.min,
-        text: `Coup critique sur ${crit.min}${crit.min === 18 ? ' à 20' : ' ou 20'}${isUnarmedStrike(weapon) ? ' (Frappe à mains nues comprise)' : ''}.`
+        text: `Coup critique sur ${crit.min}${crit.min === 18 ? ' à 20' : ' ou 20'}${isUnarmedStrike(weapon) ? ' (attaque à mains nues comprise)' : ''}.`
             + (crit.featId === 'briseur_de_bouclier' ? ' Corps à corps : la cible perd son bouclier, ou subit 1d6 dégâts de plus.' : '')
     }];
 }

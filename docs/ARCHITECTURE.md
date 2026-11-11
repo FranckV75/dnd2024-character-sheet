@@ -261,7 +261,7 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   aux énergies) ; leurs cases dans `feat_uses` (`faveur_de_recuperation` : dés dépensés sur 10,
   `faveur_de_recuperation_rempart` : Baroud d'honneur, `faveur_du_destin`). Un compteur a sa propre clé
   quand un don en a plusieurs (champ `feat` de FEAT_COUNTERS).
-- Frappe à mains nues : une entrée du catalogue `DD_RULES.weapons` (catégorie « Mains nues », hors table
+- Attaque à mains nues : une entrée du catalogue `DD_RULES.weapons` (catégorie « Mains nues », hors table
   des armes du Manuel), reconnue par `isUnarmedStrike` (`js/rules/weapons.js` : sa catégorie, ou son nom).
   `computeWeapon` choisit son dé (Arts martiaux du Moine, Bagarreur de tavernes 1d4, style Combat à mains
   nues 1d6) ; les rappels réservés aux armes n'y sont pas (`WEAPON_ONLY_FEATS`, `feat-effects.js`). Arts

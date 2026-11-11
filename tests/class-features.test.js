@@ -225,7 +225,7 @@ describe('Maîtrise des armes : bonus de maîtrise seulement avec une arme maît
     test('catégorie de la ligne', () => {
         assert.equal(weaponCategory(weapon('Dague')), 'simple');
         assert.equal(weaponCategory(weapon('Épée longue')), 'martial');
-        assert.equal(weaponCategory(weapon('Frappe à mains nues')), 'unarmed');
+        assert.equal(weaponCategory(weapon('Attaque à mains nues')), 'unarmed');
         assert.equal(weaponCategory({ name: 'Lame maudite', category: '' }), '');
     });
 
@@ -289,10 +289,10 @@ describe('Maîtrise des armes : bonus de maîtrise seulement avec une arme maît
         }
     });
 
-    test('choix prudents : classe inconnue, arme hors catalogue, Frappe à mains nues', () => {
+    test('choix prudents : classe inconnue, arme hors catalogue, Attaque à mains nues', () => {
         assert.equal(weaponProficiency(weapon('Épée longue'), { classSlug: '' }).proficient, true);
         assert.equal(weaponProficiency({ name: 'Lame maudite', atkKey: 'FOR', category: '' }, { classSlug: 'wizard' }).proficient, true);
-        const fist = weaponProficiency(weapon('Frappe à mains nues'), { classSlug: 'wizard' });
+        const fist = weaponProficiency(weapon('Attaque à mains nues'), { classSlug: 'wizard' });
         assert.deepEqual([fist.proficient, fist.source], [true, 'unarmed']);
     });
 
@@ -304,8 +304,8 @@ describe('Maîtrise des armes : bonus de maîtrise seulement avec une arme maît
         assert.deepEqual([yes.proficient, yes.source], [true, 'setting']);
         const no = weaponProficiency(weapon('Épée longue', { proficiency: 'no' }), { classSlug: 'fighter' });
         assert.deepEqual([no.proficient, no.source], [false, 'setting']);
-        // Même la Frappe à mains nues suit le réglage choisi
-        assert.equal(weaponProficiency(weapon('Frappe à mains nues', { proficiency: 'no' }), { classSlug: 'monk' }).proficient, false);
+        // Même l'attaque à mains nues suit le réglage choisi
+        assert.equal(weaponProficiency(weapon('Attaque à mains nues', { proficiency: 'no' }), { classSlug: 'monk' }).proficient, false);
     });
 
     test('attaque : Moine 5 avec une épée longue = +1 au lieu de +4', () => {

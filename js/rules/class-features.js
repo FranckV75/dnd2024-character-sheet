@@ -219,7 +219,7 @@ export function classWeaponProficiencyText(classSlug) {
  * d'attaque qu'avec une arme maîtrisée, chapitre « Weapons »). Décision de Franck : la fiche
  * applique la règle, avec des choix prudents quand elle ne peut pas savoir :
  *  1. réglage « Arme maîtrisée : Oui / Non » de la configuration de l'arme, s'il est choisi ;
- *  2. Frappe à mains nues : toujours maîtrisée ;
+ *  2. Attaque à mains nues : toujours maîtrisée ;
  *  3. catégorie inconnue (arme saisie à la main) ou classe non reconnue : maîtrisée (comme avant) ;
  *  4. arme courante : toutes les classes ;
  *  5. arme de guerre : classe (Moine : Légère ; Roublard : Finesse ou Légère, Trident compris pour

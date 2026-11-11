@@ -695,7 +695,7 @@ export function initWeapons(ctx) {
 
     /** Aide du réglage « Arme maîtrisée » : ce que « Auto » décide, et pourquoi */
     function proficiencyHelp(auto) {
-        const why = auto.source === 'unarmed' ? 'la Frappe à mains nues est toujours maîtrisée.'
+        const why = auto.source === 'unarmed' ? "l'attaque à mains nues est toujours maîtrisée."
             : auto.source === 'class' ? 'arme maîtrisée par votre classe.'
             : auto.source === 'none' ? `non maîtrisée (${auto.text.replace(/\.$/, '')}).`
             : auto.text.charAt(0).toLowerCase() + auto.text.slice(1);
