@@ -27,7 +27,7 @@ import { weaponProficiency } from '../rules/class-features.js';
 import { divineFuryDie } from '../rules/subclass-features.js';
 import { rageEndPatch } from '../rules/subclass-uses.js';
 import {
-    frenzyDice, dreadfulStrikeDice, feyStrikesDie, superiorityDie, maneuverDC, psionicDice
+    frenzyDice, dreadfulStrikeDice, feyStrikesDie, superiorityDie, maneuverDC, psionicDice, dragonMount
 } from '../rules/subclass-combat.js';
 import {
     findMastery, masteryDetails, masteryParagraphs, masteryAccessNote, masterySource, weaponMasteryFeature, hasWeaponMasterFeat
@@ -163,7 +163,19 @@ const BUFF_DEFS = {
         icon: 'star',
         text: `Frappe psionique (+1${psionicDice(derived.level).die})`,
         title: `Frappe psionique (Soldat psi) : +1${psionicDice(derived.level).die} + Intelligence de dégâts de force, une fois par tour, cible à 9 m ou moins. Cochez un dé psionique dans la bande des capacités.`
-    })
+    }),
+    // Serment du Seigneur Dragon, Jeune dragon (niveau 15) : aucun dégât en plus, repères près de la
+    // CA et de la Perception (dragonMountNotes, js/rules/subclass-combat.js)
+    dragonMount: (derived) => {
+        const mount = dragonMount(derived);
+        return {
+            icon: 'crown',
+            text: 'Monté sur le dragon',
+            title: mount?.dragon
+                ? `Jeune dragon : allumez-le quand vous montez votre ${mount.dragon.toLowerCase()}. Vous partagez son ${mount.immunity.charAt(0).toLowerCase()}${mount.immunity.slice(1)} (repère près de la CA) et ses sens : ${mount.senses}, Perception passive ${mount.passive} si elle est meilleure que la vôtre (repère près de la Perception).`
+                : "Jeune dragon : allumez-le quand vous montez votre dragon. Vous partagez son immunité aux dégâts et ses sens ; choisissez la couleur de l'œuf (onglet Aptitudes & Traits) pour les voir près de la CA et de la Perception."
+        };
+    }
 };
 
 /** Bonus de Charge dans le texte des dégâts (computeWeapon : « +1d8 (Charge) ») */

@@ -221,7 +221,7 @@ describe('bonus de combat', () => {
         const buffs = { rage: true, sneakAttack: true, hunterMark: true };
         const none = { rage: false, sneakAttack: false, hunterMark: false, heavyWeaponMaster: false, charger: false, dueling: false,
             peerlessAim: false, nightSpirit: false, frenzy: false, dreadfulStrike: false, feyStrikes: false, colossusSlayer: false,
-            superiority: false, psionicStrike: false };
+            superiority: false, psionicStrike: false, dragonMount: false };
         assert.deepEqual(effectiveBuffs('barbarian', buffs), { ...none, rage: true });
         assert.deepEqual(effectiveBuffs('fighter', buffs), none);
         assert.deepEqual(effectiveBuffs('rogue', undefined), none);

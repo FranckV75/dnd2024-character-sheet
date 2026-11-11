@@ -16,7 +16,7 @@ import { ABILITY_IDS, SKILLS } from '../data/constants.js';
 import { parseWeaponConfig } from './logic.js';
 import { isUnarmedStrike } from './weapons.js';
 import { subclassNotes } from './subclass-calcs.js';
-import { subclassDefenseNotes } from './subclass-combat.js';
+import { subclassDefenseNotes, dragonMountNotes } from './subclass-combat.js';
 import { subclassChoiceNotes } from './subclass-choices.js';
 import { formNotes } from './subclass-forms.js';
 import { epicPoemNotes } from './epic-poem.js';
@@ -432,6 +432,8 @@ export function classFeatureNotes(derived, record = {}) {
     for (const [zone, notes] of Object.entries(subclassNotes(derived, record))) (zones[zone] ??= []).push(...notes);
     // Résistances de la sous-classe (lot 5) : repères près de la CA
     for (const [zone, notes] of Object.entries(subclassDefenseNotes(derived, record))) (zones[zone] ??= []).push(...notes);
+    // Bouton « Monté sur le dragon » (Seigneur Dragon niveau 15) : immunité et sens du jeune dragon
+    for (const [zone, notes] of Object.entries(dragonMountNotes(derived, record))) (zones[zone] ??= []).push(...notes);
     // Choix de sous-classe (lot 7) : vitesses de l'Aspect de faune…
     for (const [zone, notes] of Object.entries(subclassChoiceNotes(derived, record))) (zones[zone] ??= []).push(...notes);
     // Formes du Cercle de la Lune et des Étoiles (lot 7) : repères pendant la forme cochée

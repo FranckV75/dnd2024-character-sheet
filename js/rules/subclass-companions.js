@@ -344,7 +344,7 @@ function dragonCard(derived) {
             pact,
             {
                 name: 'Monture',
-                text: `Vous pouvez le monter. Monté, vous gagnez ses résistances et immunités aux dégâts (${dragon.immunityText.toLowerCase()}) et ses sens : ${YOUNG_DRAGON_SENSES}, Perception passive ${passive} si elle est meilleure que la vôtre.`
+                text: `Vous pouvez le monter. Monté, vous gagnez ses résistances et immunités aux dégâts (${dragon.immunityText.toLowerCase()}) et ses sens : ${YOUNG_DRAGON_SENSES}, Perception passive ${passive} si elle est meilleure que la vôtre. Bouton « Monté sur le dragon » (onglet Combat) : ces effets sont rappelés près de la CA et de la Perception.`
             }
         ];
         card.notes.push('Jeune dragon : bloc du Manuel des monstres, non recopié ; la fiche garde les PV de la sous-classe (40 + 2 × niveau de Paladin).');

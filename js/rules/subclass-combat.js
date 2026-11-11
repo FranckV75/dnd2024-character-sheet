@@ -8,7 +8,9 @@
 //  - dés des ressources : dé de supériorité, dés d'énergie psionique ;
 //  - rappels sous les armes (Rossée de racines, Maître de la lance) ;
 //  - Résistances et immunités données par la sous-classe : repères près de la CA (zone armorClass
-//    de featEffects), avec la condition quand elle existe (Rage, Forme stellaire…).
+//    de featEffects), avec la condition quand elle existe (Rage, Forme stellaire…) ;
+//  - bouton « Monté sur le dragon » (Serment du Seigneur Dragon, niveau 15) : immunité et sens du
+//    jeune dragon rappelés près de la CA et de la Perception.
 // Règles du Player's Handbook 2024 anglais (chapitre des classes) ; Odyssée des Seigneurs Dragons
 // pour la Voie herculéenne, la Guerrière amazone et L'Hoplite.
 // Règle validée par Franck : une valeur saisie à la main n'est jamais modifiée.
@@ -18,6 +20,7 @@ import { isUnarmedStrike, weaponReach } from './weapons.js';
 import { getRageBonus } from './logic.js';
 import { MANEUVERS } from '../data/maneuvers.js';
 import { LAND_TYPES, DAMAGE_TYPES } from '../data/subclass-choices.js';
+import { DRAGONLINGS, YOUNG_DRAGON_SENSES } from '../data/subclass-companions.js';
 import { signed } from './numbers.js';
 
 const mod = (stats, id) => Number(stats?.mods?.[id]) || 0;
@@ -228,6 +231,71 @@ export const SUBCLASS_DEFENSES = Object.freeze([
     ['warrior_of_the_elements', 17, 'incarnation_elementaire', 'Incarnation élémentaire', 'Résistance (Harmonisation)',
         'Harmonisation élémentaire active : Résistance à l\'acide, au froid, au feu, à la foudre ou au tonnerre (au choix à chaque tour).']
 ]);
+
+/**
+ * Monté sur le dragon (Serment du Seigneur Dragon, « Jeune dragon », niveau 15 ; Odyssée, guide du
+ * joueur p. 49) : tant que vous montez votre jeune dragon, vous profitez de ses résistances et
+ * immunités aux dégâts et de ses sens (vision aveugle, vision dans le noir, Perception passive si
+ * elle est meilleure que la vôtre). Les jeunes dragons métalliques (Manuel des monstres 2024) n'ont
+ * qu'une immunité, celle de leur souffle, et aucune résistance.
+ * @param {Object} derived - deriveCharacter() (subclass, level, subclassChoices.egg, passivePerception)
+ * @returns {{ dragon: string, damage: string, immunity: string, senses: string, passive: number,
+ *   better: boolean } | { dragon: null } | null} null hors de la sous-classe ou avant le niveau 15 ;
+ *   { dragon: null } tant que la couleur de l'œuf n'est pas choisie
+ */
+export function dragonMount(derived) {
+    if (!has(derived, 'oath_of_the_dragonlords', 15)) return null;
+    const egg = derived.subclassChoices?.egg ?? '';
+    const dragon = Object.hasOwn(DRAGONLINGS, egg) ? DRAGONLINGS[egg] : null;
+    if (!dragon) return { dragon: null };
+    const label = DAMAGE_TYPES.find(([id]) => id === dragon.immunity)?.[1] ?? '';
+    return {
+        dragon: dragon.youngName,
+        damage: label.toLowerCase(),
+        immunity: dragon.immunityText,
+        senses: YOUNG_DRAGON_SENSES,
+        passive: dragon.youngPassive,
+        better: dragon.youngPassive > (Number(derived.passivePerception) || 0)
+    };
+}
+
+/**
+ * Repères du bouton « Monté sur le dragon » (combat_buffs.dragonMount, onglet Combat) : immunité près
+ * de la CA (grisée tant que le bouton est éteint) et, monté, sens du dragon près de la Perception.
+ * La Perception passive calculée de la fiche n'est pas modifiée : le repère dit laquelle compte.
+ * @param {Object} derived - deriveCharacter()
+ * @param {Object} [record] - fiche (combat_buffs)
+ * @returns {Object} { armorClass: [...], 'skills.perception'?: [...] } ou {}
+ */
+export function dragonMountNotes(derived, record = {}) {
+    const mount = dragonMount(derived);
+    if (!mount) return {};
+    const base = { featId: 'jeune_dragon', featName: 'Monté sur le dragon', classFeature: true };
+    const mounted = record?.combat_buffs?.dragonMount === true;
+    if (!mount.dragon) {
+        return {
+            armorClass: [{
+                ...base, inactive: true,
+                text: 'Monté sur votre jeune dragon : vous partagez son immunité aux dégâts et ses sens. Choisissez la couleur de l\'œuf (menu « Œuf de dragon », onglet Aptitudes & Traits) pour les voir ici.'
+            }]
+        };
+    }
+    const immunity = mount.immunity.charAt(0).toLowerCase() + mount.immunity.slice(1);
+    const armorClass = [mounted
+        ? { ...base, mention: `Immunité ${mount.damage} (monté)`, text: `Monté sur votre ${mount.dragon.toLowerCase()} : vous partagez son ${immunity}.` }
+        : { ...base, inactive: true, text: `${mount.immunity}, seulement monté sur votre ${mount.dragon.toLowerCase()} (bouton « Monté sur le dragon » éteint, onglet Combat).` }];
+    if (!mounted) return { armorClass };
+    const own = Number(derived.passivePerception) || 0;
+    return {
+        armorClass,
+        'skills.perception': [{
+            ...base,
+            mention: mount.better ? `Passive ${mount.passive} (monté)` : 'Sens du dragon (monté)',
+            text: `Monté : ${mount.senses} ; Perception passive ${mount.passive} (celle du dragon) ${mount.better
+                ? `au lieu de la vôtre (${own}).` : `moins bonne que la vôtre (${own}), qui reste.`}`
+        }]
+    };
+}
 
 /** « Résistance … » d'un type de dégâts (DAMAGE_TYPES) : « au feu », « aux dégâts contondants » */
 const resistanceTo = (id) => DAMAGE_TYPES.find(([type]) => type === id)?.[2] ?? '';

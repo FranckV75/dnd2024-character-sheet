@@ -71,7 +71,10 @@ const SUBCLASS_BUFFS = {
     // Maître de guerre : dé de supériorité ajouté aux dégâts par une manœuvre
     superiority: ['battle_master', 3],
     // Guerrier psionique : Frappe psionique
-    psionicStrike: ['psi_warrior', 3]
+    psionicStrike: ['psi_warrior', 3],
+    // Serment du Seigneur Dragon, Jeune dragon (niveau 15) : monté sur le dragon, aucun dégât en plus ;
+    // repères d'immunité et de sens (dragonMountNotes, js/rules/subclass-combat.js)
+    dragonMount: ['oath_of_the_dragonlords', 15]
 };
 
 /** Début du type de dégâts écrit dans le manuel (« 1d8 tran. ») → abréviation v3 (WEAPON_DAMAGE_TYPES) */

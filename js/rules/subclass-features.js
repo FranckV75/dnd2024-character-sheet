@@ -145,7 +145,8 @@ const MANUAL_AUTOMATION = {
                 : 'Case « Souffle du dragon » dans l\'onglet Combat, rendue au repos court ou long.'}`,
             partial: true
         },
-        jeune_dragon: { text: `${cardOf('du dragon')} : immunité et sens partagés quand vous le montez (rappel) ; le bloc du jeune dragon n'est pas recopié.`, partial: true }
+        // Bouton « Monté sur le dragon » (combat_buffs.dragonMount, js/rules/subclass-combat.js)
+        jeune_dragon: { text: `Bouton « Monté sur le dragon » dans l'onglet Combat (tableau des armes) : allumé, l'immunité du dragon est rappelée près de la CA et ses sens près de la Perception. ${cardOf('du dragon')} ; le bloc du jeune dragon n'est pas recopié.`, partial: true }
     },
     // Lot 7 : compagnons (cartes calculées, js/rules/subclass-companions.js)
     beast_master: {
