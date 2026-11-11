@@ -15,8 +15,8 @@ import {
     hitDiceState, hitDiceHealing, parseManualHitDice, canStartRest, planShortRest, planLongRest,
     sorcerousRestorationMax
 } from '../rules/rest.js';
+import { rollDie } from '../rules/numbers.js';
 
-const rollDie = (faces) => Math.floor(Math.random() * faces) + 1;
 const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
 const agree = (n, word) => `${word}${n > 1 ? 's' : ''}`;
 
@@ -184,7 +184,7 @@ function openShortRest(store) {
                     const n = readDice();
                     if (n === 0) return finish(0, '');
                     if (!hd.faces) return showError('Choisissez d’abord le type de dé de vie (case « Dés de vie »), ou saisissez le total.');
-                    const rolls = Array.from({ length: n }, () => rollDie(hd.faces));
+                    const rolls = Array.from({ length: n }, () => rollDie(hd.faces, Math.random));
                     return finish(hitDiceHealing(rolls, hd.conMod), `${n} × d${hd.faces} : ${rolls.join(' + ')}`);
                 }
             }

@@ -23,6 +23,7 @@ import { epicPoemNotes } from './epic-poem.js';
 import { wildMagicNotes } from './wild-magic.js';
 import { speciesNotes } from './species.js';
 import { classReminderNotes } from './class-reminders.js';
+import { signed } from './numbers.js';
 
 /** Texte brut (les anciennes sauvegardes peuvent contenir du HTML), sans accents ni majuscules */
 function fold(value) {
@@ -35,7 +36,6 @@ function fold(value) {
         .toLowerCase().trim();
 }
 
-const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
 
 // -----------------------------------------------------------------------------
 // Sous-classe

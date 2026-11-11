@@ -36,8 +36,8 @@ export function fillSelect(select, options, placeholder = '— Choisir —') {
         ...options.map(([value, label]) => el('option', { value, text: label })));
 }
 
-/** "+3" / "-1" */
-export const signed = (n) => (n >= 0 ? `+${n}` : String(n));
+/** "+3" / "-1" : js/rules/numbers.js */
+export { signed } from '../rules/numbers.js';
 
 /** Champ de texte long saisi par le joueur (contenu libre, voir sanitize.js) */
 export const RICH_FIELD = '[data-kind="rich"]';

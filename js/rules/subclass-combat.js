@@ -18,8 +18,8 @@ import { isUnarmedStrike, weaponReach } from './weapons.js';
 import { getRageBonus } from './logic.js';
 import { MANEUVERS } from '../data/maneuvers.js';
 import { LAND_TYPES, DAMAGE_TYPES } from '../data/subclass-choices.js';
+import { signed } from './numbers.js';
 
-const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
 const mod = (stats, id) => Number(stats?.mods?.[id]) || 0;
 const levelOf = (stats) => Number(stats?.level) || 1;
 /** La sous-classe est la bonne, et son niveau est atteint */

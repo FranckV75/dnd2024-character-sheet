@@ -15,8 +15,8 @@
 // =============================================================================
 
 import { ABILITY_IDS, SKILLS } from '../data/constants.js';
+import { signed } from './numbers.js';
 
-const signed = (n) => (n >= 0 ? `+${n}` : `${n}`);
 const ABILITY_WORDS = Object.freeze({
     str: 'de Force', dex: 'de Dextérité', con: 'de Constitution', int: "d'Intelligence", wis: 'de Sagesse', cha: 'de Charisme'
 });

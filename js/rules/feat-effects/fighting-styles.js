@@ -4,7 +4,8 @@
 // Combattant druidique).
 // =============================================================================
 
-import { signed, alternativeNotes } from './helpers.js';
+import { alternativeNotes } from './helpers.js';
+import { signed } from '../numbers.js';
 
 export const FIGHTING_STYLE_RULES = {
     // ----- Lot 4 : styles de combat — Manuel des joueurs français p. 209, Protection p. 210 (« Fighting Style Feats ») -----

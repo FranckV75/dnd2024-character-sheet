@@ -18,10 +18,8 @@ import { subclassSpells, subclassFeatures, markListedSpells } from '../../rules/
 import { speciesView, speciesCounterDefs } from '../../rules/species.js';
 import { subclassUsesState, setSubclassUsesPatch } from '../../rules/subclass-uses.js';
 import { HUMAN_FEAT_SLOT } from '../../state/schema.js';
-import { el, icon } from '../dom.js';
+import { el, icon, signed } from '../dom.js';
 import { foldButton, bindFolding, applyFolds } from '../fold.js';
-
-const signedText = (n) => `${n >= 0 ? '+' : ''}${n}`;
 
 /**
  * @param {{ store: Object, tooltip: Object, getSpellsDb: () => Object[] }} deps
@@ -83,7 +81,7 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb }) {
     function featGroup(group) {
         const stats = group.dc === null
             ? el('span', { class: 'feat-spells-stats is-missing', text: 'Caractéristique à choisir sous le don' })
-            : el('span', { class: 'feat-spells-stats', text: `${group.abilityName} · DD ${group.dc} · attaque ${signedText(group.attack)}` });
+            : el('span', { class: 'feat-spells-stats', text: `${group.abilityName} · DD ${group.dc} · attaque ${signed(group.attack)}` });
         return el('div', { class: 'feat-spells-group', 'data-feat': group.featId },
             el('div', { class: 'feat-spells-head' },
                 el('strong', { class: 'feat-spells-name', text: group.featName }),
@@ -211,7 +209,7 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb }) {
                 const def = defs.find(entry => entry.feature === spell.vo);
                 const stats = spell.dc === null
                     ? el('p', { class: 'feat-spells-missing', text: 'Caractéristique à choisir dans « Espèce & historique » (onglet Aptitudes & Traits).' })
-                    : el('p', { class: 'feat-spell-note', text: `${spell.source} · ${abilityName[spell.ability]} · DD ${spell.dc} · attaque ${signedText(spell.attack)}` });
+                    : el('p', { class: 'feat-spell-note', text: `${spell.source} · ${abilityName[spell.ability]} · DD ${spell.dc} · attaque ${signed(spell.attack)}` });
                 item.append(...[def ? speciesFreeBoxes(def, 0) : null, stats].filter(Boolean));
                 return item;
             };

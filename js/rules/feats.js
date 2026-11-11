@@ -17,6 +17,7 @@
 import { FEATS_DATA } from '../data/feats.js';
 import { DD_RULES } from '../data/dd-rules.js';
 import { FEAT_SLOT_ORDER, HUMAN_FEAT_SLOT, STYLE_FEAT_SLOT, CLASS_FEAT_SLOTS, featSlotLevel } from '../state/schema.js';
+import { classSlug } from './identity.js';
 
 const FEAT_KEY = /^feat_(\d+)$/;
 
@@ -83,18 +84,13 @@ export const STYLE_ALTERNATIVES = Object.freeze({
 });
 
 /**
- * Classe du personnage, lue comme classSlug (character.js) : identifiant anglais, nom anglais ou
+ * Classe du personnage, lue par classSlug (identity.js) : identifiant anglais, nom anglais ou
  * français (« Guerrier », « Fighter »), sans HTML.
  * @param {Object} character
  * @returns {string} ex. 'fighter' ; '' si inconnue
  */
 export function classOf(character) {
-    const clean = plain(character?.char_class).toLowerCase();
-    if (!clean) return '';
-    for (const [slug, cls] of Object.entries(DD_RULES.classes)) {
-        if (slug === clean || DD_RULES.namesOf(cls).some((name) => name.toLowerCase() === clean)) return slug;
-    }
-    return '';
+    return classSlug(plain(character?.char_class));
 }
 
 /** Sous-classe du personnage (identifiant de DD_RULES.subclasses, ex. 'champion') ; '' si inconnue */

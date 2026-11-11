@@ -29,9 +29,9 @@ import { epicPoemTexts } from './epic-poem.js';
 const SKILL_NAMES = Object.fromEntries(SKILLS.map(skill => [skill.id, skill.name]));
 import { SUBCLASS_COUNTERS, SUBCLASS_RESET_TEXT } from './subclass-uses.js';
 import { hunterMarkDie } from './character.js';
+import { signed } from './numbers.js';
 
 /** Signe devant un nombre : « +3 », « -1 » */
-const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
 /** Modificateur de Charisme (0 s'il manque) */
 const chaMod = (derived) => Number(derived?.mods?.cha) || 0;
 /**

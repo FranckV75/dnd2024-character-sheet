@@ -16,9 +16,9 @@
 // =============================================================================
 
 import { isUnarmedStrike, weaponReach } from './weapons.js';
+import { signed } from './numbers.js';
 
 /** Signe devant un nombre : « +3 », « -1 » */
-const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
 const mod = (stats, id) => Number(stats?.mods?.[id]) || 0;
 /** La sous-classe est la bonne, et son niveau est atteint */
 const has = (stats, subclass, minLevel = 3) => stats?.subclass === subclass && (Number(stats.level) || 1) >= minLevel;

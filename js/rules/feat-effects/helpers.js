@@ -11,8 +11,6 @@ import { DD_RULES } from '../../data/dd-rules.js';
 import { abilityName, slotChoice, ENERGY_TYPES } from '../feat-choices.js';
 import { shieldKeepsMartialArts } from '../class-features.js';
 
-export const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
-
 /** Note prête à ranger (featName ajouté, champs facultatifs absents s'ils ne sont pas fournis) */
 export function note(featId, text, extra = {}) {
     return { featId, featName: featName(featId), text, ...extra };

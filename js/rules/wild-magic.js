@@ -10,24 +10,14 @@
 // =============================================================================
 
 import { subclassCounters } from './subclass-uses.js';
+import { rollDie } from './numbers.js';
 
 export const WILD_MAGIC = 'wild_magic_sorcery';
 /** Référence de la table dans le manuel */
 export const SURGE_TABLE = 'table de Bouffée de Sorcellerie sauvage (Wild Magic Surge, PHB 2024 p. 150-151)';
 
-/**
- * Lancer d'un dé.
- * @param {number} faces
- * @param {() => number} rng - nombre dans [0, 1[ (hasard du navigateur, passé par l'interface)
- * @returns {number} entre 1 et faces
- */
-export function rollDie(faces, rng) {
-    if (typeof rng !== 'function') throw new TypeError('rollDie : source de hasard manquante');
-    const n = Math.max(1, Math.trunc(Number(faces)) || 1);
-    const r = Number(rng());
-    const unit = Number.isFinite(r) ? Math.min(Math.max(r, 0), 1 - Number.EPSILON) : 0;
-    return Math.min(n, 1 + Math.floor(unit * n));
-}
+/** Lancer d'un dé : js/rules/numbers.js, réexporté ici (tests, js/ui/wild-magic.js) */
+export { rollDie };
 
 /** « 01 », « 48 », « 00 » (100 s'écrit 00 dans la table) */
 const pad = (n) => (n === 100 ? '00' : String(n).padStart(2, '0'));

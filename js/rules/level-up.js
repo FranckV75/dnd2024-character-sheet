@@ -24,6 +24,7 @@ import { subclassChoiceFields } from './subclass-choices.js';
 import { FEAT_SLOT_ORDER } from '../state/schema.js';
 import { DD_RULES } from '../data/dd-rules.js';
 import { FEATS_DATA } from '../data/feats.js';
+import { signed } from './numbers.js';
 
 /** Faveur épique (prérequis : niveau 19, emplacement du niveau 19) */
 const isEpicBoon = (featId) => Object.hasOwn(FEATS_DATA, featId) && FEATS_DATA[featId].type === 'Épique';
@@ -34,7 +35,6 @@ const SUBCLASS_LEVEL = 3;
 
 /** Texte brut (anciennes sauvegardes avec un peu de HTML) */
 const plain = (value) => String(value ?? '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
-const signed = (n) => (n >= 0 ? `+${n}` : String(n));
 const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
 
 /**

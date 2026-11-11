@@ -805,26 +805,14 @@ const DD_RULES = {
 
     /**
      * Retourne les emplacements de sorts pour une classe et un niveau donnés.
-     * @param {string} className - Nom de la classe (FR, EN ou slug)
+     * @param {string} classSlug - identifiant de la classe (classSlug, js/rules/identity.js)
      * @param {number} level - Niveau du personnage (1-20)
      * @param {string} [subclass] - identifiant de sous-classe (deriveCharacter().subclass) : Chevalier
      *        occulte, Arnaqueur arcanique (tiers de lanceur, seulement avec leur classe)
      * @returns {Object} - { 1: nbSlots, 2: nbSlots, ..., 9: nbSlots } ou {} si non-lanceur
      */
-    getSpellSlots(className, level, subclass = '') {
-        if (!className || !level) return {};
-
-        // Trouver le slug de la classe
-        let classSlug = null;
-        const cleanName = className.toLowerCase().trim();
-        for (const [key, cls] of Object.entries(this.classes)) {
-            if (key === cleanName || this.namesOf(cls).some((name) => name.toLowerCase() === cleanName)) {
-                classSlug = key;
-                break;
-            }
-        }
-
-        if (!classSlug) return {};
+    getSpellSlots(classSlug, level, subclass = '') {
+        if (!classSlug || !level || !Object.hasOwn(this.classes, classSlug)) return {};
 
         const bySubclass = this.subclassCasterType[subclass];
         const type = this.casterType[classSlug] || (bySubclass?.class === classSlug ? bySubclass.type : null);

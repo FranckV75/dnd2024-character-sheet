@@ -18,12 +18,12 @@
 
 import { DD_RULES } from '../data/dd-rules.js';
 import { SPECIES_TRAITS } from '../data/species-traits.js';
+import { signed } from './numbers.js';
 
 export const SPECIES_CHOICES_KEY = 'species_choices';
 
 const ABILITY_NAMES = Object.freeze({ int: 'Intelligence', wis: 'Sagesse', cha: 'Charisme' });
 const plain = (value) => String(value ?? '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
-const signed = (n) => (n >= 0 ? `+${n}` : `${n}`);
 const meters = (n) => `${String(n).replace('.', ',')} m`;
 
 /** Clé de DD_RULES.species du personnage, ou '' */

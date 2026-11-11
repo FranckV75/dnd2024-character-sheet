@@ -23,6 +23,8 @@ import {
     subclassId, auraOfProtectionBonus, jackOfAllTradesBonus, unarmoredDefenseOptions, weaponProficiency,
     shieldKeepsMartialArts, subclassFinesse
 } from './class-features.js';
+import { signed } from './numbers.js';
+import { classSlug } from './identity.js';
 
 /**
  * Extrait le premier entier d'une valeur saisie librement ("19", "+3", "<b>19</b>", "3?").
@@ -37,21 +39,8 @@ export function parseNumber(value, fallback = 0) {
     return match ? parseInt(match[0], 10) : fallback;
 }
 
-/**
- * Identifiant interne d'une classe à partir de son nom (FR, EN ou identifiant).
- * @param {string} className - ex. "Barbare", "Barbarian", "barbarian"
- * @returns {string} - ex. "barbarian", ou "" si inconnue
- */
-export function classSlug(className) {
-    if (!className) return '';
-    const clean = className.toString().trim().toLowerCase();
-    for (const [slug, cls] of Object.entries(DD_RULES.classes)) {
-        if (slug === clean || DD_RULES.namesOf(cls).some((name) => name.toLowerCase() === clean)) {
-            return slug;
-        }
-    }
-    return '';
-}
+/** Identifiant interne d'une classe (« Barbare » → « barbarian ») : js/rules/identity.js */
+export { classSlug };
 
 /**
  * Dé de vie de la classe (D&D 2024).
@@ -72,7 +61,7 @@ export function hitDieForClass(className) {
  * @returns {Object} - ex. { 1: 4, 2: 2 } ; {} pour un non-lanceur
  */
 export function spellSlotsFor(className, level, subclass = '') {
-    return DD_RULES.getSpellSlots(className, level, subclass);
+    return DD_RULES.getSpellSlots(classSlug(className), level, subclass);
 }
 
 const ARMOR_TYPE_ALIASES = {
@@ -658,7 +647,6 @@ export function deriveCharacter(record = {}) {
     const feats = reachedFeatIds(record);
     // Vigilant (PHB 2024 « Alert », p. 200) : bonus de maîtrise ajouté au jet d'Initiative
     const alert = feats.includes('vigilant') ? pb : 0;
-    const signedText = (n) => `${n >= 0 ? '+' : ''}${n}`;
     // Traqueur d'ombre (Sagesse), L'Odysséen niveau 13 (Charisme) : subclass-calcs.js
     const initiativeBonuses = subclassInitiativeBonuses({ classSlug: slug, subclass, level, mods });
 
@@ -682,8 +670,8 @@ export function deriveCharacter(record = {}) {
         skills,
         feats,
         initiative: mods.dex + alert + initiativeBonuses.reduce((sum, bonus) => sum + bonus.value, 0),
-        initiativeDetail: `Dex ${signedText(mods.dex)}` + (alert ? `, Vigilant ${signedText(alert)}` : '')
-            + initiativeBonuses.map(bonus => `, ${bonus.label} ${signedText(bonus.value)}`).join(''),
+        initiativeDetail: `Dex ${signed(mods.dex)}` + (alert ? `, Vigilant ${signed(alert)}` : '')
+            + initiativeBonuses.map(bonus => `, ${bonus.label} ${signed(bonus.value)}`).join(''),
         wornArmor: {
             light: worn.has('light'), medium: worn.has('medium'), heavy: worn.has('heavy'), shield: worn.has('shield'),
             shieldTrained: record.prof_armor_shield === true

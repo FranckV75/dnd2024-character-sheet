@@ -8,7 +8,7 @@
 // le DD exact. Champ de jeu : utilisable fiche verrouillée. Règles : js/rules/concentration.js.
 // =============================================================================
 
-import { el, icon } from './dom.js';
+import { el, icon, signed } from './dom.js';
 import { derivedOf } from './derived.js';
 import {
     concentrationOptions, concentrationView, setConcentrationPatch, CONCENTRATION_KEY
@@ -19,7 +19,6 @@ import { featSpellGroups } from '../rules/feat-spells.js';
 import { subclassSpells } from '../rules/subclass-features.js';
 import { speciesView } from '../rules/species.js';
 
-const signed = (n) => (n >= 0 ? `+${n}` : `${n}`);
 // Tout ce qui change le menu ou le jet de Constitution (maîtrise, Aura de protection au Charisme, Rage)
 const WATCHED = new Set([CONCENTRATION_KEY, 'dynamic_spells', 'conditions', 'combat_buffs', 'con_score', 'con_save_prof', 'cha_score',
     'char_level', 'char_class', 'char_subclass',

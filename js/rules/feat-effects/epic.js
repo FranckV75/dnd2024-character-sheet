@@ -5,7 +5,8 @@
 
 import { parseNumber } from '../character.js';
 import { SKILLS } from '../../data/constants.js';
-import { signed, irresistibleBoost, energyChoices, energyName, hasSpellcasting } from './helpers.js';
+import { irresistibleBoost, energyChoices, energyName, hasSpellcasting } from './helpers.js';
+import { signed } from '../numbers.js';
 
 export const EPIC_FEAT_RULES = {
     // ----- Lot 8 : faveurs épiques — PHB 2024 p. 210-211 (le +1, max 30 : js/rules/feat-choices.js) -----

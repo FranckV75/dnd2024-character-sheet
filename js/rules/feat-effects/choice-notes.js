@@ -9,7 +9,8 @@ import { FEATS_DATA } from '../../data/feats.js';
 import { DD_RULES } from '../../data/dd-rules.js';
 import { abilityName, skillName, elementWord } from '../feat-choices.js';
 import { FEAT_SPELL_FEATS, featSpellGroups, featSpellSummary } from '../feat-spells.js';
-import { signed, toolNote } from './helpers.js';
+import { toolNote } from './helpers.js';
+import { signed } from '../numbers.js';
 
 // -----------------------------------------------------------------------------
 // Dons à choix (lot 3, js/rules/feat-choices.js) : la fiche ne coche rien et ne change aucune

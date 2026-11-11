@@ -20,6 +20,7 @@ import {
 } from '../data/subclass-companions.js';
 import { ABILITY_IDS } from '../data/constants.js';
 import { hunterMarkDie } from './character.js';
+import { signed } from './numbers.js';
 
 export const SUBCLASS_COMPANIONS_KEY = 'subclass_companions';
 
@@ -36,7 +37,6 @@ const NEW_CREATURE_ON = { beast_master: { beast: COMPANION_KEYS.primal } };
 
 const ABILITY_LABELS = { str: 'FOR', dex: 'DEX', con: 'CON', int: 'INT', wis: 'SAG', cha: 'CHA' };
 const isPlainObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
-const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
 const modOf = (score) => Math.floor((score - 10) / 2);
 /** « 1d8 + 5 », « 1d4 - 1 », « 1d6 » */
 const dice = (die, flat) => (flat > 0 ? `${die} + ${flat}` : flat < 0 ? `${die} - ${-flat}` : die);

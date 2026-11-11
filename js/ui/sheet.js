@@ -14,7 +14,7 @@ import { DD_RULES } from '../data/dd-rules.js';
 import { FEATS_DATA } from '../data/feats.js';
 import { FEAT_SLOT_ORDER, HUMAN_FEAT_SLOT, STYLE_FEAT_SLOT, featSlotLevel } from '../state/schema.js';
 import { stripHTML } from '../state/migrate.js';
-import { featSlotState, hitDieForClass, exhaustionSeverity } from '../rules/character.js';
+import { featSlotState, hitDieForClass, exhaustionSeverity, classSlug } from '../rules/character.js';
 import { featEffects, AUTOMATED_FEATS } from '../rules/feat-effects.js';
 import { featCounters, setFeatUsesPatch } from '../rules/feat-uses.js';
 import { subclassCounters, setSubclassUsesPatch } from '../rules/subclass-uses.js';
@@ -313,9 +313,9 @@ function bindFields(root, store) {
 // Affichage
 // ---------------------------------------------------------------------------
 
+/** Sous-classes de la classe nommée (classSlug, js/rules/identity.js, après nettoyage du HTML v3) */
 function subclassesOf(className) {
-    const wanted = foldName(className);
-    const slug = Object.entries(DD_RULES.classes).find(([, c]) => DD_RULES.namesOf(c).some(name => foldName(name) === wanted))?.[0];
+    const slug = classSlug(stripHTML(String(className ?? '')));
     return slug ? Object.values(DD_RULES.subclasses).filter(s => s.class === slug) : [];
 }
 

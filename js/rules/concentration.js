@@ -13,6 +13,7 @@
 
 import { applyDamage, concentrationDc } from './hit-points.js';
 import { activeConditions } from './conditions.js';
+import { signed } from './numbers.js';
 
 export const CONCENTRATION_KEY = 'concentration';
 const MAX_LENGTH = 80;
@@ -22,7 +23,6 @@ const BREAKING = Object.freeze(['incapacitated', 'unconscious', 'stunned', 'para
 const HUNTERS_MARK = /^(marque du chasseur|hunter'?s mark)$/i;
 
 const plain = (value) => String(value ?? '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
-const signed = (n) => (n >= 0 ? `+${n}` : `${n}`);
 
 /** Nom du sort de concentration en cours, ou '' */
 export function concentrationSpell(record) {

@@ -14,6 +14,7 @@ import { deriveCharacter, computeWeapon, weaponStatOverride } from './character.
 import { parseWeaponConfig, resolveWeaponAttackStat, getRageBonus } from './logic.js';
 import { weaponDamageType } from './weapons.js';
 import { hasFeat } from './feats.js';
+import { signed } from './numbers.js';
 
 /** Nom complet de la caractéristique d'attaque (libellés de resolveWeaponAttackStat) */
 const STAT_NAMES = { FOR: 'Force', DEX: 'Dextérité', CON: 'Constitution', INT: 'Intelligence', SAG: 'Sagesse', CHA: 'Charisme' };
@@ -61,7 +62,6 @@ for (const [id, mastery] of Object.entries(WEAPON_MASTERIES)) {
     LOOKUP.set(key(mastery.en), id);
 }
 
-const signed = (n) => `${n >= 0 ? '+' : '-'}${Math.abs(n)}`;
 
 /**
  * Botte écrite dans la colonne « Botte d'arme ». Seuls les noms exacts du manuel sont reconnus

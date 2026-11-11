@@ -5,7 +5,8 @@
 // =============================================================================
 
 import { hitDieForClass, parseNumber } from '../character.js';
-import { signed, shieldBashDC, toughHitPoints, plainText, armorTrainingNotes, toolNote, hasProperty, isPolearm } from './helpers.js';
+import { shieldBashDC, toughHitPoints, plainText, armorTrainingNotes, toolNote, hasProperty, isPolearm } from './helpers.js';
+import { signed } from '../numbers.js';
 
 export const GENERAL_FEAT_RULES = {
     // Vigilant — PHB 2024 « Alert », p. 200

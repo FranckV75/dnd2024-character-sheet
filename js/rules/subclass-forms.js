@@ -27,11 +27,11 @@
 
 import { CONSTELLATIONS } from '../data/subclass-choices.js';
 import { SUBCLASS_SPELLS } from '../data/subclass-spells.js';
+import { signed } from './numbers.js';
 
 const levelOf = (derived) => Number(derived?.level) || 1;
 const wisOf = (derived) => Number(derived?.mods?.wis) || 0;
 const pbOf = (derived) => Number(derived?.pb) || 2;
-const signed = (n) => `${n >= 0 ? '+' : ''}${n}`;
 /** « 1d8 + 3 », « 1d8 - 1 », « 1d8 » (modificateur nul) */
 const withMod = (dice, n) => (n > 0 ? `${dice} + ${n}` : n < 0 ? `${dice} - ${-n}` : dice);
 
