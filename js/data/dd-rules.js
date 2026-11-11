@@ -301,12 +301,14 @@ const DD_RULES = {
         },
 
         // ----- ESPÈCES THYLÉENNES (Odyssée des Seigneurs Dragons) -----
+        // Vitesses et noms des traits du Guide du joueur VF (chapitre 3) ; traits détaillés :
+        // js/data/species-traits.js. (Les traits d'autres livres, cités ici avant, ne s'appliquent pas.)
         centaur: {
             name: "Centaur",
             nameFr: "Centaure",
             size: "Medium",
             speed: 40,
-            traits: ["Equine Build", "Charge Attack", "Hooves", "Natural Affinity"],
+            traits: ["Charge", "Monture", "Quadrupède"],
             source: "Odyssée"
         },
         medusa: {
@@ -314,23 +316,23 @@ const DD_RULES = {
             nameFr: "Méduse",
             size: "Medium",
             speed: 30,
-            traits: ["Petrifying Gaze", "Snake Hair", "Darkvision", "Serpent's Cunning"],
+            traits: ["Chevelure serpentine", "Maudite", "Regard pétrifiant", "Sang-froid", "Vision dans le noir"],
             source: "Odyssée"
         },
         minotaur: {
             name: "Minotaur",
             nameFr: "Minotaure",
             size: "Medium",
-            speed: 30,
-            traits: ["Horns", "Goring Rush", "Hammering Horns", "Labyrinthine Recall"],
+            speed: 40,
+            traits: ["Dichromate", "Odorat aiguisé", "Rage maudite", "Vision dédaléenne"],
             source: "Odyssée"
         },
         satyr: {
             name: "Satyr",
             nameFr: "Satyre",
             size: "Medium",
-            speed: 35,
-            traits: ["Fey Creature", "Magic Resistance", "Mirthful Leaps", "Reveler"],
+            speed: 30,
+            traits: ["Héritage féerique", "Mémoire musicale", "Musique enchantée"],
             source: "Odyssée"
         },
         siren: {
@@ -338,7 +340,7 @@ const DD_RULES = {
             nameFr: "Sirène",
             size: "Medium",
             speed: 30,
-            traits: ["Amphibious", "Siren Song", "Swim Speed", "Alluring Voice"],
+            traits: ["Chants de désespoir", "Humeur lunatique", "Voix envoûtante", "Vol"],
             source: "Odyssée"
         },
         thylean_nymph: {
@@ -346,7 +348,7 @@ const DD_RULES = {
             nameFr: "Nymphe",
             size: "Medium",
             speed: 30,
-            traits: ["Fey Creature", "Nature Spirit", "Innate Spellcasting", "Charm Resistance"],
+            traits: ["Beauté ensorcelante", "Héritage"],
             source: "Odyssée"
         }
     },
