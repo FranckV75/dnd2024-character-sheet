@@ -6,14 +6,16 @@ changements dans `docs/CHANGELOG.md`. Rien ne se lance sans l'accord de Franck.
 
 ## À faire
 
-### Préférés de Franck (dans cet ordre)
+Ordre décidé par Franck le 11/11/2026 : d'abord l'audit et les découpages, puis les restes et
+points relevés, puis une discussion pour trier toutes les idées.
 
-1. Lanceur de dés (demande de janvier 2026) : toucher un bonus d'attaque ou une compétence lance le
-   dé et affiche le total. Chantier seul.
-2. Fiche utilisable sans wifi, installée comme une application sur la tablette (attention aux
-   mises à jour, qui doivent toujours arriver). Chantier seul, en dernier.
+### 1. Prochain chantier : audit de santé, puis découpage
 
-### Restes et points relevés
+- Audit de santé (`/audit-fiche`) : beaucoup de changements depuis le dernier.
+- Puis découpage des plus gros fichiers (`css/sheet.css`, `js/rules/feat-effects.js`,
+  `js/ui/spells.js`).
+
+### 2. Ensuite : restes et points relevés
 
 - Sous-classes, restes du lot 7 (gardés pour plus tard, décision de Franck du 10/11/2026) :
   - bouton « Monté sur le dragon » (Serment du Seigneur Dragon, niveau 15) et monture de l'Amazone
@@ -22,13 +24,18 @@ changements dans `docs/CHANGELOG.md`. Rien ne se lance sans l'accord de Franck.
   - compteur de strophes (Poésie épique) : après avoir tapé un nombre, un toucher immédiat sur « + »
     ou « − » peut être perdu (le bloc se reconstruit).
 - Bottes d'arme : la page 214 (liste des bottes) et la page 209 (Maître d'armes) citent encore le
-  livre anglais ; il faut les photos du chapitre Équipement du livre français.
+  livre anglais ; Franck prend les photos du chapitre Équipement du livre français et les range
+  dans `..\Ressources\Photos Manuel des joueurs FR\`.
 - Espèces de l'Odyssée (Centaure, Méduse, Minotaure, Satyre, Sirène, Nymphe) : traits pas repris.
 - Dragonnets du Seigneur Dragon : blocs repris de mémoire du Manuel des monstres 2014, à vérifier
   sur le Manuel des monstres 2024 (photos de Franck).
 
-### Idées en attente
+### 3. Idées, toutes au même niveau (priorités à trier avec Franck après l'audit)
 
+- Lanceur de dés (demande de janvier 2026) : toucher un bonus d'attaque ou une compétence lance le
+  dé et affiche le total. Pas prioritaire pour l'instant.
+- Fiche utilisable sans wifi, installée comme une application sur la tablette (attention aux
+  mises à jour, qui doivent toujours arriver). Chantier seul. Pas prioritaire pour l'instant.
 - Grimoire : comme les objets magiques, un aspect qui monte en puissance avec le niveau du sort.
 - Bilan des capacités pour les autres joueurs (Iria, personnage de Catherine), comme pour Korgul.
 - Vue du groupe (demande « synergies entre joueurs ») : PV, CA et perception passive de chaque
@@ -39,11 +46,6 @@ changements dans `docs/CHANGELOG.md`. Rien ne se lance sans l'accord de Franck.
 - Vérification des noms français, classe par classe, d'après les photos du manuel.
 - Mode consultation sur téléphone (lecture seule).
 - Connexion par lien magique (courriel), en plus du mot de passe.
-
-### Technique
-
-- Audit de santé (`/audit-fiche`), puis découpage des plus gros fichiers (`css/sheet.css`,
-  `js/rules/feat-effects.js`, `js/ui/spells.js`).
 
 ## Aide-mémoire : publier un changement délicat
 

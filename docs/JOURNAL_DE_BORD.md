@@ -40,9 +40,12 @@ en fin de session :
 
 ### Ensuite, sur demande de Franck seulement
 
-Lanceur de dés (seul), fiche sans wifi (seule, en dernier), puis audit `/audit-fiche` et découpage
-des gros fichiers. Points relevés non traités (pages des Bottes d'arme, espèces de l'Odyssée,
-dragonnets, restes des sous-classes) et idées en attente : `docs/FEUILLE_DE_ROUTE.md`.
+Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
+1. audit `/audit-fiche`, puis découpage des gros fichiers ;
+2. restes et points relevés (pages des Bottes d'arme : Franck fait les photos du chapitre
+   Équipement ; espèces de l'Odyssée, dragonnets, restes des sous-classes) ;
+3. discussion pour trier toutes les idées, regroupées au même niveau (le lanceur de dés et la
+   fiche sans wifi n'y sont plus prioritaires).
 
 ## Sessions
 
