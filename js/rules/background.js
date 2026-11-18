@@ -124,7 +124,7 @@ export function backgroundSummary(record) {
         || expectedToolNoted(record?.profs_tools, backgroundToolExpectation(background.toolProfs[0]));
     lines.push({
         id: 'tool', label: 'Outil', text: `${background.toolFr}.`,
-        ...(toolNoted ? {} : { check: 'Pas trouvé dans « Outils » (onglet Compétences & Histoire) : à choisir dans la liste ou à noter vous-même.' })
+        ...(toolNoted ? {} : { check: 'Pas encore noté dans la case « Outils » (onglet Compétences & Histoire).' })
     });
 
     lines.push({

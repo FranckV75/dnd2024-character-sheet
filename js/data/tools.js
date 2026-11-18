@@ -25,7 +25,7 @@ const tool = (id, name, category, ability, use, extra = {}) => Object.freeze({ i
 /** @type {ReadonlyArray<{ id: string, name: string, category: string, ability: string, use: string, aliases?: string[], exact?: boolean }>} */
 export const TOOLS = Object.freeze([
     // --- Outils d'artisan (p. 220-221) ---
-    tool('alchemist', "Matériel d'alchimiste", 'artisan', 'int', 'identifier une substance', { aliases: ["Outils d'alchimiste"] }),
+    tool('alchemist', "Matériel d'alchimiste", 'artisan', 'int', 'reconnaître un produit inconnu', { aliases: ["Outils d'alchimiste"] }),
     tool('brewer', 'Matériel de brasseur', 'artisan', 'int', 'reconnaître un alcool, un poison', { aliases: ['Outils de brasseur'] }),
     tool('calligrapher', 'Matériel de calligraphe', 'artisan', 'dex', 'écriture soignée, encres', { aliases: ['Outils de calligraphe'] }),
     tool('painter', 'Matériel de peintre', 'artisan', 'wis', 'peindre ce que vous avez vu', { aliases: ['Outils de peintre'] }),
@@ -44,7 +44,7 @@ export const TOOLS = Object.freeze([
     tool('cook', 'Ustensiles de cuisinier', 'artisan', 'wis', 'cuisiner, repérer un plat avarié', { aliases: ['Outils de cuisinier'] }),
     // --- Autres outils (p. 221) ---
     tool('disguise', 'Accessoires de déguisement', 'other', 'cha', 'maquillage et costumes', { aliases: ['Kit de déguisement'] }),
-    tool('navigator', 'Instruments de navigateur', 'other', 'wis', 'tracer un cap, se repérer', { aliases: ['Outils de navigateur', 'Instruments de navigation'] }),
+    tool('navigator', 'Instruments de navigateur', 'other', 'wis', 'trouver sa route en mer', { aliases: ['Outils de navigateur', 'Instruments de navigation'] }),
     tool('forgery', 'Matériel de contrefaçon', 'other', 'dex', 'imiter une écriture, un cachet', { aliases: ['Kit de contrefaçon', 'Matériel de faussaire'] }),
     tool('poisoner', "Matériel d'empoisonneur", 'other', 'int', 'repérer et préparer un poison', { aliases: ["Kit d'empoisonneur"] }),
     tool('herbalism', "Matériel d'herboriste", 'other', 'int', 'reconnaître une plante, potions', { aliases: ["Kit d'herboriste"] }),
