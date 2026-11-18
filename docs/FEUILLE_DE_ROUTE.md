@@ -44,6 +44,12 @@ sous-classes). Restent des décisions de Franck :
   au lieu de les écrire à la main, et faire le lien avec l'outil donné par l'historique (Korgul,
   Soldat : « une boîte de jeux au choix », signalée « À vérifier » dans l'encadré de l'historique ;
   à expliquer à Franck) (demande de Franck, 11/11/2026).
+- Grimoire adapté à la classe du lanceur (demande de Franck, 18/11/2026, à discuter avant) :
+  Magicien (sorts inscrits dans le livre ≠ sorts préparés, rituels sans préparation, copie de
+  sorts), Clerc et Druide (préparation dans toute la liste de classe, changée à chaque repos long),
+  Barde / Ensorceleur / Occultiste (changement d'un sort au passage de niveau), Paladin / Rôdeur.
+  En 2024, on ne prépare pas « trois Boules de feu » : un sort préparé se lance autant de fois
+  qu'on a d'emplacements (le « plusieurs fois le même sort » vient d'éditions plus anciennes).
 - Grimoire : comme les objets magiques, un aspect qui monte en puissance avec le niveau du sort.
 - Bilan des capacités pour les autres joueurs (Iria, personnage de Catherine), comme pour Korgul.
 - Vue du groupe (demande « synergies entre joueurs ») : PV, CA et perception passive de chaque
