@@ -176,6 +176,22 @@ describe('Retirer un outil', () => {
         assert.equal(removeToolFromText(addToolToText('Luth\nLyre', 'drum'), 'lute'), 'Lyre\nTambour');
     });
 
+    test('Liste à puces, à tirets ou numérotée : la puce part avec sa ligne', () => {
+        assert.equal(removeToolFromText('- Luth<br>- Lyre', 'lute'), '- Lyre');
+        assert.equal(removeToolFromText('• Luth<br>• Lyre', 'lyre'), '• Luth');
+        assert.equal(removeToolFromText('- Luth<div>- Lyre</div>', 'lute'), '<div>- Lyre</div>');
+        assert.equal(removeToolFromText('- Luth<div>- Lyre</div>', 'lyre'), '- Luth');
+        assert.equal(removeToolFromText('<div>- Luth</div><div>- Lyre</div>', 'lute'), '<div>- Lyre</div>');
+        assert.equal(removeToolFromText('1. Luth\n2. Lyre', 'lute'), '2. Lyre');
+        assert.equal(removeToolFromText('- Luth, Lyre<br>- Dés', 'lute'), '- Lyre<br>- Dés');
+    });
+
+    test('La ligne ne part que si elle est vide : pas de lignes recollées, pas de ligne vide en tête', () => {
+        assert.equal(removeToolFromText('Notes Luth<br>Lyre', 'lute'), 'Notes <br>Lyre');
+        assert.equal(removeToolFromText('Luth<br><br>Lyre', 'lute'), 'Lyre');
+        assert.equal(removeToolFromText('Dés<br>Luth<br><br>Lyre', 'lute'), 'Dés<br><br>Lyre');
+    });
+
     test('Le texte écrit à la main autour reste tel quel', () => {
         assert.equal(removeToolFromText('Appris chez mon oncle : Outils de forgeron (3 ans)', 'smith'), 'Appris chez mon oncle :  (3 ans)');
         assert.equal(removeToolFromText('Véhicules terrestres, Luth, <b>chariots</b>', 'lute'), 'Véhicules terrestres, <b>chariots</b>');

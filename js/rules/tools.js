@@ -136,6 +136,9 @@ export function toolsInText(html) {
 /** Balises de mise en forme restées vides après un retrait */
 const EMPTY_INLINE = /<(b|i|u|em|strong|span|font|mark|sub|sup)\b[^>]*><\/\1>/gi;
 
+/** Reste d'une ligne qui ne porte plus d'outil : vide, ou la puce, le tiret ou le numéro seul */
+const LINE_MARK_ONLY = /^[\s\u00a0]*(?:[-–—•·*‣◦▪●○+>]|\d{1,2}[.)])?[\s\u00a0]*$/u;
+
 /** Retire une occurrence (voir removeToolFromText) */
 function removeMatch({ list, at, chars }, { start, end }) {
     const gone = new Set();
@@ -162,26 +165,47 @@ function removeMatch({ list, at, chars }, { start, end }) {
     } else if (before < start - 1 && before >= 1 && isEt(before - 1) && isSpace(chars[before - 2]) && isWordChar(chars[skipSpacesBefore(before - 2)])) {
         // « Lyre et Luth » → « Lyre »
         drop(skipSpacesBefore(before - 2) + 1, start);
-    } else if (isBr(after)) {
-        drop(end, after + 1);
-    } else if (before >= 0 && isBr(before)) {
-        drop(before, start);
     }
 
-    // Ligne (<div> ou <p>) restée vide : elle part avec l'outil, pas les autres lignes vides
+    // Ce qui reste sur la ligne de l'outil : rien, ou seulement la puce ou le tiret du joueur
+    // (« - Luth », « • Luth », « 1. Luth ») ? Alors la ligne entière part, avec un seul retour à la ligne.
+    let lineStart = start;
+    while (lineStart > 0 && chars[lineStart - 1] !== '\n') lineStart--;
+    let lineEnd = end;
+    while (lineEnd < chars.length && chars[lineEnd] !== '\n') lineEnd++;
+    let rest = '';
+    for (let i = lineStart; i < lineEnd; i++) if (!gone.has(at[i])) rest += chars[i];
+    if (!LINE_MARK_ONLY.test(rest)) return list.filter((_piece, index) => !gone.has(index)).map((piece) => piece.raw).join('');
+    drop(lineStart, lineEnd);
+
+    // Ligne en <div> ou <p> restée vide : elle part avec l'outil, pas les autres lignes vides
     const first = at[start];
     const last = at[end - 1];
     let open = first - 1;
     while (open >= 0 && !list[open].block) open--;
     let close = last + 1;
     while (close < list.length && !list[close].block) close++;
+    let blockGone = false;
     if (open >= 0 && close < list.length && !list[open].close && list[close].close && list[open].block === list[close].block) {
-        let empty = true;
-        for (let i = open + 1; i < close && empty; i++) {
+        blockGone = true;
+        for (let i = open + 1; i < close && blockGone; i++) {
             const piece = list[i];
-            empty = gone.has(i) || piece.ch === '' || piece.br === true || isSpace(piece.ch);
+            blockGone = gone.has(i) || piece.ch === '' || piece.br === true || isSpace(piece.ch);
         }
-        if (empty) for (let i = open; i <= close; i++) gone.add(i);
+        if (blockGone) for (let i = open; i <= close; i++) gone.add(i);
+    }
+    if (!blockGone) {
+        if (isBr(lineEnd)) {
+            drop(lineEnd, lineEnd + 1);
+            // Première ligne du texte : pas de ligne vide laissée en tête
+            if (chars.slice(0, lineStart).every((ch) => isSpace(ch) || ch === '\n')) {
+                let i = lineEnd + 1;
+                while (isBr(i) || isSpace(chars[i])) i++;
+                if (i < chars.length) drop(lineEnd + 1, i);
+            }
+        } else if (lineStart > 0 && isBr(lineStart - 1)) {
+            drop(lineStart - 1, lineStart);
+        }
     }
 
     return list.filter((_piece, index) => !gone.has(index)).map((piece) => piece.raw).join('');
