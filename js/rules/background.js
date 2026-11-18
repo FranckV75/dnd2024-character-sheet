@@ -15,11 +15,14 @@ import { DD_RULES } from '../data/dd-rules.js';
 import { ABILITIES, SKILLS } from '../data/constants.js';
 import { FEATS_DATA } from '../data/feats.js';
 import { featChoicesState, slotChoice, MAGIC_INITIATE_CLASSES } from './feat-choices.js';
+import { backgroundToolExpectation, expectedToolNoted } from './tools.js';
 
 const plain = (value) => String(value ?? '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
 const fold = (value) => plain(value).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[’']/g, "'").toLowerCase();
 
-/** Mots qui montrent qu'un outil est noté dans « Outils » (outils au choix : un mot de la famille) */
+/** Mots qui montrent qu'un outil est noté dans « Outils » (outils au choix : un mot de la famille).
+ *  Reconnaissance large, pour les textes écrits à la main ; s'y ajoute le nom exact d'un outil du
+ *  manuel (expectedToolNoted, js/rules/tools.js), celui qu'écrit la fenêtre « Choisir dans la liste » */
 const TOOL_WORDS = Object.freeze({
     "Calligrapher's Supplies": ['calligraph'],
     "Artisan's Tools": ['artisan', 'alchim', 'brass', 'calligraph', 'bricol', 'cartograph', 'charpent', 'cordonn', 'cuisin',
@@ -46,6 +49,17 @@ export function backgroundOf(record) {
         if ([id, background.name, background.nameFr].some((n) => fold(n) === name)) return { id, ...background };
     }
     return null;
+}
+
+/**
+ * Outil donné par l'historique du personnage, pour la fenêtre « Choisir dans la liste ».
+ * @param {Object} record
+ * @returns {null | { background: string, toolId: string|null, categoryId: string, label: string }}
+ */
+export function backgroundTool(record) {
+    const background = backgroundOf(record);
+    const expectation = background ? backgroundToolExpectation(background.toolProfs[0]) : null;
+    return expectation ? { background: background.nameFr, ...expectation } : null;
 }
 
 /** « Initié à la magie (Clerc) » */
@@ -106,10 +120,11 @@ export function backgroundSummary(record) {
     const toolNoted = words.some((word) => (short.has(word)
         ? tokens.includes(word) || (word === 'jeu' && tokens.includes('jeux'))
         : tools.includes(word)))
-        || (background.toolProfs[0] === 'Gaming Set' && /(^|[^a-zà-ÿ])dés($|[^a-zà-ÿ])/i.test(plain(record?.profs_tools)));
+        || (background.toolProfs[0] === 'Gaming Set' && /(^|[^a-zà-ÿ])dés($|[^a-zà-ÿ])/i.test(plain(record?.profs_tools)))
+        || expectedToolNoted(record?.profs_tools, backgroundToolExpectation(background.toolProfs[0]));
     lines.push({
         id: 'tool', label: 'Outil', text: `${background.toolFr}.`,
-        ...(toolNoted ? {} : { check: 'Pas trouvé dans « Outils » (onglet Compétences & Histoire) : à noter vous-même.' })
+        ...(toolNoted ? {} : { check: 'Pas trouvé dans « Outils » (onglet Compétences & Histoire) : à choisir dans la liste ou à noter vous-même.' })
     });
 
     lines.push({
