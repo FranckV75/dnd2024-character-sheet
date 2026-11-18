@@ -293,6 +293,13 @@
         display: inline;
     }
 
+    /* Ligne « Livre » du Magicien et tableau sans aucun sort à lancer : retirés de l'écran
+       seulement (spells.js), l'impression les garde */
+    .spells-body.is-combat .spellbook-note,
+    .spells-body.is-combat .table-scroll.is-combat-empty {
+        display: none;
+    }
+
     /* Emplacements bien en vue : cadre plein */
     .spells-body.is-combat .spell-slots {
         border-style: solid;
@@ -1093,6 +1100,7 @@ button.spell-book-ritual {
     #spells-feature > .grimoire-toggle,
     .grimoire-notice-hint,
     .spells-empty-hint,
+    .spells-empty.is-combat-only,
     .spells-table tr.spell-entry {
         display: none;
     }

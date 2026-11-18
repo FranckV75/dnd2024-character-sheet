@@ -752,8 +752,13 @@ export function initSpells(ctx) {
         const counts = spellCounts(rows, view.level, granted, (row) => wholeList && fits(row));
         const anySpell = rows.some(hasSpellContent);
         const anyShown = [...shown].some(i => !outOfCombat(i));
+        // Sorts affichés, mais tous retirés par la vue au combat
+        const combatEmpty = !anyShown && shown.size > 0;
         container.toggleAttribute('data-no-spells', !anySpell);
-        tableScroll.hidden = !anyShown && entry.tr.hidden;
+        // Vue au combat sans aucun sort à lancer : tableau retiré de l'écran seulement (classe CSS),
+        // l'impression garde tout le grimoire
+        tableScroll.hidden = shown.size === 0 && entry.tr.hidden;
+        tableScroll.classList.toggle('is-combat-empty', combatEmpty);
         emptyMain.textContent = '';
         emptyHint.textContent = '';
         if (!anySpell) {
@@ -778,6 +783,8 @@ export function initSpells(ctx) {
             emptyMain.textContent = view.level === '0' ? 'Aucun sort mineur.' : `Aucun sort de niveau ${view.level}.`;
         }
         emptyText.hidden = !emptyMain.textContent;
+        // Message propre à la vue au combat : écran seulement (l'impression montre tous les sorts)
+        emptyText.classList.toggle('is-combat-only', combatEmpty);
 
         // Table de la classe : « Préparés : 7 / 9 », en rouge au-delà ; sorts mineurs en trop :
         // simple rappel (une espèce ou un don en donne d'autres). Les sorts donnés par la classe,
@@ -799,10 +806,10 @@ export function initSpells(ctx) {
     /**
      * Magicien : « Livre : 15 sorts · 17 sans dépense », puis d'où viennent ces sorts et le coût
      * d'une copie. Jamais en rouge : copier des sorts trouvés ou achetés est permis. Masquée au
-     * combat (la vue sert à lancer des sorts).
+     * combat par spells.css (la vue sert à lancer des sorts), imprimée dans tous les cas.
      */
     function renderBookNote(rows, d, granted) {
-        bookNote.hidden = !hasSpellbook(d.classSlug) || view.combat;
+        bookNote.hidden = !hasSpellbook(d.classSlug);
         if (bookNote.hidden) return;
         const count = spellbookCount(rows, granted);
         const free = freeSpellbookSpells(d.level, d.subclass);
