@@ -16,8 +16,8 @@ en fin de session :
   l'accord de Franck (maîtrises d'armes, espèces de l'Odyssée, dragonnets 2024, restes des
   sous-classes ; 4.38.0 = corrections de l'audit, publiée le même jour).
 - **Petits champs sur iPad** : ne rien changer tant que Franck n'a pas d'info sur le zoom.
-- **GitHub** : Franck a demandé au support de purger les anciens commits (PDF, vieilles
-  sauvegardes, adresse Gmail) ; réponse attendue.
+- **GitHub** : anciens commits (PDF, vieilles sauvegardes, adresse Gmail) purgés par le support
+  le 12/11/2026 (ticket 4978665) ; vérifié le 18/11 : 404 partout. Dossier clos.
 - **Emplacement** : le dépôt est désormais `E:\2 - CODE\Feuille de perso\Code\` (voir
   `E:\2 - CODE\LISEZ-MOI.md`).
 - **Manuel français** : les photos de Franck font foi pour les noms français. Elles sont rangées,
