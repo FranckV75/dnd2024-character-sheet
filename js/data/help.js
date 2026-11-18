@@ -104,7 +104,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Quand la fiche pose une question",
-                text: "Si la fiche de l'appareil et celle du compte sont différentes, la fiche vous demande laquelle garder. Rien n'est écrasé sans votre accord. En cas de doute, choisissez « Décider plus tard », puis faites un « Exporter »."
+                text: "Si la fiche de l'appareil et celle du compte sont différentes, la fiche vous demande laquelle garder. Rien n'est écrasé sans votre accord. En cas de doute, choisissez « Décider plus tard » ou « Ne rien faire », selon la question, puis faites un « Exporter »."
             },
             {
                 title: "« Enregistrer en ligne »",
