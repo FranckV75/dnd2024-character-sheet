@@ -23,6 +23,8 @@
 //    Sur écran seulement : l'impression garde tout le grimoire.
 //  - Sort préparé d'un niveau sans emplacement : repère « Pas d'emplacement » sous son nom (simple
 //    avertissement, js/rules/spell-preparation.js : missingSlotLevel), expliqué au toucher.
+//  - Bouton « Retirer les sorts non préparés » sous le tableau (Clerc, Druide, Paladin, Rôdeur,
+//    fiche déverrouillée, seulement s'il y a quelque chose à retirer : spells/cleanup.js).
 //  - Seuls les sorts renseignés sont affichés, suivis d'UNE ligne de saisie : les lignes
 //    vides d'une sauvegarde restent dans la fiche, telles quelles, sans être affichées.
 //    La ligne de saisie n'existe pas dans la fiche : la première saisie qui a du contenu
@@ -51,7 +53,8 @@
 //
 // Fichiers du grimoire (js/ui/spells/) : barre de filtres (filters.js), emplacements de sorts
 // (slots.js), sorts de dons, de sous-classe et d'espèce (granted.js), infobulle (tooltip.js),
-// fenêtre « Préparer mes sorts » (prepare.js), réglages de l'appareil (prefs.js). Ici : le tableau des sorts, le grimoire replié et l'assemblage.
+// fenêtre « Préparer mes sorts » (prepare.js), bouton « Retirer les sorts non préparés » (cleanup.js),
+// réglages de l'appareil (prefs.js). Ici : le tableau des sorts, le grimoire replié et l'assemblage.
 // =============================================================================
 
 import { EMPTY_SPELL } from '../state/schema.js';
@@ -92,6 +95,7 @@ import { createSpellFilters } from './spells/filters.js';
 import { createSpellSlots, slotStateOf } from './spells/slots.js';
 import { createGrantedSpells } from './spells/granted.js';
 import { createPrepareButton } from './spells/prepare.js';
+import { createCleanupButton } from './spells/cleanup.js';
 
 // Dons et leurs choix : repère « Adepte » (Adepte élémentaire) sur les sorts du type choisi
 // Sorts de dons : leurs choix, leurs lancers gratuits (feat_uses) et la caractéristique du DD
@@ -381,6 +385,14 @@ export function initSpells(ctx) {
         }
     });
     setIconLabel(addBtn, 'plus', 'Ajouter un sort');
+
+    // Bouton « Retirer les sorts non préparés » (spells/cleanup.js) ; les lignes en cours de saisie
+    // (sort tout juste créé, ligne qui a le focus) ne sont jamais proposées
+    const cleanup = createCleanupButton({
+        store, setStatus, keepSnapshot: ctx.keepSnapshot, getSpellsDb: () => spellsDb,
+        getSkip: () => [draft?.index, ...rowEls.filter(r => r.tr.contains(document.activeElement)).map(r => r.index)]
+            .filter(Number.isInteger)
+    });
 
     function createRow() {
         const r = { index: 0 };
@@ -1137,6 +1149,7 @@ export function initSpells(ctx) {
         renderHeader();
         renderRows(character, changedKeys === null && !structural, structural);
         slots.render(character, d);
+        cleanup.render(character, d);
         granted.render(character, d);
         renderGrimoire(character, d);
     }
@@ -1179,7 +1192,8 @@ export function initSpells(ctx) {
         granted.speciesBox,
         tableScroll,
         emptyText,
-        addBtn);
+        addBtn,
+        cleanup.button);
 
     // Ordre de lecture : titre, avis (replié), bouton ouvrir / replier, grimoire. Le bouton ne
     // change jamais de place dans la page (il garde donc le focus) : la grille de spells.css

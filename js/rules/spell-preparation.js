@@ -22,6 +22,10 @@
 //  - Sort préparé au-dessus des emplacements (missingSlotLevel) : un sort ne se prépare que s'il
 //    est d'un niveau pour lequel on a des emplacements (PHB 2024, « Spellcasting » de chaque
 //    classe) ; préparé quand même, il ne peut pas être lancé : la fiche le signale, sans rien changer.
+//  - Bouton « Retirer les sorts non préparés » (unpreparedCleanup, removeSpellRows) : pour ces
+//    mêmes classes, les sorts décochés s'accumulent au grimoire ; seules partent les lignes que la
+//    fenêtre « Préparer mes sorts » saurait remettre (sort de la liste de la classe, niveau avec
+//    emplacement), jamais un sort préparé, mineur ou donné ; en cas de doute, la ligne reste.
 // Fonctions pures.
 // =============================================================================
 
@@ -427,6 +431,66 @@ export function unprepareSpellRows(rows, spell, db, added = null) {
     if (removable !== undefined) return list.filter((_, index) => index !== removable);
     if (!indices.some(index => list[index].prep === true)) return list;
     return list.map((row, index) => (indices.includes(index) && row.prep === true ? { ...row, prep: false } : row));
+}
+
+/**
+ * Lignes que le bouton « Retirer les sorts non préparés » peut retirer du grimoire. Seulement pour
+ * une classe qui prépare parmi toute sa liste (Clerc, Druide, Paladin, Rôdeur) : jamais le
+ * Magicien (ses sorts non préparés sont son livre) ni une classe à liste fixe.
+ * Part : un sort non préparé de niveau 1+, reconnu dans la base, de la liste de la classe, noté à
+ * son niveau, d'un niveau pour lequel la classe a des emplacements (la fenêtre « Préparer mes
+ * sorts » le repropose donc). Ne part jamais : un sort préparé, un sort mineur, un sort donné
+ * (toujours préparé), une ligne vide ou en cours de saisie, un sort inconnu de la base, d'une
+ * autre liste (multiclassage, don, objet) ou d'un niveau sans emplacement (noté pour plus tard).
+ * Ligne où le joueur a écrit une note à lui (autre que le nom anglais mis par la fiche) : rangée à
+ * part (noted), à retirer seulement s'il le demande.
+ * @param {Array<Object>} rows - dynamic_spells
+ * @param {Array<Object>} db - base de sorts
+ * @param {{ classSlug?: string, maxLevel?: number, granted?: Set<string>|null, skip?: number[] }} [options]
+ *        maxLevel : highestSlotLevel ; granted : grantedSpellKeys ; skip : indices des lignes en
+ *        cours de saisie
+ * @returns {{ remove: Array<{ index: number, row: Object, name: string, level: number }>,
+ *   noted: Array<{ index: number, row: Object, name: string, level: number, note: string }> }}
+ *   rangées par niveau puis par nom ; row : la ligne telle qu'elle a été lue (removeSpellRows)
+ */
+export function unpreparedCleanup(rows, db, { classSlug = '', maxLevel = 0, granted = null, skip = [] } = {}) {
+    const remove = [];
+    const noted = [];
+    if (!preparesFromClassList(classSlug) || !(maxLevel > 0)) return { remove, noted };
+    const list = Array.isArray(rows) ? rows : [];
+    const spells = Array.isArray(db) ? db : [];
+    const skipped = new Set(skip);
+    list.forEach((row, index) => {
+        if (skipped.has(index) || !row || typeof row !== 'object' || isSpellRowEmpty(row) || row.prep === true) return;
+        const level = Number(rowLevel(row));
+        if (!(level >= 1) || level > maxLevel) return;
+        const spell = findSpellByName(spells, row.name);
+        if (!spell || Number(spell.level) !== level || !(spell.classes || []).includes(classSlug)) return;
+        if (granted?.has(spellNameKey(row.name)) || isGrantedSpell(spell, granted)) return;
+        const entry = { index, row, name: plainText(row.name), level };
+        const note = plainText(row.note);
+        const ownNote = note !== '' && ![...spellNames(spell), spell.vo].some(name => name && normalizeText(name).trim() === normalizeText(note).trim());
+        if (ownNote) noted.push({ ...entry, note });
+        else remove.push(entry);
+    });
+    const byLevelThenName = (a, b) => a.level - b.level || a.name.localeCompare(b.name, 'fr');
+    return { remove: remove.sort(byLevelThenName), noted: noted.sort(byLevelThenName) };
+}
+
+/**
+ * Retire du grimoire les lignes choisies (unpreparedCleanup). Tout ou rien : si une de ces lignes
+ * n'est plus exactement celle qui a été montrée au joueur (fiche changée entre-temps :
+ * synchronisation, autre onglet), rien n'est retiré.
+ * @param {Array<Object>} rows - dynamic_spells
+ * @param {Array<{ index: number, row: Object }>} entries
+ * @returns {Array<Object>|null} nouvelles lignes ; null : la fiche a changé, rien n'est retiré
+ */
+export function removeSpellRows(rows, entries) {
+    const list = Array.isArray(rows) ? rows : [];
+    const picked = Array.isArray(entries) ? entries : [];
+    if (!picked.every(entry => sameRow(list[entry.index], entry.row) && list[entry.index].prep !== true)) return null;
+    const indices = new Set(picked.map(entry => entry.index));
+    return list.filter((_, index) => !indices.has(index));
 }
 
 /**

@@ -482,6 +482,23 @@
     font-style: italic;
 }
 
+/* ---------- Bouton et fenêtre « Retirer les sorts non préparés » (js/ui/spells/cleanup.js) ---------- */
+
+.spell-cleanup-btn[hidden] {
+    display: none;
+}
+
+/* Nombre de sorts qui vont partir, juste avant les boutons */
+.modal-body .cleanup-count {
+    margin: 10px 0 4px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.modal-body .cleanup-noted {
+    margin-top: 12px;
+}
+
 /* Fenêtre « Lancer » : un bouton par niveau d'emplacement (reste N dessous) */
 .spell-cast-levels {
     display: flex;

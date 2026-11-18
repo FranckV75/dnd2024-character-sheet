@@ -155,7 +155,8 @@ js/
     │                   l'assemblage) : prefs.js (réglages retenus sur l'appareil), tooltip.js
     │                   (bulle d'un sort), filters.js (barre de recherche et filtres), slots.js
     │                   (emplacements de sorts), granted.js (sorts donnés par les dons, la
-    │                   sous-classe et l'espèce), prepare.js (fenêtre « Préparer mes sorts »)
+    │                   sous-classe et l'espèce), prepare.js (fenêtre « Préparer mes sorts »),
+    │                   cleanup.js (bouton « Retirer les sorts non préparés »)
     ├── derived.js      deriveCharacter calculé une fois par version du personnage, partagé
     ├── fold.js         Blocs repliables (sous-classe, compagnons, sorts de sous-classe), retenus
     │                   sur l'appareil seulement

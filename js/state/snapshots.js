@@ -4,7 +4,8 @@
 // La fiche garde ses derniers états (MAX_SNAPSHOTS) dans une clé du navigateur à part
 // (SNAPSHOTS_KEY), jamais dans la sauvegarde ni en ligne : un retour en arrière reste possible
 // après une erreur de saisie, un import ou un chargement malheureux.
-// Moments : ouverture de la fiche, avant un repos long, avant tout remplacement de la fiche
+// Moments : ouverture de la fiche, avant un repos long, avant une montée de niveau, avant le retrait
+// des sorts non préparés du grimoire, avant tout remplacement de la fiche
 // (import, nouvelle fiche, personnage d'exemple, chargement depuis le compte, retour à un état).
 //
 // Sécurité des données :
@@ -39,6 +40,7 @@ export const SNAPSHOT_REASONS = Object.freeze({
     open: 'Ouverture de la fiche',
     'long-rest': 'Avant un repos long',
     'level-up': 'Avant une montée de niveau',
+    'spell-cleanup': 'Avant le retrait des sorts non préparés',
     import: 'Avant un import',
     new: 'Avant une nouvelle fiche',
     example: "Avant un personnage d'exemple",
