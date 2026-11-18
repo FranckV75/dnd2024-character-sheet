@@ -6,7 +6,8 @@
 // catégorie, une case à cocher par outil, avec une recherche.
 //  - Un outil déjà écrit dans la case (reconnu par son nom) apparaît coché ;
 //  - cocher écrit le nom à la suite du texte, décocher retire ce nom et son séparateur : le reste,
-//    écrit à la main, ne bouge pas (js/rules/tools.js) ;
+//    écrit à la main, ne bouge pas (js/rules/tools.js) ; ce qui vient de changer est écrit dans
+//    la fenêtre (la barre du haut est cachée derrière elle) ;
 //  - l'outil donné par l'historique (ou la catégorie où il se choisit) est présenté en tête.
 // Le texte passe par le chemin des champs riches : nettoyage DOMPurify puis store. Aucune clé
 // nouvelle. Ouverte aussi depuis l'encadré « Historique » (js/ui/background.js).
@@ -47,18 +48,34 @@ export function openToolPicker({ store, setStatus }) {
         spellcheck: 'false', 'aria-label': 'Chercher un outil par son nom'
     });
     const counter = el('output', { class: 'prep-count', 'aria-live': 'polite' });
+    // Ce qui vient de changer, écrit dans la fenêtre : la barre du haut est cachée derrière elle
+    const said = el('p', { class: 'tools-said', role: 'status', text: 'Chaque case cochée ou décochée met à jour la case Outils.' });
     const noMatch = el('p', { class: 'prep-empty muted', hidden: true, text: 'Aucun outil ne correspond.' });
 
     /** Une entrée par case affichée : { tool, li, box } (l'outil de l'historique peut en avoir deux) */
     const entries = [];
 
+    /** Nombre de changements faits dans cette fenêtre (message de fermeture) */
+    let changes = 0;
+    /** Autre fiche chargée pendant que la fenêtre est ouverte : pas de message de fermeture */
+    let otherSheet = false;
+    // Bouton qui a ouvert la fenêtre (celui de l'encadré Historique est redessiné à chaque case cochée)
+    const opener = document.activeElement;
+
     function toggle(tool, checked) {
         const current = store.get()[FIELD] ?? '';
         const next = checked ? addToolToText(current, tool.id) : removeToolFromText(current, tool.id);
-        if (next !== current) store.update({ [FIELD]: sanitizeRich(next) });
-        // Rien n'a changé (cas rare) : la case reprend l'état du texte
-        else refresh(store.get());
-        setStatus(checked ? `${tool.name} ajouté à la case Outils.` : `${tool.name} retiré de la case Outils.`);
+        if (next === current) {
+            // Rien n'a changé (cas rare) : la case reprend l'état du texte, sans rien annoncer
+            refresh(store.get());
+            return;
+        }
+        store.update({ [FIELD]: sanitizeRich(next) });
+        changes++;
+        // Tournure sans accord (« Cartes à jouer », « Flûte », « Outils de voleur »)
+        const message = checked ? `Ajouté à la case Outils : ${tool.name}.` : `Retiré de la case Outils : ${tool.name}.`;
+        said.textContent = message;
+        setStatus(message);
     }
 
     function item(tool) {
@@ -125,16 +142,20 @@ export function openToolPicker({ store, setStatus }) {
         // Pas de clavier virtuel à l'ouverture sur tablette : le focus va au bouton Fermer
         focusField: false,
         body: [
-            el('p', { class: 'prep-hint', text: 'Cochez les outils que votre personnage maîtrise : leur nom s\'écrit dans la case « Outils ». Décocher retire seulement ce nom ; ce que vous avez écrit à la main ne change pas.' }),
+            el('p', { class: 'prep-hint', text: 'Cochez les outils que votre personnage maîtrise : leur nom s\'écrit dans la case « Outils ». Décocher retire seulement ce nom et sa virgule : relisez la case si vous aviez écrit une phrase autour.' }),
             el('p', { class: 'prep-hint muted', text: 'Sous chaque outil : la caractéristique du test fait avec lui (vous y ajoutez votre bonus de maîtrise).' }),
-            el('div', { class: 'prep-controls' }, search, counter),
+            el('div', { class: 'prep-controls' }, search, counter, said),
             listBox,
             noMatch
         ],
         actions: [{ label: 'Fermer', primary: true }],
         onClose: () => {
             unsubscribe();
-            setStatus(`Case Outils : ${counter.textContent} dans la liste du manuel.`);
+            if (changes > 0 && !otherSheet) setStatus(`Case Outils : ${counter.textContent} dans la liste du manuel.`);
+            // Le bouton de l'encadré Historique a été redessiné : le focus revient sur le nouveau
+            if (opener instanceof HTMLElement && !opener.isConnected && opener.closest('.origin-tool-pick')) {
+                document.querySelector('.origin-tool-pick .tools-pick-btn')?.focus();
+            }
         }
     });
     // Hauteur gardée pendant la recherche (comme « Préparer mes sorts », css/spells.css)
@@ -145,7 +166,10 @@ export function openToolPicker({ store, setStatus }) {
     }
     unsubscribe = store.subscribe((character, changedKeys) => {
         // Autre fiche chargée : la fenêtre ne la concerne plus
-        if (!changedKeys) close();
+        if (!changedKeys) {
+            otherSheet = true;
+            close();
+        }
         else if (changedKeys.includes(FIELD)) refresh(character);
     });
 }
