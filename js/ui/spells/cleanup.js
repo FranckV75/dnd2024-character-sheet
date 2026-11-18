@@ -7,7 +7,8 @@
 // partir, puis les retire d'un coup.
 //  - Quelles lignes : js/rules/spell-preparation.js (unpreparedCleanup). Jamais un sort préparé,
 //    mineur ou donné, ni une ligne en cours de saisie ; en cas de doute, la ligne reste.
-//  - Lignes où le joueur a écrit une note à lui : listées à part, décochées (gardées) par défaut.
+//  - Lignes où le joueur a écrit quelque chose à lui (note, colonne réécrite, case C / R / M cochée
+//    en plus) : listées à part avec ce qu'il a écrit, décochées (gardées) par défaut.
 //  - Sécurité : l'état d'avant est d'abord gardé dans « Revenir à… » (ctx.keepSnapshot) ; s'il ne
 //    peut pas l'être (stockage plein ou indisponible), rien n'est retiré. Si la fiche a changé
 //    pendant que la fenêtre était ouverte (synchronisation), rien n'est retiré non plus.
@@ -57,7 +58,7 @@ export function createCleanupButton({ store, setStatus, keepSnapshot, getSpellsD
                     } }
                 }),
                 el('span', { class: 'prep-text' }, el('span', { class: 'prep-name', text: entry.name }),
-                    el('small', { class: 'prep-note', text: `niveau ${entry.level} · votre note : ${entry.note}` }))));
+                    el('small', { class: 'prep-note', text: frenchSpaces(`niveau ${entry.level} · écrit par vous : ${entry.written.join(', ')}`) }))));
 
         const count = el('p', { class: 'cleanup-count', role: 'status' });
         const body = [
@@ -65,9 +66,9 @@ export function createCleanupButton({ store, setStatus, keepSnapshot, getSpellsD
                 ? `Ces sorts non préparés vont quitter le grimoire. Rien d'autre ne change : vos sorts préparés, vos sorts mineurs et vos sorts donnés restent. Pour reprendre un sort plus tard, cochez-le dans « Préparer mes sorts ».`
                 : `Aucun sort à retirer d'office. Rien d'autre ne change : vos sorts préparés, vos sorts mineurs et vos sorts donnés restent.`) }),
             plan.remove.length ? el('ul', { class: 'prep-items cleanup-list', 'aria-label': 'Sorts qui vont être retirés' }, plan.remove.map(line)) : null,
-            plan.noted.length ? el('section', { class: 'prep-group cleanup-noted', 'aria-label': 'Sorts gardés à cause de votre note' },
-                el('h3', { class: 'prep-level', text: 'Gardés : vous y avez écrit une note' }),
-                el('p', { class: 'muted', text: 'Ces sorts non préparés restent au grimoire. Cochez ceux que vous voulez retirer aussi (leur note partira avec eux).' }),
+            plan.noted.length ? el('section', { class: 'prep-group cleanup-noted', 'aria-label': 'Sorts gardés parce que vous y avez écrit' },
+                el('h3', { class: 'prep-level', text: 'Gardés : vous y avez écrit' }),
+                el('p', { class: 'muted', text: 'Ces sorts non préparés restent au grimoire. Cochez ceux que vous voulez retirer aussi (ce que vous y avez écrit partira avec eux).' }),
                 el('ul', { class: 'prep-items cleanup-list' }, plan.noted.map(notedLine))) : null,
             count,
             el('p', { class: 'muted', text: frenchSpaces("Sécurité : avant de retirer, la fiche garde l'état actuel dans « Revenir à… » (barre du haut, fiche déverrouillée).") })

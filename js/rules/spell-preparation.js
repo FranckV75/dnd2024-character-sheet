@@ -25,7 +25,9 @@
 //  - Bouton « Retirer les sorts non préparés » (unpreparedCleanup, removeSpellRows) : pour ces
 //    mêmes classes, les sorts décochés s'accumulent au grimoire ; seules partent les lignes que la
 //    fenêtre « Préparer mes sorts » saurait remettre (sort de la liste de la classe, niveau avec
-//    emplacement), jamais un sort préparé, mineur ou donné ; en cas de doute, la ligne reste.
+//    emplacement), jamais un sort préparé, mineur ou donné ; en cas de doute, la ligne reste. Une
+//    ligne où le joueur a écrit quelque chose à lui (note, colonne réécrite, case cochée en plus :
+//    ownRowTexts) est rangée à part et ne part que s'il la coche.
 // Fonctions pures.
 // =============================================================================
 
@@ -445,6 +447,41 @@ export function unprepareSpellRows(rows, spell, db, added = null) {
     return list.map((row, index) => (indices.includes(index) && row.prep === true ? { ...row, prep: false } : row));
 }
 
+/** Texte comparable d'une colonne : accents, majuscules, espaces et ponctuation ignorés */
+const looseText = (value) => normalizeText(value).replace(/[^a-z0-9]+/g, '');
+
+/** Colonnes de texte et cases d'une ligne remplies par la fiche depuis la base (spellToRow) */
+const ROW_TEXT_COLUMNS = Object.freeze([['school', 'école'], ['time', "temps d'incantation"], ['range', 'portée']]);
+const ROW_FLAG_COLUMNS = Object.freeze([['c', 'C'], ['r', 'R'], ['m', 'M']]);
+
+/**
+ * Ce que le joueur a écrit lui-même sur une ligne du grimoire, par rapport à ce que la fiche y met
+ * depuis la base (spellToRow) : note autre que le nom du sort, texte d'une colonne différent de la
+ * base, case C / R / M cochée en plus. Une colonne vide ou une case décochée n'est pas un texte du
+ * joueur (rien à perdre) ; une vieille ligne écrite à la main dans un autre format que la base est
+ * comptée comme écrite par le joueur (dans le doute, la ligne reste).
+ * @param {Object} row - ligne de dynamic_spells
+ * @param {Object} spell - le sort de la base que porte cette ligne
+ * @returns {Array<{ key: string, text: string }> & { note: string }} tableau vide : ligne telle que
+ *          la fiche la remplit ; note : la note du joueur en clair ('' si elle n'est pas de lui)
+ */
+export function ownRowTexts(row, spell) {
+    const base = spellToRow(spell);
+    const written = [];
+    const note = plainText(row?.note);
+    const ownNote = note !== '' && ![...spellNames(spell), spell?.vo].some(name => name && looseText(name) === looseText(note));
+    if (ownNote) written.push({ key: 'note', text: `note « ${note} »` });
+    for (const [key, label] of ROW_TEXT_COLUMNS) {
+        const text = plainText(row?.[key]);
+        if (text !== '' && looseText(text) !== looseText(base[key])) written.push({ key, text: `${label} « ${text} »` });
+    }
+    for (const [key, label] of ROW_FLAG_COLUMNS) {
+        if (row?.[key] === true && base[key] !== true) written.push({ key, text: `case ${label} cochée` });
+    }
+    written.note = ownNote ? note : '';
+    return written;
+}
+
 /**
  * Lignes que le bouton « Retirer les sorts non préparés » peut retirer du grimoire. Seulement pour
  * une classe qui prépare parmi toute sa liste (Clerc, Druide, Paladin, Rôdeur) : jamais le
@@ -454,16 +491,21 @@ export function unprepareSpellRows(rows, spell, db, added = null) {
  * sorts » le repropose donc). Ne part jamais : un sort préparé, un sort mineur, un sort donné
  * (toujours préparé), une ligne vide ou en cours de saisie, un sort inconnu de la base, d'une
  * autre liste (multiclassage, don, objet) ou d'un niveau sans emplacement (noté pour plus tard).
- * Ligne où le joueur a écrit une note à lui (autre que le nom anglais mis par la fiche) : rangée à
- * part (noted), à retirer seulement s'il le demande.
+ * Ligne où le joueur a écrit quelque chose à lui : rangée à part (noted), à retirer seulement s'il
+ * le demande. Compte comme écrit par le joueur (ownRowTexts) : une note autre que le nom du sort
+ * mis par la fiche ; un texte d'École, de Temps d'incantation ou de Portée qui n'est pas celui de
+ * la base ; une case C, R ou M cochée alors que la base ne la coche pas. Une colonne vide ou une
+ * case décochée ne contient rien à perdre.
  * @param {Array<Object>} rows - dynamic_spells
  * @param {Array<Object>} db - base de sorts
  * @param {{ classSlug?: string, maxLevel?: number, granted?: Set<string>|null, skip?: number[] }} [options]
  *        maxLevel : highestSlotLevel ; granted : grantedSpellKeys ; skip : indices des lignes en
  *        cours de saisie
  * @returns {{ remove: Array<{ index: number, row: Object, name: string, level: number }>,
- *   noted: Array<{ index: number, row: Object, name: string, level: number, note: string }> }}
- *   rangées par niveau puis par nom ; row : la ligne telle qu'elle a été lue (removeSpellRows)
+ *   noted: Array<{ index: number, row: Object, name: string, level: number, note: string, written: string[] }> }}
+ *   rangées par niveau puis par nom ; row : la ligne telle qu'elle a été lue (removeSpellRows) ;
+ *   note : la note du joueur ('' s'il n'a changé que d'autres colonnes) ; written : ce qu'il a
+ *   écrit, colonne par colonne, prêt à afficher (« portée « 18 m, à déplacer » », « case C cochée »)
  */
 export function unpreparedCleanup(rows, db, { classSlug = '', maxLevel = 0, granted = null, skip = [] } = {}) {
     const remove = [];
@@ -480,9 +522,8 @@ export function unpreparedCleanup(rows, db, { classSlug = '', maxLevel = 0, gran
         if (!spell || Number(spell.level) !== level || !(spell.classes || []).includes(classSlug)) return;
         if (granted?.has(spellNameKey(row.name)) || isGrantedSpell(spell, granted)) return;
         const entry = { index, row, name: plainText(row.name), level };
-        const note = plainText(row.note);
-        const ownNote = note !== '' && ![...spellNames(spell), spell.vo].some(name => name && normalizeText(name).trim() === normalizeText(note).trim());
-        if (ownNote) noted.push({ ...entry, note });
+        const written = ownRowTexts(row, spell);
+        if (written.length) noted.push({ ...entry, note: written.note, written: written.map(item => item.text) });
         else remove.push(entry);
     });
     const byLevelThenName = (a, b) => a.level - b.level || a.name.localeCompare(b.name, 'fr');

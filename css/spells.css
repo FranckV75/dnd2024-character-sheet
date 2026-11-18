@@ -573,6 +573,11 @@
     margin-top: 12px;
 }
 
+/* Sorts gardés : une ligne par sort sur toute la largeur (ce que le joueur y a écrit peut être long) */
+.modal-body .cleanup-noted .prep-items {
+    grid-template-columns: minmax(0, 1fr);
+}
+
 /* Fenêtre « Lancer » : un bouton par niveau d'emplacement (reste N dessous) */
 .spell-cast-levels {
     display: flex;

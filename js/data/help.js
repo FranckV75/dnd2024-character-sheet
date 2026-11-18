@@ -316,7 +316,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "« Retirer les sorts non préparés »",
-                text: "Pour ces mêmes classes, les sorts décochés s'accumulent au grimoire. Fiche modifiable, ce bouton sous le tableau montre la liste des sorts non préparés de votre classe, puis les retire d'un coup. Vos sorts préparés, mineurs ou donnés restent toujours. Un sort où vous avez écrit une note reste aussi, sauf si vous le cochez. La fiche est d'abord gardée dans « Revenir à… »."
+                text: "Pour ces mêmes classes, les sorts décochés s'accumulent au grimoire. Fiche modifiable, ce bouton sous le tableau montre la liste des sorts non préparés de votre classe, puis les retire d'un coup. Vos sorts préparés, mineurs ou donnés restent toujours. Un sort où vous avez écrit quelque chose (une note, une portée à vous…) reste aussi, sauf si vous le cochez. La fiche est d'abord gardée dans « Revenir à… »."
             },
             {
                 title: "La vue « Au combat »",

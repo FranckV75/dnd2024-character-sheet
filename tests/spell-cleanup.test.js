@@ -6,7 +6,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-    unpreparedCleanup, removeSpellRows, grantedSpellKeys, highestSlotLevel, prepareSpellRows
+    unpreparedCleanup, removeSpellRows, grantedSpellKeys, highestSlotLevel, prepareSpellRows, ownRowTexts
 } from '../js/rules/spell-preparation.js';
 import { findSpellByName, spellToRow } from '../js/rules/spells.js';
 import { deriveCharacter } from '../js/rules/character.js';
@@ -129,10 +129,40 @@ describe('Retirer les sorts non préparés : quelles lignes partent', () => {
         ];
         const plan = planFor({ char_class: 'Clerc', char_level: '5' }, rows);
         assert.deepEqual(names(plan.remove), ['Bouclier de la foi', 'Injonction', 'Sanctuaire', 'Arme spirituelle']);
-        assert.deepEqual(plan.noted.map(entry => [entry.name, entry.level, entry.note]), [
-            ['Esprits gardiens', 3, 'Super contre les morts-vivants'],
-            ['Retour à la vie', 3, '300 po de diamants']
+        assert.deepEqual(plan.noted.map(entry => [entry.name, entry.level, entry.note, entry.written]), [
+            ['Esprits gardiens', 3, 'Super contre les morts-vivants', ['note « Super contre les morts-vivants »']],
+            ['Retour à la vie', 3, '300 po de diamants', ['note « 300 po de diamants »']]
         ]);
+    });
+
+    test('Colonne réécrite ou case cochée en plus par le joueur : ligne rangée à part, avec ce qui est écrit', () => {
+        const rows = [
+            row('Arme spirituelle', false, { range: '18 m - penser à la déplacer (action bonus)' }),
+            row('Sanctuaire', false, { time: 'AB - garder pour Lydia !' }),
+            row('Bouclier de la foi', false, { school: 'Abjur. (prêtée par Tom)' }),
+            row('Soins', false, { c: true, r: true }),
+            row('Esprits gardiens', false, { note: 'Contre les morts-vivants', range: 'moi' }),
+            // Rien à perdre : même texte à la casse et à la ponctuation près, colonne vidée, case décochée
+            row('Injonction', false, { time: 'ACTION', range: ' 18 M. ', school: '' }),
+            row('Détection de la magie', false, { c: false, r: false, m: false }),
+            // Ancienne ligne v3 : sans école ni cases, cellules avec balises
+            { lvl: '1', name: '<b>Bénédiction</b>', time: 'Action', range: '9&nbsp;m', note: '<i>Bless</i>' }
+        ];
+        const plan = planFor({ char_class: 'Clerc', char_level: '5' }, rows);
+        assert.deepEqual(names(plan.remove), ['Bénédiction', 'Détection de la magie', 'Injonction']);
+        assert.deepEqual(plan.noted.map(entry => [entry.name, entry.note, entry.written]), [
+            ['Bouclier de la foi', '', ['école « Abjur. (prêtée par Tom) »']],
+            ['Sanctuaire', '', ["temps d'incantation « AB - garder pour Lydia ! »"]],
+            ['Soins', '', ['case C cochée', 'case R cochée']],
+            ['Arme spirituelle', '', ['portée « 18 m - penser à la déplacer (action bonus) »']],
+            ['Esprits gardiens', 'Contre les morts-vivants', ['note « Contre les morts-vivants »', 'portée « moi »']]
+        ]);
+        // Une ligne telle que la fiche la remplit : rien d'écrit par le joueur
+        const untouched = ownRowTexts(row('Sanctuaire'), spell('Sanctuaire'));
+        assert.equal(untouched.length, 0);
+        assert.equal(untouched.note, '');
+        // Case cochée que la base coche aussi (Détection de la magie est un rituel avec concentration)
+        assert.equal(ownRowTexts(row('Détection de la magie', false, { c: true, r: true }), spell('Détection de la magie')).length, 0);
     });
 
     test('Le sort ajouté par « Préparer mes sorts » puis décoché est de ceux qui partent', () => {
