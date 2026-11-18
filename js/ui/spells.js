@@ -33,6 +33,10 @@
 //  - Sorts de sous-classe (js/rules/subclass-features.js, données js/data/subclass-spells.js) :
 //    bloc « Sorts de sous-classe » juste après, sur le même modèle (serments du Paladin…), jamais
 //    écrit dans dynamic_spells ; un sort que le joueur a aussi noté dans sa liste porte un repère.
+//  - Magicien (js/rules/spellbook.js) : ligne « Livre : N sorts » sous la barre (sorts du livre
+//    notés comparés aux sorts obtenus sans dépense, simple repère) et rappel du coût de copie ;
+//    un sort rituel du livre non préparé porte le repère « Lançable en rituel » (Savoir rituel) et
+//    reste dans la vue au combat, où il ne se lance qu'en rituel.
 //  - Personnage sans magie (classe, sous-classe et niveau), sans aucun sort noté ni sort de
 //    don ni de sous-classe : le grimoire et les cases « Caractéristique d'incantation / DD / Bonus d'attaque » se
 //    replient en un court avis, avec un bouton pour l'ouvrir (sorts d'espèce...).
@@ -62,8 +66,9 @@ import { ABILITY_IDS } from '../data/constants.js';
 import { loadSpells } from '../data/spells.js';
 import { classSpellCounts } from '../rules/class-progression.js';
 import {
-    wholeListSource, fitsWholeList, grantedSpellKeys, spellPrepState, inCombatView, isCastable, castSlotOptions, useSpellSlot
+    wholeListSource, fitsWholeList, grantedSpellKeys, spellPrepState, inCombatView, isCastable, isRitualOnly, castSlotOptions, useSpellSlot
 } from '../rules/spell-preparation.js';
+import { hasSpellbook, freeSpellbookSpells, spellbookCount, spellCopyCost, castsRitualsFromBook, isRitualSpell } from '../rules/spellbook.js';
 import { concentrationSpell, setConcentrationPatch } from '../rules/concentration.js';
 import { el, icon, setIconLabel } from './dom.js';
 import { cellText as createCellText } from './cell-text.js';
@@ -100,6 +105,8 @@ const PREP_HELP = {
     list: "Toujours préparé : votre classe ne change sa liste qu'en gagnant un niveau (un sort à la fois).",
     granted: 'Toujours préparé : sort donné (classe, sous-classe, don, espèce), hors du compte des préparés.'
 };
+/** Savoir rituel (Magicien) : sort rituel du livre, non préparé */
+const BOOK_RITUAL_HELP = 'Savoir rituel : ce sort de votre livre se lance en rituel sans être préparé (10 minutes de plus, sans emplacement), en lisant le livre.';
 const FLAG_COLUMNS = [
     ['c', 'C', 'Concentration'],
     ['r', 'R', 'Rituel'],
@@ -212,6 +219,11 @@ export function initSpells(ctx) {
     // Dépassement de la table de la classe (sorts préparés, sorts mineurs) : dit en toutes lettres
     const limitNote = el('p', { class: 'spell-limit-note', role: 'status', hidden: true });
 
+    // Magicien : sorts du livre notés, sorts obtenus sans dépense, coût de copie (simple repère)
+    const bookCount = el('span', { class: 'spellbook-count' });
+    const bookHelp = el('span', { class: 'spellbook-help' });
+    const bookNote = el('p', { class: 'spellbook-note', hidden: true }, bookCount, bookHelp);
+
     // Emplacements de sorts (spells/slots.js)
     const slots = createSpellSlots({ store, view });
 
@@ -317,6 +329,8 @@ export function initSpells(ctx) {
         r.adept = el('span', { class: 'spell-adept', hidden: true });
         // Repère « +Cha (+4, feu) » : sort du type choisi avec Affinité élémentaire (writeRow)
         r.affinity = el('span', { class: 'spell-adept', hidden: true });
+        // Repère « Lançable en rituel » : sort rituel du livre non préparé (Magicien, writeRow)
+        r.ritual = el('span', { class: 'spell-adept spell-book-ritual', hidden: true, title: BOOK_RITUAL_HELP, text: 'Lançable en rituel' });
         r.texts = {};
         for (const [key] of TEXT_COLUMNS) r.texts[key] = textInput(key);
         r.note = textInput('note');
@@ -371,7 +385,7 @@ export function initSpells(ctx) {
         r.tr = el('tr', {},
             el('td', { class: 'col-prep' }, r.prep),
             el('td', { class: 'col-lvl' }, r.lvl),
-            el('td', { class: 'col-name' }, r.name, r.adept, r.affinity),
+            el('td', { class: 'col-name' }, r.name, r.adept, r.affinity, r.ritual),
             el('td', { class: 'col-school' }, r.texts.school),
             el('td', { class: 'col-time' }, r.texts.time),
             el('td', { class: 'col-range' }, r.texts.range),
@@ -449,16 +463,22 @@ export function initSpells(ctx) {
     function castRow(r) {
         const row = spellsOf()[r.index];
         if (!row || !isCastable(r.state)) return;
-        castSpell({ name: plainText(row.name), level: Number(rowLevel(row)), concentration: row.c === true, ritual: row.r === true });
+        const ritualOnly = isRitualOnly(r.state);
+        castSpell({
+            name: plainText(row.name), level: Number(rowLevel(row)), concentration: row.c === true,
+            ritual: ritualOnly || row.r === true, ritualOnly,
+            ritualOnlyText: ritualOnly ? 'Sort non préparé : depuis votre livre, il se lance seulement en rituel (Savoir rituel).' : ''
+        });
     }
 
     /**
      * Fenêtre « Lancer » d'un sort préparé (ligne du tableau, ou sort donné par un don, la
      * sous-classe ou l'espèce : spells/granted.js).
-     * @param {{ name: string, level: number, concentration?: boolean, ritual?: boolean, ritualOnly?: boolean }} spell
-     *        ritualOnly : sort donné qui ne se lance qu'en rituel (Voie du Cœur sauvage)
+     * @param {{ name: string, level: number, concentration?: boolean, ritual?: boolean, ritualOnly?: boolean, ritualOnlyText?: string }} spell
+     *        ritualOnly : sort qui ne se lance qu'en rituel (sort donné par la Voie du Cœur sauvage,
+     *        rituel du livre non préparé du Magicien) ; ritualOnlyText : la raison, dite dans la fenêtre
      */
-    function castSpell({ name: spellName, level, concentration: needsConcentration = false, ritual = false, ritualOnly = false }) {
+    function castSpell({ name: spellName, level, concentration: needsConcentration = false, ritual = false, ritualOnly = false, ritualOnlyText = '' }) {
         const character = store.get();
         const d = derivedOf(character);
         const name = spellName || 'ce sort';
@@ -500,7 +520,7 @@ export function initSpells(ctx) {
         }, el('span', { class: 'btn-label', text: 'En rituel' }), el('small', { class: 'spell-cast-left', text: '+10 min, sans emplacement' })) : null;
 
         const facts = [`Sort de niveau ${level}`, needsConcentration ? 'Concentration' : '', ritual ? 'Rituel' : ''].filter(Boolean).join(' · ');
-        const missing = ritualOnly ? 'Ce sort se lance seulement en rituel.'
+        const missing = ritualOnly ? ritualOnlyText || 'Ce sort se lance seulement en rituel.'
             : options.length === 0
             ? `Aucun emplacement de niveau ${level} ou plus.`
             : anyLeft ? '' : `Plus aucun emplacement de niveau ${level} ou plus : ils reviennent au repos ${options.every(o => o.pact) ? 'court ou long' : 'long'}.`;
@@ -559,6 +579,7 @@ export function initSpells(ctx) {
         const level = rowLevel(row);
         const what = entry ? 'nouveau sort' : name ? `« ${name} »` : `ligne ${line}`;
         r.state = entry ? null : state;
+        r.ritual.hidden = entry || state !== 'ritual';
         const always = state === 'list' || state === 'granted';
         const prepared = state === 'prepared' || always;
         const cantrip = level === '0';
@@ -604,7 +625,8 @@ export function initSpells(ctx) {
                 // Classe à liste fixe : sort noté hors de cette liste (niveau trop haut, autre liste)
                 r.prep.title = wholeList
                     ? (prepared ? 'Coché : compté dans vos sorts préparés' : "Hors de votre liste fixe (Arcanum, Découvertes magiques…) : cochez-le seulement s'il compte dans vos sorts préparés")
-                    : prepared ? 'Sort préparé' : 'Sort non préparé';
+                    : prepared ? 'Sort préparé'
+                        : state === 'ritual' ? 'Sort non préparé : lançable en rituel depuis votre livre (Savoir rituel)' : 'Sort non préparé';
                 r.prep.setAttribute('aria-label', `Sort ${what} préparé`);
             }
         }
@@ -669,7 +691,11 @@ export function initSpells(ctx) {
         const source = wholeListSource(derivedNow);
         const wholeList = source !== null;
         const fits = (row) => fitsWholeList(row, source, findSpellByName(spellsDb, row.name));
-        const states = rows.map(row => spellPrepState(row, { wholeList, granted, fits }));
+        // Magicien (Savoir rituel) : un sort rituel du livre non préparé se lance quand même en rituel
+        const bookRitual = castsRitualsFromBook(derivedNow.classSlug)
+            ? (row) => isRitualSpell(row, findSpellByName(spellsDb, row.name))
+            : null;
+        const states = rows.map(row => spellPrepState(row, { wholeList, granted, fits, bookRitual }));
 
         // Vue « au combat » : les sorts de niveau 1+ non préparés se retirent de l'écran (classe
         // CSS, l'impression garde tout) ; pas la ligne en cours de saisie, qui ne disparaît pas
@@ -745,6 +771,29 @@ export function initSpells(ctx) {
             ...(note ? [el('span', { class: 'is-info', text: note })] : [])
         );
         limitNote.hidden = !limitNote.textContent;
+        renderBookNote(rows, derivedNow, granted);
+    }
+
+    /**
+     * Magicien : « Livre : 15 sorts · 17 sans dépense », puis d'où viennent ces sorts et le coût
+     * d'une copie. Jamais en rouge : copier des sorts trouvés ou achetés est permis. Masquée au
+     * combat (la vue sert à lancer des sorts).
+     */
+    function renderBookNote(rows, d, granted) {
+        bookNote.hidden = !hasSpellbook(d.classSlug) || view.combat;
+        if (bookNote.hidden) return;
+        const count = spellbookCount(rows, granted);
+        const free = freeSpellbookSpells(d.level, d.subclass);
+        const cost = spellCopyCost(d);
+        const countText = `Livre : ${count} sort${count > 1 ? 's' : ''} · ${free.total} sans dépense`;
+        const sources = [`${free.start} au départ`];
+        if (free.byLevel) sources.push(`+${free.byLevel} des niveaux gagnés`);
+        if (free.savant) sources.push(`+${free.savant} ${free.savantName}`);
+        const helpText = ` (${sources.join(', ')}) ; les sorts copiés (trouvés, achetés) s'y ajoutent. `
+            + `Copier un sort : ${cost.copy.hours} h et ${cost.copy.gold} po par niveau du sort${cost.halved ? ' (Cynisme)' : ''} ; `
+            + `copie de secours : ${cost.backup.hours} h et ${cost.backup.gold} po par niveau.`;
+        if (bookCount.textContent !== countText) bookCount.textContent = countText;
+        if (bookHelp.textContent !== helpText) bookHelp.textContent = helpText;
     }
 
     function renderHeader() {
@@ -892,6 +941,7 @@ export function initSpells(ctx) {
     const body = el('div', { class: 'spells-body', id: 'spells-body' },
         filters.toolbar,
         limitNote,
+        bookNote,
         slots.element,
         granted.featBox,
         granted.subclassBox,

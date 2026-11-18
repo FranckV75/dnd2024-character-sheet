@@ -196,6 +196,26 @@
     display: none;
 }
 
+/* Magicien : « Livre : 15 sorts · 17 sans dépense » et coût de copie. Simple repère, jamais en
+   rouge (copier des sorts trouvés ou achetés est permis) */
+.spellbook-note {
+    margin: 0 0 8px;
+    font-family: var(--font-text);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.spellbook-note[hidden] {
+    display: none;
+}
+
+/* Même police que le compteur de la barre (.spell-count) */
+.spellbook-count {
+    font-family: var(--font-title);
+    font-size: 0.75rem;
+    color: var(--quiet-ink);
+}
+
 /* ---------- Vue « au combat » (bouton de la barre ; écran seulement, l'impression garde tout) ---------- */
 
 /* Colonne « Lancer » : seulement au combat, à la place de la colonne Supprimer */
