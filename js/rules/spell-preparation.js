@@ -19,6 +19,9 @@
 //    liste de classe, changée après un repos long) : sorts de la liste jusqu'au plus haut
 //    emplacement, cocher (prep à true, ou ligne ajoutée depuis la base), décocher (prep à false ;
 //    seule une ligne que la fenêtre vient d'ajouter, restée telle quelle, est retirée).
+//  - Sort préparé au-dessus des emplacements (missingSlotLevel) : un sort ne se prépare que s'il
+//    est d'un niveau pour lequel on a des emplacements (PHB 2024, « Spellcasting » de chaque
+//    classe) ; préparé quand même, il ne peut pas être lancé : la fiche le signale, sans rien changer.
 // Fonctions pures.
 // =============================================================================
 
@@ -212,6 +215,58 @@ export function useSpellSlot(state, level, rulebookCount = 0) {
     const { max, used } = slotView(state, level, rulebookCount);
     if (used >= max) return null;
     return toggleSlotUsed(state, level, used, true, rulebookCount);
+}
+
+/**
+ * Plus haut niveau d'emplacement que le personnage peut dépenser : emplacements de la table
+ * (magie de pacte et multiclassage compris, tels que la fiche les calcule) et niveaux ajoutés à la
+ * main dans le grimoire.
+ * @param {Object} spellSlots - deriveCharacter().spellSlots
+ * @param {string} classSlug
+ * @param {Object} state - spell_slots_state
+ * @returns {number} 0 : aucun emplacement
+ */
+export function highestUsableSlot(spellSlots, classSlug, state) {
+    return Math.max(0, ...castSlotOptions(1, spellSlots, classSlug, state).map(option => Number(option.level)));
+}
+
+/**
+ * Arcanum mystique (Occultiste, PHB 2024) : un sort de niveau 6 au niveau 11, puis de niveau 7, 8
+ * et 9 aux niveaux 13, 15 et 17, lancés sans emplacement.
+ * @param {string} classSlug
+ * @param {number} level - niveau de classe
+ * @returns {number} plus haut niveau de sort d'Arcanum (0 : aucun)
+ */
+export function mysticArcanumLevel(classSlug, level) {
+    if (classSlug !== 'warlock') return 0;
+    const lvl = Math.trunc(Number(level)) || 0;
+    return lvl >= 17 ? 9 : lvl >= 15 ? 8 : lvl >= 13 ? 7 : lvl >= 11 ? 6 : 0;
+}
+
+/**
+ * Sort préparé (losange coché ou fixe) d'un niveau plus haut que le plus haut emplacement : il ne
+ * peut pas être lancé. Simple avertissement : rien n'est décoché.
+ * Jamais pour un sort mineur, un sort non préparé (même un rituel du livre, lancé en rituel), un
+ * sort qui a son propre lancer gratuit (don, espèce…), un Arcanum mystique, ni pour un personnage
+ * sans aucun emplacement (la fiche ne sait pas d'où il tient ses sorts : objet, don noté à la main).
+ * @param {Object} row - ligne de dynamic_spells
+ * @param {string} state - spellPrepState()
+ * @param {{ topSlot?: number, arcanumLevel?: number, freeCast?: boolean }} [options]
+ *        topSlot : highestUsableSlot() ; arcanumLevel : mysticArcanumLevel() ;
+ *        freeCast : le sort a un lancer gratuit suivi par la fiche (js/rules/free-casts.js)
+ * @returns {number} niveau du sort à signaler, ou 0
+ */
+export function missingSlotLevel(row, state, { topSlot = 0, arcanumLevel = 0, freeCast = false } = {}) {
+    if (state !== 'prepared' && state !== 'list' && state !== 'granted') return 0;
+    const level = Number(rowLevel(row));
+    if (!(level >= 1) || !(topSlot > 0) || level <= topSlot) return 0;
+    if (freeCast || (level >= 6 && level <= arcanumLevel)) return 0;
+    return level;
+}
+
+/** Phrase de l'avertissement (infobulle, et barre du haut au toucher) */
+export function missingSlotText(level) {
+    return `Niveau ${level} : vous n'avez pas encore d'emplacement de ce niveau, ce sort ne peut pas être lancé.`;
 }
 
 // ---------------------------------------------------------------------------

@@ -21,6 +21,8 @@
 //    sous-classes : js/rules/free-casts.js) propose d'abord « Lancer gratuit », qui coche la case
 //    existante de la capacité au lieu d'un emplacement.
 //    Sur écran seulement : l'impression garde tout le grimoire.
+//  - Sort préparé d'un niveau sans emplacement : repère « Pas d'emplacement » sous son nom (simple
+//    avertissement, js/rules/spell-preparation.js : missingSlotLevel), expliqué au toucher.
 //  - Seuls les sorts renseignés sont affichés, suivis d'UNE ligne de saisie : les lignes
 //    vides d'une sauvegarde restent dans la fiche, telles quelles, sans être affichées.
 //    La ligne de saisie n'existe pas dans la fiche : la première saisie qui a du contenu
@@ -70,11 +72,12 @@ import { loadSpells } from '../data/spells.js';
 import { classSpellCounts } from '../rules/class-progression.js';
 import { spellPickerGroups, pickerMaxLevel } from '../rules/spell-picker.js';
 import {
-    wholeListSource, fitsWholeList, grantedSpellKeys, spellPrepState, inCombatView, isCastable, castModes, castSlotOptions, useSpellSlot
+    wholeListSource, fitsWholeList, grantedSpellKeys, spellPrepState, inCombatView, isCastable, castModes, castSlotOptions, useSpellSlot,
+    highestUsableSlot, mysticArcanumLevel, missingSlotLevel, missingSlotText
 } from '../rules/spell-preparation.js';
 import { hasSpellbook, freeSpellbookSpells, spellbookCount, spellCopyCost, castsRitualsFromBook, isRitualSpell } from '../rules/spellbook.js';
 import { concentrationSpell, setConcentrationPatch } from '../rules/concentration.js';
-import { freeCastsFor, useFreeCastPatch, FREE_CAST_RESET_TEXT } from '../rules/free-casts.js';
+import { allFreeCasts, freeCastsFor, useFreeCastPatch, FREE_CAST_RESET_TEXT } from '../rules/free-casts.js';
 import { el, icon, setIconLabel } from './dom.js';
 import { cellText as createCellText } from './cell-text.js';
 import { attachAutocomplete } from './autocomplete.js';
@@ -425,6 +428,12 @@ export function initSpells(ctx) {
             type: 'button', class: 'spell-adept spell-book-ritual', hidden: true, title: BOOK_RITUAL_HELP, text: 'Lançable en rituel',
             on: { click: () => setStatus(BOOK_RITUAL_TAP) }
         });
+        // Repère « Pas d'emplacement » : sort préparé d'un niveau plus haut que les emplacements
+        // (bouton : au toucher, la phrase s'affiche dans la barre du haut ; writeRow)
+        r.noSlot = el('button', {
+            type: 'button', class: 'spell-adept spell-book-ritual spell-no-slot', hidden: true, text: "Pas d'emplacement",
+            on: { click: () => setStatus(r.noSlot.title) }
+        });
         r.texts = {};
         for (const [key] of TEXT_COLUMNS) r.texts[key] = textInput(key);
         r.note = textInput('note');
@@ -536,7 +545,7 @@ export function initSpells(ctx) {
         r.tr = el('tr', {},
             el('td', { class: 'col-prep' }, r.prep),
             el('td', { class: 'col-lvl' }, r.lvl),
-            el('td', { class: 'col-name' }, el('div', { class: 'spell-name-wrap' }, r.name, r.pick), r.adept, r.affinity, r.ritual),
+            el('td', { class: 'col-name' }, el('div', { class: 'spell-name-wrap' }, r.name, r.pick), r.adept, r.affinity, r.ritual, r.noSlot),
             el('td', { class: 'col-school' }, r.texts.school),
             el('td', { class: 'col-time' }, r.texts.time),
             el('td', { class: 'col-range' }, r.texts.range),
@@ -750,7 +759,7 @@ export function initSpells(ctx) {
      * @param {{ force: boolean, locked: boolean, entry: boolean, line: number }} options
      *        entry : ligne de saisie ; line : rang de la ligne dans le tableau affiché
      */
-    function writeRow(r, row, { force, locked, entry, line, elements = [], affinity = null, state = 'unprepared', wholeList = false }) {
+    function writeRow(r, row, { force, locked, entry, line, elements = [], affinity = null, state = 'unprepared', wholeList = false, noSlot = 0 }) {
         const name = plainText(row.name);
         const known = entry || (!elements.length && !affinity) ? null : findSpellByName(spellsDb, row.name);
         const types = adeptTypes(known, elements);
@@ -767,6 +776,11 @@ export function initSpells(ctx) {
         const what = entry ? 'nouveau sort' : name ? `« ${name} »` : `ligne ${line}`;
         r.state = entry ? null : state;
         r.ritual.hidden = entry || state !== 'ritual';
+        r.noSlot.hidden = entry || !noSlot;
+        if (noSlot) {
+            const text = missingSlotText(noSlot);
+            if (r.noSlot.title !== text) r.noSlot.title = text;
+        }
         const always = state === 'list' || state === 'granted';
         const prepared = state === 'prepared' || always;
         const cantrip = level === '0';
@@ -892,6 +906,20 @@ export function initSpells(ctx) {
             : null;
         const states = rows.map(row => spellPrepState(row, { wholeList, granted, fits, bookRitual }));
 
+        // Sort préparé au-dessus des emplacements : simple avertissement (jamais pour un sort qui a
+        // son lancer gratuit, ni pour un Arcanum mystique)
+        const topSlot = highestUsableSlot(derivedNow.spellSlots, derivedNow.classSlug, slotStateOf(character));
+        const arcanumLevel = mysticArcanumLevel(derivedNow.classSlug, derivedNow.level);
+        let freeNames = null;
+        const hasFreeCast = (row) => {
+            freeNames ??= new Set(allFreeCasts(character, derivedNow).flatMap(cast => cast.names));
+            if (!freeNames.size) return false;
+            const known = findSpellByName(spellsDb, row.name);
+            return [row.name, ...spellNames(known), known?.vo].some(name => name && freeNames.has(spellNameKey(name)));
+        };
+        const noSlots = rows.map((row, i) => (missingSlotLevel(row, states[i], { topSlot, arcanumLevel })
+            ? missingSlotLevel(row, states[i], { topSlot, arcanumLevel, freeCast: hasFreeCast(row) }) : 0));
+
         // Vue « au combat » : les sorts de niveau 1+ non préparés se retirent de l'écran (classe
         // CSS, l'impression garde tout) ; pas la ligne en cours de saisie, qui ne disparaît pas
         // sous les doigts (son losange vient d'être décoché, par exemple)
@@ -901,7 +929,7 @@ export function initSpells(ctx) {
             const isEntry = r === entry;
             writeRow(r, isEntry ? newSpellRow(EMPTY_SPELL, entryLevel ?? view.level) : rows[i], {
                 force, locked, entry: isEntry, line: isEntry ? lines.size + 1 : lines.get(i) ?? i + 1, elements, affinity,
-                state: isEntry ? null : states[i], wholeList
+                state: isEntry ? null : states[i], wholeList, noSlot: isEntry ? 0 : noSlots[i]
             });
             if (!isEntry) {
                 r.tr.hidden = !shown.has(i);

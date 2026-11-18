@@ -8,7 +8,8 @@ import {
     preparesWholeList, grantedSpellKeys, spellPrepState, inCombatView, isCastable,
     castSlotOptions, useSpellSlot, wholeListSource, fitsWholeList, highestSlotLevel,
     SPELL_PREPARATION, WHOLE_LIST_CLASSES, preparesFromClassList, longRestPreparation, preparationView,
-    prepareSpellRows, unprepareSpellRows, setRowPrepared, matchesSpellQuery
+    prepareSpellRows, unprepareSpellRows, setRowPrepared, matchesSpellQuery,
+    highestUsableSlot, mysticArcanumLevel, missingSlotLevel, missingSlotText
 } from '../js/rules/spell-preparation.js';
 import { EMPTY_SPELL } from '../js/state/schema.js';
 import { spellCounts, spellNameKey, spellLimitWarnings, findSpellByName } from '../js/rules/spells.js';
@@ -379,5 +380,71 @@ describe('Fenêtre « Préparer mes sorts »', () => {
         assert.equal(matchesSpellQuery(spell('Rayon traçant'), 'soins'), false);
         // Variante de nom (« Marche sur l'onde »)
         assert.equal(matchesSpellQuery(spell("Marche sur l'eau"), 'onde'), true);
+    });
+});
+
+describe('Sort préparé au-dessus des emplacements (simple avertissement)', () => {
+    const slotsOf = (extra) => deriveCharacter({ ...extra }).spellSlots;
+
+    test('Plus haut emplacement : table de la classe, magie de pacte, multiclassage, niveau ajouté à la main', () => {
+        assert.equal(highestUsableSlot({ 1: 4, 2: 3, 3: 2 }, 'wizard', {}), 3);
+        assert.equal(highestUsableSlot({ 3: 2 }, 'warlock', {}), 3);
+        assert.equal(highestUsableSlot({}, 'fighter', {}), 0);
+        assert.equal(highestUsableSlot(undefined, '', undefined), 0);
+        // Niveau ajouté à la main dans le grimoire, niveau de la table ramené à 0
+        assert.equal(highestUsableSlot({ 1: 4, 2: 2 }, 'cleric', { 4: { max: 1, used: 0 } }), 4);
+        assert.equal(highestUsableSlot({ 1: 4, 2: 2 }, 'cleric', { 2: { max: 0 } }), 1);
+        // Emplacements tous dépensés : le niveau existe toujours (ils reviennent au repos)
+        assert.equal(highestUsableSlot({ 1: 4, 2: 2 }, 'cleric', { 2: { used: 2 } }), 2);
+        // Tels que la fiche les calcule : Clerc 5 (niveau 3), Paladin 5 (niveau 2), Occultiste 5 (pacte, niveau 3)
+        assert.equal(highestUsableSlot(slotsOf({ char_class: 'Clerc', char_level: '5' }), 'cleric', {}), 3);
+        assert.equal(highestUsableSlot(slotsOf({ char_class: 'Paladin', char_level: '5' }), 'paladin', {}), 2);
+        assert.equal(highestUsableSlot(slotsOf({ char_class: 'Occultiste', char_level: '5' }), 'warlock', {}), 3);
+    });
+
+    test('Arcanum mystique : niveau 6 au niveau 11, puis 7, 8, 9 aux niveaux 13, 15, 17 ; Occultiste seulement', () => {
+        for (const [level, top] of [[1, 0], [10, 0], [11, 6], [12, 6], [13, 7], [15, 8], [17, 9], [20, 9]]) {
+            assert.equal(mysticArcanumLevel('warlock', level), top, `niveau ${level}`);
+        }
+        assert.equal(mysticArcanumLevel('wizard', 20), 0);
+        assert.equal(mysticArcanumLevel('', 20), 0);
+    });
+
+    test("Signalé : sort préparé (coché ou fixe) d'un niveau plus haut que le plus haut emplacement", () => {
+        const options = { topSlot: 3 };
+        assert.equal(missingSlotLevel({ lvl: '4', name: 'Bannissement', prep: true }, 'prepared', options), 4);
+        assert.equal(missingSlotLevel({ lvl: '9', name: 'Souhait' }, 'list', options), 9);
+        assert.equal(missingSlotLevel({ lvl: '5', name: 'Cône de froid' }, 'granted', options), 5);
+        // Niveau égal ou plus bas : rien
+        assert.equal(missingSlotLevel({ lvl: '3', name: 'Boule de feu', prep: true }, 'prepared', options), 0);
+        assert.equal(missingSlotLevel({ lvl: '1', name: 'Bouclier', prep: true }, 'prepared', options), 0);
+    });
+
+    test('Jamais signalé : sort mineur, sort non préparé, rituel du livre, lancer gratuit, Arcanum, personnage sans emplacement', () => {
+        const options = { topSlot: 2 };
+        assert.equal(missingSlotLevel({ lvl: '0', name: 'Trait de feu' }, 'cantrip', options), 0);
+        // Niveau vide (ancienne sauvegarde) : lu comme un sort mineur
+        assert.equal(missingSlotLevel({ lvl: '', name: 'Bouclier', prep: true }, 'prepared', options), 0);
+        assert.equal(missingSlotLevel({ lvl: '4', name: 'Bannissement' }, 'unprepared', options), 0);
+        assert.equal(missingSlotLevel({ lvl: '3', name: 'Communication avec les morts', r: true }, 'ritual', options), 0);
+        // Sort donné qui a son propre lancer gratuit (don, espèce…)
+        assert.equal(missingSlotLevel({ lvl: '3', name: 'Vol' }, 'granted', { ...options, freeCast: true }), 0);
+        assert.equal(missingSlotLevel({ lvl: '3', name: 'Vol' }, 'granted', options), 3);
+        // Occultiste 13 : emplacements de pacte de niveau 5, Arcanum de niveau 6 et 7
+        const warlock = { topSlot: 5, arcanumLevel: 7 };
+        assert.equal(missingSlotLevel({ lvl: '6', name: 'Œil magique', prep: true }, 'prepared', warlock), 0);
+        assert.equal(missingSlotLevel({ lvl: '7', name: 'Doigt de mort', prep: true }, 'prepared', warlock), 0);
+        assert.equal(missingSlotLevel({ lvl: '8', name: 'Domination de monstre', prep: true }, 'prepared', warlock), 8);
+        // Personnage sans aucun emplacement (sort d'objet noté à la main) : la fiche ne dit rien
+        assert.equal(missingSlotLevel({ lvl: '2', name: 'Invisibilité', prep: true }, 'prepared', { topSlot: 0 }), 0);
+        assert.equal(missingSlotLevel({ lvl: '2', name: 'Invisibilité', prep: true }, 'prepared'), 0);
+        assert.equal(missingSlotLevel(null, 'prepared', options), 0);
+    });
+
+    test("La ligne n'est jamais modifiée, et la phrase dit le niveau", () => {
+        const row = Object.freeze({ lvl: '4', name: 'Bannissement', prep: true });
+        assert.equal(missingSlotLevel(row, 'prepared', { topSlot: 3 }), 4);
+        assert.deepEqual(row, { lvl: '4', name: 'Bannissement', prep: true });
+        assert.match(missingSlotText(4), /^Niveau 4 : vous n'avez pas encore d'emplacement de ce niveau/);
     });
 });

@@ -1089,6 +1089,11 @@ button.spell-book-ritual {
     cursor: help;
 }
 
+/* « Pas d'emplacement » : sort préparé d'un niveau sans emplacement (avertissement, pas une erreur) */
+button.spell-no-slot {
+    color: var(--warn);
+}
+
 /* Écrans tactiles : cibles d'au moins 44 px (zone de toucher agrandie, components.css) */
 @media (pointer: coarse) {
     .spell-tooltip-toggle {
