@@ -24,6 +24,8 @@ css/                    Une feuille par fonctionnalité ; toute couleur passe pa
 ├── components.css      Boutons, fenêtres, auto-complétion, cases des tableaux (partagés)
 ├── toolbar.css         Barre « Gestion », mode cinéma, fenêtres d'import / export
 ├── account.css         Compte en ligne, « Mes personnages », questions de synchronisation
+├── help.css            Pour découvrir la fiche : mode d'emploi, fenêtre « Nouveautés »,
+│                       personnages d'exemple
 ├── gallery.css         Fond d'écran, opacité de la fiche, galerie
 ├── weapons.css · armors.css · spells.css · rest.css · style-editor.css
 ├── conditions.css · origins.css   Encadrés « États » (onglet 1) et « Espèce & historique » (onglet 2)
@@ -34,7 +36,8 @@ css/                    Une feuille par fonctionnalité ; toute couleur passe pa
 ├── motion.css          Mouvements (ouverture en cascade, onglets, survol, thème, cinéma) ;
 │                       seule règle autorisée à utiliser !important : « Sans animation »
 ├── feedback.css        Réactions au jeu (Rage, jauge de PV, valeurs qui changent)
-└── print.css           Impression A4 (media="print")
+└── print.css           Impression A4 (media="print") : la fiche, ou le mode d'emploi quand sa
+                        fenêtre est ouverte (<html data-print="help">)
 js/
 ├── boot-theme.js       Thème et choix « Sans animation » mémorisés, posés avant le premier
 │                       affichage (pas de flash clair)
@@ -51,6 +54,11 @@ js/
 │   │                   colonnes de leur table (Rages, sorts mineurs, sorts préparés…)
 │   ├── equipment.js    Armures
 │   ├── tools.js        Outils du manuel (37, par catégorie, caractéristique) ; outil de chaque historique
+│   ├── help.js         Textes du mode d'emploi (rubriques → entrées { title, text }) ; tout libellé
+│   │                   cité entre « » doit exister dans l'interface (tests/help.test.js)
+│   ├── whats-new.js    « Nouveautés » : 3 à 6 lignes par version, la plus récente d'abord ; une
+│   │                   entrée par version publiée (testé pour la version de version.js)
+│   ├── examples.js     Personnages d'exemple fictifs (Guerrier 3, Magicienne 5), au format de la fiche
 │   ├── feats.js        Dons (Origine, Général, Style de combat, Épique)
 │   ├── feat-spells.js  Sorts permis par les dons à sorts (tirés de data/spells.json, testés)
 │   ├── species-traits.js  Traits des 10 espèces du Manuel des joueurs (résumés), options
@@ -131,6 +139,9 @@ js/
 │   ├── snapshots.js    Sauvegardes de secours datées (10 derniers états, sur l'appareil seulement ;
 │   │                   écran « Revenir à… » : ui/snapshots.js)
 │   ├── update-check.js Comparaison de versions et fichiers à redemander (mises à jour : ui/update.js)
+│   ├── whats-new.js    Quelles nouveautés montrer sur cet appareil (dernière version vue retenue
+│   │                   dans le navigateur, dd2024_seen_version ; pure, testée)
+│   ├── examples.js     Liste et copie neuve d'un personnage d'exemple (passée par migrate.js)
 │   └── other-tab.js    Fiche enregistrée par un autre onglet : reprise et fusion (pure)
 └── ui/                 Interface (un module par fonctionnalité, initialisé par main.js)
     ├── sheet.js        Construit la fiche, relie chaque champ data-field au store,
@@ -154,6 +165,11 @@ js/
     ├── class-progression.js · experience.js · counters.js · companions.js · subclass.js
     ├── species.js · background.js   Encadré « Espèce & historique » (css/origins.css)
     ├── tools.js        Fenêtre « Choisir dans la liste » de la case Outils (css/tab-skills.css)
+    ├── help.js         Fenêtre « Mode d'emploi » (sommaire, rubriques, impression de la notice)
+    ├── whats-new.js    Fenêtre « Nouveautés de la version X » après une mise à jour (annoncée
+    │                   par update.js ; jamais par-dessus une autre fenêtre)
+    ├── examples.js     Fenêtre « Essayer un personnage d'exemple » : fiche remplacée gardée dans
+    │                   « Revenir à… », exemple non lié au compte (cloud/controller.js, source « example »)
     ├── concentration.js  Ligne « Concentration » de l'encadré États (css/conditions.css)
     ├── stepper.js · number-pad.js   Boutons − / + à appui long et pavé de chiffres (partagés)
     ├── modal.js · autocomplete.js · cell-text.js · dom.js   (briques partagées)
@@ -161,7 +177,8 @@ js/
     └── sanitize.js     Nettoyage du texte riche via DOMPurify (sans attribut data-* ni aria-*)
 data/spells.json        Base de sorts (chargée à la demande)
 assets/backgrounds/     Fonds d'écran WebP fournis
-dev/preview.html        Outil de capture : charge une fiche d'exemple (localhost seulement)
+dev/preview.html        Outil de capture : charge une fiche d'exemple (localhost seulement) ; sans
+                        fenêtre « Nouveautés », sauf &news=<dernière version vue> ou &news=none
 dev/validation.html     Ancienne page de validation des étapes 0 à 2 (lecture d'une fiche)
 dev/polices.html        Échantillons de polices pour les textes longs (choix fait : Alegreya)
 scripts/serve.js        Serveur local (npm run dev)
