@@ -47,8 +47,9 @@ export function openExamples({ store, setStatus }) {
         const hadContent = !isBlankCharacter(store.get());
         store.replace(character, { source: EXAMPLE_SOURCE });
         close();
+        // L'essentiel, en peu de mots : sur ordinateur la colonne des états est étroite (deux lignes)
         setStatus(frenchSpaces(hadContent
-            ? `Exemple « ${example.title} » ouvert ; l'ancienne fiche est dans « Revenir à… ».`
+            ? 'Fiche d\'avant gardée dans « Revenir à… ».'
             : `Exemple « ${example.title} » ouvert.`));
     };
 

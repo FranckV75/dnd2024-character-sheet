@@ -19,7 +19,9 @@
      [thème | cinéma | fonds]  position  zoom  opacité        [compte] [personnages]
    Les deux premières colonnes prennent la taille de leurs boutons ; la dernière prend le
    reste. Les états (texte variable : « enregistrement en ligne… », nom de la fiche…) y sont
-   coupés par « … » plutôt que d'élargir la colonne : la disposition ne bouge jamais. */
+   coupés par « … » plutôt que d'élargir la colonne : la disposition ne bouge jamais. Le dernier
+   message (#save-status) peut s'écrire sur deux lignes : la colonne est étroite mais haute de
+   deux rangées de boutons. */
 
 .app-bar {
     position: sticky;
@@ -147,6 +149,18 @@
     color: var(--text-muted);
 }
 
+/* Ordinateur : le dernier message (« Fiche d'avant gardée dans… ») tient sur deux
+   lignes au plus dans la colonne des états, sans changer la hauteur de la barre ; au-delà, « … »
+   (texte complet au survol). Sur tablette (bloc plus bas), il garde sa ligne entière. */
+.app-bar-statuses .app-bar-status {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
 /* ---------- Boutons de la barre : bombés, icône dorée, reflet au survol ---------- */
 
 .app-bar .btn {
@@ -270,6 +284,13 @@
         width: calc(100% - 16px);
         margin: 8px auto 0;
         padding: 8px 12px;
+    }
+
+    /* Le dernier message garde une seule ligne : la barre repliée ne change pas de hauteur */
+    .app-bar-statuses .app-bar-status {
+        display: block;
+        white-space: nowrap;
+        overflow-wrap: normal;
     }
 
     .app-bar .toolbar-toggle {
