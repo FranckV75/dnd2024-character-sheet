@@ -352,6 +352,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    min-width: 0;
     min-height: 36px;
     padding: 2px 0;
 }
@@ -363,6 +364,7 @@
     flex: 1 1 auto;
     align-items: center;
     gap: 8px;
+    min-width: 0;
     min-height: 36px;
     font-family: var(--font-text);
     font-size: 1rem;
@@ -385,8 +387,10 @@
     text-align: center;
 }
 
+/* Un nom plus large que la colonne passe à la ligne au lieu de recouvrir le sort voisin */
 .prep-text {
     min-width: 0;
+    overflow-wrap: anywhere;
     line-height: 1.25;
 }
 

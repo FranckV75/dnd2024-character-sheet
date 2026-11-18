@@ -46,6 +46,18 @@ const classLabel = (slug) => SPELL_CLASS_OPTIONS.find(([value]) => value === slu
 
 const lowerFirst = (text) => text.charAt(0).toLowerCase() + text.slice(1);
 
+/**
+ * Nom de sort qui peut passer à la ligne après « / » (« Agrandissement/rapetissement » : un seul
+ * mot, plus large qu'une colonne sur tablette, débordait sur la case du sort voisin).
+ * @param {string} name
+ * @returns {HTMLSpanElement}
+ */
+function nameNode(name) {
+    const parts = String(name).split('/');
+    return el('span', { class: 'prep-name' },
+        parts.flatMap((part, index) => (index < parts.length - 1 ? [`${part}/`, el('wbr')] : [part])));
+}
+
 /** Règle de changement, en une phrase (PHB 2024, chap. 7) */
 function ruleText(slug, maxLevel) {
     const levels = maxLevel > 1 ? `des niveaux 1 à ${maxLevel}` : 'du niveau 1';
@@ -116,7 +128,7 @@ export async function openPrepareSpells({ store, setStatus }) {
                 let box = null;
                 let li;
                 // Nom puis repères C / R, sur la même ligne (le nom passe à la ligne s'il est long)
-                const text = el('span', { class: 'prep-text' }, el('span', { class: 'prep-name', text: item.name }), ...tags);
+                const text = el('span', { class: 'prep-text' }, nameNode(item.name), ...tags);
                 if (item.state === 'granted') {
                     text.append(el('small', { class: 'prep-note', text: 'toujours préparé, hors du compte' }));
                     li = el('li', { class: 'prep-item is-always', title: 'Toujours préparé : donné par votre classe, votre sous-classe, un don ou votre espèce. Il ne compte pas dans vos sorts préparés.' },
@@ -151,7 +163,7 @@ export async function openPrepareSpells({ store, setStatus }) {
             const why = other.level > highestSlotLevel(start.spellSlots) ? `niveau ${other.level}, sans emplacement` : `niveau ${other.level}, hors de la liste ${label ? `du ${label}` : 'de classe'}`;
             const li = el('li', { class: 'prep-item' },
                 el('label', { class: 'prep-label' }, box,
-                    el('span', { class: 'prep-text' }, el('span', { class: 'prep-name', text: other.name || 'Sort sans nom' }),
+                    el('span', { class: 'prep-text' }, nameNode(other.name || 'Sort sans nom'),
                         el('small', { class: 'prep-note', text: why }))));
             return { ...other, box, li };
         });
