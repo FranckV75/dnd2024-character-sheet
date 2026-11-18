@@ -820,13 +820,27 @@
     }
 }
 
-/* Cases C / R / M : boîte de 44 px (voir sheet-tablet.css), rond visible de 14 px */
+/* Cases C / R / M : cible haute de 44 px (voir sheet-tablet.css) mais large de 28 px, pour que
+   les trois tiennent dans leur colonne sans se chevaucher (la case M débordait sur les notes) ;
+   les bordures transparentes (15 px en haut et en bas, 7 px sur les côtés) laissent voir un rond
+   de 14 px. Aussi au survol : sur iPad, il reste collé à la case touchée */
 @media screen and (pointer: coarse) {
-    .spell-flag .round-check {
-        width: 44px;
+    .spell-flag .round-check,
+    .spell-flag .round-check:hover:not(:disabled):not(.demo) {
+        width: 28px;
         height: 44px;
-        margin: -15px -4px;
-        border-width: 15px;
+        aspect-ratio: auto;
+        margin: -15px 0;
+        border-width: 15px 7px;
+    }
+
+    .spell-flags {
+        gap: 0;
+    }
+
+    .spells-table .col-crm {
+        width: 92px;
+        padding-inline: 4px;
     }
 
     /* Ligne de saisie : nom et niveau hauts de 44 px sous le doigt (le texte reste centré :
