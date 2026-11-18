@@ -141,8 +141,8 @@ export const HELP_SECTIONS = Object.freeze([
                 text: "Ce bouton coupe tout ce qui bouge dans la fiche (reflets, effets). Touchez-le de nouveau pour rallumer les animations."
             },
             {
-                title: "Des réglages propres à l'appareil",
-                text: "Le thème, le fond et les animations sont retenus sur cet appareil : chaque joueur garde l'affichage qui lui plaît sur sa tablette."
+                title: "Des réglages qui suivent le personnage",
+                text: "Le thème, le fond et ses trois curseurs sont enregistrés avec le personnage. Quand vous ouvrez ce personnage sur un autre appareil (compte en ligne, « Importer », « Revenir à… »), l'appareil prend son thème et son fond. Une photo choisie avec « Image de l'appareil » reste sur l'appareil où vous l'avez choisie. Seul « Sans animation » est propre à chaque appareil."
             }
         ]
     },

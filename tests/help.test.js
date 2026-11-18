@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { HELP_SECTIONS, HELP_NEWS_SECTION, HELP_CONTENTS } from '../js/data/help.js';
 import { WHATS_NEW } from '../js/data/whats-new.js';
 import { frenchSpaces } from '../js/ui/help.js';
+import { fromVisualPrefs, portableBackground } from '../js/rules/gallery.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
@@ -130,6 +131,19 @@ describe('Mode d\'emploi et nouveautés : libellés cités', () => {
             'Le bouton «\u00A0Lancer\u00A0»\u00A0: oui\u00A0; non\u00A0?');
         assert.equal(frenchSpaces('Sans signe'), 'Sans signe');
         assert.equal(frenchSpaces(undefined), '');
+    });
+
+    test('Affichage : la notice dit que le thème et le fond suivent le personnage (_visual_prefs), pas l\'appareil', () => {
+        // Ce que fait la fiche : les réglages du personnage chargé sont appliqués à l'appareil
+        assert.deepEqual(fromVisualPrefs({ theme: 'dark', galleryBg: 'Fond_1.webp', bgZoom: '120' }, () => true),
+            { bg: 'Fond_1.webp', zoom: 120, theme: 'dark' });
+        // Une image de l'appareil n'est jamais recopiée dans le personnage
+        assert.equal(portableBackground('data:image/png;base64,AAAA'), null);
+        const display = HELP_SECTIONS.find((section) => section.id === 'display');
+        const entry = display.entries.at(-1);
+        assert.equal(entry.title, 'Des réglages qui suivent le personnage');
+        assert.match(entry.text, /enregistrés avec le personnage/);
+        assert.doesNotMatch(display.entries.map((e) => e.text).join(' '), /retenus sur cet appareil/);
     });
 
     test('Dons : les repères expliqués sont ceux de l\'encadré « Dans la fiche » (noteKind, js/ui/sheet.js)', () => {
