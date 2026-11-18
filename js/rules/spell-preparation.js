@@ -15,10 +15,17 @@
 //  - Sorts donnés (classe, sous-classe, dons, espèce) : hors du compte de la table.
 //  - Lancer un sort : niveaux d'emplacement possibles (niveau du sort et au-dessus, emplacements
 //    de pacte compris) et emplacement coché.
+//  - Fenêtre « Préparer mes sorts » (Clerc, Druide, Paladin, Rôdeur : préparation parmi toute la
+//    liste de classe, changée après un repos long) : sorts de la liste jusqu'au plus haut
+//    emplacement, cocher (prep à true, ou ligne ajoutée depuis la base), décocher (prep à false ;
+//    seule une ligne que la fenêtre vient d'ajouter, restée telle quelle, est retirée).
 // Fonctions pures.
 // =============================================================================
 
-import { rowLevel, spellNameKey, slotView, slotLevels, toggleSlotUsed } from './spells.js';
+import {
+    rowLevel, spellNameKey, slotView, slotLevels, toggleSlotUsed, findSpellByName, spellToRow, spellNames,
+    spellDisplayName, isPrepared, isSpellRowEmpty, normalizeText
+} from './spells.js';
 import { classAlwaysPreparedSpells } from './class-progression.js';
 import { featSpellGroups } from './feat-spells.js';
 import { subclassSpells } from './subclass-features.js';
@@ -58,11 +65,21 @@ export function wholeListSource(derived) {
     let lists = [classSlug];
     if (WHOLE_LIST_SUBCLASSES.includes(subclass)) lists = ['wizard'];
     else if (classSlug === 'bard' && level >= 10 && subclass !== 'college_of_lore') lists = [...MAGICAL_SECRETS_LISTS];
+    return { lists, maxLevel: highestSlotLevel(spellSlots) };
+}
+
+/**
+ * Plus haut niveau d'emplacement de la table de la classe (deriveCharacter().spellSlots ; les
+ * emplacements ajoutés à la main ne comptent pas) : on ne prépare que des sorts de ce niveau ou moins.
+ * @param {Object} spellSlots - { '1': 4, '2': 2 }
+ * @returns {number} 0 : aucun emplacement
+ */
+export function highestSlotLevel(spellSlots) {
     const levels = Object.entries(spellSlots || {})
         .filter(([, count]) => Number(count) > 0)
         .map(([slotLevel]) => Number(slotLevel))
         .filter(Number.isFinite);
-    return { lists, maxLevel: Math.max(0, ...levels) };
+    return Math.max(0, ...levels);
 }
 
 /**
@@ -167,4 +184,186 @@ export function useSpellSlot(state, level, rulebookCount = 0) {
     const { max, used } = slotView(state, level, rulebookCount);
     if (used >= max) return null;
     return toggleSlotUsed(state, level, used, true, rulebookCount);
+}
+
+// ---------------------------------------------------------------------------
+// Préparation des sorts par classe, fenêtre « Préparer mes sorts »
+// ---------------------------------------------------------------------------
+
+/**
+ * Quand et combien de sorts préparés une classe peut changer (PHB 2024, chap. 7, table « Spell
+ * Preparation by Class ») : change 'long_rest' (après chaque repos long) ou 'level' (en gagnant un
+ * niveau) ; count 'any' (autant que voulu) ou 'one' (un seul) ; from 'class' (toute la liste de la
+ * classe) ou 'spellbook' (le grimoire du Magicien).
+ */
+export const SPELL_PREPARATION = Object.freeze({
+    bard: Object.freeze({ change: 'level', count: 'one', from: 'class' }),
+    cleric: Object.freeze({ change: 'long_rest', count: 'any', from: 'class' }),
+    druid: Object.freeze({ change: 'long_rest', count: 'any', from: 'class' }),
+    paladin: Object.freeze({ change: 'long_rest', count: 'one', from: 'class' }),
+    ranger: Object.freeze({ change: 'long_rest', count: 'one', from: 'class' }),
+    sorcerer: Object.freeze({ change: 'level', count: 'one', from: 'class' }),
+    warlock: Object.freeze({ change: 'level', count: 'one', from: 'class' }),
+    wizard: Object.freeze({ change: 'long_rest', count: 'any', from: 'spellbook' })
+});
+
+/**
+ * La classe choisit-elle ses sorts préparés parmi toute sa liste de classe, en les changeant après
+ * un repos long (Clerc, Druide : autant que voulu ; Paladin, Rôdeur : un seul) ? Ce sont les classes
+ * de la fenêtre « Préparer mes sorts ». Le Magicien prépare depuis son grimoire ; le Barde,
+ * l'Ensorceleur et l'Occultiste ont une liste fixe (tous leurs sorts notés sont préparés).
+ * @param {string} classSlug
+ * @returns {boolean}
+ */
+export function preparesFromClassList(classSlug) {
+    const rule = SPELL_PREPARATION[classSlug];
+    return Boolean(rule && rule.change === 'long_rest' && rule.from === 'class');
+}
+
+/**
+ * Rappel de fin de repos long sur les sorts préparés.
+ * @param {string} classSlug
+ * @returns {{ text: string, window: boolean }|null} window : la fenêtre « Préparer mes sorts » peut
+ *          s'ouvrir (classe qui prépare parmi toute sa liste) ; null : rien ne change au repos long
+ *          (liste fixe, classe sans sorts préparés)
+ */
+export function longRestPreparation(classSlug) {
+    const rule = SPELL_PREPARATION[classSlug];
+    if (!rule || rule.change !== 'long_rest') return null;
+    if (rule.from === 'spellbook') return { text: 'Vous pouvez changer vos sorts préparés parmi ceux de votre grimoire.', window: false };
+    return rule.count === 'one'
+        ? { text: 'Vous pouvez remplacer un de vos sorts préparés par un autre sort de votre liste de classe.', window: true }
+        : { text: 'Vous pouvez changer vos sorts préparés : autant que vous voulez, parmi toute la liste de votre classe.', window: true };
+}
+
+/** Le sort de la base fait-il partie des sorts donnés (noms comparables de grantedSpellKeys) ? */
+function isGrantedSpell(spell, granted) {
+    if (!granted?.size) return false;
+    return [...spellNames(spell), spell?.vo].some(name => name && granted.has(spellNameKey(name)));
+}
+
+/**
+ * Contenu de la fenêtre « Préparer mes sorts » : sorts de la liste de la classe (niveau 1 au plus
+ * haut emplacement), groupés par niveau et rangés par nom, avec leur état d'après le grimoire ;
+ * puis les autres sorts préparés du grimoire (autre liste, niveau sans emplacement, nom inconnu de
+ * la base), qui comptent eux aussi dans les sorts préparés.
+ * @param {Array<Object>} rows - dynamic_spells
+ * @param {Array<Object>} db - base de sorts (data/spells.json)
+ * @param {{ classSlug: string, maxLevel: number, granted?: Set<string>|null }} options
+ *        maxLevel : highestSlotLevel ; granted : grantedSpellKeys (toujours préparés, hors du compte)
+ * @returns {{ groups: Array<{ level: number, items: Array<{ spell: Object, name: string, state: 'granted'|'prepared'|'unprepared' }> }>,
+ *   others: Array<{ index: number, name: string, level: number }> }} others : index = indice dans dynamic_spells
+ */
+export function preparationView(rows, db, { classSlug, maxLevel, granted = null }) {
+    const list = Array.isArray(rows) ? rows : [];
+    const spells = Array.isArray(db) ? db : [];
+    const inList = (spell) => Number(spell?.level) >= 1 && Number(spell.level) <= maxLevel
+        && (spell.classes || []).includes(classSlug);
+    // Sorts de la liste préparés au grimoire (même sort noté deux fois : préparé si l'une des deux l'est)
+    const prepared = new Set();
+    const others = [];
+    list.forEach((row, index) => {
+        if (isSpellRowEmpty(row) || !isPrepared(row) || granted?.has(spellNameKey(row.name))) return;
+        const spell = findSpellByName(spells, row.name);
+        if (spell && inList(spell)) prepared.add(spell);
+        else others.push({ index, name: String(row.name ?? '').trim(), level: Number(rowLevel(row)) });
+    });
+    const groups = [];
+    for (let level = 1; level <= Math.min(9, maxLevel); level++) {
+        const items = spells
+            .filter(spell => Number(spell?.level) === level && inList(spell))
+            .map(spell => ({
+                spell,
+                name: spellDisplayName(spell),
+                state: isGrantedSpell(spell, granted) ? 'granted' : prepared.has(spell) ? 'prepared' : 'unprepared'
+            }))
+            .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+        if (items.length) groups.push({ level, items });
+    }
+    return { groups, others };
+}
+
+/** Lignes du grimoire qui portent ce sort de la base (nom français, variante ou anglais) */
+function matchingIndices(rows, spell, db) {
+    const indices = [];
+    rows.forEach((row, index) => {
+        if (!isSpellRowEmpty(row) && findSpellByName(db, row.name) === spell) indices.push(index);
+    });
+    return indices;
+}
+
+/**
+ * Cocher un sort dans la fenêtre : la première ligne du grimoire qui le porte passe à prep: true ;
+ * absent du grimoire, il y est ajouté (à la fin, rempli depuis la base comme l'auto-complétion :
+ * note = nom anglais) et préparé.
+ * @param {Array<Object>} rows - dynamic_spells
+ * @param {Object} spell - sort de la base
+ * @param {Array<Object>} db
+ * @param {Object} emptySpell - EMPTY_SPELL (js/state/schema.js)
+ * @returns {{ rows: Array<Object>, added: Object|null }} added : la ligne ajoutée, s'il y en a une
+ */
+export function prepareSpellRows(rows, spell, db, emptySpell) {
+    const list = Array.isArray(rows) ? rows : [];
+    const [first] = matchingIndices(list, spell, db);
+    if (first !== undefined) {
+        if (list[first].prep === true) return { rows: list, added: null };
+        const next = list.slice();
+        next[first] = { ...list[first], prep: true };
+        return { rows: next, added: null };
+    }
+    const added = { ...spellToRow(spell, { ...emptySpell }), prep: true };
+    return { rows: [...list, added], added };
+}
+
+/** Même ligne : mêmes clés, mêmes valeurs (une ligne du grimoire n'a que des valeurs simples) */
+function sameRow(a, b) {
+    if (!a || !b) return false;
+    const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+    return [...keys].every(key => Object.is(a[key], b[key]));
+}
+
+/**
+ * Décocher un sort dans la fenêtre : toutes les lignes qui le portent passent à prep: false. Seule
+ * exception : la ligne que la fenêtre a ajoutée pendant la même ouverture (added de
+ * prepareSpellRows), restée exactement telle quelle, est retirée. Une ligne écrite ou annotée par
+ * le joueur n'est jamais retirée.
+ * @param {Array<Object>} rows - dynamic_spells
+ * @param {Object} spell - sort de la base
+ * @param {Array<Object>} db
+ * @param {Object|null} [added] - ligne ajoutée par la fenêtre pour ce sort
+ * @returns {Array<Object>} nouvelles lignes (les mêmes s'il n'y a rien à changer)
+ */
+export function unprepareSpellRows(rows, spell, db, added = null) {
+    const list = Array.isArray(rows) ? rows : [];
+    const indices = matchingIndices(list, spell, db);
+    const removable = added ? indices.findLast(index => sameRow(list[index], added)) : undefined;
+    if (removable !== undefined) return list.filter((_, index) => index !== removable);
+    if (!indices.some(index => list[index].prep === true)) return list;
+    return list.map((row, index) => (indices.includes(index) && row.prep === true ? { ...row, prep: false } : row));
+}
+
+/**
+ * Décocher un « autre sort préparé » (ligne hors de la liste affichée) : prep: false, jamais retirée.
+ * @param {Array<Object>} rows
+ * @param {number} index
+ * @returns {Array<Object>}
+ */
+export function unprepareRow(rows, index) {
+    const list = Array.isArray(rows) ? rows : [];
+    if (list[index]?.prep !== true) return list;
+    const next = list.slice();
+    next[index] = { ...list[index], prep: false };
+    return next;
+}
+
+/**
+ * Recherche par nom dans la fenêtre (accents et majuscules ignorés, nom français ou anglais).
+ * @param {Object} spell - sort de la base
+ * @param {string} query
+ * @returns {boolean}
+ */
+export function matchesSpellQuery(spell, query) {
+    const q = normalizeText(query).trim();
+    if (!q) return true;
+    return [...spellNames(spell), spell?.vo].some(name => normalizeText(name).includes(q));
 }

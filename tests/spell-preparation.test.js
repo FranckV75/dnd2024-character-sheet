@@ -6,8 +6,11 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
     preparesWholeList, grantedSpellKeys, spellPrepState, inCombatView, isCastable,
-    castSlotOptions, useSpellSlot, wholeListSource, fitsWholeList
+    castSlotOptions, useSpellSlot, wholeListSource, fitsWholeList, highestSlotLevel,
+    SPELL_PREPARATION, WHOLE_LIST_CLASSES, preparesFromClassList, longRestPreparation, preparationView,
+    prepareSpellRows, unprepareSpellRows, unprepareRow, matchesSpellQuery
 } from '../js/rules/spell-preparation.js';
+import { EMPTY_SPELL } from '../js/state/schema.js';
 import { spellCounts, spellNameKey, spellLimitWarnings, findSpellByName } from '../js/rules/spells.js';
 import { classSpellCounts } from '../js/rules/class-progression.js';
 import { deriveCharacter } from '../js/rules/character.js';
@@ -183,5 +186,175 @@ describe('Lancer un sort', () => {
         const state = { 1: { used: 0 } };
         useSpellSlot(state, 1, 2);
         assert.deepEqual(state, { 1: { used: 0 } });
+    });
+});
+
+describe('Préparation des sorts par classe (chap. 7, table « Spell Preparation by Class »)', () => {
+    test('Quand et combien de sorts changer', () => {
+        assert.deepEqual(SPELL_PREPARATION.cleric, { change: 'long_rest', count: 'any', from: 'class' });
+        assert.deepEqual(SPELL_PREPARATION.druid, { change: 'long_rest', count: 'any', from: 'class' });
+        assert.deepEqual(SPELL_PREPARATION.paladin, { change: 'long_rest', count: 'one', from: 'class' });
+        assert.deepEqual(SPELL_PREPARATION.ranger, { change: 'long_rest', count: 'one', from: 'class' });
+        assert.deepEqual(SPELL_PREPARATION.wizard, { change: 'long_rest', count: 'any', from: 'spellbook' });
+        for (const slug of ['bard', 'sorcerer', 'warlock']) assert.deepEqual(SPELL_PREPARATION[slug], { change: 'level', count: 'one', from: 'class' }, slug);
+        // Les classes à liste fixe de la v4 sont exactement celles qui changent au passage de niveau
+        const byLevel = Object.entries(SPELL_PREPARATION).filter(([, rule]) => rule.change === 'level').map(([slug]) => slug);
+        assert.deepEqual(byLevel.sort(), [...WHOLE_LIST_CLASSES].sort());
+    });
+
+    test('Fenêtre « Préparer mes sorts » : Clerc, Druide, Paladin, Rôdeur', () => {
+        for (const slug of ['cleric', 'druid', 'paladin', 'ranger']) assert.equal(preparesFromClassList(slug), true, slug);
+        for (const slug of ['wizard', 'bard', 'sorcerer', 'warlock', 'fighter', 'barbarian', '']) assert.equal(preparesFromClassList(slug), false, slug);
+    });
+
+    test('Rappel de fin de repos long', () => {
+        assert.equal(longRestPreparation('cleric').window, true);
+        assert.match(longRestPreparation('druid').text, /autant que vous voulez/);
+        assert.equal(longRestPreparation('paladin').window, true);
+        assert.match(longRestPreparation('ranger').text, /un de vos sorts préparés/);
+        assert.deepEqual(longRestPreparation('wizard'), { text: 'Vous pouvez changer vos sorts préparés parmi ceux de votre grimoire.', window: false });
+        for (const slug of ['bard', 'sorcerer', 'warlock', 'fighter', '']) assert.equal(longRestPreparation(slug), null, slug);
+    });
+
+    test('Plus haut emplacement de la table', () => {
+        assert.equal(highestSlotLevel({ 1: 4, 2: 2 }), 2);
+        assert.equal(highestSlotLevel({ 1: 4, 2: 3, 3: 0 }), 2);
+        assert.equal(highestSlotLevel({}), 0);
+        assert.equal(highestSlotLevel(null), 0);
+        assert.equal(highestSlotLevel(deriveCharacter({ char_class: 'Clerc', char_level: '3' }).spellSlots), 2);
+        assert.equal(highestSlotLevel(deriveCharacter({ char_class: 'Paladin', char_level: '5' }).spellSlots), 2);
+    });
+});
+
+
+describe('Fenêtre « Préparer mes sorts »', () => {
+    const base = JSON.parse(readFileSync(new URL('../data/spells.json', import.meta.url), 'utf8'));
+    const db = Array.isArray(base) ? base : Object.values(base);
+    const spell = (name) => {
+        const found = findSpellByName(db, name);
+        assert.ok(found, name);
+        return found;
+    };
+    const row = (name, prep = false, extra = {}) => ({ ...EMPTY_SPELL, lvl: String(spell(name).level), name, prep, ...extra });
+
+    test('Liste du Clerc 3 : niveaux 1 et 2, rangés par nom, sorts de domaine repérés', () => {
+        const record = { char_class: 'Clerc', char_subclass: 'Domaine de la Vie', char_level: '3' };
+        const derived = deriveCharacter(record);
+        const granted = grantedSpellKeys(record, derived);
+        const rows = [row('Lumière'), row('Mot de guérison', true), row('Bénédiction', true), row('Rayon traçant')];
+        const view = preparationView(rows, db, { classSlug: 'cleric', maxLevel: highestSlotLevel(derived.spellSlots), granted });
+        assert.deepEqual(view.groups.map(group => group.level), [1, 2]);
+        const level1 = view.groups[0].items;
+        assert.ok(level1.every(item => item.spell.level === 1 && item.spell.classes.includes('cleric')));
+        const names = level1.map(item => item.name);
+        assert.deepEqual(names, [...names].sort((a, b) => a.localeCompare(b, 'fr')));
+        const state = (name) => view.groups.flatMap(group => group.items).find(item => item.name === name)?.state;
+        assert.equal(state('Mot de guérison'), 'prepared');
+        assert.equal(state('Rayon traçant'), 'unprepared');
+        // Domaine de la Vie : Bénédiction et Soins toujours préparés (hors du compte), même cochés au grimoire
+        assert.equal(state('Bénédiction'), 'granted');
+        assert.equal(state('Soins'), 'granted');
+        assert.equal(state('Aide'), 'granted');
+        // Pas de sort de niveau 3 au niveau 3, pas de sort mineur
+        assert.equal(state('Lumière'), undefined);
+        assert.equal(state('Esprits gardiens'), undefined);
+        assert.deepEqual(view.others, []);
+    });
+
+    test('Autres sorts préparés du grimoire : autre liste, niveau trop haut, nom inconnu', () => {
+        const rows = [
+            row('Projectile magique', true),
+            row('Esprits gardiens', true),
+            { ...EMPTY_SPELL, lvl: '1', name: 'Sort maison', prep: true },
+            row('Bouclier', false),
+            { ...EMPTY_SPELL, lvl: '0', name: 'Flamme sacrée', prep: true }
+        ];
+        const view = preparationView(rows, db, { classSlug: 'cleric', maxLevel: 2 });
+        assert.deepEqual(view.others, [
+            { index: 0, name: 'Projectile magique', level: 1 },
+            { index: 1, name: 'Esprits gardiens', level: 3 },
+            { index: 2, name: 'Sort maison', level: 1 }
+        ]);
+    });
+
+    test('Nom anglais ou variante notés au grimoire : le sort est reconnu', () => {
+        const rows = [{ ...EMPTY_SPELL, lvl: '1', name: 'Bless', prep: true }];
+        const view = preparationView(rows, db, { classSlug: 'cleric', maxLevel: 1 });
+        assert.equal(view.groups[0].items.find(item => item.name === 'Bénédiction').state, 'prepared');
+        assert.deepEqual(view.others, []);
+    });
+
+    test('Cocher : sort déjà noté (prep à true) ou ajouté depuis la base', () => {
+        const rows = [row('Lumière'), row('Soins', false, { note: 'à garder' })];
+        const already = prepareSpellRows(rows, spell('Soins'), db, EMPTY_SPELL);
+        assert.equal(already.added, null);
+        assert.deepEqual(already.rows[1], { ...rows[1], prep: true });
+        assert.equal(rows[1].prep, false, 'l\'ancien tableau n\'est pas modifié');
+        // Déjà préparé : rien ne change
+        assert.equal(prepareSpellRows(already.rows, spell('Soins'), db, EMPTY_SPELL).rows, already.rows);
+        // Absent : ajouté à la fin, rempli comme l'auto-complétion, préparé
+        const added = prepareSpellRows(rows, spell('Rayon traçant'), db, EMPTY_SPELL);
+        assert.equal(added.rows.length, 3);
+        assert.deepEqual(added.rows[2], added.added);
+        assert.deepEqual(added.added, {
+            ...EMPTY_SPELL, lvl: '1', name: 'Rayon traçant', school: spell('Rayon traçant').school,
+            time: spell('Rayon traçant').castTime, range: spell('Rayon traçant').range,
+            note: 'Guiding Bolt', c: false, r: false, m: false, prep: true
+        });
+        // Mêmes clés v3 que EMPTY_SPELL, aucune nouvelle
+        assert.deepEqual(Object.keys(added.added).sort(), Object.keys(EMPTY_SPELL).sort());
+    });
+
+    test('Décocher : prep à false ; la ligne ajoutée par la fenêtre, restée telle quelle, est retirée', () => {
+        const rows = [row('Lumière'), row('Soins', true, { note: 'à garder' })];
+        assert.deepEqual(unprepareSpellRows(rows, spell('Soins'), db)[1], { ...rows[1], prep: false });
+        // Rien à changer : même tableau
+        assert.equal(unprepareSpellRows(rows, spell('Rayon traçant'), db), rows);
+        const { rows: withAdded, added } = prepareSpellRows(rows, spell('Rayon traçant'), db, EMPTY_SPELL);
+        assert.deepEqual(unprepareSpellRows(withAdded, spell('Rayon traçant'), db, added), rows);
+        // Ligne modifiée depuis (note écrite) : jamais retirée, seulement décochée
+        const annotated = withAdded.map((r, i) => (i === 2 ? { ...r, note: 'ma note' } : r));
+        const kept = unprepareSpellRows(annotated, spell('Rayon traçant'), db, added);
+        assert.equal(kept.length, 3);
+        assert.equal(kept[2].prep, false);
+        assert.equal(kept[2].note, 'ma note');
+        // Sans « ligne ajoutée » (fenêtre rouverte) : une ligne identique est gardée, décochée
+        const later = unprepareSpellRows(withAdded, spell('Rayon traçant'), db, null);
+        assert.equal(later.length, 3);
+        assert.equal(later[2].prep, false);
+        // Sort noté deux fois : les deux lignes sont décochées
+        const twice = [row('Soins', true), row('Soins', true, { note: 'copie' })];
+        assert.deepEqual(unprepareSpellRows(twice, spell('Soins'), db).map(r => r.prep), [false, false]);
+    });
+
+    test('Décocher un autre sort préparé : prep à false, jamais retiré', () => {
+        const rows = [row('Projectile magique', true), row('Bouclier')];
+        assert.deepEqual(unprepareRow(rows, 0), [{ ...rows[0], prep: false }, rows[1]]);
+        assert.equal(unprepareRow(rows, 1), rows);
+        assert.equal(unprepareRow(rows, 9), rows);
+    });
+
+    test('Compteur : la fenêtre et le grimoire comptent pareil (sorts donnés exclus)', () => {
+        const record = { char_class: 'Clerc', char_subclass: 'Domaine de la Vie', char_level: '3' };
+        const derived = deriveCharacter(record);
+        const granted = grantedSpellKeys(record, derived);
+        let rows = [row('Bénédiction', true), row('Lumière')];
+        for (const name of ['Mot de guérison', 'Rayon traçant', 'Sanctuaire', 'Injonction', 'Arme spirituelle', 'Prière de guérison']) {
+            rows = prepareSpellRows(rows, spell(name), db, EMPTY_SPELL).rows;
+        }
+        const counts = spellCounts(rows, '', granted);
+        assert.equal(counts.prepared, 6);
+        assert.deepEqual(spellLimitWarnings(counts, classSpellCounts('cleric', 3)), []);
+        rows = prepareSpellRows(rows, spell('Silence'), db, EMPTY_SPELL).rows;
+        assert.equal(spellLimitWarnings(spellCounts(rows, '', granted), classSpellCounts('cleric', 3)).length, 1);
+    });
+
+    test('Recherche par nom : accents, majuscules, nom anglais', () => {
+        assert.equal(matchesSpellQuery(spell('Rayon traçant'), 'tracant'), true);
+        assert.equal(matchesSpellQuery(spell('Rayon traçant'), 'GUIDING'), true);
+        assert.equal(matchesSpellQuery(spell('Rayon traçant'), ''), true);
+        assert.equal(matchesSpellQuery(spell('Rayon traçant'), 'soins'), false);
+        // Variante de nom (« Marche sur l'onde »)
+        assert.equal(matchesSpellQuery(spell("Marche sur l'eau"), 'onde'), true);
     });
 });
