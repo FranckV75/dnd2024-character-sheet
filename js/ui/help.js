@@ -27,7 +27,8 @@ export const HELP_TITLE = "Lire la notice de la fiche, onglet par onglet (à l'�
 const PRINT_NOTE = "« Imprimer le mode d'emploi » imprime toute la notice (papier A4 ou PDF), et non la fiche.";
 
 /**
- * Espaces insécables : après «, avant », et avant : ; ? !
+ * Espaces insécables : après «, avant », avant : ; ? ! et avant un mot d'une ou deux lettres
+ * suivi de « … » (le libellé « Revenir à… » n'est pas coupé avant « à… »).
  * @param {string} text
  * @returns {string}
  */
@@ -36,7 +37,8 @@ export function frenchSpaces(text) {
     return String(text ?? '')
         .replace(/« /g, `«${nbsp}`)
         .replace(/ »/g, `${nbsp}»`)
-        .replace(/ ([:;?!])/g, `${nbsp}$1`);
+        .replace(/ ([:;?!])/g, `${nbsp}$1`)
+        .replace(/ (\p{L}{1,2}…)/gu, `${nbsp}$1`);
 }
 
 /** Une entrée : son titre, puis son texte ou sa liste (rubrique « Nouveautés ») */

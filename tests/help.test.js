@@ -130,6 +130,9 @@ describe('Mode d\'emploi et nouveautés : libellés cités', () => {
         assert.equal(frenchSpaces('Le bouton « Lancer » : oui ; non ?'),
             'Le bouton «\u00A0Lancer\u00A0»\u00A0: oui\u00A0; non\u00A0?');
         assert.equal(frenchSpaces('Sans signe'), 'Sans signe');
+        // Un libellé court n'est pas coupé avant son dernier mot suivi de « … »
+        assert.equal(frenchSpaces('dans « Revenir à… ».'), 'dans «\u00A0Revenir\u00A0à…\u00A0».');
+        assert.equal(frenchSpaces('Choisir un fichier .json…'), 'Choisir un fichier .json…');
         assert.equal(frenchSpaces(undefined), '');
     });
 
@@ -158,6 +161,18 @@ describe('Mode d\'emploi et nouveautés : libellés cités', () => {
         assert.equal(cited[0], 'Dans la fiche', 'le titre de l\'encadré, cité en premier');
         assert.ok(sheet.includes("text: 'Dans la fiche'"), 'titre de l\'encadré');
         assert.deepEqual(cited.slice(1).sort(), [...marks].sort());
+    });
+
+    test('Fenêtre « Essayer un personnage d\'exemple » : chaque texte affiché passe par frenchSpaces', () => {
+        const code = readFileSync(join(ROOT, 'js', 'ui', 'examples.js'), 'utf8');
+        // Textes écrits dans le code : toute chaîne qui contient un guillemet français ou « : »
+        const shown = code.split('\n').filter((line) => !line.trim().startsWith('//') && !line.trim().startsWith('*')
+            && /text: /.test(line) && /«| : /.test(line));
+        assert.ok(shown.length >= 2);
+        assert.match(code, /frenchSpaces\(example\.pitch\)/);
+        for (const line of shown) assert.match(line, /text: frenchSpaces\(/, line.trim());
+        assert.match(code, /setStatus\(frenchSpaces\(/);
+        assert.match(code, /frenchSpaces\(replacementNote\(/);
     });
 
     test('Les boutons du mode d\'emploi et de l\'exemple existent sous ce nom', () => {

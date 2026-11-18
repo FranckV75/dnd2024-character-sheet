@@ -11,11 +11,14 @@
 //  - l'exemple n'est lié à aucun personnage en ligne et n'est pas envoyé au compte
 //    (source « example », js/cloud/controller.js) : aucun personnage en ligne n'est modifié.
 // Bouton masqué fiche verrouillée (edit-only), comme « Nouvelle fiche » et « Importer ».
+// Textes posés avec les espaces insécables de la typographie française (frenchSpaces) : un
+// guillemet ne se retrouve jamais seul en début ou en fin de ligne.
 // Mise en forme : css/help.css.
 // =============================================================================
 
 import { el, icon } from './dom.js';
 import { openModal } from './modal.js';
+import { frenchSpaces } from './help.js';
 import { listExamples, exampleCharacter, EXAMPLE_SOURCE } from '../state/examples.js';
 import { isBlankCharacter } from '../cloud/controller.js';
 import { characterName } from '../state/persistence.js';
@@ -44,16 +47,16 @@ export function openExamples({ store, setStatus }) {
         const hadContent = !isBlankCharacter(store.get());
         store.replace(character, { source: EXAMPLE_SOURCE });
         close();
-        setStatus(hadContent
+        setStatus(frenchSpaces(hadContent
             ? `Exemple « ${example.title} » ouvert ; l'ancienne fiche est dans « Revenir à… ».`
-            : `Exemple « ${example.title} » ouvert.`);
+            : `Exemple « ${example.title} » ouvert.`));
     };
 
     const cards = listExamples().map((example) => el('li', { class: 'example-card' },
         el('div', { class: 'example-text' },
             el('strong', { class: 'example-name', text: example.title }),
             el('span', { class: 'example-kind', text: example.subtitle }),
-            el('span', { class: 'example-pitch', text: example.pitch })),
+            el('span', { class: 'example-pitch', text: frenchSpaces(example.pitch) })),
         el('button', {
             type: 'button', class: 'btn btn-primary example-open',
             'aria-label': `Ouvrir l'exemple ${example.title}`,
@@ -66,12 +69,12 @@ export function openExamples({ store, setStatus }) {
         wide: true,
         focusField: false,
         body: [
-            el('p', { text: 'Deux personnages fictifs, prêts à jouer : ouvrez-en un pour découvrir la fiche sans rien préparer. Vous pouvez tout modifier, c\'est fait pour essayer.' }),
-            el('p', { class: 'example-warning' }, icon('warning'), el('span', { text: replacementNote(store.get()) })),
+            el('p', { text: frenchSpaces('Deux personnages fictifs, prêts à jouer : ouvrez-en un pour découvrir la fiche sans rien préparer. Vous pouvez tout modifier, c\'est fait pour essayer.') }),
+            el('p', { class: 'example-warning' }, icon('warning'), el('span', { text: frenchSpaces(replacementNote(store.get())) })),
             el('ul', { class: 'example-list' }, cards),
             el('p', {
                 class: 'toolbar-modal-note',
-                text: 'Vos personnages enregistrés en ligne ne sont pas modifiés : l\'exemple reste dans ce navigateur. Connecté, le bouton « Enregistrer en ligne » l\'ajoute à votre compte si vous voulez le garder.'
+                text: frenchSpaces('Vos personnages enregistrés en ligne ne sont pas modifiés : l\'exemple reste dans ce navigateur. Connecté, le bouton « Enregistrer en ligne » l\'ajoute à votre compte si vous voulez le garder.')
             })
         ],
         actions: [{ label: 'Annuler' }]
