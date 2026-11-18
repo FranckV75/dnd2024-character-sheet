@@ -44,13 +44,26 @@ sous-classes). Restent des décisions de Franck :
   au lieu de les écrire à la main, et faire le lien avec l'outil donné par l'historique (Korgul,
   Soldat : « une boîte de jeux au choix », signalée « À vérifier » dans l'encadré de l'historique ;
   à expliquer à Franck) (demande de Franck, 11/11/2026).
-- Grimoire adapté à la classe du lanceur (demande de Franck, 18/11/2026, à discuter avant) :
-  Magicien (sorts inscrits dans le livre ≠ sorts préparés, rituels sans préparation, copie de
-  sorts), Clerc et Druide (préparation dans toute la liste de classe, changée à chaque repos long),
-  Barde / Ensorceleur / Occultiste (changement d'un sort au passage de niveau), Paladin / Rôdeur.
-  En 2024, on ne prépare pas « trois Boules de feu » : un sort préparé se lance autant de fois
-  qu'on a d'emplacements (le « plusieurs fois le même sort » vient d'éditions plus anciennes).
+- Grimoire, suites possibles du chantier 4.40.0 (à décider par Franck) : Paladin et Rôdeur
+  traités comme Clerc et Druide (fenêtre et rappel de repos long) ou non ; avertissement quand
+  un sort préparé dépasse le plus haut emplacement ; cases de lancer gratuit (Châtiment divin,
+  Marque du chasseur, Arcanum mystique…) proposées par « Lancer » ; Magicien : repères pour
+  Maîtrise des sorts (18) et Sorts de prédilection (20), qui demanderaient une nouvelle clé,
+  rappel de Mémorisation de sort au repos court, Aptitude érudite au niveau 3 (2 ou 3 sorts) ;
+  Barde du Savoir : enregistrer ses deux Découvertes magiques ; rangement des sorts décochés
+  qui s'accumulent au grimoire ; rituels du livre trop nombreux en vue au combat ?
 - Grimoire : comme les objets magiques, un aspect qui monte en puissance avec le niveau du sort.
+- Mode « Odyssée des Seigneurs Dragons » désactivable (demande de Franck, 18/11/2026) : retirer
+  ce qui est propre à cette campagne (espèces, sous-classes Seigneur Dragon / Amazone /
+  Odysséen, style Hoplite, dragonnets, fonds d'écran…) pour jouer une autre campagne. À étudier :
+  inventaire des différences, réglage par fiche ou par appareil, compatibilité des sauvegardes.
+- Explications des options (demande de Franck, 18/11/2026) : chaque bouton ou option dit en une
+  phrase à quoi il sert, lisible aussi sur tablette (fait pour le grimoire en 4.40.0 ; reste
+  toute la fiche à passer en revue).
+- Outil pour le MJ (« feuille du MJ », demande de Franck, 18/11/2026) : à discuter d'abord.
+  Est-ce une bonne idée, et pour quoi faire ? Dans ce projet (même site, même base, lien avec la
+  « Vue du groupe ») ou dans un projet séparé (`E:\2 - CODE\<nouveau projet>\`) ? Rien à
+  construire avant cette discussion.
 - Bilan des capacités pour les autres joueurs (Iria, personnage de Catherine), comme pour Korgul.
 - Vue du groupe (demande « synergies entre joueurs ») : PV, CA et perception passive de chaque
   personnage ; gros chantier, il faut décider qui voit quoi.

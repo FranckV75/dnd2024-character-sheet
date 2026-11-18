@@ -2,6 +2,30 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.40.0] - 2026-11-18 (Grimoire adapté à la classe)
+### Added
+- Règles de préparation des sorts des 8 classes vérifiées dans le Manuel des joueurs 2024
+  (`js/rules/spell-preparation.js`, `js/rules/spellbook.js`, testées).
+- Barde, Ensorceleur, Occultiste (et Chevalier occulte, Arnaqueur arcanique) : les sorts de leur
+  liste ont d'office le losange ◆ fixe et comptent dans « Préparés » (la liste ne change qu'en
+  gagnant un niveau). Un sort pris hors de la liste garde son losange à cocher.
+- Sorts donnés (classe, sous-classe, don, espèce) notés au tableau : losange fixe, hors du compte.
+  Appel de destrier et Verbe de la création (Barde 20) ne comptent plus dans « Préparés ».
+- Bouton « Au combat » : seulement les sorts utilisables, « reste N » par niveau d'emplacement,
+  retenu sur l'appareil ; l'impression montre toujours tout le grimoire.
+- Bouton « Lancer » (vue au combat) : choix du niveau d'emplacement (pacte compris), case
+  Concentration, lancer « En rituel » sans emplacement ; aussi sur les sorts de dons, de
+  sous-classe et d'espèce.
+- Clerc, Druide, Paladin, Rôdeur : fenêtre « Préparer mes sorts » (toute la liste de classe par
+  niveau, recherche, compteur) et rappel « Repos long terminé » qui l'ouvre. La phrase du repos
+  long dépend de la classe.
+- Magicien : ligne « Livre : N sorts · M sans dépense », coût de copie (Cynisme compris),
+  mention « Lançable en rituel » sur les rituels du livre non préparés (Savoir rituel), lançables
+  en rituel depuis la vue au combat.
+### Fixed
+- Cases C / R / M : la case M ne recouvre plus les notes sur tablette.
+- Cercle de la Terre sans terrain choisi : ses sorts comptent de nouveau dans « Préparés ».
+
 ## [4.39.0] - 2026-11-11 (Maîtrises d'armes, espèces de l'Odyssée, dragonnets)
 ### Added
 - Onglet Compétences & Histoire : case « Maîtrises d'armes » (ancien champ « Armes », clé

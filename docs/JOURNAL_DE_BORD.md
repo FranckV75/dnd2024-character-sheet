@@ -12,9 +12,8 @@ en fin de session :
 
 ## En ce moment
 
-- **En ligne** : version **4.39.0** (`master` = `v4` = `dd44742`), publiée le 11/11/2026 avec
-  l'accord de Franck (maîtrises d'armes, espèces de l'Odyssée, dragonnets 2024, restes des
-  sous-classes ; 4.38.0 = corrections de l'audit, publiée le même jour).
+- **En ligne** : version **4.39.0** (`dd44742`), publiée le 11/11/2026. La **4.40.0** (grimoire
+  adapté à la classe) est prête sur `v4`, **pas encore publiée** : attendre le « Publie » de Franck.
 - **Petits champs sur iPad** : ne rien changer tant que Franck n'a pas d'info sur le zoom.
 - **GitHub** : anciens commits (PDF, vieilles sauvegardes, adresse Gmail) purgés par le support
   le 12/11/2026 (ticket 4978665) ; vérifié le 18/11 : 404 partout. Dossier clos.
@@ -28,6 +27,10 @@ en fin de session :
 
 ### À vérifier par Franck (tablette Android, iPad de Catherine)
 
+- 4.40.0, onglet Magie : bouton « Au combat » puis « Lancer » (un emplacement se coche ; le
+  décocher annule) ; losanges fixes d'un Barde ou d'un Occultiste ; pour un Clerc ou un Druide,
+  « Préparer mes sorts » et le rappel après un repos long ; pour un Magicien, la ligne « Livre ».
+  Toucher un losange ou une mention affiche son explication dans la barre du haut.
 - 4.38.0 : saisie plus fluide (taper le nom, les PV) ; en-tête sur trois lignes (nom et PX
   entiers) ; plus de « null » sous l'historique ; fenêtres pas coupées sur l'iPad.
 - iPad : Safari zoome-t-il quand on touche les petits champs (notes des armes, listes des dons,
@@ -53,9 +56,23 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 2. ~~restes et points relevés~~ : faits (4.39.0) ; restent les décisions listées au point 2 de
    `docs/FEUILLE_DE_ROUTE.md` ;
 3. discussion pour trier toutes les idées, regroupées au même niveau (le lanceur de dés et la
-   fiche sans wifi n'y sont plus prioritaires).
+   fiche sans wifi n'y sont plus prioritaires). Le grimoire adapté à la classe est fait (4.40.0) ;
+   ses suites possibles et les idées du 18/11 (mode Odyssée, explications, outil du MJ) sont au
+   point 3 de `docs/FEUILLE_DE_ROUTE.md`.
 
 ## Sessions
+
+### 18/11/2026 — Grimoire adapté à la classe (4.40.0)
+
+- GitHub a confirmé la purge (ticket 4978665) ; vérifié : 404 partout. Dossier clos.
+- Règles de préparation des 8 classes de lanceurs vérifiées dans le manuel, puis 3 lots (ultracode,
+  chacun relu par deux vérificateurs et corrigé) : liste fixe du Barde / Ensorceleur / Occultiste,
+  vue « Au combat » et « Lancer » ; fenêtre « Préparer mes sorts » (Clerc, Druide, Paladin,
+  Rôdeur) ; repères du Magicien (livre, coût de copie, rituels). Passe de finitions : une phrase
+  d'explication lisible sur tablette pour chaque nouvelle option (idée de Franck).
+- Aucune nouvelle clé de sauvegarde. Suites possibles notées au point 3 de la feuille de route.
+- Idées de Franck notées : mode Odyssée désactivable, explications des options, outil pour le MJ
+  (à discuter d'abord, y compris s'il va dans ce projet).
 
 ### 11/11/2026 (soir) — Maîtrises d'armes, espèces de l'Odyssée, dragonnets (4.39.0)
 
