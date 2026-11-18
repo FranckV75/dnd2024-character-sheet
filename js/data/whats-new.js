@@ -13,6 +13,15 @@
 /** @type {ReadonlyArray<{ version: string, items: ReadonlyArray<string> }>} */
 export const WHATS_NEW = Object.freeze([
     {
+        version: '4.42.0',
+        items: [
+            'Grimoire : la mention « Pas d\'emplacement » signale un sort préparé d\'un niveau pour lequel vous n\'avez pas encore d\'emplacement. Rien n\'est décoché.',
+            'Bouton « Lancer » : quand un don, votre espèce ou une capacité (Ennemi juré du Rôdeur…) offre le sort sans emplacement, « Lancer gratuit » est proposé en premier et coche la case de cette capacité.',
+            'Clerc, Druide, Paladin, Rôdeur : sous le tableau, « Retirer les sorts non préparés » allège le grimoire. La liste vous est montrée avant, et la fiche est gardée dans « Revenir à… ».',
+            'Magicien, vue « Au combat » : les rituels du livre non préparés se rangent sous la ligne « Rituels du livre », à déplier d\'un toucher.'
+        ]
+    },
+    {
         version: '4.41.0',
         items: [
             'Un « Mode d\'emploi » dans le menu « Gestion » : la fiche expliquée onglet par onglet, à lire sur la tablette ou à imprimer.',

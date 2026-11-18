@@ -74,7 +74,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "« Revenir à… »",
-                text: "L'appareil garde les dix derniers états de la fiche : à chaque ouverture, avant un repos long, avant une montée de niveau et avant tout remplacement de la fiche. Ouvrez « Revenir à… », puis touchez « Revenir » sur la ligne voulue. Ces copies restent sur cet appareil seulement, et les plus anciennes laissent la place aux nouvelles : pour garder une fiche longtemps, utilisez « Exporter »."
+                text: "L'appareil garde les dix derniers états de la fiche : à chaque ouverture, avant un repos long, une montée de niveau, un retrait de sorts du grimoire et tout remplacement de la fiche. Ouvrez « Revenir à… », puis touchez « Revenir » sur la ligne voulue. Ces copies restent sur cet appareil seulement, et les plus anciennes laissent la place aux nouvelles : pour garder une fiche longtemps, utilisez « Exporter »."
             },
             {
                 title: "« Imprimer »",
@@ -299,6 +299,10 @@ export const HELP_SECTIONS = Object.freeze([
                 text: "Le losange de gauche dit si le sort est préparé : touchez-le pour le préparer ou non. Un losange plein et fixe marque un sort toujours préparé. Les lettres C, R et M signalent la Concentration, le Rituel et une composante matérielle."
             },
             {
+                title: "La mention « Pas d'emplacement »",
+                text: "Elle apparaît sous le nom d'un sort préparé dont le niveau dépasse vos emplacements : ce sort ne peut pas encore être lancé. C'est un simple avertissement, rien n'est décoché. Touchez la mention pour lire l'explication."
+            },
+            {
                 title: "Voir un seul niveau",
                 text: "Les pastilles « Tous », 0, 1, 2… n'affichent que les sorts du niveau choisi. Le 0 correspond aux sorts mineurs."
             },
@@ -311,6 +315,10 @@ export const HELP_SECTIONS = Object.freeze([
                 text: "Pour le Clerc, le Druide, le Paladin et le Rôdeur, ce bouton ouvre toute la liste de la classe : cochez vos sorts préparés, après un repos long. Un compteur indique combien de sorts sont préparés."
             },
             {
+                title: "« Retirer les sorts non préparés »",
+                text: "Pour ces mêmes classes, les sorts décochés s'accumulent au grimoire. Fiche modifiable, ce bouton sous le tableau montre la liste des sorts non préparés de votre classe, puis les retire d'un coup. Vos sorts préparés, mineurs ou donnés restent toujours. Un sort où vous avez écrit une note reste aussi, sauf si vous le cochez. La fiche est d'abord gardée dans « Revenir à… »."
+            },
+            {
                 title: "La vue « Au combat »",
                 text: "Le bouton « Au combat » ne garde à l'écran que les sorts utilisables : sorts mineurs, sorts préparés et sorts donnés, avec les emplacements restants. Touchez-le de nouveau pour revoir tout le grimoire."
             },
@@ -319,12 +327,16 @@ export const HELP_SECTIONS = Object.freeze([
                 text: "Dans la vue « Au combat », chaque sort a un bouton « Lancer ». Choisissez le niveau d'emplacement : il est coché pour vous. « En rituel » lance le sort sans dépenser d'emplacement, quand le sort le permet."
             },
             {
+                title: "« Lancer gratuit »",
+                text: "Quand un don, votre espèce ou une capacité (Ennemi juré du Rôdeur, par exemple) offre un sort sans emplacement, la fenêtre « Lancer » propose d'abord « Lancer gratuit », avec le nombre de lancers restants. C'est la case de cette capacité qui se coche, pas un emplacement. Pour annuler, décochez-la. Une fois utilisé, le bouton est grisé jusqu'au repos qui le rend."
+            },
+            {
                 title: "Les sorts donnés",
                 text: "Les blocs « Sorts de dons », « Sorts de sous-classe » et « Sorts d'espèce » montrent les sorts donnés par vos dons, votre sous-classe et votre espèce. Ils sont toujours préparés et ne comptent pas dans vos sorts préparés. Cochez la case de leur lancer gratuit quand vous l'utilisez."
             },
             {
                 title: "Le livre du Magicien",
-                text: "Pour un Magicien, une ligne sous la barre compte les sorts de son livre et rappelle le coût d'une copie. Un rituel du livre non préparé porte la mention « Lançable en rituel »."
+                text: "Pour un Magicien, une ligne sous la barre compte les sorts de son livre et rappelle le coût d'une copie. Un rituel du livre non préparé porte la mention « Lançable en rituel ». Dans la vue « Au combat », ces rituels sont rangés sous la ligne « Rituels du livre », repliée au départ : touchez-la pour les voir. Chacun garde son bouton « Lancer », en rituel seulement : 10 minutes de plus, sans emplacement."
             },
             {
                 title: "« Équipement & trésor »",
