@@ -224,7 +224,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "« Dons »",
-                text: "Choisissez vos dons dans les listes. Un résumé s'affiche sous chaque don, avec ses choix quand il en demande. Les repères disent ce qui est compté : « Dans la fiche » et « Déjà compté » (rien à faire), « À reporter » (à noter vous-même)."
+                text: "Choisissez vos dons dans les listes. Sous chaque don, l'encadré « Dans la fiche » montre ses choix et ce que la fiche en fait, ligne par ligne. « Calculé » : la fiche le compte, rien à faire. « À reporter » : à noter vous-même. « Rappel » : à garder en tête, rien n'est calculé. « À vérifier » : un choix manque ou ne convient pas. « Coché » : la case du don est cochée. « En attente » : pas actif pour l'instant."
             },
             {
                 title: "« Capacités de classe »",

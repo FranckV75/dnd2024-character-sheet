@@ -132,6 +132,20 @@ describe('Mode d\'emploi et nouveautés : libellés cités', () => {
         assert.equal(frenchSpaces(undefined), '');
     });
 
+    test('Dons : les repères expliqués sont ceux de l\'encadré « Dans la fiche » (noteKind, js/ui/sheet.js)', () => {
+        const sheet = readFileSync(join(ROOT, 'js', 'ui', 'sheet.js'), 'utf8');
+        const start = sheet.indexOf('function noteKind(');
+        assert.ok(start > 0, 'noteKind existe');
+        const body = sheet.slice(start, sheet.indexOf('\n}', start));
+        const marks = [...body.matchAll(/\['[\w-]+', '([^']+)'\]/g)].map((match) => match[1]);
+        assert.ok(marks.length >= 6, `repères trouvés : ${marks.join(', ')}`);
+        const entry = HELP_SECTIONS.find((section) => section.id === 'traits').entries.find((e) => e.title === '« Dons »');
+        const cited = quoted(entry.text);
+        assert.equal(cited[0], 'Dans la fiche', 'le titre de l\'encadré, cité en premier');
+        assert.ok(sheet.includes("text: 'Dans la fiche'"), 'titre de l\'encadré');
+        assert.deepEqual(cited.slice(1).sort(), [...marks].sort());
+    });
+
     test('Les boutons du mode d\'emploi et de l\'exemple existent sous ce nom', () => {
         for (const label of ['Mode d\'emploi', 'Imprimer le mode d\'emploi', 'Essayer un personnage d\'exemple', 'Sommaire']) {
             assert.ok(source.includes(label), label);
