@@ -687,10 +687,60 @@
     white-space: nowrap;
 }
 
+/* Mode « parcourir » (grimoire) : intertitres de niveau, sorts déjà notés grisés et marqués */
+.autocomplete-list li.autocomplete-group {
+    display: block;
+    padding: 8px 10px 3px;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    box-shadow: none;
+    background: none;
+    color: var(--accent-ink);
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    cursor: default;
+}
+
+.autocomplete-list li.autocomplete-group:hover {
+    background: none;
+    box-shadow: none;
+}
+
+.autocomplete-list li.is-disabled {
+    cursor: default;
+    opacity: 0.55;
+}
+
+.autocomplete-list li.is-disabled:hover {
+    background: none;
+    box-shadow: inset 2px 0 0 transparent;
+}
+
+.autocomplete-list li.is-disabled:hover .autocomplete-label {
+    color: var(--text);
+}
+
+.autocomplete-mark {
+    font-style: normal;
+    font-weight: 700;
+    color: var(--ok);
+}
+
+.autocomplete-list.is-browse {
+    max-height: min(360px, 60vh);
+    overscroll-behavior: contain;
+}
+
 @media (pointer: coarse) {
     .autocomplete-list li {
         min-height: 44px;
         align-items: center;
+    }
+
+    .autocomplete-list li.autocomplete-group {
+        min-height: 0;
     }
 }
 
