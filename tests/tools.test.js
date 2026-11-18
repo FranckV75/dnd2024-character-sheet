@@ -75,6 +75,17 @@ describe('Reconnaître les outils dans la case', () => {
         assert.deepEqual(toolsInText('Cor'), ['horn']);
     });
 
+    test('Pluriel ou singulier proche : même outil (pas de doublon en cochant)', () => {
+        assert.deepEqual(toolsInText('Outils de voleurs, Kit de déguisement, Instrument : luth'), ['thieves', 'disguise', 'lute']);
+        assert.deepEqual(toolsInText('Outil de voleur, luths, carte à jouer, Jeux de cartes'), ['thieves', 'lute', 'cards']);
+        assert.deepEqual(toolsInText('Flûtes de pan'), ['pan-flute']);
+        assert.equal(addToolToText('Outils de voleurs<br>Luth', 'thieves'), 'Outils de voleurs<br>Luth');
+        assert.equal(removeToolFromText('<div>Outils de voleurs</div><div>Luth</div>', 'thieves'), '<div>Luth</div>');
+        assert.equal(expectedToolNoted('Outils de voleurs', backgroundToolExpectation("Thieves' Tools")), true);
+        // Les mots courts ne changent pas : « des » n'est pas « de », « Jeu de de » n'est pas « Jeu de dés »
+        assert.deepEqual(toolsInText('Outils des voleurs, cordes, Jeu de de'), []);
+    });
+
     test('« Dés » seulement avec son accent (pas le mot « des »)', () => {
         assert.deepEqual(toolsInText('Outils des voleurs'), []);
         assert.deepEqual(toolsInText('dés'), ['dice']);

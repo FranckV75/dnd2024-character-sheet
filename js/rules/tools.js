@@ -3,8 +3,8 @@
 //
 // La case « Outils » reste un texte libre, écrit à la main ou rempli par la fenêtre « Choisir dans
 // la liste » (js/ui/tools.js). Ici, sans DOM :
-//  - toolsInText : les outils du manuel reconnus dans le texte (accents et majuscules ignorés,
-//    mot entier, même au milieu d'un texte libre ou d'une mise en forme) ;
+//  - toolsInText : les outils du manuel reconnus dans le texte (accents, majuscules et marque
+//    du pluriel ignorés, mot entier, même au milieu d'un texte libre ou d'une mise en forme) ;
 //  - addToolToText : ajoute un nom en suivant la présentation déjà là (liste à virgules ou une
 //    ligne par outil) ;
 //  - removeToolFromText : retire ce nom précis et son séparateur, rien d'autre ;
@@ -34,10 +34,48 @@ const NEEDLES = TOOLS
     .flatMap((tool) => [tool.name, ...(tool.aliases ?? [])].map((name, index) => ({
         id: tool.id,
         folded: [...foldText(name)],
+        words: foldText(name).split(' ').map((word) => [...word]),
         // Nom à reconnaître avec ses accents (« Dés »)
         exact: tool.exact === true && index === 0 ? name.normalize('NFC').toLowerCase() : null
     })))
     .sort((a, b) => b.folded.length - a.folded.length);
+
+/**
+ * Le nom est-il écrit à cet endroit ? Chaque mot peut porter une marque du pluriel en plus
+ * (« Outils de voleurs », « Luths », « Jeux de cartes ») ou, dans un nom de plusieurs mots, perdre
+ * la sienne (« Outil de voleur », « Carte à jouer »). Les mots courts (« de », « des ») et un nom
+ * à lire avec ses accents (« Dés ») sont pris tels quels.
+ * @param {string[]} folded - texte replié, un caractère par case
+ * @param {boolean[]} taken - caractères déjà pris par un nom plus long
+ * @param {number} from - début du nom dans folded
+ * @param {{ words: string[][], exact: string|null }} needle
+ * @returns {number} fin du nom dans folded (exclue), -1 s'il n'est pas là
+ */
+function needleEnd(folded, taken, from, needle) {
+    const { words } = needle;
+    let pos = from;
+    for (let w = 0; w < words.length; w++) {
+        const word = words[w];
+        const isLast = w === words.length - 1;
+        const endsAt = (p) => (isLast ? !isWordChar(folded[p]) : folded[p] === ' ');
+        const has = (size) => {
+            for (let k = 0; k < size; k++) if (folded[pos + k] !== word[k] || taken[pos + k]) return false;
+            return true;
+        };
+        const size = word.length;
+        let next = -1;
+        if (has(size)) {
+            const plural = folded[pos + size] === 's' || folded[pos + size] === 'x';
+            if (endsAt(pos + size)) next = pos + size;
+            else if (!needle.exact && size >= 3 && plural && !taken[pos + size] && endsAt(pos + size + 1)) next = pos + size + 1;
+        }
+        if (next < 0 && !needle.exact && words.length > 1 && size >= 5 && word[size - 1] === 's'
+            && has(size - 1) && endsAt(pos + size - 1)) next = pos + size - 1;
+        if (next < 0) return -1;
+        pos = isLast ? next : next + 1;
+    }
+    return pos;
+}
 
 const ENTITIES = { nbsp: ' ', amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
 const PIECE = /<[^>]*>|&(?:#\d+|#x[0-9a-f]+|[a-z]+);|\r\n|[\s\S]/giu;
@@ -106,17 +144,14 @@ function read(html) {
     const taken = new Array(folded.length).fill(false);
     const matches = [];
     for (const needle of NEEDLES) {
-        const size = needle.folded.length;
-        for (let i = 0; i + size <= folded.length; i++) {
-            if (folded[i] !== needle.folded[0]) continue;
-            if (isWordChar(folded[i - 1]) || isWordChar(folded[i + size])) continue;
-            let same = true;
-            for (let k = 0; k < size && same; k++) same = folded[i + k] === needle.folded[k] && !taken[i + k];
-            if (!same) continue;
+        for (let i = 0; i < folded.length; i++) {
+            if (folded[i] !== needle.folded[0] || isWordChar(folded[i - 1])) continue;
+            const stop = needleEnd(folded, taken, i, needle);
+            if (stop < 0) continue;
             const start = origin[i];
-            const end = origin[i + size - 1] + 1;
+            const end = origin[stop - 1] + 1;
             if (needle.exact && chars.slice(start, end).join('').normalize('NFC').toLowerCase() !== needle.exact) continue;
-            for (let k = 0; k < size; k++) taken[i + k] = true;
+            for (let k = i; k < stop; k++) taken[k] = true;
             matches.push({ id: needle.id, start, end });
         }
     }
