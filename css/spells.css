@@ -1190,6 +1190,29 @@ button.spell-no-slot {
     color: var(--warn);
 }
 
+/* Écrans tactiles : repères à toucher (« Lançable en rituel », « Pas d'emplacement ») hauts de 24 px,
+   avec une zone de toucher de 44 px (24 + 7 + 13) : elle déborde un peu sur le bas du champ du nom
+   et sur l'espace sous le repère, pour qu'un doigt posé juste à côté du texte affiche la phrase au
+   lieu d'ouvrir le clavier. Écran seulement : l'impression garde ses propres règles (print.css) */
+@media screen and (pointer: coarse) {
+    button.spell-book-ritual {
+        position: relative;
+        display: flex;
+        align-items: center;
+        min-height: 24px;
+    }
+
+    button.spell-book-ritual[hidden] {
+        display: none;
+    }
+
+    button.spell-book-ritual::after {
+        content: "";
+        position: absolute;
+        inset: -7px 0 -13px;
+    }
+}
+
 /* Écrans tactiles : cibles d'au moins 44 px (zone de toucher agrandie, components.css) */
 @media (pointer: coarse) {
     .spell-tooltip-toggle {
