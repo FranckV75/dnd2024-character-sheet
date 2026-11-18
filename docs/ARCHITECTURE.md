@@ -137,7 +137,8 @@ js/
 │   ├── local-save.js   Enregistrement automatique dans le navigateur et reprise de la fiche
 │   │                   enregistrée par un autre onglet (sans DOM, testé avec plusieurs onglets)
 │   ├── snapshots.js    Sauvegardes de secours datées (10 derniers états, sur l'appareil seulement ;
-│   │                   écran « Revenir à… » : ui/snapshots.js)
+│   │                   écran « Revenir à… » : ui/snapshots.js). Un état pris sur une fiche gardée
+│   │                   dans ce navigateur seulement (exemple) le retient : y revenir ne l'envoie pas au compte
 │   ├── update-check.js Comparaison de versions et fichiers à redemander (mises à jour : ui/update.js)
 │   ├── whats-new.js    Quelles nouveautés montrer sur cet appareil (dernière version vue retenue
 │   │                   dans le navigateur, dd2024_seen_version ; pure, testée)

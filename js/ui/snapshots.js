@@ -5,6 +5,9 @@
 // date et heure, nom du personnage, niveau et classe, moment de la sauvegarde. Revenir à un état
 // remplace la fiche comme un import (source 'snapshot') ; la fiche remplacée est gardée d'abord
 // (main.js, store.beforeReplace), donc un retour en arrière s'annule de la même façon.
+// Un état pris sur une fiche gardée dans ce navigateur seulement (personnage d'exemple, « Ne rien
+// faire ») le dit dans la liste et revient de la même façon : il n'est pas envoyé au compte
+// (meta.localOnly, js/cloud/controller.js).
 // Bouton masqué fiche verrouillée (edit-only), comme « Importer ».
 // =============================================================================
 
@@ -54,14 +57,19 @@ function openSnapshots(store, setStatus) {
             title: 'Revenir à cet état ?',
             message: `La fiche actuelle sera remplacée par « ${entry.name || 'Sans nom'} » du ${when}. `
                 + 'Elle est d\'abord gardée dans cette liste (sauf une fiche vierge) : vous pourrez y revenir. '
-                + 'Connecté à votre compte : le retour y est enregistré comme une modification ordinaire '
-                + '(une question est posée si la version en ligne a changé entre-temps).',
+                + (entry.local
+                    ? 'Cet état était gardé dans ce navigateur seulement : il n\'est pas envoyé à votre compte '
+                        + '(connecté, le bouton « Enregistrer en ligne » l\'y ajoute si vous le voulez).'
+                    : 'Connecté à votre compte : le retour y est enregistré comme une modification ordinaire '
+                        + '(une question est posée si la version en ligne a changé entre-temps).'),
             confirmLabel: 'Revenir à cet état'
         });
         if (!ok) return;
         close();
-        store.replace(character, { source: 'snapshot' });
-        setStatus(`Fiche revenue au ${when}.`);
+        store.replace(character, { source: 'snapshot', localOnly: entry.local });
+        setStatus(entry.local
+            ? `Fiche revenue au ${when} ; elle reste dans ce navigateur seulement.`
+            : `Fiche revenue au ${when}.`);
     }
 
     const list = el('ul', { class: 'account-list snapshot-list' },
@@ -71,7 +79,7 @@ function openSnapshots(store, setStatus) {
             return el('li', { class: 'account-item' },
                 el('div', { class: 'account-item-text' },
                     el('strong', { text: `${when} — ${entry.name || 'Sans nom'}` }),
-                    el('span', { class: 'muted', text: [detail, SNAPSHOT_REASONS[entry.reason] ?? SNAPSHOT_REASONS.replace].filter(Boolean).join(' · ') })),
+                    el('span', { class: 'muted', text: [detail, SNAPSHOT_REASONS[entry.reason] ?? SNAPSHOT_REASONS.replace, entry.local && 'Ce navigateur seulement'].filter(Boolean).join(' · ') })),
                 el('div', { class: 'account-item-actions' },
                     el('button', {
                         type: 'button', class: 'btn',

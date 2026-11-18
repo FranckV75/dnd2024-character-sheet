@@ -1,7 +1,7 @@
 // =============================================================================
 // MAIN.JS - Point d'entrée de l'application (v4)
 // Crée le store, construit la fiche puis branche chaque fonctionnalité.
-// Chaque module reçoit le même contexte : { root, store, setStatus, saveWithCharacter, saveNow, keepSnapshot, hadSavedSheet }.
+// Chaque module reçoit le même contexte : { root, store, setStatus, saveWithCharacter, saveNow, keepSnapshot, watchLocalOnly, hadSavedSheet }.
 // Enregistre la fiche dans le navigateur et reprend celle qu'un autre onglet y a enregistrée.
 // =============================================================================
 
@@ -43,6 +43,7 @@ import { createDefaultCharacter } from './state/schema.js';
 import { loadLocal, saveLocal, STORAGE_KEYS } from './state/persistence.js';
 import { createLocalSave } from './state/local-save.js';
 import { takeSnapshot, saveFreeingSnapshots, reasonForReplace } from './state/snapshots.js';
+import { storedSheetIsLocalOnly, SYNC_KEY } from './cloud/controller.js';
 import { initSnapshots } from './ui/snapshots.js';
 import { richTextAvailable } from './ui/sanitize.js';
 import { showRichTextNotice, showUnreadableSaveNotice } from './ui/boot-notices.js';
@@ -100,10 +101,14 @@ const store = createStore(saved ? saved.character : createDefaultCharacter());
 // À l'ouverture (fiche lisible), puis avant chaque remplacement de la fiche (import, nouvelle
 // fiche, chargement depuis le compte, retour à un état). Pas pour une fiche reprise d'un autre
 // onglet : celui-ci a déjà gardé la sienne.
-if (saved && saved.backupKey === undefined) takeSnapshot(saved.character, 'open');
+// Chaque état retient si la fiche était « gardée dans ce navigateur seulement » (personnage
+// d'exemple, « Ne rien faire ») : y revenir ne l'envoie pas au compte (js/cloud/controller.js).
+// Dit par le compte en ligne (account.js, ctx.watchLocalOnly) ; avant lui, par la base enregistrée.
+let sheetIsLocalOnly = () => storedSheetIsLocalOnly(store.get(), readStored(SYNC_KEY));
+if (saved && saved.backupKey === undefined) takeSnapshot(saved.character, 'open', { local: sheetIsLocalOnly() });
 store.beforeReplace((current, meta) => {
     if (meta.source === 'other-tab') return;
-    const { why } = takeSnapshot(current, reasonForReplace(meta.source));
+    const { why } = takeSnapshot(current, reasonForReplace(meta.source), { local: sheetIsLocalOnly() });
     // Échec (stockage plein, fiche énorme) : dit au joueur APRÈS le message de l'import (« … chargée »)
     if (why === 'storage' || why === 'too-big') {
         setTimeout(() => setStatus('⚠️ La fiche précédente n\'a pas pu être gardée dans « Revenir à… » (stockage de l\'appareil plein).'), 0);
@@ -156,7 +161,9 @@ const ctx = {
     /** Enregistre tout de suite la fiche (et les données associées) */
     saveNow: () => localSave.saveNow(),
     /** Garde l'état actuel de la fiche dans les sauvegardes de secours (avant un repos long…) */
-    keepSnapshot: (reason) => takeSnapshot(store.get(), reason),
+    keepSnapshot: (reason) => takeSnapshot(store.get(), reason, { local: sheetIsLocalOnly() }),
+    /** Le compte en ligne dit si la fiche ouverte est gardée dans ce navigateur seulement */
+    watchLocalOnly: (probe) => { sheetIsLocalOnly = probe; },
     /** Une fiche était déjà enregistrée dans ce navigateur à l'ouverture (joueur déjà venu) */
     hadSavedSheet: bootText !== null
 };

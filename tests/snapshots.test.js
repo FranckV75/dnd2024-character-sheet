@@ -126,6 +126,36 @@ describe('Sauvegardes de secours : ajout', () => {
         assert.equal(takeSnapshot(korgul(), 'open', { storage: null }).saved, false);
     });
 
+    test('Fiche gardée dans ce navigateur seulement (personnage d\'exemple) : l\'état le retient', () => {
+        const storage = fakeStorage();
+        takeSnapshot(korgul(), 'open', { storage, now: at(0) });
+        takeSnapshot(korgul({ char_name: 'Aldric' }), 'cloud', { storage, now: at(1), local: true });
+        assert.deepEqual(readSnapshots(storage).map((s) => [s.name, s.local]), [['Aldric', true], ['Korgul', false]]);
+        // Rien d'écrit pour une fiche ordinaire : la liste garde sa forme d'avant
+        assert.deepEqual(JSON.parse(storage.getItem(SNAPSHOTS_KEY)).map((s) => 'local' in s), [true, false]);
+    });
+
+    test('État déjà dans la liste : la mention « ce navigateur seulement » est ajoutée, jamais retirée', () => {
+        const storage = fakeStorage();
+        takeSnapshot(korgul({ char_name: 'Aldric' }), 'open', { storage, now: at(0) });
+        takeSnapshot(korgul(), 'open', { storage, now: at(1) });
+        assert.equal(takeSnapshot(korgul({ char_name: 'Aldric' }), 'cloud', { storage, now: at(2), local: true }).why, 'same');
+        assert.deepEqual(readSnapshots(storage).map((s) => [s.name, s.local, s.reason]), [['Korgul', false, 'open'], ['Aldric', true, 'open']]);
+        assert.equal(takeSnapshot(korgul({ char_name: 'Aldric' }), 'open', { storage, now: at(3) }).why, 'same');
+        assert.equal(readSnapshots(storage)[1].local, true);
+        // Un nouvel état ne fait pas perdre la mention des anciens
+        takeSnapshot(korgul({ hp_current: '2' }), 'long-rest', { storage, now: at(4) });
+        assert.deepEqual(readSnapshots(storage).map((s) => s.local), [false, false, true]);
+    });
+
+    test('Liste écrite avant cette mention, ou mention abîmée : état ordinaire', () => {
+        const storage = fakeStorage({ [SNAPSHOTS_KEY]: JSON.stringify([
+            { at: at(0).toISOString(), reason: 'open', name: 'A', text: '{}' },
+            { at: at(1).toISOString(), reason: 'open', name: 'B', text: '{}', local: 'oui' }
+        ]) });
+        assert.deepEqual(readSnapshots(storage).map((s) => s.local), [false, false]);
+    });
+
     test('Moment inconnu : rangé comme « remplacement de la fiche »', () => {
         const storage = fakeStorage();
         takeSnapshot(korgul(), 'bizarre', { storage });

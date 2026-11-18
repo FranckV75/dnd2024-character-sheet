@@ -37,6 +37,8 @@
 //  - une nouvelle fiche ou un import ne peut que CRÉER un personnage en ligne ;
 //  - un personnage d'exemple (source « example ») n'est ni lié ni envoyé : il reste dans ce
 //    navigateur tant que le joueur ne choisit pas « Enregistrer en ligne » ;
+//  - revenir (« Revenir à… », source « snapshot ») à un état pris sur une fiche gardée dans ce
+//    navigateur seulement (meta.localOnly : exemple, « Ne rien faire ») la laisse de même hors ligne ;
 //  - aucun envoi pendant qu'une question est posée ; fermer une question sans
 //    répondre choisit l'option la plus prudente (ne rien écraser) ;
 //  - une opération en ligne commencée avant un changement de fiche (nouvelle
@@ -116,6 +118,19 @@ export function parseBase(text) {
         // valeur illisible : fiche non liée
     }
     return { ...EMPTY_BASE };
+}
+
+/**
+ * La fiche enregistrée dans ce navigateur y est-elle « gardée seulement » (personnage d'exemple,
+ * « Ne rien faire ») ? Sert à l'ouverture de la page, avant que le contrôleur existe (main.js :
+ * sauvegarde de secours « Ouverture de la fiche »).
+ * @param {Object} character - fiche ouverte (déjà migrée)
+ * @param {string|null} baseText - base enregistrée avec elle (SYNC_KEY)
+ * @returns {boolean}
+ */
+export function storedSheetIsLocalOnly(character, baseText) {
+    const { detached, charHash } = parseBase(baseText);
+    return Boolean(detached && charHash) && charHash === sheetFingerprint(character);
 }
 
 /**
@@ -646,7 +661,10 @@ export function createCloudSync({
             if (meta.merged && current()) schedulePush();
             return;
         }
-        if (changedKeys === null && meta.source === 'snapshot' && linked() && cloudName(characterName(previous)) === current()) {
+        // Personnage d'exemple, ou retour à un état pris sur une fiche gardée dans ce navigateur
+        // seulement (un exemple, le plus souvent) : la fiche ne doit pas partir vers le compte
+        const keepLocal = meta.source === 'example' || (meta.source === 'snapshot' && meta.localOnly === true);
+        if (changedKeys === null && meta.source === 'snapshot' && !keepLocal && linked() && cloudName(characterName(previous)) === current()) {
             // Retour à une sauvegarde de secours du même personnage, lié en ligne : simple
             // modification, envoyée comme d'habitude (question « Deux versions différentes » si la
             // version en ligne a changé entre-temps), sans casser le lien
@@ -660,10 +678,10 @@ export function createCloudSync({
             epoch += 1;
             clearTimer(timer);
             timer = null;
-            // Personnage d'exemple : en plus, gardé dans ce navigateur seulement (comme après
-            // « Ne rien faire ») : rien n'est lu ni écrit en ligne tant que le joueur ne choisit
-            // pas « Enregistrer en ligne » (reattach), qui ne fait que créer ou demander
-            base = meta.source === 'example'
+            // keepLocal : en plus, gardée dans ce navigateur seulement (comme après « Ne rien
+            // faire ») : rien n'est lu ni écrit en ligne tant que le joueur ne choisit pas
+            // « Enregistrer en ligne » (reattach), qui ne fait que créer ou demander
+            base = keepLocal
                 ? { ...EMPTY_BASE, userId: user?.id || '', detached: true }
                 : { ...EMPTY_BASE };
             legacyName = '';

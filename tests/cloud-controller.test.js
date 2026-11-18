@@ -7,7 +7,7 @@
 
 import { test, describe, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { createCloudSync, SYNC_KEY, ACTIVE_NAME_KEY } from '../js/cloud/controller.js';
+import { createCloudSync, storedSheetIsLocalOnly, SYNC_KEY, ACTIVE_NAME_KEY } from '../js/cloud/controller.js';
 import { fingerprint, withoutV4State } from '../js/cloud/sync.js';
 import { createStore } from '../js/state/store.js';
 import { characterName } from '../js/state/persistence.js';
@@ -15,6 +15,7 @@ import { migrateCharacter } from '../js/state/migrate.js';
 import { createDefaultCharacter } from '../js/state/schema.js';
 import { fakeSupabase } from './helpers/fake-supabase.js';
 import { exampleCharacter, EXAMPLE_SOURCE } from '../js/state/examples.js';
+import { takeSnapshot, readSnapshots, snapshotCharacter, reasonForReplace } from '../js/state/snapshots.js';
 
 const U = { id: 'user-1', email: 'joueur@example.com' };
 const OTHER = { id: 'user-2', email: 'autre@example.com' };
@@ -1009,5 +1010,112 @@ describe('Personnage d\'exemple (source « example »)', () => {
         assert.deepEqual(writes(db), []);
         assert.equal(t.sync.getState().name, 'Korgul');
         assert.equal(t.sync.getState().detached, false);
+    });
+
+    // --- « Revenir à… » vers l'exemple lui-même : mêmes branchements que main.js et ui/snapshots.js ---
+    function snapshotStorage() {
+        const data = new Map();
+        return { getItem: (k) => (data.has(k) ? data.get(k) : null), setItem: (k, v) => data.set(k, String(v)), removeItem: (k) => data.delete(k) };
+    }
+    /** Chaque fiche remplacée est gardée, avec la mention « ce navigateur seulement » (main.js) */
+    function keepReplaced(t, snapshots) {
+        t.store.beforeReplace((current, meta) => {
+            takeSnapshot(current, reasonForReplace(meta.source), { storage: snapshots, local: t.sync.getState().detached });
+        });
+    }
+    /** Bouton « Revenir » d'une ligne de la fenêtre « Revenir à… » (ui/snapshots.js) */
+    function restore(t, snapshots, name) {
+        const entry = readSnapshots(snapshots).find((e) => e.name === name);
+        assert.ok(entry, `« ${name} » est dans « Revenir à… »`);
+        t.store.replace(snapshotCharacter(entry).character, { source: 'snapshot', localOnly: entry.local });
+        return entry;
+    }
+
+    test('Exemple, retour au personnage, puis retour à l\'exemple par « Revenir à… » : l\'exemple n\'est pas ajouté au compte', async () => {
+        const online = sheet('Korgul', { hp_current: '31' });
+        const db = fakeSupabase([row('Korgul', online, T0)]);
+        const t = tab({ db, storage: linkedStorage(online), character: online });
+        const snapshots = snapshotStorage();
+        keepReplaced(t, snapshots);
+        await t.sync.setUser(U);
+        openExample(t);
+        t.store.update({ hp_current: '20' });            // on joue avec l'exemple
+        await t.runTimers();
+        assert.equal(restore(t, snapshots, 'Korgul').local, false);
+        await t.runTimers();
+        assert.equal(t.sync.getState().name, 'Korgul', 'le personnage est de nouveau lié');
+        const entry = restore(t, snapshots, 'Aldric Pierrefeu');
+        assert.equal(entry.local, true, 'l\'état de l\'exemple retient qu\'il était gardé dans ce navigateur');
+        await t.runTimers();
+        await t.sync.check();
+        await t.sync.flush();
+        assert.deepEqual(writes(db), [], 'rien n\'est écrit en ligne');
+        assert.deepEqual(t.asked, []);
+        assert.deepEqual(db.table.map(r => r.name), ['Korgul']);
+        assert.equal(t.store.get().hp_current, '20');
+        assert.equal(t.sync.getState().name, '');
+        assert.equal(t.sync.getState().detached, true);
+        // « Enregistrer en ligne » reste le seul chemin vers le compte
+        await t.sync.reattach();
+        assert.deepEqual(writes(db).map(c => c.op), ['insert']);
+        assert.equal(t.sync.getState().name, 'Aldric Pierrefeu');
+    });
+
+    test('Exemple, « Mes personnages » > « Ouvrir », puis retour à l\'exemple : toujours rien d\'envoyé', async () => {
+        const db = fakeSupabase([row('Korgul', sheet('Korgul'), T0)]);
+        const t = tab({ db, answers: ['confirm'] });
+        const snapshots = snapshotStorage();
+        keepReplaced(t, snapshots);
+        await t.sync.setUser(U);                         // fiche vierge : Korgul est chargé
+        openExample(t);
+        await t.sync.open('Korgul');
+        assert.deepEqual(t.asked.map(a => a.kind), ['replace-unsynced']);
+        assert.equal(t.sync.getState().name, 'Korgul');
+        restore(t, snapshots, 'Aldric Pierrefeu');
+        await t.runTimers();
+        assert.deepEqual(writes(db), []);
+        assert.equal(t.sync.getState().detached, true);
+    });
+
+    test('Exemple portant le nom du personnage lié : le retour à l\'exemple ne modifie pas ce personnage en ligne', async () => {
+        const online = sheet('Korgul', { hp_current: '31' });
+        const db = fakeSupabase([row('Korgul', online, T0)]);
+        const t = tab({ db, storage: linkedStorage(online), character: online, answers: ['confirm'] });
+        const snapshots = snapshotStorage();
+        keepReplaced(t, snapshots);
+        await t.sync.setUser(U);
+        openExample(t, { ...example(), char_name: 'Korgul' });
+        await t.sync.open('Korgul');                     // l'exemple « Korgul » est gardé, le vrai est rouvert
+        assert.equal(t.sync.getState().name, 'Korgul');
+        const entry = readSnapshots(snapshots).find((e) => e.local);
+        t.store.replace(snapshotCharacter(entry).character, { source: 'snapshot', localOnly: entry.local });
+        await t.runTimers();
+        assert.deepEqual(writes(db), []);
+        assert.equal(cloud(db, 'Korgul').data.hp_current, '31');
+        assert.equal(t.sync.getState().detached, true);
+    });
+
+    test('Retour à un état d\'une fiche ordinaire (non gardée dans ce navigateur) : comme avant, elle est créée en ligne', async () => {
+        const db = fakeSupabase([]);
+        const t = tab({ db });
+        await t.sync.setUser(U);
+        t.store.replace(sheet('Mira'), { source: 'snapshot', localOnly: false });
+        await t.runTimers();
+        assert.deepEqual(writes(db).map(c => c.op), ['insert']);
+        assert.equal(t.sync.getState().name, 'Mira');
+    });
+
+    test('Ouverture de la page : la base enregistrée dit si la fiche est gardée dans ce navigateur seulement', async () => {
+        const db = fakeSupabase([]);
+        const t = tab({ db });
+        await t.sync.setUser(U);
+        openExample(t);
+        const base = JSON.stringify(t.sync.getBase());
+        assert.equal(storedSheetIsLocalOnly(t.store.get(), base), true);
+        assert.equal(storedSheetIsLocalOnly(sheet('Korgul'), base), false, 'base enregistrée avec une autre fiche');
+        assert.equal(storedSheetIsLocalOnly(t.store.get(), null), false);
+        assert.equal(storedSheetIsLocalOnly(t.store.get(), '{abîmé'), false);
+        const linked = sheet('Korgul');
+        assert.equal(storedSheetIsLocalOnly(linked, linkedStorage(linked, { charHash: fingerprint(linked) }).get(SYNC_KEY)), false);
     });
 });

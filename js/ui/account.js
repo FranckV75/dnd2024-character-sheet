@@ -140,9 +140,10 @@ function takeEmailLinkError() {
 }
 
 /**
- * @param {{ store: Object, setStatus: (message: string) => void, saveWithCharacter: Function, saveNow: Function }} ctx
+ * @param {{ store: Object, setStatus: (message: string) => void, saveWithCharacter: Function, saveNow: Function,
+ *           watchLocalOnly?: (probe: () => boolean) => void }} ctx
  */
-export function initAccount({ store, setStatus, saveWithCharacter, saveNow }) {
+export function initAccount({ store, setStatus, saveWithCharacter, saveNow, watchLocalOnly }) {
     const host = document.getElementById('account-controls');
     if (!host) return;
     const linkFailed = takeEmailLinkError();
@@ -164,6 +165,8 @@ export function initAccount({ store, setStatus, saveWithCharacter, saveNow }) {
         persist: saveNow,
         ui: { ask: (kind, data) => (QUESTIONS[kind] ? QUESTIONS[kind](data) : Promise.resolve(null)), status: setStatus }
     });
+    // Les sauvegardes de secours retiennent si la fiche était gardée dans ce navigateur seulement (main.js)
+    watchLocalOnly?.(() => sync.getState().detached);
     // Base changée par un autre onglet (fiche inchangée) : reprise si elle va avec la fiche enregistrée
     saveWithCharacter(SYNC_KEY, () => JSON.stringify(sync.getBase()), (storedSheet) => sync.adoptStoredBase(storedSheet));
 

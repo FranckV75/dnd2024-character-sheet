@@ -16,7 +16,9 @@
 //  - la fiche elle-même passe toujours avant : saveFreeingSnapshots libère la place des états quand
 //    son enregistrement échoue (main.js), mais seulement si cela permet de l'enregistrer, et remet
 //    ensuite les plus récents qui tiennent encore ;
-//  - deux onglets : chaque écriture relit la liste juste avant (au pire un état est perdu, jamais la fiche).
+//  - deux onglets : chaque écriture relit la liste juste avant (au pire un état est perdu, jamais la fiche) ;
+//  - un état pris sur une fiche « gardée dans ce navigateur seulement » (personnage d'exemple, « Ne
+//    rien faire ») le retient (local) : y revenir ne l'envoie pas au compte (js/cloud/controller.js).
 // Testé sans navigateur : tests/snapshots.test.js.
 // =============================================================================
 
@@ -81,7 +83,8 @@ function isEntry(value) {
 /**
  * États gardés, du plus récent au plus ancien.
  * @param {Storage} [storage]
- * @returns {Array<{ at: string, reason: string, name: string, level: string, cls: string, text: string }>}
+ * @returns {Array<{ at: string, reason: string, name: string, level: string, cls: string, local: boolean, text: string }>}
+ *          local : la fiche était gardée dans ce navigateur seulement (pas envoyée au compte)
  */
 export function readSnapshots(storage = defaultStorage()) {
     let list;
@@ -97,8 +100,14 @@ export function readSnapshots(storage = defaultStorage()) {
         name: typeof entry.name === 'string' ? entry.name : '',
         level: typeof entry.level === 'string' ? entry.level : '',
         cls: typeof entry.cls === 'string' ? entry.cls : '',
+        local: entry.local === true,
         text: entry.text
     }));
+}
+
+/** État tel qu'il est écrit : la mention « local » n'y figure que si elle est vraie */
+function stored({ local, ...entry }) {
+    return local ? { ...entry, local: true } : entry;
 }
 
 /** Écrit la liste ; stockage plein : retire les plus anciens jusqu'à ce que ça passe (garde au moins `keep`) */
@@ -132,11 +141,13 @@ const shortText = (value) => (typeof value === 'string' || typeof value === 'num
  * Garde l'état de la fiche.
  * @param {Object} character
  * @param {string} reason - clé de SNAPSHOT_REASONS
- * @param {{ storage?: Storage, now?: Date, max?: number, maxChars?: number }} [options]
+ * @param {{ storage?: Storage, now?: Date, max?: number, maxChars?: number, local?: boolean }} [options]
+ *        local : la fiche est gardée dans ce navigateur seulement (personnage d'exemple, « Ne rien
+ *        faire ») ; l'état le retient, y compris s'il est déjà dans la liste
  * @returns {{ saved: boolean, why?: 'blank'|'same'|'too-big'|'storage' }}
  */
 export function takeSnapshot(character, reason, {
-    storage = defaultStorage(), now = new Date(), max = MAX_SNAPSHOTS, maxChars = MAX_TOTAL_CHARS
+    storage = defaultStorage(), now = new Date(), max = MAX_SNAPSHOTS, maxChars = MAX_TOTAL_CHARS, local = false
 } = {}) {
     if (!character || typeof character !== 'object' || !storage) return { saved: false, why: 'storage' };
     let text;
@@ -149,20 +160,29 @@ export function takeSnapshot(character, reason, {
     if (text.length > maxChars) return { saved: false, why: 'too-big' };
     const existing = readSnapshots(storage);
     const content = contentText(character);
-    if (existing.some((old) => sameContent(old.text, content))) return { saved: false, why: 'same' };
+    const twin = existing.find((old) => sameContent(old.text, content));
+    if (twin) {
+        // Déjà dans la liste : seule la mention « ce navigateur seulement » est ajoutée, jamais retirée
+        if (local && !twin.local) {
+            twin.local = true;
+            writeList(storage, existing.map(stored));
+        }
+        return { saved: false, why: 'same' };
+    }
     const entry = {
         at: now.toISOString(),
         reason: Object.hasOwn(SNAPSHOT_REASONS, reason) ? reason : 'replace',
         name: characterName(character),
         level: shortText(character.char_level),
         cls: shortText(character.char_class),
+        ...(local ? { local: true } : {}),
         text
     };
     const list = [entry];
     let total = text.length;
     for (const old of existing) {
         if (list.length >= max || total + old.text.length > maxChars) break;
-        list.push(old);
+        list.push(stored(old));
         total += old.text.length;
     }
     return writeList(storage, list) ? { saved: true } : { saved: false, why: 'storage' };
@@ -199,7 +219,7 @@ export function saveFreeingSnapshots(save, storage = defaultStorage()) {
         }
         return { saved: false, dropped: 0 };
     }
-    const kept = writeList(storage, list, 0) ?? [];
+    const kept = writeList(storage, list.map(stored), 0) ?? [];
     return { saved: true, dropped: list.length - kept.length };
 }
 
