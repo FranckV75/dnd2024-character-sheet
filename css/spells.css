@@ -855,6 +855,75 @@
     }
 }
 
+/* Nom et bouton ▾ (liste des sorts sans clavier virtuel) côte à côte */
+.spell-name-wrap {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.spell-name-wrap > .spell-name {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.spell-pick {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    min-height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--gold);
+    cursor: pointer;
+}
+
+.spell-pick[hidden] {
+    display: none;
+}
+
+.spell-pick .icon {
+    width: 13px;
+    height: 13px;
+}
+
+.spell-pick:hover,
+.spell-pick[aria-expanded="true"] {
+    color: var(--accent);
+    background: color-mix(in srgb, var(--gold-glow) 35%, transparent);
+}
+
+.spell-pick:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+/* ✕ « Effacer la ligne » à la place de la corbeille, tant que la saisie est en cours */
+.spell-clear {
+    min-width: 28px;
+    min-height: 28px;
+}
+
+.spell-clear[hidden],
+.spell-del[hidden] {
+    display: none;
+}
+
+.spells-table tr.spell-entry .spell-clear {
+    visibility: visible;
+}
+
+@media screen {
+    /* Ligne de saisie touchée (niveau choisi) : le niveau reste affiché hors du focus */
+    .spells-table tr.spell-entry.is-touched:not(:focus-within) .col-lvl > * {
+        visibility: visible;
+    }
+}
+
 /* « Ajouter un sort » : la ligne de saisie s'illumine brièvement */
 @media (prefers-reduced-motion: no-preference) {
     .spells-table tr.is-called > td {
@@ -1044,9 +1113,17 @@ button.spell-book-ritual {
         width: 48px;
     }
 
-    .spell-del {
+    .spell-del,
+    .spell-clear {
         min-width: 36px;
         min-height: 36px;
+    }
+
+    /* ▾ : 26 px de large, 44 px de haut sous le doigt (la ligne de saisie mesure déjà 44 px) */
+    .spell-pick {
+        width: 26px;
+        min-height: 44px;
+        margin-block: -8px;
     }
 }
 

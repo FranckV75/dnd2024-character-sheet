@@ -65,6 +65,7 @@ import { FEAT_SLOT_ORDER } from '../state/schema.js';
 import { ABILITY_IDS } from '../data/constants.js';
 import { loadSpells } from '../data/spells.js';
 import { classSpellCounts } from '../rules/class-progression.js';
+import { spellPickerGroups, pickerMaxLevel } from '../rules/spell-picker.js';
 import {
     wholeListSource, fitsWholeList, grantedSpellKeys, spellPrepState, inCombatView, isCastable, castModes, castSlotOptions, useSpellSlot
 } from '../rules/spell-preparation.js';
@@ -114,6 +115,12 @@ const COMBAT_VIEW_HELP = {
     on: "Au combat : seulement vos sorts prêts à lancer ; « Lancer » coche l'emplacement dépensé.",
     off: 'Grimoire complet : tous vos sorts, pour en ajouter ou en modifier.'
 };
+/** Bouton ▾ (liste des sorts sans clavier virtuel) et bouton ✕ de la ligne de saisie : infobulle
+ *  (souris), puis phrase courte dans la barre du haut quand on les touche (tablette) */
+const PICK_TITLE = 'Choisir dans la liste des sorts (sans ouvrir le clavier)';
+const PICK_HELP = 'Liste des sorts : touchez-en un pour remplir la ligne (✓ : déjà noté, grisé).';
+const CLEAR_TITLE = "Effacer la ligne : la remettre à zéro (rien d'enregistré n'est supprimé)";
+const CLEAR_HELP = 'Ligne de saisie remise à zéro ; vos autres sorts ne sont pas touchés.';
 const FLAG_COLUMNS = [
     ['c', 'C', 'Concentration'],
     ['r', 'R', 'Rituel'],
@@ -148,7 +155,8 @@ export function initSpells(ctx) {
     // Niveau choisi dans la ligne de saisie avant d'y écrire (null : celui du filtre actif)
     let entryLevel = null;
     // Sort créé depuis la ligne de saisie, tant que le focus ne l'a pas quittée :
-    // { index, json } (json : sa dernière version écrite ici, voir settleDraft)
+    // { index, json, level } (json : sa dernière version écrite ici, voir settleDraft ; level :
+    // niveau choisi sur la ligne, '' si aucun, qui limite la liste des sorts à parcourir)
     let draft = null;
     // Infobulle des sorts (spells/tooltip.js), partagée par le tableau et les sorts donnés
     const tooltip = createSpellTooltip({ store });
@@ -164,9 +172,11 @@ export function initSpells(ctx) {
             // Ligne de saisie : le sort est créé à la première saisie qui a du contenu, au niveau
             // choisi dans la ligne ou à celui du filtre actif. Un niveau seul (liste, flèches du
             // clavier) est gardé pour la ligne, sans rien écrire dans la fiche.
-            const row = { ...newSpellRow(EMPTY_SPELL, entryLevel ?? view.level), ...patch };
+            const chosenLevel = entryLevel ?? view.level;
+            const row = { ...newSpellRow(EMPTY_SPELL, chosenLevel), ...patch };
             if (!hasSpellContent(row)) {
                 if ('lvl' in patch) entryLevel = String(patch.lvl);
+                syncClearButtons();
                 return;
             }
             entryLevel = null;
@@ -176,14 +186,77 @@ export function initSpells(ctx) {
             } finally {
                 creatingFromEntry = false;
             }
-            draft = { index, json: JSON.stringify(spellsOf()[index]) };
+            draft = { index, json: JSON.stringify(spellsOf()[index]), level: 'lvl' in patch ? String(patch.lvl) : chosenLevel };
+            syncClearButtons();
             return;
         }
         if (!list[index]) return;
         const next = list.slice();
         next[index] = { ...list[index], ...patch };
         store.update({ dynamic_spells: next });
-        if (draft?.index === index) draft.json = JSON.stringify(spellsOf()[index]);
+        if (draft?.index === index) {
+            draft.json = JSON.stringify(spellsOf()[index]);
+            if ('lvl' in patch) draft.level = String(patch.lvl);
+        }
+    }
+
+    /**
+     * Bouton ✕ « Effacer la ligne » : la ligne de saisie revient à zéro (niveau « — », nom vide,
+     * cases décochées). Si la saisie a déjà créé un sort dans la fiche, il est retiré seulement
+     * s'il est encore le brouillon de cette saisie (le focus n'a pas quitté la ligne), le dernier
+     * de la liste et tel que cette saisie l'a laissé : un sort validé n'est jamais supprimé.
+     * @param {Object} r - éléments de la ligne
+     */
+    function clearEntry(r) {
+        const list = spellsOf();
+        const hadFocus = r.tr.contains(document.activeElement);
+        r.detach.hide();
+        tooltip.hide();
+        if (r.index === list.length) {
+            entryLevel = null;
+            r.name.value = '';
+            render(store.get(), ['dynamic_spells'], { structural: true });
+        } else if (draft?.index === r.index) {
+            const untouched = r.index === list.length - 1 && JSON.stringify(list[r.index]) === draft.json;
+            draft = null;
+            if (!untouched) {
+                // La fiche a changé entre-temps (synchronisation) : rien n'est supprimé
+                render(store.get(), ['dynamic_spells'], { structural: true });
+                return;
+            }
+            entryLevel = null;
+            store.update({ dynamic_spells: list.slice(0, r.index) });
+            // La ligne redevient la ligne de saisie : le nom (qui garde peut-être le focus) est vidé
+            r.name.value = '';
+        } else {
+            return;
+        }
+        setStatus(CLEAR_HELP);
+        if (hadFocus && document.activeElement !== r.name && !r.tr.hidden) r.name.focus();
+    }
+
+    /** Bouton ✕ : ligne de saisie dont le niveau a été changé, ou sort tout juste créé par la saisie */
+    function syncClearButtons() {
+        const count = spellsOf().length;
+        for (const r of rowEls) {
+            const show = !isLocked() && (r.index === count ? (entryLevel ?? view.level) !== view.level : draft?.index === r.index);
+            r.clear.hidden = !show;
+            r.del.hidden = show;
+            r.tr.classList.toggle('is-touched', show);
+        }
+    }
+
+    /**
+     * Niveau qui limite la liste des sorts à parcourir : celui choisi sur la ligne (ligne de saisie,
+     * sort tout juste créé), sinon le niveau noté (« 0 » des lignes vierges : non choisi), sinon la
+     * pastille de niveau active ; '' : tous les niveaux permis.
+     */
+    function pickerLevelOf(r) {
+        const list = spellsOf();
+        if (r.index === list.length) return entryLevel ?? view.level;
+        if (draft?.index === r.index) return draft.level;
+        const level = rowLevel(list[r.index]);
+        return level !== '0' ? level : view.level;
     }
 
     /**
@@ -369,6 +442,26 @@ export function initSpells(ctx) {
             on: { click: () => deleteRow(r) }
         }, icon('trash'));
 
+        // Ligne de saisie : ✕ la remet à zéro (voir clearEntry). Le focus reste dans le champ
+        // (mousedown) : la saisie en cours n'est pas « quittée » avant l'effacement
+        r.clear = el('button', {
+            type: 'button', class: 'btn-icon spell-clear', title: CLEAR_TITLE, 'aria-label': 'Effacer la ligne', hidden: true,
+            on: { mousedown: (event) => event.preventDefault(), click: () => clearEntry(r) }
+        }, icon('close'));
+
+        // ▾ : liste des sorts à parcourir, sans focus sur le nom (pas de clavier virtuel)
+        r.pick = el('button', {
+            type: 'button', class: 'spell-pick', title: PICK_TITLE, 'aria-label': 'Choisir dans la liste des sorts', hidden: true,
+            on: {
+                mousedown: (event) => event.preventDefault(),
+                click: () => {
+                    tooltip.hide();
+                    r.detach.open();
+                    if (r.pick.getAttribute('aria-expanded') === 'true') setStatus(PICK_HELP);
+                }
+            }
+        }, icon('chevron'));
+
         r.name.addEventListener('mouseenter', () => scheduleShow(r, 'hover'));
         r.name.addEventListener('mouseleave', tooltip.scheduleHide);
         r.name.addEventListener('focus', () => scheduleShow(r, 'focus'));
@@ -377,36 +470,73 @@ export function initSpells(ctx) {
         r.detach = attachAutocomplete(r.name, {
             minChars: 2,
             maxItems: 12,
-            getItems: (query) => {
+            // Nom vide touché, ou bouton ▾ : toute la liste de sorts, rangée par niveau
+            browse: { enabled: () => !isLocked() && spellsDb.length > 0, trigger: r.pick },
+            getItems: (query, { browse = false } = {}) => {
                 const character = store.get();
                 const derivedNow = derivedOf(character);
                 const classSlug = effectiveSpellClass(character.spell_class_filter, derivedNow.classSlug, derivedNow.subclass);
+                if (browse) {
+                    const groups = spellPickerGroups(spellsDb, {
+                        classSlug, query,
+                        level: pickerLevelOf(r),
+                        maxLevel: pickerMaxLevel(derivedNow.classSlug, derivedNow.spellSlots),
+                        // Le sort de cette ligne elle-même ne compte pas comme « déjà noté »
+                        rows: spellsOf().filter((_, i) => i !== r.index)
+                    });
+                    return groups.flatMap(group => [
+                        { header: group.title },
+                        ...group.items.map(item => ({
+                            label: item.name,
+                            detail: item.noted ? 'déjà noté' : item.spell.school,
+                            mark: item.noted ? '✓' : '',
+                            disabled: item.noted,
+                            value: item.spell
+                        }))
+                    ]);
+                }
                 return searchSpells(spellsDb, query, { classSlug, limit: 12 }).map(spell => ({
                     label: spellDisplayName(spell),
                     detail: `niv. ${spell.level} · ${spell.school}`,
                     value: spell
                 }));
             },
-            onSelect: (item) => {
-                const row = spellsOf()[r.index];
+            onSelect: (item, { fromTrigger = false } = {}) => {
+                const list = spellsOf();
+                // Bouton ▾ utilisé au clavier : il garde le focus (il disparaît une fois le nom rempli)
+                const pickFocused = document.activeElement === r.pick;
+                // Ligne de saisie (sort pas encore créé) : le choix crée le sort
+                const isEntry = r.index === list.length;
+                const row = isEntry ? {} : list[r.index];
                 if (!row) return;
                 const filled = spellToRow(item.value, row);
                 editRow(r.index, filled);
                 r.name.value = filled.name;
+                // Choisi avec le bouton ▾, sans être entré dans la ligne : le choix est validé
+                // (le sort se range à sa place, une nouvelle ligne de saisie apparaît dessous)
+                if (fromTrigger && (pickFocused || !r.tr.contains(document.activeElement))) {
+                    if (draft?.index === r.index) draft = null;
+                    if (pickFocused) r.pick.blur();
+                    render(store.get(), ['dynamic_spells'], { structural: true });
+                    if (isEntry) setStatus(`${filled.name} : ajouté au grimoire.`);
+                    // Au clavier : le focus passe au bouton ▾ de la nouvelle ligne de saisie
+                    const next = rowEls[spellsOf().length];
+                    if (pickFocused && next && !next.tr.hidden && !next.pick.hidden) next.pick.focus();
+                }
             }
         });
 
         r.tr = el('tr', {},
             el('td', { class: 'col-prep' }, r.prep),
             el('td', { class: 'col-lvl' }, r.lvl),
-            el('td', { class: 'col-name' }, r.name, r.adept, r.affinity, r.ritual),
+            el('td', { class: 'col-name' }, el('div', { class: 'spell-name-wrap' }, r.name, r.pick), r.adept, r.affinity, r.ritual),
             el('td', { class: 'col-school' }, r.texts.school),
             el('td', { class: 'col-time' }, r.texts.time),
             el('td', { class: 'col-range' }, r.texts.range),
             el('td', { class: 'col-crm' }, el('span', { class: 'spell-flags' }, flagLabels)),
             el('td', { class: 'col-note' }, r.note),
             el('td', { class: 'col-cast' }, r.cast),
-            el('td', { class: 'col-del edit-only' }, r.del));
+            el('td', { class: 'col-del edit-only' }, r.del, r.clear));
 
         // La ligne reste affichée (et à sa place) tant que le focus y est ; le filtre de niveau
         // et le tri sont réappliqués quand le focus la quitte (niveau ou nom modifié, ligne
@@ -609,7 +739,13 @@ export function initSpells(ctx) {
         const cantrip = level === '0';
 
         r.tr.classList.toggle('spell-entry', entry);
-        r.lvl.value = level;
+        // Ligne de saisie seulement : choix « — » (pas de niveau) en tête du menu
+        const blank = r.lvl.options[0]?.value === '';
+        if (entry && !blank) r.lvl.prepend(el('option', { value: '', text: '—' }));
+        if (!entry && blank) r.lvl.options[0].remove();
+        r.lvl.value = entry ? (entryLevel ?? view.level) : level;
+        // ▾ : ligne de saisie et lignes au nom vide, fiche modifiable
+        r.pick.hidden = locked || !(entry || name === '');
         // Valeurs affichées telles qu'enregistrées (seul le HTML v3 est nettoyé) : rien n'est perdu
         setValue(r.name, cellText(row.name), force);
         for (const [key] of TEXT_COLUMNS) setValue(r.texts[key], cellText(row[key]), force);
@@ -665,6 +801,8 @@ export function initSpells(ctx) {
         r.cast.setAttribute('aria-label', `Lancer le sort ${what}`);
         r.del.disabled = entry;
         applyRowLock(r, locked);
+        // Fiche verrouillée : pas de liste des sorts (on ne peut pas éditer)
+        if (locked) r.detach.hide();
     }
 
     /**
@@ -741,6 +879,7 @@ export function initSpells(ctx) {
         // vidée est encore en cours de saisie ; aucune saisie possible verrouillé, ni au combat
         entry.tr.hidden = locked || hasDraft || view.combat;
         body.classList.toggle('is-combat', view.combat);
+        syncClearButtons();
 
         const trs = [...order.map(i => rowEls[i].tr), entry.tr];
         if (force || structural || (countChanged && !creatingFromEntry)) {
