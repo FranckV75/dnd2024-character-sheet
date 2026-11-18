@@ -4,7 +4,10 @@
 // Propose les personnages fictifs de js/data/examples.js à un nouveau joueur. Ouvrir un exemple
 // REMPLACE la fiche ouverte, avec les mêmes protections que « Nouvelle fiche » et « Importer » :
 //  - la fenêtre dit d'abord ce qui arrive à la fiche ouverte, et rien ne change avant le choix ;
-//  - la fiche remplacée est gardée dans « Revenir à… » (store.beforeReplace, main.js) ;
+//  - la fiche remplacée est gardée dans « Revenir à… » (store.beforeReplace, main.js), et la
+//    fenêtre conseille de l'exporter d'abord, comme « Nouvelle fiche » et « Importer » : cette
+//    liste ne garde que les derniers états de l'appareil. Les états de l'exemple n'en font jamais
+//    sortir le dernier état de la fiche du joueur (js/state/snapshots.js) ;
 //  - l'exemple n'est lié à aucun personnage en ligne et n'est pas envoyé au compte
 //    (source « example », js/cloud/controller.js) : aucun personnage en ligne n'est modifié.
 // Bouton masqué fiche verrouillée (edit-only), comme « Nouvelle fiche » et « Importer ».
@@ -25,7 +28,8 @@ function replacementNote(character) {
     if (isBlankCharacter(character)) return 'La fiche ouverte est vierge : rien ne sera perdu.';
     const name = characterName(character);
     return `La fiche ouverte (${name ? `« ${name} »` : 'sans nom'}) sera remplacée par l'exemple choisi. `
-        + 'Elle est d\'abord gardée parmi les derniers états de cet appareil : « Revenir à… » permet de la retrouver.';
+        + 'Elle sera gardée parmi les derniers états de cet appareil (« Revenir à… »). '
+        + 'Pour la conserver durablement, exportez-la d\'abord : « Annuler », puis « Exporter ».';
 }
 
 /**

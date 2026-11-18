@@ -148,6 +148,38 @@ describe('Sauvegardes de secours : ajout', () => {
         assert.deepEqual(readSnapshots(storage).map((s) => s.local), [false, false, true]);
     });
 
+    test('Jouer longtemps avec un personnage d\'exemple : le dernier état de sa propre fiche reste dans la liste', () => {
+        const storage = fakeStorage();
+        takeSnapshot(korgul({ hp_current: '7' }), 'open', { storage, now: at(0) });
+        takeSnapshot(korgul(), 'example', { storage, now: at(1) });       // la fiche du joueur, remplacée par l'exemple
+        // Ouvertures, repos longs et montées de niveau de l'exemple, bien plus que la liste n'en garde
+        for (let i = 1; i <= 3 * MAX_SNAPSHOTS; i++) {
+            takeSnapshot(korgul({ char_name: 'Aldric', hp_current: String(i) }), i % 3 ? 'open' : 'long-rest', { storage, now: at(1 + i), local: true });
+        }
+        const list = readSnapshots(storage);
+        assert.equal(list.length, MAX_SNAPSHOTS);
+        assert.deepEqual([list.at(-1).name, list.at(-1).reason], ['Korgul', 'example'], 'la fiche du joueur est toujours là');
+        assert.equal(snapshotCharacter(list.at(-1)).character.char_name, 'Korgul');
+        // Les états les plus récents de l'exemple sont gardés, dans l'ordre
+        assert.deepEqual(list.slice(0, -1).map((s) => JSON.parse(s.text).hp_current),
+            Array.from({ length: MAX_SNAPSHOTS - 1 }, (_, i) => String(3 * MAX_SNAPSHOTS - i)));
+        // Retour à sa propre fiche : la liste tourne de nouveau comme d'habitude
+        for (let i = 1; i <= MAX_SNAPSHOTS; i++) takeSnapshot(korgul({ hp_current: String(100 + i) }), 'open', { storage, now: at(100 + i) });
+        assert.ok(readSnapshots(storage).every((s) => s.name === 'Korgul' && s.reason === 'open'));
+    });
+
+    test('Fiche ordinaire : liste pleine, le plus ancien part toujours (rien de changé)', () => {
+        const storage = fakeStorage();
+        takeSnapshot(korgul({ char_name: 'Mira' }), 'new', { storage, now: at(0) });
+        for (let i = 1; i <= MAX_SNAPSHOTS; i++) takeSnapshot(korgul({ hp_current: String(i) }), 'open', { storage, now: at(i) });
+        assert.equal(readSnapshots(storage).some((s) => s.name === 'Mira'), false);
+        // Une seule place : le nouvel état passe, même celui d'un exemple
+        const one = fakeStorage();
+        takeSnapshot(korgul(), 'example', { storage: one, now: at(0), max: 1 });
+        takeSnapshot(korgul({ char_name: 'Aldric' }), 'open', { storage: one, now: at(1), max: 1, local: true });
+        assert.deepEqual(readSnapshots(one).map((s) => s.name), ['Aldric']);
+    });
+
     test('Liste écrite avant cette mention, ou mention abîmée : état ordinaire', () => {
         const storage = fakeStorage({ [SNAPSHOTS_KEY]: JSON.stringify([
             { at: at(0).toISOString(), reason: 'open', name: 'A', text: '{}' },

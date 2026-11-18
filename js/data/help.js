@@ -48,7 +48,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Essayer sans rien préparer",
-                text: "Le bouton « Essayer un personnage d'exemple » ouvre un Guerrier de niveau 3 ou une Magicienne de niveau 5, prêts à jouer. Votre fiche est d'abord gardée dans « Revenir à… ». L'exemple reste dans ce navigateur : vos personnages en ligne ne sont pas modifiés."
+                text: "Le bouton « Essayer un personnage d'exemple » ouvre un Guerrier de niveau 3 ou une Magicienne de niveau 5, prêts à jouer. Votre fiche est d'abord gardée dans « Revenir à… » ; pour la conserver durablement, faites un « Exporter » avant. L'exemple reste dans ce navigateur : vos personnages en ligne ne sont pas modifiés."
             }
         ]
     },
@@ -74,7 +74,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "« Revenir à… »",
-                text: "L'appareil garde les dix derniers états de la fiche : à chaque ouverture, avant un repos long, avant une montée de niveau et avant tout remplacement de la fiche. Ouvrez « Revenir à… », puis touchez « Revenir » sur la ligne voulue. Ces copies restent sur cet appareil seulement."
+                text: "L'appareil garde les dix derniers états de la fiche : à chaque ouverture, avant un repos long, avant une montée de niveau et avant tout remplacement de la fiche. Ouvrez « Revenir à… », puis touchez « Revenir » sur la ligne voulue. Ces copies restent sur cet appareil seulement, et les plus anciennes laissent la place aux nouvelles : pour garder une fiche longtemps, utilisez « Exporter »."
             },
             {
                 title: "« Imprimer »",

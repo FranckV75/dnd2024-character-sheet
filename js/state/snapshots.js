@@ -18,7 +18,10 @@
 //    ensuite les plus récents qui tiennent encore ;
 //  - deux onglets : chaque écriture relit la liste juste avant (au pire un état est perdu, jamais la fiche) ;
 //  - un état pris sur une fiche « gardée dans ce navigateur seulement » (personnage d'exemple, « Ne
-//    rien faire ») le retient (local) : y revenir ne l'envoie pas au compte (js/cloud/controller.js).
+//    rien faire ») le retient (local) : y revenir ne l'envoie pas au compte (js/cloud/controller.js) ;
+//  - jouer avec un personnage d'exemple ne fait jamais sortir de la liste le dernier état d'une
+//    autre fiche (le personnage du joueur) : liste pleine, c'est le plus ancien état de l'exemple
+//    qui part (oldestToDrop).
 // Testé sans navigateur : tests/snapshots.test.js.
 // =============================================================================
 
@@ -134,6 +137,21 @@ function sameContent(text, content) {
     }
 }
 
+/**
+ * Liste pleine : place de l'état qui part pour laisser entrer un nouvel état. Le plus ancien, sauf
+ * quand le nouvel état vient d'une fiche gardée dans ce navigateur seulement (`local` : un
+ * personnage d'exemple avec lequel on joue) et que le plus ancien est le dernier état d'une autre
+ * fiche (le personnage du joueur) : c'est alors l'état gardé juste après lui qui part.
+ * @param {Array<{ local?: boolean }>} olds - états déjà gardés, du plus récent au plus ancien
+ * @param {boolean} local
+ * @returns {number}
+ */
+function oldestToDrop(olds, local) {
+    const last = olds.length - 1;
+    const lastOfAnotherSheet = local && !olds[last].local && olds.slice(0, last).every((old) => old.local);
+    return lastOfAnotherSheet && last > 0 ? last - 1 : last;
+}
+
 /** Texte court d'un champ de la fiche (niveau, classe) */
 const shortText = (value) => (typeof value === 'string' || typeof value === 'number' ? String(value).trim().slice(0, 60) : '');
 
@@ -178,11 +196,13 @@ export function takeSnapshot(character, reason, {
         ...(local ? { local: true } : {}),
         text
     };
+    const olds = existing.map(stored);
+    while (olds.length > Math.max(max - 1, 0)) olds.splice(oldestToDrop(olds, local), 1);
     const list = [entry];
     let total = text.length;
-    for (const old of existing) {
-        if (list.length >= max || total + old.text.length > maxChars) break;
-        list.push(stored(old));
+    for (const old of olds) {
+        if (total + old.text.length > maxChars) break;
+        list.push(old);
         total += old.text.length;
     }
     return writeList(storage, list) ? { saved: true } : { saved: false, why: 'storage' };
