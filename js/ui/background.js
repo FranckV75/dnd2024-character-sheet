@@ -4,24 +4,34 @@
 // Ce que donne l'historique choisi en haut de la fiche (caractéristiques, don d'origine,
 // compétences, outil, équipement), avec un repère « À vérifier » pour ce qui manque, et un
 // bouton « Appliquer » (fiche déverrouillée) qui coche les compétences et remplit le don de
-// niveau 1 s'il est vide, après confirmation. Règles : js/rules/background.js.
+// niveau 1 s'il est vide, après confirmation. La ligne « Outil » porte le bouton « Choisir dans la
+// liste » (fenêtre des outils, js/ui/tools.js), qui présente en tête l'outil de l'historique.
+// Règles : js/rules/background.js.
 // =============================================================================
 
 import { el, icon } from './dom.js';
 import { confirmModal } from './modal.js';
 import { foldButton, bindFolding, applyFolds } from './fold.js';
 import { backgroundSummary, backgroundApplyPatch } from '../rules/background.js';
+import { toolPickerButton } from './tools.js';
 
 /** Clés qui changent le bloc */
 const WATCHED = /^(char_background|feat_1|feat_choices|profs_tools|skill_prof_)/;
 
-function lineItem(line) {
+/**
+ * @param {Object} line - ligne de backgroundSummary
+ * @param {Object} ctx - { store, setStatus } : pour le bouton de la ligne « Outil »
+ */
+function lineItem(line, ctx) {
     return el('li', { class: 'origin-line', 'data-origin-line': line.id },
         el('span', { class: 'origin-line-label', text: line.label }),
         el('span', { class: 'origin-line-text', text: line.text }),
         line.check ? el('span', { class: 'origin-check' }, icon('warning'),
             el('span', { class: 'feat-tag', 'data-kind': 'check', text: 'À vérifier' }),
-            el('span', { text: line.check })) : null);
+            el('span', { text: line.check })) : null,
+        // Outil de l'historique : la fenêtre des outils s'ouvre sur lui (fiche déverrouillée)
+        line.id === 'tool' ? el('span', { class: 'origin-tool-pick edit-only' }, toolPickerButton(ctx),
+            el('small', { text: line.check ? "Cochez-le dans la liste : il s'écrit dans la case Outils." : 'Pour voir ou changer vos outils.' })) : null);
 }
 
 /**
@@ -69,7 +79,7 @@ export function initBackground({ root, store, setStatus = () => {} }) {
             el('p', { class: 'subclass-title origin-title' }, icon('scroll'),
                 el('span', { text: `Historique : ${summary.name}` }),
                 foldButton(`Historique : ${summary.name}`)),
-            el('ul', { class: 'origin-lines' }, summary.lines.map(lineItem)),
+            el('ul', { class: 'origin-lines' }, summary.lines.map((line) => lineItem(line, { store, setStatus }))),
             summary.canApply ? el('p', { class: 'origin-apply edit-only' },
                 el('button', {
                     type: 'button', class: 'btn-chip', 'aria-haspopup': 'dialog',

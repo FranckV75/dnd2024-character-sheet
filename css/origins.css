@@ -63,6 +63,21 @@
     color: var(--warn);
 }
 
+/* Ligne « Outil » : bouton « Choisir dans la liste » et sa phrase (fiche déverrouillée) */
+.origin-tool-pick {
+    grid-column: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 10px;
+}
+
+.origin-tool-pick small {
+    font-family: var(--font-text);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
 .origin-apply {
     display: flex;
     flex-wrap: wrap;
@@ -91,7 +106,8 @@
     .origin-line {
         grid-template-columns: 1fr;
     }
-    .origin-check {
+    .origin-check,
+    .origin-tool-pick {
         grid-column: 1;
     }
 }

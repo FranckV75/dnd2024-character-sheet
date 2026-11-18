@@ -120,6 +120,14 @@ describe('Ajouter un outil', () => {
     test('La mise en forme et le texte déjà là ne bougent pas', () => {
         assert.equal(addToolToText('<font color="#ff0000">Luth</font>', 'lyre'), '<font color="#ff0000">Luth, Lyre</font>');
         assert.equal(addToolToText('Don de mon père &amp; fils', 'lyre'), 'Don de mon père &amp; fils, Lyre');
+        assert.equal(addToolToText('<font color="#ff0000"><b>Luth</b></font>', 'lyre'), '<font color="#ff0000"><b>Luth, Lyre</b></font>');
+    });
+
+    test("Un seul mot en gras ou en couleur en fin de texte : la suite n'est pas en gras", () => {
+        assert.equal(addToolToText('Chariots, <b>Luth</b>', 'lyre'), 'Chariots, <b>Luth</b>, Lyre');
+        assert.equal(addToolToText('<i>Chariots, <b>Luth</b></i>', 'lyre'), '<i>Chariots, <b>Luth</b>, Lyre</i>');
+        assert.equal(addToolToText('Chariots<br>Tambour <b>Luth</b>', 'lyre'), 'Chariots<br>Tambour <b>Luth</b><br>Lyre');
+        assert.equal(addToolToText('Chariots<br><b>Luth</b>', 'lyre'), 'Chariots<br><b>Luth<br>Lyre</b>');
     });
 
     test('Outil déjà écrit (même autrement) ou inconnu : rien ne change', () => {

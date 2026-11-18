@@ -50,6 +50,7 @@ js/
 │   ├── class-progression.js  Aptitudes de base des 12 classes par niveau (résumés) et
 │   │                   colonnes de leur table (Rages, sorts mineurs, sorts préparés…)
 │   ├── equipment.js    Armures
+│   ├── tools.js        Outils du manuel (37, par catégorie, caractéristique) ; outil de chaque historique
 │   ├── feats.js        Dons (Origine, Général, Style de combat, Épique)
 │   ├── feat-spells.js  Sorts permis par les dons à sorts (tirés de data/spells.json, testés)
 │   ├── species-traits.js  Traits des 10 espèces du Manuel des joueurs (résumés), options
@@ -92,6 +93,7 @@ js/
 │   ├── species.js      Espèce : option choisie (clé facultative « species_choices »), Vision dans
 │   │                   le noir, Résistances, Souffle, sorts d'espèce, cases des traits limités
 │   ├── background.js   Historique : ce qu'il donne, ce qui manque (« À vérifier »), bouton Appliquer
+│   ├── tools.js        Case « Outils » (texte libre) : reconnaître, ajouter, retirer un outil du manuel
 │   ├── class-reminders.js  Rappels des capacités de classe près des valeurs (Sens du danger…)
 │   ├── concentration.js  Sort de concentration (clé facultative « concentration »), jet après dégâts
 │   ├── hit-points.js   PV en jeu : dégâts, soins, PV temporaires, boutons − / + (écran : ui/hit-points.js)
@@ -151,6 +153,7 @@ js/
     ├── calc-bubble.js  Bulle de calcul : détail d'une valeur calculée (CA d'une armure, écusson CA)
     ├── class-progression.js · experience.js · counters.js · companions.js · subclass.js
     ├── species.js · background.js   Encadré « Espèce & historique » (css/origins.css)
+    ├── tools.js        Fenêtre « Choisir dans la liste » de la case Outils (css/tab-skills.css)
     ├── concentration.js  Ligne « Concentration » de l'encadré États (css/conditions.css)
     ├── stepper.js · number-pad.js   Boutons − / + à appui long et pavé de chiffres (partagés)
     ├── modal.js · autocomplete.js · cell-text.js · dom.js   (briques partagées)

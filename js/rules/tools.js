@@ -48,7 +48,8 @@ const PIECE = /<[^>]*>|&(?:#\d+|#x[0-9a-f]+|[a-z]+);|[\s\S]/giu;
  *    retour à la ligne : <br>, début ou fin de <div> / <p>) ;
  *  - br / block / close : nature de la balise.
  * @param {string} html
- * @returns {{ raw: string, ch: string, br?: boolean, block?: string, close?: boolean }[]}
+ *  - inline : nom d'une balise de mise en forme (b, font, span…).
+ * @returns {{ raw: string, ch: string, br?: boolean, block?: string, inline?: string, close?: boolean }[]}
  */
 function pieces(html) {
     const out = [];
@@ -58,7 +59,7 @@ function pieces(html) {
             const name = tag?.[2].toLowerCase();
             if (name === 'br') out.push({ raw, ch: '\n', br: true });
             else if (name === 'div' || name === 'p') out.push({ raw, ch: '\n', block: name, close: tag[1] === '/' });
-            else out.push({ raw, ch: '' });
+            else out.push({ raw, ch: '', inline: name, close: tag?.[1] === '/' });
         } else if (raw.length > 1 && raw.startsWith('&')) {
             const code = raw.slice(1, -1).toLowerCase();
             let ch = ENTITIES[code];
@@ -209,6 +210,36 @@ export function removeToolFromText(html, toolId) {
 }
 
 /**
+ * Morceau après lequel écrire à la suite du dernier mot. Une mise en forme qui ne couvre qu'une
+ * partie de la ligne (« Chariots, <b>Luth</b> ») n'est pas prolongée : on écrit après sa balise
+ * fermante. Une mise en forme de toute la ligne (texte entier en couleur) est gardée.
+ * @param {Object[]} list - morceaux (pieces)
+ * @param {number} last - morceau du dernier caractère visible
+ * @returns {number}
+ */
+function endOfLastWord(list, last) {
+    let point = last;
+    for (let i = last + 1; i < list.length && list[i].inline && list[i].close; i++) {
+        let depth = 0;
+        let open = -1;
+        for (let k = i - 1; k >= 0 && open < 0; k--) {
+            if (list[k].inline !== list[i].inline) continue;
+            if (list[k].close) depth++;
+            else if (depth === 0) open = k;
+            else depth--;
+        }
+        if (open < 0) break;
+        let partial = false;
+        for (let k = open - 1; k >= 0 && list[k].ch !== '\n' && !partial; k--) {
+            partial = list[k].ch !== '' && !isSpace(list[k].ch);
+        }
+        if (!partial) break;
+        point = i;
+    }
+    return point;
+}
+
+/**
  * Ajoute un outil à la case, à la suite, en gardant la présentation déjà là : une ligne par outil
  * si le texte est déjà sur plusieurs lignes, sinon une liste séparée par des virgules.
  * @param {string} html - valeur de profs_tools
@@ -234,7 +265,7 @@ export function addToolToText(html, toolId) {
 
     if (!byLine) {
         // Après « Luth, » ou « Mes outils : » : une espace suffit (celle déjà écrite, s'il y en a une)
-        if (!/[,;:]/.test(chars[lastChar])) return insertAfter(lastPiece, `, ${tool.name}`);
+        if (!/[,;:]/.test(chars[lastChar])) return insertAfter(endOfLastWord(list, lastPiece), `, ${tool.name}`);
         return isSpace(chars[lastChar + 1]) ? insertAfter(at[lastChar + 1], tool.name) : insertAfter(lastPiece, ` ${tool.name}`);
     }
     // Une ligne par outil : nouvelle ligne du même genre que la dernière (<div>, <p> ou <br>)
@@ -244,7 +275,7 @@ export function addToolToText(html, toolId) {
         const tag = list[next].block;
         return insertAfter(next, `<${tag}>${tool.name}</${tag}>`);
     }
-    return insertAfter(lastPiece, `<br>${tool.name}`);
+    return insertAfter(endOfLastWord(list, lastPiece), `<br>${tool.name}`);
 }
 
 /**
