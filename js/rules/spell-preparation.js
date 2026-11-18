@@ -160,6 +160,18 @@ export function inCombatView(state) {
 }
 
 /**
+ * Place d'une ligne dans la vue « au combat » : 'table' (sort mineur, sort préparé même d'office),
+ * 'rituals' (rituel du livre non préparé du Magicien : rangé sous la ligne repliable « Rituels du
+ * livre », pour ne pas noyer les sorts prêts à lancer) ou 'hidden' (sort non préparé).
+ * @param {string} state - spellPrepState()
+ * @returns {'table'|'rituals'|'hidden'}
+ */
+export function combatPlace(state) {
+    if (!inCombatView(state)) return 'hidden';
+    return isRitualOnly(state) ? 'rituals' : 'table';
+}
+
+/**
  * Sort de niveau 1+ qui a un bouton « Lancer » : préparé (même d'office), avec un emplacement ;
  * rituel du livre non préparé, seulement en rituel (isRitualOnly)
  */

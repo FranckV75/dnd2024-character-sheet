@@ -2,7 +2,8 @@
 // SPELLS/PREFS.JS - Réglages du grimoire propres à cet appareil (jamais dans la fiche)
 //
 // Infobulles des sorts allumées ou non, grimoire ouvert à la demande (personnage sans magie),
-// vue « au combat » (sorts mineurs, sorts préparés et sorts donnés seulement).
+// vue « au combat » (sorts mineurs, sorts préparés et sorts donnés seulement), ligne « Rituels du
+// livre » du Magicien dépliée ou non dans cette vue.
 // Stockage indisponible (navigation privée) : réglage par défaut, rien n'est mémorisé.
 // =============================================================================
 
@@ -11,6 +12,26 @@ const TOOLTIP_STORAGE_KEY = 'dd2024_spell_tooltips';
 const GRIMOIRE_STORAGE_KEY = 'dd2024_grimoire_open';
 /** Vue « au combat » du grimoire : réglage de l'appareil, pas de la fiche */
 const COMBAT_VIEW_STORAGE_KEY = 'dd2024_spell_combat_view';
+
+/** Ligne « Rituels du livre » (Magicien, vue « au combat ») dépliée : réglage de l'appareil */
+const BOOK_RITUALS_STORAGE_KEY = 'dd2024_spell_book_rituals_open';
+
+/** Repliée par défaut : seuls les sorts prêts à lancer restent sous les yeux */
+export function readBookRitualsOpen() {
+    try {
+        return localStorage.getItem(BOOK_RITUALS_STORAGE_KEY) === 'true';
+    } catch {
+        return false;
+    }
+}
+
+export function saveBookRitualsOpen(open) {
+    try {
+        localStorage.setItem(BOOK_RITUALS_STORAGE_KEY, String(open));
+    } catch {
+        // Stockage indisponible : le choix ne sera pas mémorisé
+    }
+}
 
 export function readTooltipSetting() {
     try {

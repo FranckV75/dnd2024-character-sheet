@@ -482,6 +482,80 @@
     font-style: italic;
 }
 
+/* ---------- Vue au combat, Magicien : ligne repliable « Rituels du livre (N) » (js/ui/spells.js) ----------
+   Rituels du livre non préparés, sortis du tableau : bloc dessiné comme les sorts donnés, replié
+   par défaut. Écran et vue au combat seulement : l'impression garde le tableau complet. */
+
+.feat-spells.book-rituals {
+    display: none;
+    margin: 10px 0 0;
+}
+
+@media screen {
+    .spells-body.is-combat .book-rituals:not([hidden]) {
+        display: block;
+    }
+}
+
+/* Toute la ligne du titre replie ou déplie (cible large au doigt) */
+.book-rituals-toggle {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.book-rituals-toggle:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+/* Chevron au bout de la ligne : tourné vers la droite quand elle est repliée */
+.book-rituals-toggle .icon:last-child {
+    margin-left: auto;
+    color: var(--accent);
+    transition: transform 0.2s ease;
+}
+
+.book-rituals:not(.is-open) .book-rituals-toggle .icon:last-child {
+    transform: rotate(-90deg);
+}
+
+.book-rituals-body[hidden] {
+    display: none;
+}
+
+/* Boutons « Lancer » alignés à droite, l'un sous l'autre */
+.book-rituals .feat-spell-head {
+    display: flex;
+    flex: 1 1 auto;
+}
+
+.book-rituals .feat-spell-cast {
+    margin-left: auto;
+}
+
+/* Temps d'incantation et portée, à la suite du niveau */
+.book-ritual-facts {
+    font-size: 0.85rem;
+    color: var(--quiet-ink);
+}
+
+@media (pointer: coarse) {
+    .book-rituals-toggle {
+        min-height: 44px;
+    }
+}
+
 /* ---------- Bouton et fenêtre « Retirer les sorts non préparés » (js/ui/spells/cleanup.js) ---------- */
 
 .spell-cleanup-btn[hidden] {

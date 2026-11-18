@@ -42,8 +42,10 @@
 //    écrit dans dynamic_spells ; un sort que le joueur a aussi noté dans sa liste porte un repère.
 //  - Magicien (js/rules/spellbook.js) : ligne « Livre : N sorts » sous la barre (sorts du livre
 //    notés comparés aux sorts obtenus sans dépense, simple repère) et rappel du coût de copie ;
-//    un sort rituel du livre non préparé porte le repère « Lançable en rituel » (Savoir rituel) et
-//    reste dans la vue au combat, où il ne se lance qu'en rituel.
+//    un sort rituel du livre non préparé porte le repère « Lançable en rituel » (Savoir rituel). Dans
+//    la vue au combat, ces rituels quittent le tableau pour une ligne repliable « Rituels du livre
+//    (N) » dessous, repliée par défaut (choix retenu sur l'appareil) ; dépliés, chacun garde son
+//    bouton « Lancer », en rituel seulement. Écran seulement : l'impression ne change pas.
 //  - Personnage sans magie (classe, sous-classe et niveau), sans aucun sort noté ni sort de
 //    don ni de sous-classe : le grimoire et les cases « Caractéristique d'incantation / DD / Bonus d'attaque » se
 //    replient en un court avis, avec un bouton pour l'ouvrir (sorts d'espèce...).
@@ -75,7 +77,7 @@ import { loadSpells } from '../data/spells.js';
 import { classSpellCounts } from '../rules/class-progression.js';
 import { spellPickerGroups, pickerMaxLevel } from '../rules/spell-picker.js';
 import {
-    wholeListSource, fitsWholeList, grantedSpellKeys, spellPrepState, inCombatView, isCastable, castModes, castSlotOptions, useSpellSlot,
+    wholeListSource, fitsWholeList, grantedSpellKeys, spellPrepState, combatPlace, isCastable, castModes, castSlotOptions, useSpellSlot,
     highestUsableSlot, mysticArcanumLevel, missingSlotLevel, missingSlotText
 } from '../rules/spell-preparation.js';
 import { hasSpellbook, freeSpellbookSpells, spellbookCount, spellCopyCost, castsRitualsFromBook, isRitualSpell } from '../rules/spellbook.js';
@@ -88,7 +90,7 @@ import { confirmModal, openModal } from './modal.js';
 import { frenchSpaces } from './help.js';
 import { isLocked } from './lock.js';
 import { motionOff } from './motion-pref.js';
-import { readGrimoireOpen, saveGrimoireOpen, readCombatView } from './spells/prefs.js';
+import { readGrimoireOpen, saveGrimoireOpen, readCombatView, readBookRitualsOpen, saveBookRitualsOpen } from './spells/prefs.js';
 import { createSpellTooltip, adeptTypes, adeptRule, affinityApplies } from './spells/tooltip.js';
 import { elementalAffinity } from '../rules/subclass-combat.js';
 import { createSpellFilters } from './spells/filters.js';
@@ -122,6 +124,13 @@ const PREP_HELP = {
  *  courte affichée dans la barre du haut quand on touche le repère (tablette) */
 const BOOK_RITUAL_HELP = 'Savoir rituel : ce sort de votre livre se lance en rituel sans être préparé (10 minutes de plus, sans emplacement), en lisant le livre.';
 const BOOK_RITUAL_TAP = 'Savoir rituel : sort du livre lançable en rituel sans le préparer (+10 min, sans emplacement).';
+/** Ligne « Rituels du livre » (vue au combat) : infobulle (souris), phrase écrite dans le bloc
+ *  déplié, et phrase courte dans la barre du haut quand on la touche (tablette) */
+const BOOK_RITUALS_HELP = 'Sorts de votre livre non préparés : ils se lancent seulement en rituel (10 minutes de plus, sans emplacement).';
+const BOOK_RITUALS_TAP = {
+    open: 'Rituels du livre : sorts non préparés, lançables seulement en rituel (+10 min, sans emplacement).',
+    closed: 'Rituels du livre repliés : touchez la ligne pour les revoir.'
+};
 /** Vue « au combat » : ce que fait le bouton, dit dans la barre du haut à chaque bascule (tablette) */
 const COMBAT_VIEW_HELP = {
     on: "Au combat : seulement vos sorts prêts à lancer ; « Lancer » coche l'emplacement dépensé.",
@@ -633,11 +642,16 @@ export function initSpells(ctx) {
      * de ce niveau : le décocher suffit à annuler.
      */
     function castRow(r) {
-        const row = spellsOf()[r.index];
-        if (!row || !isCastable(r.state)) return;
+        castRowAt(r.index, r.state);
+    }
+
+    /** Lancer la ligne d'indice donné (bouton du tableau, ou de la ligne « Rituels du livre ») */
+    function castRowAt(index, state) {
+        const row = spellsOf()[index];
+        if (!row || !isCastable(state)) return;
         // Rituel : case R cochée ou base de sorts, préparé ou non (même règle que le losange)
         const known = findSpellByName(spellsDb, row.name);
-        const { ritual, ritualOnly } = castModes(r.state, isRitualSpell(row, known));
+        const { ritual, ritualOnly } = castModes(state, isRitualSpell(row, known));
         castSpell({
             name: plainText(row.name), level: Number(rowLevel(row)), concentration: row.c === true,
             names: [plainText(row.name), ...spellNames(known), known?.vo],
@@ -935,7 +949,11 @@ export function initSpells(ctx) {
         // Vue « au combat » : les sorts de niveau 1+ non préparés se retirent de l'écran (classe
         // CSS, l'impression garde tout) ; pas la ligne en cours de saisie, qui ne disparaît pas
         // sous les doigts (son losange vient d'être décoché, par exemple)
-        const outOfCombat = (i) => view.combat && !inCombatView(states[i]) && !pinned.includes(i);
+        // Les rituels du livre non préparés (Magicien) vont sous la ligne repliable « Rituels du livre »
+        const outOfCombat = (i) => view.combat && combatPlace(states[i]) !== 'table' && !pinned.includes(i);
+        renderBookRituals(view.combat
+            ? order.filter(i => shown.has(i) && combatPlace(states[i]) === 'rituals' && !pinned.includes(i)).map(i => ({ index: i, row: rows[i] }))
+            : []);
 
         rowEls.forEach((r, i) => {
             const isEntry = r === entry;
@@ -1037,6 +1055,80 @@ export function initSpells(ctx) {
             + `copie de secours : ${cost.backup.hours} h et ${cost.backup.gold} po par niveau.`;
         if (bookCount.textContent !== countText) bookCount.textContent = countText;
         if (bookHelp.textContent !== helpText) bookHelp.textContent = helpText;
+    }
+
+    // -----------------------------------------------------------------------
+    // Vue au combat, Magicien : ligne repliable « Rituels du livre (N) » sous le tableau
+    // -----------------------------------------------------------------------
+
+    let bookRitualsOpen = readBookRitualsOpen();
+    let bookRitualsSignature = null;
+    const bookRitualsLabel = el('span', { class: 'btn-label' });
+    const bookRitualsList = el('ul', { class: 'feat-spells-list' });
+    const bookRitualsBody = el('div', { class: 'book-rituals-body', id: 'book-rituals-body' },
+        el('p', { class: 'feat-spells-intro', text: BOOK_RITUALS_HELP }), bookRitualsList);
+    const bookRitualsToggle = el('button', {
+        type: 'button', class: 'book-rituals-toggle', 'aria-controls': 'book-rituals-body', title: BOOK_RITUALS_HELP,
+        on: {
+            click: () => {
+                bookRitualsOpen = !bookRitualsOpen;
+                saveBookRitualsOpen(bookRitualsOpen);
+                tooltip.hide();
+                applyBookRitualsFold();
+                setStatus(bookRitualsOpen ? BOOK_RITUALS_TAP.open : BOOK_RITUALS_TAP.closed);
+            }
+        }
+    }, icon('book'), bookRitualsLabel, icon('chevron'));
+    const bookRituals = el('section', { class: 'feat-spells book-rituals', hidden: true },
+        el('h4', { class: 'feat-spells-title' }, bookRitualsToggle), bookRitualsBody);
+
+    function applyBookRitualsFold() {
+        bookRitualsToggle.setAttribute('aria-expanded', String(bookRitualsOpen));
+        bookRitualsBody.hidden = !bookRitualsOpen;
+        bookRituals.classList.toggle('is-open', bookRitualsOpen);
+    }
+
+    /** Un rituel du livre : nom (infobulle), niveau, temps et portée, bouton « Lancer » en rituel */
+    function bookRitualLine({ index, row }) {
+        const name = el('button', { type: 'button', class: 'feat-spell-name', text: plainText(row.name) || 'Sort sans nom' });
+        const show = () => {
+            const known = findSpellByName(spellsDb, row.name);
+            if (!tooltip.enabled || !known) return;
+            tooltip.cancelHide();
+            tooltip.showFor(name, known);
+        };
+        name.addEventListener('mouseenter', show);
+        name.addEventListener('focus', show);
+        name.addEventListener('click', show);
+        name.addEventListener('mouseleave', tooltip.scheduleHide);
+        name.addEventListener('blur', tooltip.scheduleHide);
+        const facts = [plainText(row.time), plainText(row.range)].filter(Boolean).join(' · ');
+        return el('li', { class: 'feat-spell' },
+            el('div', { class: 'feat-spell-head' },
+                name,
+                el('span', { class: 'feat-spell-level', text: `Niveau ${rowLevel(row)}` }),
+                facts ? el('span', { class: 'book-ritual-facts', text: facts }) : null,
+                el('button', {
+                    type: 'button', class: 'btn-chip spell-cast feat-spell-cast', title: 'Lancer en rituel',
+                    'aria-label': `Lancer en rituel le sort ${plainText(row.name)}`,
+                    on: { click: () => castRowAt(index, 'ritual') }
+                }, icon('sparkle'), el('span', { class: 'btn-label', text: 'Lancer' }))));
+    }
+
+    /**
+     * @param {Array<{ index: number, row: Object }>} items - rituels du livre à ranger sous la
+     *        ligne (vue au combat, filtre de niveau appliqué), dans l'ordre du tableau
+     */
+    function renderBookRituals(items) {
+        bookRituals.hidden = items.length === 0;
+        const signature = JSON.stringify(items.map(({ index, row }) => [index, row.name, rowLevel(row), row.time, row.range]));
+        if (signature !== bookRitualsSignature) {
+            bookRitualsSignature = signature;
+            const label = `Rituels du livre (${items.length})`;
+            if (bookRitualsLabel.textContent !== label) bookRitualsLabel.textContent = label;
+            bookRitualsList.replaceChildren(...items.map(bookRitualLine));
+        }
+        applyBookRitualsFold();
     }
 
     function renderHeader() {
@@ -1192,6 +1284,7 @@ export function initSpells(ctx) {
         granted.speciesBox,
         tableScroll,
         emptyText,
+        bookRituals,
         addBtn,
         cleanup.button);
 

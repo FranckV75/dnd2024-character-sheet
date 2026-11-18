@@ -9,7 +9,7 @@ import {
     castSlotOptions, useSpellSlot, wholeListSource, fitsWholeList, highestSlotLevel,
     SPELL_PREPARATION, WHOLE_LIST_CLASSES, preparesFromClassList, longRestPreparation, preparationView,
     prepareSpellRows, unprepareSpellRows, setRowPrepared, matchesSpellQuery,
-    highestUsableSlot, mysticArcanumLevel, missingSlotLevel, missingSlotText
+    highestUsableSlot, mysticArcanumLevel, missingSlotLevel, missingSlotText, combatPlace
 } from '../js/rules/spell-preparation.js';
 import { EMPTY_SPELL } from '../js/state/schema.js';
 import { spellCounts, spellNameKey, spellLimitWarnings, findSpellByName } from '../js/rules/spells.js';
@@ -152,6 +152,22 @@ describe('Sorts donnés hors du compte', () => {
         const arid = grantedSpellKeys(chosen, deriveCharacter(chosen));
         assert.ok(arid.has(spellNameKey('Boule de feu')));
         assert.ok(!arid.has(spellNameKey('Sommeil')));
+    });
+});
+
+describe('Vue « au combat » : place de chaque ligne', () => {
+    test('Tableau pour les sorts prêts à lancer, ligne « Rituels du livre » pour les rituels non préparés', () => {
+        for (const state of ['cantrip', 'prepared', 'list', 'granted']) assert.equal(combatPlace(state), 'table', state);
+        assert.equal(combatPlace('ritual'), 'rituals');
+        assert.equal(combatPlace('unprepared'), 'hidden');
+        // Un rituel rangé sous la ligne repliable garde son bouton « Lancer »
+        assert.equal(isCastable('ritual'), true);
+        // Magicien : un rituel PRÉPARÉ reste dans le tableau ; non préparé, il passe sous la ligne
+        const bookRitual = () => true;
+        assert.equal(combatPlace(spellPrepState({ lvl: '1', name: 'Détection de la magie', r: true, prep: true }, { bookRitual })), 'table');
+        assert.equal(combatPlace(spellPrepState({ lvl: '1', name: 'Détection de la magie', r: true, prep: false }, { bookRitual })), 'rituals');
+        // Autre classe (pas de Savoir rituel) : un rituel non préparé ne se lance pas
+        assert.equal(combatPlace(spellPrepState({ lvl: '1', name: 'Détection de la magie', r: true, prep: false })), 'hidden');
     });
 });
 
