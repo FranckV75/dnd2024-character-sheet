@@ -93,7 +93,7 @@ function openSnapshots(store, setStatus) {
         icon: 'hourglass',
         wide: true,
         body: [
-            el('p', { class: 'toolbar-modal-note', text: 'Les derniers états de la fiche, gardés sur cet appareil seulement : à chaque ouverture, avant un repos long, avant une montée de niveau et avant tout remplacement (import, nouvelle fiche, personnage d\'exemple, chargement depuis le compte).' }),
+            el('p', { class: 'toolbar-modal-note', text: 'Les derniers états de la fiche, gardés sur cet appareil seulement : à chaque ouverture, avant un repos long, avant une montée de niveau, avant le retrait des sorts non préparés et avant tout remplacement (import, nouvelle fiche, personnage d\'exemple, chargement depuis le compte).' }),
             list,
             message
         ],
