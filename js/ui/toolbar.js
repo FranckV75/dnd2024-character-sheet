@@ -4,8 +4,9 @@
 //  - Repli : sur tablette (≤ 1100 px, ou écran tactile ≤ 1400 px en paysage), la barre démarre repliée sur un seul bouton
 //    « Gestion » qui déplie les commandes (affichage et compte compris).
 //  - Groupe « Fiche » : verrou (lock.js), puis nouvelle fiche, import, export, impression.
-//  - Groupe « Découvrir » (#toolbar-help), sous le groupe Fiche : « Essayer un personnage
-//    d'exemple » (examples.js ; masqué fiche verrouillée, il remplace la fiche).
+//  - Groupe « Découvrir » (#toolbar-help), sous le groupe Fiche : « Mode d'emploi » (help.js ;
+//    reste disponible fiche verrouillée) et « Essayer un personnage d'exemple » (examples.js ;
+//    masqué fiche verrouillée, il remplace la fiche).
 //  - Groupe « Affichage » (#view-controls) : thème, mode cinéma et animations, avant « Fonds »
 //    (gallery.js). « Animations » coupe tout ce qui bouge dans la fiche (motion-pref.js) : choix
 //    retenu sur l'appareil, jamais dans la sauvegarde.
@@ -25,6 +26,7 @@ import { openModal, confirmModal } from './modal.js';
 import { createDefaultCharacter } from '../state/schema.js';
 import { parseCharacterFile, serializeCharacter, exportFileName, STORAGE_KEYS } from '../state/persistence.js';
 import { openExamples, EXAMPLES_TITLE } from './examples.js';
+import { openHelp, HELP_TITLE } from './help.js';
 
 /** Écrans où la barre démarre repliée : tablettes (même seuil que sheet-tablet.css), et tablettes tactiles
  *  en paysage (Lenovo 1280 px, iPad 1180 px). Même condition que css/toolbar.css. */
@@ -99,6 +101,13 @@ export function initToolbar({ store, setStatus }) {
     });
     setIconLabel(exampleButton, 'user', "Essayer un personnage d'exemple");
 
+    const helpButton = el('button', {
+        type: 'button', class: 'btn', id: 'btn-help',
+        'aria-haspopup': 'dialog', title: HELP_TITLE,
+        on: { click: () => openHelp() }
+    });
+    setIconLabel(helpButton, 'help', "Mode d'emploi");
+
     const themeButton = el('button', {
         type: 'button', class: 'btn btn-icon-only', id: 'btn-theme',
         on: { click: toggleTheme }
@@ -111,7 +120,7 @@ export function initToolbar({ store, setStatus }) {
 
     // Pour découvrir la fiche : sous les commandes de la fiche (css/toolbar.css)
     const helpGroup = el('div', { class: 'app-bar-group toolbar-help', id: 'toolbar-help', role: 'group', 'aria-label': 'Découvrir la fiche' },
-        el('div', { class: 'btn-group' }, exampleButton));
+        el('div', { class: 'btn-group' }, helpButton, exampleButton));
 
     host.replaceChildren(
         toggleButton,

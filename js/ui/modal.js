@@ -12,6 +12,8 @@
 //       ]                                           // onClick qui renvoie false = ne pas fermer
 //   });
 // Options icon (titre) et actions[].icon : nom d'une icône dessinée de dom.js (moon, cloud...).
+// Option className : classe en plus sur la fenêtre (grande fenêtre du mode d'emploi, css/help.css).
+// actions[].title : infobulle du bouton (souris).
 // Un titre ou un libellé qui commence par un émoji connu (« 📂 Importer ») reçoit l'icône
 // dessinée équivalente : l'émoji est retiré du texte (et donc du nom lu par les lecteurs d'écran).
 // =============================================================================
@@ -52,14 +54,14 @@ function iconAndText({ text, icon: name }) {
  * Le focus va au premier champ de la fenêtre, sinon au bouton principal. focusField: false le
  * donne directement au bouton principal : sur tablette, focaliser un champ ouvre le clavier
  * virtuel (inutile quand des boutons − / + suffisent, comme au repos court).
- * @param {{ title: string, icon?: string, body?: Node|Node[], actions?: Array<{label: string, icon?: string, primary?: boolean, danger?: boolean, onClick?: () => (void|boolean)}>, wide?: boolean, focusField?: boolean, onClose?: () => void }} options
+ * @param {{ title: string, icon?: string, body?: Node|Node[], actions?: Array<{label: string, icon?: string, title?: string, primary?: boolean, danger?: boolean, onClick?: () => (void|boolean)}>, wide?: boolean, className?: string, focusField?: boolean, onClose?: () => void }} options
  * @returns {() => void} Fonction qui ferme la fenêtre
  */
-export function openModal({ title, icon, body = [], actions = [{ label: 'Fermer' }], wide = false, focusField = true, onClose }) {
+export function openModal({ title, icon, body = [], actions = [{ label: 'Fermer' }], wide = false, className = '', focusField = true, onClose }) {
     const previousFocus = document.activeElement;
     const titleId = `modal-title-${Math.random().toString(36).slice(2, 8)}`;
 
-    const dialog = el('dialog', { class: wide ? 'modal modal-wide' : 'modal', 'aria-labelledby': titleId });
+    const dialog = el('dialog', { class: ['modal', wide && 'modal-wide', className].filter(Boolean).join(' '), 'aria-labelledby': titleId });
 
     // Nettoyage exécuté une seule fois, que la fenêtre soit fermée par un bouton
     // (close() ci-dessous) ou par le navigateur (touche Échap → événement 'close',
@@ -88,6 +90,7 @@ export function openModal({ title, icon, body = [], actions = [{ label: 'Fermer'
     const buttons = actions.map(action => el('button', {
         type: 'button',
         class: ['btn', action.primary && 'btn-primary', action.danger && 'btn-danger'].filter(Boolean).join(' '),
+        title: action.title,
         on: {
             click: () => {
                 const result = action.onClick?.();

@@ -112,6 +112,11 @@ const ICONS = {
         ['path', { d: 'M1.5 13.5c.6-2.6 2.3-3.8 4.5-3.8s3.9 1.2 4.5 3.8M10.6 3.3a2.4 2.4 0 0 1 0 4.5M12 9.9c1.3.4 2.1 1.6 2.5 3.6' }]
     ],
     logout: [['path', { d: 'M6 2.5H3.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1H6M10.5 5l3 3-3 3M13.5 8H6' }]],
+    // Mode d'emploi : point d'interrogation dans un cercle
+    help: [
+        ['circle', { cx: '8', cy: '8', r: '6.2' }],
+        ['path', { d: 'M6.1 6.3a1.95 1.95 0 1 1 2.9 1.7c-.6.35-1 .8-1 1.5M8 11.6v.1' }]
+    ],
     cloud: [['path', { d: 'M4.5 12.5h7a3 3 0 0 0 .4-6 4 4 0 0 0-7.7 1 2.5 2.5 0 0 0 .3 5z' }]],
     // Fiche : titres de section, onglets, boutons
     swords: [

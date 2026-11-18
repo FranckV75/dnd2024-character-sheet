@@ -77,3 +77,174 @@
     margin-top: 3px;
     color: var(--warn);
 }
+
+/* ---------- Mode d'emploi : grande fenêtre, sommaire à gauche, rubrique à droite ---------- */
+
+.modal-help {
+    width: min(1040px, calc(100vw - 24px));
+    height: calc(100vh - 32px);
+    height: calc(100dvh - 32px);
+    max-height: none;
+}
+
+/* Le sommaire et la rubrique défilent chacun de leur côté : le contenu de la fenêtre ne défile pas */
+.modal-help .modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+}
+
+.help-layout {
+    display: grid;
+    flex: 1 1 auto;
+    grid-template-columns: minmax(190px, 250px) minmax(0, 1fr);
+    gap: 16px;
+    min-height: 0;
+}
+
+.help-toc {
+    min-height: 0;
+    padding: 2px 10px 2px 2px;
+    overflow-y: auto;
+    border-right: 1px solid var(--border-soft);
+}
+
+.modal-body .help-toc-title {
+    margin: 0 0 6px;
+    font-family: var(--font-title);
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    color: var(--label);
+}
+
+.modal-body .help-toc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Une ligne du sommaire : cible tactile de 44 px, la rubrique ouverte est marquée */
+.help-toc-item {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: 6px 10px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    font-family: var(--font-text);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.25;
+    text-align: left;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.help-toc-item:hover {
+    border-color: var(--btn-border);
+}
+
+.help-toc-item:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: -2px;
+}
+
+.help-toc-item[aria-current="true"] {
+    border-color: var(--accent-strong);
+    background: linear-gradient(var(--accent), var(--accent-strong));
+    color: var(--btn-top);
+}
+
+.help-page {
+    min-height: 0;
+    padding: 2px 8px 8px 2px;
+    overflow-y: auto;
+}
+
+.help-page:focus {
+    outline: none;
+}
+
+.help-section-title {
+    margin: 0 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border-soft);
+    font-family: var(--font-title);
+    font-size: 1.1rem;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+}
+
+.help-entry {
+    max-width: 68ch;
+    margin: 0 0 14px;
+}
+
+.help-entry-title {
+    margin: 0 0 2px;
+    font-family: var(--font-text);
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.modal-body .help-entry-text,
+.modal-body .help-entry-list {
+    margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.5;
+    color: var(--text);
+}
+
+.modal-body .help-entry-list {
+    padding-left: 1.3em;
+}
+
+.help-entry-list li + li {
+    margin-top: 4px;
+}
+
+/* Bas de rubrique : vers la suivante (le chevron pointe à droite) */
+.modal .help-next {
+    margin: 4px 0 8px;
+}
+
+.help-next .icon {
+    transform: rotate(-90deg);
+}
+
+.modal-body .help-print-note {
+    flex: none;
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* Copie complète pour l'imprimante : jamais à l'écran (css/print.css l'affiche sur le papier) */
+.help-print {
+    display: none;
+}
+
+/* ---------- Nouveautés : liste aérée, titre par version quand il y en a plusieurs ---------- */
+
+.modal-body .news-version {
+    margin: 0 0 4px;
+    font-family: var(--font-title);
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+}
+
+.modal-body .news-list {
+    margin: 0 0 12px;
+    font-size: 1.02rem;
+}
+
+.news-list li + li {
+    margin-top: 6px;
+}
