@@ -33,8 +33,8 @@ sous-classes). Restent des décisions de Franck :
 ### 3. Idées : ordre validé par Franck le 18/11/2026
 
 Faits en 4.41.0 (18/11/2026) : ~~liste des outils~~, ~~notice « Mode d'emploi », fenêtre
-« Nouveautés », personnages d'exemple~~. Faites en 4.42.0 (18/11/2026, **pas encore publiée** :
-attend le « Publie » de Franck) : ~~finitions du grimoire~~. Restent, dans l'ordre :
+« Nouveautés », personnages d'exemple~~. Faites en 4.42.0 (18/11/2026, publiée) :
+~~finitions du grimoire~~. Restent, dans l'ordre :
 
 1. **Dégâts en plus sur les armes** : lignes dans le réglage ⚙ (dégâts + raison), « toujours » ou
    « à allumer » (pastille, comme la Rage).
@@ -65,7 +65,8 @@ Décisions de Franck en attente sur la 4.42.0 :
   vieille ligne écrite dans un autre format que la base va dans « Gardés ». Choix prudents, à
   confirmer.
 - Personnage multiclassé (Clerc / Magicien noté « Clerc ») : un sort présent sur les deux listes
-  est proposé au retrait ; ne rien proposer dès que des emplacements ont été ajoutés à la main ?
+  est proposé au retrait. Réponse de Franck (18/11/2026) : à traiter dans le chantier
+  « Multiclassage » (voir « Plus tard »), pas avant.
 
 Petits restes de la 4.42.0 (pas urgents) : sous-classe écrite autrement (« Vie » pour « Domaine
 de la Vie ») : ses sorts de domaine non cochés sont proposés au retrait ; Rôdeur : « Lancer
@@ -81,11 +82,20 @@ outils (Façonneur…) pas reliés à la fenêtre ; champ « Chercher… » de 3
 « Préparer mes sorts ») ; textes de « Revenir à… » sans espaces insécables ; impression de la
 notice non essayée sur une vraie tablette.
 
-Plus tard (bonnes idées, pas maintenant) : aide « Mon tour » (ce que le personnage peut faire à
+Plus tard (bonnes idées, pas maintenant) : **multiclassage** (chantier à venir, voulu par Franck
+le 18/11/2026), aide « Mon tour » (ce que le personnage peut faire à
 son tour), création guidée d'un personnage de niveau 1, vue du groupe, journal de campagne, outil
 du MJ. Pas prioritaires : lanceur de dés, fiche sans wifi.
 
 Détail des idées :
+
+- Multiclassage (demande de Franck, 18/11/2026) : faire évoluer la fiche pour un personnage à
+  plusieurs classes. Aujourd'hui la fiche ne connaît qu'une classe (les emplacements d'une
+  deuxième classe s'ajoutent à la main). Chantier à venir, à étudier d'abord : plusieurs classes
+  et leurs niveaux, emplacements de sorts combinés, listes de sorts et préparation par classe,
+  dés de vie, maîtrises, capacités par classe, et un format de sauvegarde qui reste lisible par
+  les fiches déjà enregistrées. Il réglera aussi le cas du bouton « Retirer les sorts non
+  préparés » pour un personnage multiclassé.
 
 - Lanceur de dés (demande de janvier 2026) : toucher un bonus d'attaque ou une compétence lance le
   dé et affiche le total. Pas prioritaire pour l'instant.

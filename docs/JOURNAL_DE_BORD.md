@@ -12,12 +12,11 @@ en fin de session :
 
 ## En ce moment
 
-- **En ligne** : version **4.41.0** (liste des outils, « Mode d'emploi », fenêtre « Nouveautés »,
-  personnages d'exemple), publiée le 18/11/2026 avec l'accord de Franck (`master` = `v4`).
-- **Prête, pas encore publiée** : version **4.42.0** (finitions du grimoire : mention « Pas
-  d'emplacement », « Lancer gratuit », « Retirer les sorts non préparés », « Rituels du livre »
-  repliés). Elle est sur la branche `v4` de cet ordinateur seulement ; elle attend le « Publie »
-  de Franck.
+- **En ligne** : version **4.42.0** (finitions du grimoire : mention « Pas d'emplacement »,
+  « Lancer gratuit », « Retirer les sorts non préparés », « Rituels du livre » repliés), publiée
+  le 18/11/2026 avec l'accord de Franck (`master` = `v4`).
+- **Prochain chantier** (sur demande de Franck) : dégâts en plus sur les armes, puis étude du
+  mode Odyssée désactivable. **Multiclassage** : chantier à venir, voulu par Franck (18/11/2026).
 - **À chaque version** : entrée en tête de `js/data/whats-new.js` et notice `js/data/help.js`
   à jour.
 - **Petits champs sur iPad** : ne rien changer tant que Franck n'a pas d'info sur le zoom.
@@ -33,7 +32,7 @@ en fin de session :
 
 ### À vérifier par Franck (tablette Android, iPad de Catherine)
 
-- 4.42.0 (après publication), onglet Magie : mention « Pas d'emplacement » (la toucher) ;
+- 4.42.0, onglet Magie : mention « Pas d'emplacement » (la toucher) ;
   « Lancer » sur un sort de don ou d'espèce (« Lancer gratuit ») ; pour un Clerc ou un Druide,
   « Retirer les sorts non préparés » sur une fiche de test, puis « Revenir à… » ; pour un
   Magicien, vue « Au combat », ligne « Rituels du livre ».
@@ -76,7 +75,7 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 
 ## Sessions
 
-### 18/11/2026 — Finitions du grimoire (4.42.0, pas encore publiée)
+### 18/11/2026 — Finitions du grimoire (4.42.0)
 
 - Quatre finitions faites en ultracode (un réalisateur, deux relecteurs, un correcteur), puis
   vérifiées par l'orchestrateur sur des fiches de test (toucher simulé, 0 erreur console,
@@ -88,7 +87,8 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
   « Lancer » sur un sort d'Arcanum mystique disait « Aucun emplacement » (il explique l'Arcanum).
 - Laissé de côté : lancers gratuits sans case (Châtiment divin, Appel de destrier, Arcanum
   mystique…), cas du multiclassage au retrait, Magicien 18/20. Voir la feuille de route.
-- Non publié : attend l'accord de Franck.
+- Publiée le 18/11/2026 avec l'accord de Franck. Franck veut à terme faire évoluer la fiche vers
+  le multiclassage : noté comme chantier à venir dans la feuille de route.
 
 ### 18/11/2026 — Liste des outils, mode d'emploi, nouveautés, personnages d'exemple (4.41.0)
 
