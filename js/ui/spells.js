@@ -105,8 +105,15 @@ const PREP_HELP = {
     list: "Toujours préparé : votre classe ne change sa liste qu'en gagnant un niveau (un sort à la fois).",
     granted: 'Toujours préparé : sort donné (classe, sous-classe, don, espèce), hors du compte des préparés.'
 };
-/** Savoir rituel (Magicien) : sort rituel du livre, non préparé */
+/** Savoir rituel (Magicien) : sort rituel du livre, non préparé. Infobulle (souris), puis version
+ *  courte affichée dans la barre du haut quand on touche le repère (tablette) */
 const BOOK_RITUAL_HELP = 'Savoir rituel : ce sort de votre livre se lance en rituel sans être préparé (10 minutes de plus, sans emplacement), en lisant le livre.';
+const BOOK_RITUAL_TAP = 'Savoir rituel : sort du livre lançable en rituel sans le préparer (+10 min, sans emplacement).';
+/** Vue « au combat » : ce que fait le bouton, dit dans la barre du haut à chaque bascule (tablette) */
+const COMBAT_VIEW_HELP = {
+    on: "Au combat : seulement vos sorts prêts à lancer ; « Lancer » coche l'emplacement dépensé.",
+    off: 'Grimoire complet : tous vos sorts, pour en ajouter ou en modifier.'
+};
 const FLAG_COLUMNS = [
     ['c', 'C', 'Concentration'],
     ['r', 'R', 'Rituel'],
@@ -212,7 +219,10 @@ export function initSpells(ctx) {
             tooltip.hide();
             render(store.get(), null, { structural: true });
         },
-        onCombat: () => render(store.get(), null, { structural: true })
+        onCombat: () => {
+            render(store.get(), null, { structural: true });
+            setStatus(view.combat ? COMBAT_VIEW_HELP.on : COMBAT_VIEW_HELP.off);
+        }
     });
     const { countOut } = filters;
 
@@ -330,7 +340,11 @@ export function initSpells(ctx) {
         // Repère « +Cha (+4, feu) » : sort du type choisi avec Affinité élémentaire (writeRow)
         r.affinity = el('span', { class: 'spell-adept', hidden: true });
         // Repère « Lançable en rituel » : sort rituel du livre non préparé (Magicien, writeRow)
-        r.ritual = el('span', { class: 'spell-adept spell-book-ritual', hidden: true, title: BOOK_RITUAL_HELP, text: 'Lançable en rituel' });
+        // (bouton : au toucher, l'explication s'affiche dans la barre du haut, comme pour le losange)
+        r.ritual = el('button', {
+            type: 'button', class: 'spell-adept spell-book-ritual', hidden: true, title: BOOK_RITUAL_HELP, text: 'Lançable en rituel',
+            on: { click: () => setStatus(BOOK_RITUAL_TAP) }
+        });
         r.texts = {};
         for (const [key] of TEXT_COLUMNS) r.texts[key] = textInput(key);
         r.note = textInput('note');
@@ -532,12 +546,16 @@ export function initSpells(ctx) {
             icon: 'sparkle',
             focusField: false,
             body: [
-                el('p', { text: `${facts}. ${anyLeft ? 'Emplacement à utiliser :' : ''}`.trim() }),
+                // Ce que fait un bouton de niveau, dit en clair (pas d'infobulle au toucher)
+                el('p', { text: `${facts}. ${anyLeft ? "Touchez le niveau de l'emplacement à dépenser : sa case se coche dans le grimoire." : ''}`.trim() }),
                 ritualNote ? el('p', { text: ritualNote }) : null,
                 missing ? el('p', { class: 'spell-cast-missing', text: missing }) : null,
                 levelButtons.length || ritualButton ? el('div', { class: 'spell-cast-levels' }, levelButtons, ritualButton) : null,
                 concentration ? el('label', { class: 'spell-cast-concentration' }, concentration,
-                    el('span', { text: current ? `Me concentrer sur ce sort (met fin à ${current})` : 'Me concentrer sur ce sort (menu Concentration)' })) : null,
+                    el('span', {
+                        text: current ? `Me concentrer sur ce sort (met fin à la concentration sur ${current})`
+                            : "Me concentrer sur ce sort (noté dans « États », onglet Combat)"
+                    })) : null,
                 anyLeft ? el('p', { class: 'muted', text: 'Pour annuler : décochez l\'emplacement dans le grimoire.' }) : null
             ].filter(Boolean),
             actions: [{ label: 'Annuler' }]

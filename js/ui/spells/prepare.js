@@ -230,7 +230,7 @@ export async function openPrepareSpells({ store, setStatus }) {
         focusField: false,
         body: [
             el('p', { class: 'prep-rule', text: label ? `${label} : ${lowerFirst(rule)}` : rule }),
-            el('p', { class: 'prep-hint muted', text: 'Un sort coché absent du grimoire y est ajouté ; décoché, il y reste, non préparé. Les sorts mineurs ne se préparent pas.' }),
+            el('p', { class: 'prep-hint muted', text: 'Cochez les sorts que vous préparez : ce sont ceux que vous pourrez lancer. Un sort coché absent du grimoire y est ajouté ; décoché, il y reste, non préparé. Les sorts mineurs ne se préparent pas.' }),
             el('div', { class: 'prep-controls' }, search, counter),
             listBox,
             noMatch

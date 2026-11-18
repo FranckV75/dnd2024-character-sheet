@@ -957,6 +957,17 @@
     display: none;
 }
 
+/* « Lançable en rituel » : bouton (le toucher affiche l'explication dans la barre du haut), dessiné
+   comme les autres repères */
+button.spell-book-ritual {
+    margin: 0;
+    border: none;
+    background: none;
+    line-height: inherit;
+    text-align: left;
+    cursor: help;
+}
+
 /* Écrans tactiles : cibles d'au moins 44 px (zone de toucher agrandie, components.css) */
 @media (pointer: coarse) {
     .spell-tooltip-toggle {
