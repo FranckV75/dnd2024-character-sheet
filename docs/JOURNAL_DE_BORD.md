@@ -12,8 +12,8 @@ en fin de session :
 
 ## En ce moment
 
-- **En ligne** : version **4.39.0** (`dd44742`), publiée le 11/11/2026. La **4.40.0** (grimoire
-  adapté à la classe) est prête sur `v4`, **pas encore publiée** : attendre le « Publie » de Franck.
+- **En ligne** : version **4.40.0** (grimoire adapté à la classe, liste des sorts au toucher),
+  publiée le 18/11/2026 avec l'accord de Franck (`master` = `v4`).
 - **Petits champs sur iPad** : ne rien changer tant que Franck n'a pas d'info sur le zoom.
 - **GitHub** : anciens commits (PDF, vieilles sauvegardes, adresse Gmail) purgés par le support
   le 12/11/2026 (ticket 4978665) ; vérifié le 18/11 : 404 partout. Dossier clos.
