@@ -87,12 +87,17 @@ describe('Sorts mineurs et sorts préparés', () => {
         assert.deepEqual(classAlwaysPreparedSpells('ranger', 1), ['Marque du chasseur']);
         assert.deepEqual(classAlwaysPreparedSpells('paladin', 1), []);
         assert.deepEqual(classAlwaysPreparedSpells('paladin', 2), ['Châtiment divin']);
+        // Fidèle destrier (niveau 5)
+        assert.deepEqual(classAlwaysPreparedSpells('paladin', 5), ['Châtiment divin', 'Appel de destrier']);
+        // Verbe de la création (Barde 20)
+        assert.deepEqual(classAlwaysPreparedSpells('bard', 19), []);
+        assert.deepEqual(classAlwaysPreparedSpells('bard', 20), ['Mot de pouvoir guérisseur', 'Mot de pouvoir mortel']);
         assert.deepEqual(classAlwaysPreparedSpells('warlock', 9), ['Contact avec les plans']);
         assert.deepEqual(classAlwaysPreparedSpells('wizard', 20), []);
         // Noms exacts de la base de sorts (comparaison du grimoire)
         const base = JSON.parse(readFileSync(new URL('../data/spells.json', import.meta.url), 'utf8'));
         const names = new Set((Array.isArray(base) ? base : Object.values(base)).map(s => s.name));
-        for (const slug of ['druid', 'ranger', 'paladin', 'warlock']) {
+        for (const slug of ['bard', 'druid', 'ranger', 'paladin', 'warlock']) {
             for (const name of classAlwaysPreparedSpells(slug, 20)) assert.ok(names.has(name), name);
         }
     });

@@ -87,13 +87,16 @@ export function featuresAtLevel(classSlug, level) {
 /**
  * Sorts toujours préparés par la classe elle-même (hors du compte « Sorts préparés ») :
  * Druidique (Communication avec les animaux), Ennemi juré (Marque du chasseur), Châtiment de
- * paladin (Châtiment divin, niveau 2), Communication avec le protecteur (Contact avec les plans, niveau 9).
+ * paladin (Châtiment divin, niveau 2), Fidèle destrier (Appel de destrier, niveau 5),
+ * Communication avec le protecteur (Contact avec les plans, niveau 9), Verbe de la création
+ * (Barde 20 : Mot de pouvoir guérisseur et Mot de pouvoir mortel).
  * Noms de data/spells.json.
  */
 const CLASS_ALWAYS_PREPARED = Object.freeze({
+    bard: [[20, 'Mot de pouvoir guérisseur'], [20, 'Mot de pouvoir mortel']],
     druid: [[1, 'Communication avec les animaux']],
     ranger: [[1, 'Marque du chasseur']],
-    paladin: [[2, 'Châtiment divin']],
+    paladin: [[2, 'Châtiment divin'], [5, 'Appel de destrier']],
     warlock: [[9, 'Contact avec les plans']]
 });
 
