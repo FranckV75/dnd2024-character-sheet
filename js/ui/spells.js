@@ -91,10 +91,11 @@ const TEXT_COLUMNS = [
     ['time', 'Temps d\'incantation'],
     ['range', 'Portée']
 ];
-/** Losange plein fixe : explication (infobulle, et message au toucher sur tablette) */
+/** Losange plein fixe : explication (infobulle, et message au toucher sur tablette). Courte : la
+ *  barre du haut (#save-status) tient sur une ligne, ces phrases y tiennent dès 768 px */
 const PREP_HELP = {
-    list: "Toujours préparé : votre classe prépare tous les sorts de sa liste. Elle ne change qu'en gagnant un niveau (un sort à la fois).",
-    granted: 'Toujours préparé : donné par votre classe, votre sous-classe, un don ou votre espèce. Il ne compte pas dans vos sorts préparés.'
+    list: "Toujours préparé : votre classe ne change sa liste qu'en gagnant un niveau (un sort à la fois).",
+    granted: 'Toujours préparé : sort donné (classe, sous-classe, don, espèce), hors du compte des préparés.'
 };
 const FLAG_COLUMNS = [
     ['c', 'C', 'Concentration'],
