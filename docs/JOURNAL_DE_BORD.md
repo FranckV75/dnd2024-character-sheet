@@ -70,6 +70,9 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
   vue « Au combat » et « Lancer » ; fenêtre « Préparer mes sorts » (Clerc, Druide, Paladin,
   Rôdeur) ; repères du Magicien (livre, coût de copie, rituels). Passe de finitions : une phrase
   d'explication lisible sur tablette pour chaque nouvelle option (idée de Franck).
+- Après essai d'une fiche de Magicien 5 (« Magotest », dans le navigateur interne) : liste des
+  sorts au toucher de la case du nom, filtrée par niveau, choix « — » et bouton ✕ sur la ligne
+  de saisie (demandes de Franck, ajoutées à la 4.40.0).
 - Aucune nouvelle clé de sauvegarde. Suites possibles notées au point 3 de la feuille de route.
 - Idées de Franck notées : mode Odyssée désactivable, explications des options, outil pour le MJ
   (à discuter d'abord, y compris s'il va dans ce projet).

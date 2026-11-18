@@ -22,6 +22,11 @@ Toutes les modifications notables du projet sont documentées dans ce fichier. L
 - Magicien : ligne « Livre : N sorts · M sans dépense », coût de copie (Cynisme compris),
   mention « Lançable en rituel » sur les rituels du livre non préparés (Savoir rituel), lançables
   en rituel depuis la vue au combat.
+- Ajout d'un sort : toucher la case du nom vide (ou le bouton ▾, sans clavier sur tablette)
+  ouvre la liste des sorts de la liste choisie, rangée par niveau et limitée aux niveaux
+  d'emplacement ; filtrée par le niveau choisi sur la ligne ou la pastille active ; sorts déjà
+  notés grisés (✓). La ligne de saisie commence sur « — » (pas de niveau) et a un bouton ✕
+  pour la remettre à zéro (demandes de Franck).
 ### Fixed
 - Cases C / R / M : la case M ne recouvre plus les notes sur tablette.
 - Cercle de la Terre sans terrain choisi : ses sorts comptent de nouveau dans « Préparés ».
