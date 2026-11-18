@@ -3,11 +3,13 @@
  */
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
     preparesWholeList, grantedSpellKeys, spellPrepState, inCombatView, isCastable,
-    castSlotOptions, useSpellSlot
+    castSlotOptions, useSpellSlot, wholeListSource, fitsWholeList
 } from '../js/rules/spell-preparation.js';
-import { spellCounts, spellNameKey } from '../js/rules/spells.js';
+import { spellCounts, spellNameKey, spellLimitWarnings, findSpellByName } from '../js/rules/spells.js';
+import { classSpellCounts } from '../js/rules/class-progression.js';
 import { deriveCharacter } from '../js/rules/character.js';
 
 describe('Classes à liste fixe (préparation au passage de niveau)', () => {
@@ -53,6 +55,75 @@ describe('Classes à liste fixe (préparation au passage de niveau)', () => {
     test('Vue au combat et bouton « Lancer »', () => {
         assert.deepEqual(['cantrip', 'granted', 'list', 'prepared', 'unprepared'].map(inCombatView), [true, true, true, true, false]);
         assert.deepEqual(['cantrip', 'granted', 'list', 'prepared', 'unprepared'].map(isCastable), [false, true, true, true, false]);
+    });
+});
+
+describe('Sorts notés hors de la liste fixe (losange à cocher, comme avant)', () => {
+    const base = JSON.parse(readFileSync(new URL('../data/spells.json', import.meta.url), 'utf8'));
+    const db = Array.isArray(base) ? base : Object.values(base);
+    const row = (name, prep = false) => {
+        const spell = findSpellByName(db, name);
+        assert.ok(spell, name);
+        return { lvl: String(spell.level), name: spell.name, prep };
+    };
+    /** Compteur et avertissement tels que le grimoire les calcule */
+    const grimoire = (record, rows) => {
+        const derived = deriveCharacter(record);
+        const source = wholeListSource(derived);
+        const fits = (r) => fitsWholeList(r, source, findSpellByName(db, r.name));
+        const granted = grantedSpellKeys(record, derived);
+        const counts = spellCounts(rows, '', granted, (r) => fits(r));
+        return {
+            states: rows.map(r => spellPrepState(r, { wholeList: source !== null, granted, fits })),
+            prepared: counts.prepared,
+            warnings: spellLimitWarnings(counts, classSpellCounts(derived.classSlug, derived.level))
+        };
+    };
+
+    test('Listes et plus haut niveau de la liste fixe', () => {
+        assert.equal(wholeListSource(deriveCharacter({ char_class: 'Clerc', char_level: '5' })), null);
+        assert.deepEqual(wholeListSource(deriveCharacter({ char_class: 'Occultiste', char_level: '11' })), { lists: ['warlock'], maxLevel: 5 });
+        assert.deepEqual(wholeListSource(deriveCharacter({ char_class: 'Barde', char_level: '3' })), { lists: ['bard'], maxLevel: 2 });
+        // Secrets magiques : listes du Barde, du Clerc, du Druide et du Magicien
+        assert.deepEqual(wholeListSource(deriveCharacter({ char_class: 'Barde', char_level: '10' })).lists, ['bard', 'cleric', 'druid', 'wizard']);
+        // Collège du Savoir : Découvertes magiques (mêmes listes, hors du compte) indiscernables
+        assert.deepEqual(wholeListSource(deriveCharacter({ char_class: 'Barde', char_subclass: 'Collège du Savoir', char_level: '10' })).lists, ['bard']);
+        assert.deepEqual(wholeListSource(deriveCharacter({ char_class: 'Guerrier', char_subclass: 'Chevalier occulte', char_level: '7' })), { lists: ['wizard'], maxLevel: 2 });
+    });
+
+    test('Niveau trop haut, autre liste ; nom inconnu de la base : compté', () => {
+        const source = { lists: ['warlock'], maxLevel: 5 };
+        assert.equal(fitsWholeList({ lvl: '1', name: 'Maléfice' }, source, findSpellByName(db, 'Maléfice')), true);
+        assert.equal(fitsWholeList({ lvl: '6', name: 'Cercle de mort' }, source, findSpellByName(db, 'Cercle de mort')), false);
+        assert.equal(fitsWholeList({ lvl: '1', name: 'Armure de mage' }, source, findSpellByName(db, 'Armure de mage')), false);
+        assert.equal(fitsWholeList({ lvl: '2', name: 'Sort maison' }, source, null), true);
+        assert.equal(fitsWholeList({ lvl: '0', name: 'Décharge occulte' }, source, null), false);
+        assert.equal(fitsWholeList({ lvl: '1', name: 'Maléfice' }, null, null), false);
+    });
+
+    test('Occultiste 11 : Arcanum mystique noté ne fait plus dépasser la table', () => {
+        const names = ['Maléfice', 'Trait ensorcelé', 'Bouclier', 'Ténèbres', 'Foulée brumeuse', 'Contresort',
+            'Voracité de Hadar', 'Vol', 'Bannissement', 'Porte dimensionnelle', 'Scrutation'];
+        const rows = [...names.map(name => row(name, true)), row('Cercle de mort')];
+        const result = grimoire({ char_class: 'Occultiste', char_level: '11' }, rows);
+        assert.equal(result.prepared, 11);
+        assert.deepEqual(result.warnings, []);
+        assert.equal(result.states.at(-1), 'unprepared');
+        // Coché par le joueur : compté, comme avant
+        rows[rows.length - 1] = row('Cercle de mort', true);
+        assert.equal(grimoire({ char_class: 'Occultiste', char_level: '11' }, rows).prepared, 12);
+    });
+
+    test('Barde du Savoir 6 : les Découvertes magiques non cochées ne comptent pas', () => {
+        const names = ['Charme-personne', 'Mot de guérison', 'Fou rire de Tasha', 'Sommeil', 'Image miroir', 'Invisibilité',
+            'Motif hypnotique', 'Antidétection', 'Image majeure'];
+        const rows = [...names.map(name => row(name)), row('Retour à la vie'), row('Arme spirituelle')];
+        const record = { char_class: 'Barde', char_subclass: 'Collège du Savoir', char_level: '6' };
+        const result = grimoire(record, rows);
+        assert.deepEqual(result.states.slice(0, 9), Array(9).fill('list'));
+        assert.deepEqual(result.states.slice(9), ['unprepared', 'unprepared']);
+        assert.equal(result.prepared, 9);
+        assert.deepEqual(result.warnings, []);
     });
 });
 

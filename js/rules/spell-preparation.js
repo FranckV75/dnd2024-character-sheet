@@ -7,6 +7,9 @@
 //    Chevalier occulte et l'Arnaqueur arcanique (« Whenever you gain a Fighter / Rogue level, you
 //    can replace one spell on your list »). Le Paladin et le Rôdeur changent un sort après chaque
 //    repos long : leur losange reste à cocher, comme pour le Clerc, le Druide et le Magicien.
+//    Sorts notés hors de cette liste fixe (Arcanum mystique au-dessus des emplacements de pacte,
+//    Découvertes magiques du Collège du Savoir, rituels du Pacte du grimoire, sorts des
+//    manifestations…) : losange à cocher comme avant, pour ne compter que ceux qui sont préparés.
 //  - État affiché du losange d'une ligne : calcul d'affichage, jamais écrit dans la fiche (la clé
 //    v3 « prep » garde la valeur du joueur, qui reprend son sens s'il change de classe).
 //  - Sorts donnés (classe, sous-classe, dons, espèce) : hors du compte de la table.
@@ -34,6 +37,49 @@ export const WHOLE_LIST_SUBCLASSES = Object.freeze(['eldritch_knight', 'arcane_t
  */
 export function preparesWholeList(classSlug, subclass = '') {
     return WHOLE_LIST_CLASSES.includes(classSlug) || WHOLE_LIST_SUBCLASSES.includes(subclass);
+}
+
+/** Secrets magiques (Barde de niveau 10+) : nouveaux sorts pris dans ces listes */
+const MAGICAL_SECRETS_LISTS = Object.freeze(['bard', 'cleric', 'druid', 'wizard']);
+
+/**
+ * Liste fixe d'une classe à liste fixe : listes de classe où elle prend ses sorts, et plus haut
+ * niveau de sort préparable (plus haut emplacement de la table : emplacements de pacte pour
+ * l'Occultiste ; ceux ajoutés à la main, Arcanum mystique ou multiclasse, ne comptent pas).
+ * Collège du Savoir : ses deux Découvertes magiques viennent des mêmes listes que Secrets
+ * magiques et ne comptent pas ; on ne peut pas les distinguer, ses sorts hors de la liste du
+ * Barde restent donc à cocher.
+ * @param {{ classSlug?: string, subclass?: string, level?: number, spellSlots?: Object }} derived - deriveCharacter()
+ * @returns {{ lists: string[], maxLevel: number }|null} null : pas une classe à liste fixe
+ */
+export function wholeListSource(derived) {
+    const { classSlug = '', subclass = '', level = 1, spellSlots = {} } = derived || {};
+    if (!preparesWholeList(classSlug, subclass)) return null;
+    let lists = [classSlug];
+    if (WHOLE_LIST_SUBCLASSES.includes(subclass)) lists = ['wizard'];
+    else if (classSlug === 'bard' && level >= 10 && subclass !== 'college_of_lore') lists = [...MAGICAL_SECRETS_LISTS];
+    const levels = Object.entries(spellSlots || {})
+        .filter(([, count]) => Number(count) > 0)
+        .map(([slotLevel]) => Number(slotLevel))
+        .filter(Number.isFinite);
+    return { lists, maxLevel: Math.max(0, ...levels) };
+}
+
+/**
+ * Sort noté qui fait partie de la liste fixe (donc préparé d'office) : niveau 1 à maxLevel, et
+ * sort d'une des listes de classe. Sort absent de la base (nom inconnu) : on fait confiance au
+ * joueur, il est compté.
+ * @param {Object} row - ligne de dynamic_spells
+ * @param {{ lists: string[], maxLevel: number }|null} source - wholeListSource()
+ * @param {Object|null} [spell] - sort de la base (findSpellByName)
+ * @returns {boolean}
+ */
+export function fitsWholeList(row, source, spell = null) {
+    if (!source) return false;
+    const level = Number(rowLevel(row));
+    if (!(level >= 1) || level > source.maxLevel) return false;
+    const classes = Array.isArray(spell?.classes) ? spell.classes : null;
+    return !classes || source.lists.some(slug => classes.includes(slug));
 }
 
 /**
@@ -65,15 +111,17 @@ export function grantedSpellKeys(character, derived) {
  *  - 'cantrip'    : sort mineur, toujours disponible (∞) ;
  *  - 'granted'    : donné par la classe, la sous-classe, un don ou l'espèce (toujours préparé, hors du compte) ;
  *  - 'list'       : classe à liste fixe (toujours préparé, compté) ;
- *  - 'prepared' / 'unprepared' : losange coché ou non par le joueur.
+ *  - 'prepared' / 'unprepared' : losange coché ou non par le joueur (aussi, dans une classe à
+ *    liste fixe, pour un sort hors de cette liste : voir fitsWholeList).
  * @param {Object} row - ligne de dynamic_spells
- * @param {{ wholeList?: boolean, granted?: Set<string>|null }} [options]
+ * @param {{ wholeList?: boolean, granted?: Set<string>|null, fits?: ((row: Object) => boolean)|null }} [options]
+ *        fits : le sort fait-il partie de la liste fixe (fitsWholeList) ? Absent : oui
  * @returns {'cantrip'|'granted'|'list'|'prepared'|'unprepared'}
  */
-export function spellPrepState(row, { wholeList = false, granted = null } = {}) {
+export function spellPrepState(row, { wholeList = false, granted = null, fits = null } = {}) {
     if (rowLevel(row) === '0') return 'cantrip';
     if (granted?.has(spellNameKey(row?.name))) return 'granted';
-    if (wholeList) return 'list';
+    if (wholeList && (!fits || fits(row))) return 'list';
     return row?.prep === true ? 'prepared' : 'unprepared';
 }
 

@@ -60,7 +60,7 @@ import { ABILITY_IDS } from '../data/constants.js';
 import { loadSpells } from '../data/spells.js';
 import { classSpellCounts } from '../rules/class-progression.js';
 import {
-    preparesWholeList, grantedSpellKeys, spellPrepState, inCombatView, isCastable, castSlotOptions, useSpellSlot
+    wholeListSource, fitsWholeList, grantedSpellKeys, spellPrepState, inCombatView, isCastable, castSlotOptions, useSpellSlot
 } from '../rules/spell-preparation.js';
 import { concentrationSpell, setConcentrationPatch } from '../rules/concentration.js';
 import { el, icon, setIconLabel } from './dom.js';
@@ -526,7 +526,7 @@ export function initSpells(ctx) {
      * @param {{ force: boolean, locked: boolean, entry: boolean, line: number }} options
      *        entry : ligne de saisie ; line : rang de la ligne dans le tableau affiché
      */
-    function writeRow(r, row, { force, locked, entry, line, elements = [], affinity = null, state = 'unprepared' }) {
+    function writeRow(r, row, { force, locked, entry, line, elements = [], affinity = null, state = 'unprepared', wholeList = false }) {
         const name = plainText(row.name);
         const known = entry || (!elements.length && !affinity) ? null : findSpellByName(spellsDb, row.name);
         const types = adeptTypes(known, elements);
@@ -584,7 +584,10 @@ export function initSpells(ctx) {
             } else {
                 r.prep.textContent = prepared ? '◆' : '◇';
                 r.prep.setAttribute('aria-pressed', String(prepared));
-                r.prep.title = prepared ? 'Sort préparé' : 'Sort non préparé';
+                // Classe à liste fixe : sort noté hors de cette liste (niveau trop haut, autre liste)
+                r.prep.title = wholeList
+                    ? (prepared ? 'Coché : compté dans vos sorts préparés' : "Hors de votre liste fixe (Arcanum, Découvertes magiques…) : cochez-le seulement s'il compte dans vos sorts préparés")
+                    : prepared ? 'Sort préparé' : 'Sort non préparé';
                 r.prep.setAttribute('aria-label', `Sort ${what} préparé`);
             }
         }
@@ -642,10 +645,14 @@ export function initSpells(ctx) {
         const elements = adeptElements(character);
         const derivedNow = derivedOf(character);
         const affinity = elementalAffinity(derivedNow);
-        // Losange : liste fixe (Barde, Ensorceleur, Occultiste) et sorts donnés, toujours préparés
+        // Losange : liste fixe (Barde, Ensorceleur, Occultiste) et sorts donnés, toujours préparés ;
+        // un sort noté hors de la liste fixe (Arcanum mystique, Découvertes magiques…) garde son
+        // losange à cocher
         const granted = grantedSpellKeys(character, derivedNow);
-        const wholeList = preparesWholeList(derivedNow.classSlug, derivedNow.subclass);
-        const states = rows.map(row => spellPrepState(row, { wholeList, granted }));
+        const source = wholeListSource(derivedNow);
+        const wholeList = source !== null;
+        const fits = (row) => fitsWholeList(row, source, findSpellByName(spellsDb, row.name));
+        const states = rows.map(row => spellPrepState(row, { wholeList, granted, fits }));
 
         // Vue « au combat » : les sorts de niveau 1+ non préparés se retirent de l'écran (classe
         // CSS, l'impression garde tout) ; pas la ligne en cours de saisie, qui ne disparaît pas
@@ -656,7 +663,7 @@ export function initSpells(ctx) {
             const isEntry = r === entry;
             writeRow(r, isEntry ? newSpellRow(EMPTY_SPELL, entryLevel ?? view.level) : rows[i], {
                 force, locked, entry: isEntry, line: isEntry ? lines.size + 1 : lines.get(i) ?? i + 1, elements, affinity,
-                state: isEntry ? null : states[i]
+                state: isEntry ? null : states[i], wholeList
             });
             if (!isEntry) {
                 r.tr.hidden = !shown.has(i);
@@ -677,7 +684,7 @@ export function initSpells(ctx) {
             tbody.append(...trs.filter(tr => tr.parentNode !== tbody));
         }
 
-        const counts = spellCounts(rows, view.level, granted, wholeList);
+        const counts = spellCounts(rows, view.level, granted, (row) => wholeList && fits(row));
         const anySpell = rows.some(hasSpellContent);
         const anyShown = [...shown].some(i => !outOfCombat(i));
         container.toggleAttribute('data-no-spells', !anySpell);
@@ -893,7 +900,8 @@ export function initSpells(ctx) {
     loadSpells().then((list) => {
         spellsDb = Array.isArray(list) ? list : [];
         if (spellsDb.length === 0) setStatus('⚠️ Base de sorts indisponible : pas de suggestions ni d\'infobulles');
-        // Base chargée : les repères « Adepte » et « +Cha » (Affinité élémentaire) peuvent maintenant s'afficher
-        else if (adeptElements(store.get()).length || elementalAffinity(derivedOf(store.get()))) render(store.get(), ['dynamic_spells']);
+        // Base chargée : les repères « Adepte » et « +Cha » (Affinité élémentaire) peuvent maintenant
+        // s'afficher, et les sorts hors de la liste fixe d'un Barde, Ensorceleur ou Occultiste se repérer
+        else render(store.get(), ['dynamic_spells']);
     });
 }
