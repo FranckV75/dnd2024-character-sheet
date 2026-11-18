@@ -8,7 +8,7 @@ import {
     hasSpellbook, freeSpellbookSpells, spellbookCount, spellCopyCost, castsRitualsFromBook, isRitualSpell,
     SPELLBOOK_START, SPELLBOOK_PER_LEVEL
 } from '../js/rules/spellbook.js';
-import { spellPrepState, inCombatView, isCastable, isRitualOnly, grantedSpellKeys } from '../js/rules/spell-preparation.js';
+import { spellPrepState, inCombatView, isCastable, isRitualOnly, castModes, grantedSpellKeys } from '../js/rules/spell-preparation.js';
 import { spellCounts, spellNameKey, findSpellByName } from '../js/rules/spells.js';
 import { deriveCharacter } from '../js/rules/character.js';
 import { createDefaultCharacter } from '../js/state/schema.js';
@@ -129,6 +129,26 @@ describe('Savoir rituel : rituel du livre lancé sans être préparé', () => {
         assert.equal(isCastable('ritual'), true);
         assert.equal(isRitualOnly('ritual'), true);
         for (const state of ['cantrip', 'granted', 'list', 'prepared', 'unprepared']) assert.equal(isRitualOnly(state), false, state);
+    });
+
+    test('Fenêtre Lancer : un sort rituel préparé garde « En rituel », même sans la case R', () => {
+        const bookRitual = (row) => isRitualSpell(row, findSpellByName(db, row.name));
+        // Compréhension des langues : rituel d'après la base, case R non cochée (ligne v3)
+        const row = { lvl: '1', name: 'Compréhension des langues', r: false, prep: true };
+        const ritual = isRitualSpell(row, findSpellByName(db, row.name));
+        assert.equal(ritual, true);
+        assert.deepEqual(castModes(spellPrepState(row, { bookRitual }), ritual), { slots: true, ritual: true, ritualOnly: false });
+        // Même sort non préparé : seulement en rituel (Savoir rituel)
+        assert.deepEqual(castModes(spellPrepState({ ...row, prep: false }, { bookRitual }), ritual),
+            { slots: false, ritual: true, ritualOnly: true });
+        // Sort préparé non rituel : emplacements seulement ; sort donné ou liste fixe rituel : les deux
+        assert.deepEqual(castModes('prepared', false), { slots: true, ritual: false, ritualOnly: false });
+        assert.deepEqual(castModes('granted', true), { slots: true, ritual: true, ritualOnly: false });
+        assert.deepEqual(castModes('list', true), { slots: true, ritual: true, ritualOnly: false });
+        // Sort non préparé (sans Savoir rituel) ou sort mineur : pas de fenêtre Lancer
+        for (const state of ['unprepared', 'cantrip']) {
+            assert.deepEqual(castModes(state, true), { slots: false, ritual: false, ritualOnly: false }, state);
+        }
     });
 
     test('Un rituel du livre non préparé ne compte pas dans les sorts préparés', () => {

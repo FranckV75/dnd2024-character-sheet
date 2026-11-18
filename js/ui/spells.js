@@ -66,7 +66,7 @@ import { ABILITY_IDS } from '../data/constants.js';
 import { loadSpells } from '../data/spells.js';
 import { classSpellCounts } from '../rules/class-progression.js';
 import {
-    wholeListSource, fitsWholeList, grantedSpellKeys, spellPrepState, inCombatView, isCastable, isRitualOnly, castSlotOptions, useSpellSlot
+    wholeListSource, fitsWholeList, grantedSpellKeys, spellPrepState, inCombatView, isCastable, castModes, castSlotOptions, useSpellSlot
 } from '../rules/spell-preparation.js';
 import { hasSpellbook, freeSpellbookSpells, spellbookCount, spellCopyCost, castsRitualsFromBook, isRitualSpell } from '../rules/spellbook.js';
 import { concentrationSpell, setConcentrationPatch } from '../rules/concentration.js';
@@ -463,10 +463,11 @@ export function initSpells(ctx) {
     function castRow(r) {
         const row = spellsOf()[r.index];
         if (!row || !isCastable(r.state)) return;
-        const ritualOnly = isRitualOnly(r.state);
+        // Rituel : case R cochée ou base de sorts, préparé ou non (même règle que le losange)
+        const { ritual, ritualOnly } = castModes(r.state, isRitualSpell(row, findSpellByName(spellsDb, row.name)));
         castSpell({
             name: plainText(row.name), level: Number(rowLevel(row)), concentration: row.c === true,
-            ritual: ritualOnly || row.r === true, ritualOnly,
+            ritual, ritualOnly,
             ritualOnlyText: ritualOnly ? 'Sort non préparé : depuis votre livre, il se lance seulement en rituel (Savoir rituel).' : ''
         });
     }

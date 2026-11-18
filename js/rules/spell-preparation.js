@@ -166,6 +166,21 @@ export function isRitualOnly(state) {
 }
 
 /**
+ * Façons de lancer une ligne du grimoire (fenêtre « Lancer ») : avec un emplacement si le sort
+ * est préparé (même d'office), en rituel s'il est rituel (case R ou base de sorts : isRitualSpell
+ * de js/rules/spellbook.js), quel que soit l'état du losange ; un rituel du livre non préparé
+ * (Savoir rituel) se lance seulement en rituel.
+ * @param {string} state - spellPrepState()
+ * @param {boolean} ritual - le sort est-il rituel ?
+ * @returns {{ slots: boolean, ritual: boolean, ritualOnly: boolean }}
+ */
+export function castModes(state, ritual) {
+    if (!isCastable(state)) return { slots: false, ritual: false, ritualOnly: false };
+    const ritualOnly = isRitualOnly(state);
+    return { slots: !ritualOnly, ritual: ritualOnly || ritual === true, ritualOnly };
+}
+
+/**
  * Niveaux d'emplacement possibles pour lancer un sort : son niveau et au-dessus (un sort de
  * niveau 1 lancé avec un emplacement de pacte de niveau 3 l'est au niveau 3).
  * @param {number|string} spellLevel - 1 à 9
