@@ -40,13 +40,13 @@ const NEEDLES = TOOLS
     .sort((a, b) => b.folded.length - a.folded.length);
 
 const ENTITIES = { nbsp: ' ', amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
-const PIECE = /<[^>]*>|&(?:#\d+|#x[0-9a-f]+|[a-z]+);|[\s\S]/giu;
+const PIECE = /<[^>]*>|&(?:#\d+|#x[0-9a-f]+|[a-z]+);|\r\n|[\s\S]/giu;
 
 /**
  * Découpe le texte riche en morceaux : chaque balise, chaque entité, chaque caractère.
  *  - ch : le caractère vu par le lecteur ('' pour une balise de mise en forme, '\n' pour un
- *    retour à la ligne : <br>, début ou fin de <div> / <p>) ;
- *  - br / block / close : nature de la balise.
+ *    retour à la ligne : <br>, retour tapé avec Maj+Entrée, début ou fin de <div> / <p>) ;
+ *  - br / newline / block / close : nature du retour à la ligne ou de la balise.
  * @param {string} html
  *  - inline : nom d'une balise de mise en forme (b, font, span…).
  * @returns {{ raw: string, ch: string, br?: boolean, block?: string, inline?: string, close?: boolean }[]}
@@ -68,9 +68,12 @@ function pieces(html) {
                 ch = point > 0 && point <= 0x10ffff ? String.fromCodePoint(point) : '?';
             }
             out.push({ raw, ch: ch ?? '?' });
+        } else if (raw === '\n' || raw === '\r' || raw === '\r\n') {
+            // Retour à la ligne tapé avec Maj+Entrée : la case l'affiche tel quel (white-space:
+            // pre-wrap, css/sheet.css), c'est donc une vraie nouvelle ligne, comme un <br>
+            out.push({ raw, ch: '\n', br: true, newline: true });
         } else {
-            // Retour à la ligne du code HTML : une simple espace à l'écran
-            out.push({ raw, ch: raw === '\n' || raw === '\r' ? ' ' : raw });
+            out.push({ raw, ch: raw });
         }
     }
     return out;
@@ -275,7 +278,11 @@ export function addToolToText(html, toolId) {
         const tag = list[next].block;
         return insertAfter(next, `<${tag}>${tool.name}</${tag}>`);
     }
-    return insertAfter(endOfLastWord(list, lastPiece), `<br>${tool.name}`);
+    // Même retour à la ligne que le précédent : <br>, ou celui tapé avec Maj+Entrée
+    let previous = lastPiece;
+    while (previous >= 0 && !list[previous].br) previous--;
+    const lineBreak = previous >= 0 && list[previous].newline ? list[previous].raw : '<br>';
+    return insertAfter(endOfLastWord(list, lastPiece), `${lineBreak}${tool.name}`);
 }
 
 /**

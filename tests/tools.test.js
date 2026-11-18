@@ -113,6 +113,15 @@ describe('Ajouter un outil', () => {
             '<div>Luth</div><div>Lyre</div><div>Tambour</div><div><br></div>');
     });
 
+    test('Retour à la ligne tapé avec Maj+Entrée (caractère brut) : une ligne par outil aussi', () => {
+        assert.equal(addToolToText('Luth\nLyre', 'drum'), 'Luth\nLyre\nTambour');
+        assert.equal(addToolToText('Luth\nLyre\n', 'drum'), 'Luth\nLyre\nTambour\n');
+        assert.equal(addToolToText('Luth\r\nLyre', 'drum'), 'Luth\r\nLyre\r\nTambour');
+        assert.equal(addToolToText('Luth<br>Lyre\nViole', 'drum'), 'Luth<br>Lyre\nViole\nTambour');
+        assert.equal(addToolToText('Notes\nLuth, Lyre', 'drum'), 'Notes\nLuth, Lyre, Tambour');
+        assert.deepEqual(toolsInText('Luth\nOutils de voleur\nLyre'), ['lute', 'thieves', 'lyre']);
+    });
+
     test('Plusieurs lignes dont la dernière est une liste à virgules : à la suite de cette liste', () => {
         assert.equal(addToolToText('Appris à l\'armée<br>Luth, Lyre', 'drum'), 'Appris à l\'armée<br>Luth, Lyre, Tambour');
     });
@@ -160,6 +169,13 @@ describe('Retirer un outil', () => {
         assert.equal(removeToolFromText('<p>Luth</p><p><br></p><p>Lyre</p>', 'lyre'), '<p>Luth</p><p><br></p>');
     });
 
+    test('Retour à la ligne tapé avec Maj+Entrée : la ligne part, sans laisser de ligne vide', () => {
+        assert.equal(removeToolFromText('Luth\nLyre', 'lute'), 'Lyre');
+        assert.equal(removeToolFromText('Luth\nLyre', 'lyre'), 'Luth');
+        assert.equal(removeToolFromText('Luth\nLyre\nTambour', 'lyre'), 'Luth\nTambour');
+        assert.equal(removeToolFromText(addToolToText('Luth\nLyre', 'drum'), 'lute'), 'Lyre\nTambour');
+    });
+
     test('Le texte écrit à la main autour reste tel quel', () => {
         assert.equal(removeToolFromText('Appris chez mon oncle : Outils de forgeron (3 ans)', 'smith'), 'Appris chez mon oncle :  (3 ans)');
         assert.equal(removeToolFromText('Véhicules terrestres, Luth, <b>chariots</b>', 'lute'), 'Véhicules terrestres, <b>chariots</b>');
@@ -189,7 +205,7 @@ describe('Retirer un outil', () => {
     });
 
     test('Ajouter puis retirer redonne le texte de départ', () => {
-        for (const start of ['', 'Luth', 'Luth, Lyre', 'Luth<br>Lyre', 'Luth<div>Lyre</div>', '<p>Luth</p><p>Lyre</p>', 'Texte libre sans outil']) {
+        for (const start of ['', 'Luth', 'Luth, Lyre', 'Luth<br>Lyre', 'Luth\nLyre', 'Luth<div>Lyre</div>', '<p>Luth</p><p>Lyre</p>', 'Texte libre sans outil']) {
             assert.equal(removeToolFromText(addToolToText(start, 'thieves'), 'thieves'), start, start);
         }
     });
