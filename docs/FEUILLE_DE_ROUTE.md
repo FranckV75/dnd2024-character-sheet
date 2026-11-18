@@ -30,7 +30,24 @@ sous-classes). Restent des décisions de Franck :
 - Monture d'Outremonde (Amazone) : case pour l'action bonus (une fois par repos long) ; noms
   français des actions à vérifier dans le livre ; sorts de la Magie des Amazones pas dans le grimoire.
 
-### 3. Idées, toutes au même niveau (priorités à trier avec Franck : c'est la prochaine étape)
+### 3. Idées : ordre validé par Franck le 18/11/2026
+
+1. **Liste des outils** : bouton « Choisir dans la liste » (outils d'artisan, boîtes de jeux,
+   instruments, autres outils), saisie à la main toujours possible, lien avec l'outil de l'historique.
+2. **Notice** (« Mode d'emploi » dans le menu Gestion, onglet par onglet, imprimable, tenue à jour
+   à chaque version), fenêtre **« Nouveautés »** après une mise à jour, **personnage d'exemple**.
+3. **Finitions du grimoire** : avertir quand un sort préparé dépasse les emplacements ; lancers
+   gratuits (Châtiment divin, Marque du chasseur…) proposés par « Lancer » ; bouton « Retirer les
+   sorts non préparés » (Clerc, Druide) ; rituels du Magicien repliés en vue « Au combat ».
+4. **Dégâts en plus sur les armes** : lignes dans le réglage ⚙ (dégâts + raison), « toujours » ou
+   « à allumer » (pastille, comme la Rage).
+5. **Mode Odyssée désactivable** : un des prochains chantiers, courte étude d'abord.
+
+Plus tard (bonnes idées, pas maintenant) : aide « Mon tour » (ce que le personnage peut faire à
+son tour), création guidée d'un personnage de niveau 1, vue du groupe, journal de campagne, outil
+du MJ. Pas prioritaires : lanceur de dés, fiche sans wifi.
+
+Détail des idées :
 
 - Lanceur de dés (demande de janvier 2026) : toucher un bonus d'attaque ou une compétence lance le
   dé et affiche le total. Pas prioritaire pour l'instant.
