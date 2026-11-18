@@ -209,6 +209,19 @@ describe('Personnages d\'exemple : cohérence avec les règles de 2024', () => {
         assert.equal(deriveCharacter(cast).armorClass.value, 15, 'Armure de mage lancée : 13 + Dex');
     });
 
+    test('Magicienne : Érudition (niveau 2), l\'Expertise dans une compétence maîtrisée de la liste du Magicien', () => {
+        const d = deriveCharacter(byId(WIZARD));
+        const expert = Object.keys(d.skills).filter((skill) => d.skills[skill].expertise);
+        assert.deepEqual(expert, ['arcana']);
+        assert.ok(['arcana', 'history', 'insight', 'investigation', 'medicine', 'nature', 'religion'].includes(expert[0]));
+        assert.equal(byId(WIZARD).skill_prof_arcana, true, 'compétence déjà maîtrisée');
+        // Arcanes : Intelligence +4, bonus de maîtrise +3 compté deux fois
+        assert.equal(d.skills.arcana.bonus, 10);
+        // Le Guerrier de niveau 3 n'a aucune Expertise
+        const fighter = deriveCharacter(byId(FIGHTER));
+        assert.deepEqual(Object.keys(fighter.skills).filter((skill) => fighter.skills[skill].expertise), []);
+    });
+
     test('Magicienne : chaque sort vient de la base, rempli comme par l\'auto-complétion, liste du Magicien', () => {
         const character = byId(WIZARD);
         const names = new Set();

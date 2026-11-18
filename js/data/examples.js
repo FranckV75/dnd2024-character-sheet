@@ -7,7 +7,7 @@
 // complétée comme un fichier importé (js/state/examples.js) avant d'être ouverte.
 // Les lignes d'armes, d'armures et de sorts sont celles que remplit l'auto-complétion (noms du
 // manuel français, data/spells.json). tests/examples.test.js vérifie leur cohérence avec les
-// règles de 2024 (PV, CA, maîtrises, emplacements, sorts préparés, livre de sorts).
+// règles de 2024 (PV, CA, maîtrises, Expertise, emplacements, sorts préparés, grimoire).
 //  - id : identifiant stable ; title : nom du personnage ; subtitle : classe, niveau, espèce,
 //    historique ; pitch : une phrase pour le joueur, dans la fenêtre de choix.
 // =============================================================================
@@ -100,6 +100,7 @@ export const EXAMPLE_CHARACTERS = Object.freeze([
             skill_prof_investigation: true,
             skill_prof_insight: true,
             skill_prof_perception: true,
+            skill_exp_arcana: true,
             hp_max: "32",
             hp_current: "25",
             hp_temp: "0",
