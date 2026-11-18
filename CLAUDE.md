@@ -25,6 +25,11 @@ ne jamais publier (push, déploiement) sans son accord explicite.
 - **Journal de bord** : `docs/JOURNAL_DE_BORD.md` (nom fixe). À lire en début de session ; en fin
   de session, réécrire « En ce moment » et ajouter en tête des « Sessions » une entrée courte dont
   le titre dit sur quoi on a travaillé (à corriger si le sujet change en route).
+- **Fin de chantier** : relire `docs/FEUILLE_DE_ROUTE.md` **en entier, titres compris** (pas
+  seulement ajouter une mention) : retirer ou barrer ce qui est fait, et vérifier que la feuille
+  de route et le journal disent la même chose.
+- **Fin de session** : donner à Franck un bilan court « Où on en est » tiré de la feuille de
+  route (fait, décisions en attente, prochaine étape).
 
 ## Commandes
 
