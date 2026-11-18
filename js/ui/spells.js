@@ -499,7 +499,9 @@ export function initSpells(ctx) {
         const name = spellName || 'ce sort';
         const options = ritualOnly ? [] : castSlotOptions(level, d.spellSlots, d.classSlug, slotStateOf(character));
         const current = concentrationSpell(character);
-        const concentration = needsConcentration && current !== name.slice(0, 80)
+        // Sort impossible à lancer (plus aucun emplacement, pas de rituel) : pas de case Concentration
+        const castable = ritual || options.some(option => option.left > 0);
+        const concentration = castable && needsConcentration && current !== name.slice(0, 80)
             ? el('input', { type: 'checkbox', class: 'round-check', checked: true })
             : null;
         let close = () => {};
