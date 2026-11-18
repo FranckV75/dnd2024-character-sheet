@@ -66,10 +66,11 @@ function printCopy() {
 }
 
 /**
- * @param {{ section?: string }} [options] - rubrique ouverte d'abord (id de js/data/help.js)
+ * @param {{ section?: string, onClose?: () => void }} [options] - section : rubrique ouverte
+ *        d'abord (id de js/data/help.js) ; onClose : appelé quand la fenêtre a été fermée
  * @returns {() => void} Fonction qui ferme la fenêtre
  */
-export function openHelp({ section } = {}) {
+export function openHelp({ section, onClose } = {}) {
     const page = el('div', { class: 'help-page', tabindex: '-1' });
     const items = new Map();
 
@@ -102,11 +103,7 @@ export function openHelp({ section } = {}) {
             return el('li', {}, button);
         })));
 
-    // Copie pour l'imprimante : présente tant que la fenêtre est ouverte
     const copy = printCopy();
-    document.body.append(copy);
-    document.documentElement.dataset.print = 'help';
-
     const close = openModal({
         title: 'Mode d\'emploi',
         icon: 'help',
@@ -130,8 +127,13 @@ export function openHelp({ section } = {}) {
         onClose: () => {
             copy.remove();
             delete document.documentElement.dataset.print;
+            onClose?.();
         }
     });
+    // Copie pour l'imprimante : présente tant que la fenêtre est ouverte, posée une fois la fenêtre
+    // ouverte (si l'ouverture échouait, « Imprimer » doit continuer d'imprimer la fiche)
+    document.body.append(copy);
+    document.documentElement.dataset.print = 'help';
     show(section);
     return close;
 }

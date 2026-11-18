@@ -5,8 +5,9 @@
 // appareil : la dernière version vue est retenue dans le navigateur (SEEN_VERSION_KEY, préférence
 // d'appareil, jamais dans la fiche). Quoi montrer : js/state/whats-new.js (règle testée).
 //  - Annoncée par js/ui/update.js, après la vérification de mise à jour de l'ouverture.
-//  - Jamais par-dessus une autre fenêtre (question de synchronisation, avis du démarrage) : elle
-//    attend que l'écran soit libre. Une question qui arrive ensuite se pose par-dessus elle.
+//  - Jamais par-dessus une autre fenêtre (question de synchronisation, avis du démarrage), ni
+//    pendant que le joueur écrit dans une case : elle attend que l'écran soit libre. Une question
+//    qui arrive ensuite se pose par-dessus elle.
 //  - La version n'est retenue qu'à la fermeture de la fenêtre : fermée par accident avec la
 //    page, elle revient à l'ouverture suivante.
 //  - Les nouveautés restent lisibles dans le mode d'emploi (rubrique « Nouveautés »).
@@ -38,9 +39,17 @@ function rememberCurrent() {
     }
 }
 
-/** Exécute `run` dès qu'aucune fenêtre n'est ouverte et que la page est visible */
+/** Le joueur écrit dans une case (texte, nombre, liste) : on ne lui prend pas la main */
+function isTyping() {
+    const active = document.activeElement;
+    if (!active || active === document.body) return false;
+    if (active.isContentEditable || active.matches('textarea, select')) return true;
+    return active.matches('input') && !['checkbox', 'radio', 'button', 'range', 'file'].includes(active.type);
+}
+
+/** Exécute `run` dès qu'aucune fenêtre n'est ouverte, que la page est visible et que le joueur n'écrit pas */
 function whenQuiet(run) {
-    const ready = () => !document.querySelector('dialog[open]') && document.visibilityState === 'visible';
+    const ready = () => !document.querySelector('dialog[open]') && document.visibilityState === 'visible' && !isTyping();
     if (ready()) {
         run();
         return;
@@ -84,8 +93,9 @@ function openNews(entries, onClosed) {
         ],
         onClose: () => {
             rememberCurrent();
-            // Après la fermeture complète de cette fenêtre (focus rendu à la page)
-            if (wantsHelp) setTimeout(() => openHelp(), 0);
+            // Après la fermeture complète de cette fenêtre (focus rendu à la page) ; la suite
+            // (nouvelle vérification de mise à jour) attend alors la fermeture du mode d'emploi
+            if (wantsHelp) setTimeout(() => openHelp({ onClose: onClosed }), 0);
             else onClosed?.();
         }
     });
