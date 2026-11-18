@@ -700,7 +700,13 @@ export function initSpells(ctx) {
             emptyMain.textContent = featSpells
                 ? 'Aucun autre sort noté.'
                 : locked ? 'Aucun sort dans le grimoire.' : 'Aucun sort pour l\'instant.';
-            if (!locked) emptyHint.textContent = ' Tapez un nom dans la ligne ci-dessus : la saisie propose les sorts du manuel.';
+            // Vue au combat (réglage de l'appareil, retenu d'une fiche à l'autre) : pas de ligne
+            // de saisie ni de bouton Ajouter, le message dit comment les retrouver
+            if (!locked) {
+                emptyHint.textContent = view.combat
+                    ? ' Pour en ajouter, quittez la vue « Au combat » (bouton de la barre ci-dessus).'
+                    : ' Tapez un nom dans la ligne ci-dessus : la saisie propose les sorts du manuel.';
+            }
         } else if (!anyShown && view.combat) {
             emptyMain.textContent = view.level === '' ? 'Aucun sort mineur ni sort préparé.'
                 : view.level === '0' ? 'Aucun sort mineur.' : `Aucun sort préparé de niveau ${view.level}.`;
