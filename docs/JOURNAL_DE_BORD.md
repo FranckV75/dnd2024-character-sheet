@@ -13,7 +13,11 @@ en fin de session :
 ## En ce moment
 
 - **En ligne** : version **4.40.0** (grimoire adapté à la classe, liste des sorts au toucher),
-  publiée le 18/11/2026 avec l'accord de Franck (`master` = `v4`).
+  publiée le 18/11/2026 avec l'accord de Franck.
+- **Prête, pas publiée** : version **4.41.0** sur la branche `v4` (liste des outils, « Mode
+  d'emploi », fenêtre « Nouveautés », personnages d'exemple). Attend le « Publie » de Franck.
+- **À chaque version** : entrée en tête de `js/data/whats-new.js` et notice `js/data/help.js`
+  à jour.
 - **Petits champs sur iPad** : ne rien changer tant que Franck n'a pas d'info sur le zoom.
 - **GitHub** : anciens commits (PDF, vieilles sauvegardes, adresse Gmail) purgés par le support
   le 12/11/2026 (ticket 4978665) ; vérifié le 18/11 : 404 partout. Dossier clos.
@@ -27,6 +31,10 @@ en fin de session :
 
 ### À vérifier par Franck (tablette Android, iPad de Catherine)
 
+- 4.41.0 (après publication) : la fenêtre « Nouveautés » s'ouvre une fois ; menu Gestion, « Mode
+  d'emploi » (lecture, puis « Imprimer le mode d'emploi » sur la tablette) ; onglet Compétences &
+  Histoire, « Choisir dans la liste » sous la case Outils ; « Essayer un personnage d'exemple »
+  sur une tablette de test, puis « Revenir à… » pour retrouver sa fiche.
 - 4.40.0, onglet Magie : bouton « Au combat » puis « Lancer » (un emplacement se coche ; le
   décocher annule) ; losanges fixes d'un Barde ou d'un Occultiste ; pour un Clerc ou un Druide,
   « Préparer mes sorts » et le rappel après un repos long ; pour un Magicien, la ligne « Livre ».
@@ -55,12 +63,29 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 1. ~~audit et découpage~~ : faits (4.38.0) ;
 2. ~~restes et points relevés~~ : faits (4.39.0) ; restent les décisions listées au point 2 de
    `docs/FEUILLE_DE_ROUTE.md` ;
-3. discussion pour trier toutes les idées, regroupées au même niveau (le lanceur de dés et la
-   fiche sans wifi n'y sont plus prioritaires). Le grimoire adapté à la classe est fait (4.40.0) ;
-   ses suites possibles et les idées du 18/11 (mode Odyssée, explications, outil du MJ) sont au
-   point 3 de `docs/FEUILLE_DE_ROUTE.md`.
+3. ~~discussion pour trier les idées~~ : faite le 18/11/2026. Ordre validé par Franck : liste des
+   outils et notice (faits, 4.41.0), puis finitions du grimoire, dégâts en plus sur les armes,
+   étude du mode Odyssée désactivable. Détail et décisions en attente au point 3 de
+   `docs/FEUILLE_DE_ROUTE.md`.
 
 ## Sessions
+
+### 18/11/2026 — Liste des outils, mode d'emploi, nouveautés, personnages d'exemple (4.41.0)
+
+- Tri des idées avec Franck : ordre validé (voir la feuille de route) ; « Mon tour », création
+  guidée, vue du groupe, journal de campagne et outil du MJ gardés pour plus tard.
+- Deux lots en ultracode (chacun réalisé, relu par deux vérificateurs, corrigé) : fenêtre
+  « Outils maîtrisés » (37 outils du manuel, rien de nouveau dans la sauvegarde) ; « Mode
+  d'emploi » en 12 rubriques, imprimable ; fenêtre « Nouveautés » ; Guerrier 3 et Magicienne 5
+  d'exemple.
+- Sécurité de l'exemple : il passe par le même chemin que « Nouvelle fiche », n'est jamais envoyé
+  au compte tout seul, même après un retour par « Revenir à… » (défaut trouvé par un relecteur,
+  corrigé et testé). Relu aussi par Claude, puis essayé au doigt sur une fiche de test.
+- Choix faits sans Franck, à lui confirmer : « Nouveautés » montrée une fois aux joueurs déjà
+  venus ; les états d'un exemple ne chassent jamais de « Revenir à… » le dernier état d'une
+  autre fiche.
+- Laissé de côté : anciens noms « Main de mage », « Armure de mage », « Bâton » (demandent une
+  conversion des fiches) ; rien n'a été essayé sur une vraie tablette.
 
 ### 18/11/2026 — Grimoire adapté à la classe (4.40.0)
 

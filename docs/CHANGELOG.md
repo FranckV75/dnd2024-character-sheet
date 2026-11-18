@@ -2,6 +2,31 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.41.0] - 2026-11-18 (Liste des outils, mode d'emploi, nouveautés, personnages d'exemple)
+### Added
+- Outils : bouton « Choisir dans la liste » sous la case « Outils » (onglet Compétences &
+  Histoire) et sur la ligne « Outil » de l'encadré Historique. La fenêtre « Outils maîtrisés »
+  montre les 37 outils du Manuel des joueurs 2024 par catégorie (outils d'artisan, autres outils,
+  boîtes de jeux, instruments), avec leur caractéristique, une recherche et, en tête, l'outil
+  donné par l'historique. Cocher écrit le nom dans la case, décocher le retire ; la saisie à la
+  main reste possible et la présentation du joueur (virgules, lignes, puces) est suivie. Aucune
+  nouvelle clé : tout reste dans `profs_tools` (`js/data/tools.js`, `js/rules/tools.js`, testés).
+- Encadré Historique : la mention « À vérifier » de l'outil disparaît dès que la case « Outils »
+  contient l'outil attendu (pluriel ou singulier reconnus).
+- « Mode d'emploi » (menu Gestion) : notice de la fiche en 12 rubriques, onglet par onglet,
+  lisible fiche verrouillée, imprimable en A4 (`js/data/help.js`). Un test vérifie que chaque
+  bouton cité existe tel quel dans l'interface. **À tenir à jour à chaque version.**
+- Fenêtre « Nouveautés de la version X » : s'ouvre une fois par appareil après une mise à jour
+  (`js/data/whats-new.js` ; dernière version vue retenue sur l'appareil, jamais dans la fiche).
+  La mise à jour passe toujours d'abord. Un test exige une entrée pour la version courante.
+- « Essayer un personnage d'exemple » (menu Gestion) : un Guerrier de niveau 3 et une Magicienne
+  de niveau 5, fictifs, prêts à jouer. La fiche remplacée est gardée dans « Revenir à… » ;
+  l'exemple n'est jamais envoyé au compte tout seul (« Enregistrer en ligne » pour le garder).
+### Changed
+- « Revenir à… » : un état pris sur une fiche gardée dans ce navigateur seulement (exemple, « Ne
+  rien faire ») le dit dans la liste et y revient sans rien envoyer au compte. Jouer avec un
+  exemple ne fait jamais sortir de la liste le dernier état d'une autre fiche.
+
 ## [4.40.0] - 2026-11-18 (Grimoire adapté à la classe)
 ### Added
 - Règles de préparation des sorts des 8 classes vérifiées dans le Manuel des joueurs 2024

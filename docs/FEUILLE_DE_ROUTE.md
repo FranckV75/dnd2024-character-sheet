@@ -32,16 +32,35 @@ sous-classes). Restent des décisions de Franck :
 
 ### 3. Idées : ordre validé par Franck le 18/11/2026
 
-1. **Liste des outils** : bouton « Choisir dans la liste » (outils d'artisan, boîtes de jeux,
-   instruments, autres outils), saisie à la main toujours possible, lien avec l'outil de l'historique.
-2. **Notice** (« Mode d'emploi » dans le menu Gestion, onglet par onglet, imprimable, tenue à jour
-   à chaque version), fenêtre **« Nouveautés »** après une mise à jour, **personnage d'exemple**.
-3. **Finitions du grimoire** : avertir quand un sort préparé dépasse les emplacements ; lancers
+Faits en 4.41.0 (18/11/2026) : ~~liste des outils~~, ~~notice « Mode d'emploi », fenêtre
+« Nouveautés », personnages d'exemple~~. Restent, dans l'ordre :
+
+1. **Finitions du grimoire** : avertir quand un sort préparé dépasse les emplacements ; lancers
    gratuits (Châtiment divin, Marque du chasseur…) proposés par « Lancer » ; bouton « Retirer les
    sorts non préparés » (Clerc, Druide) ; rituels du Magicien repliés en vue « Au combat ».
-4. **Dégâts en plus sur les armes** : lignes dans le réglage ⚙ (dégâts + raison), « toujours » ou
+2. **Dégâts en plus sur les armes** : lignes dans le réglage ⚙ (dégâts + raison), « toujours » ou
    « à allumer » (pastille, comme la Rage).
-5. **Mode Odyssée désactivable** : un des prochains chantiers, courte étude d'abord.
+3. **Mode Odyssée désactivable** : un des prochains chantiers, courte étude d'abord.
+
+**À chaque version, désormais** : ajouter l'entrée de la version en tête de `js/data/whats-new.js`
+(sinon `npm run check` échoue) et mettre à jour la notice `js/data/help.js`.
+
+Décisions de Franck en attente sur la 4.41.0 :
+- « Appliquer à la fiche » (historique) pourrait écrire aussi l'outil quand l'historique donne un
+  outil précis (Sage, Criminel…) ; aujourd'hui il ne le fait pas.
+- Fenêtre des outils : l'outil précis de l'historique apparaît deux fois (encadré du haut et sa
+  catégorie) ; le garder seulement en haut ?
+- Personnage d'exemple : jamais envoyé au compte tout seul (« Enregistrer en ligne » pour le
+  garder) ; choix prudent, à confirmer.
+- Fenêtre « Nouveautés » : montrée une fois aux joueurs qui avaient déjà une fiche sur l'appareil,
+  jamais à une toute première visite.
+
+Petits restes de la 4.41.0 (pas urgents) : anciens noms « Main de mage », « Armure de mage » (don
+Initié à la magie) et arme « Bâton » à renommer d'après le manuel 2024, avec conversion testée des
+fiches (chantier à part) ; outils propres à l'Odyssée absents de la liste ; dons qui donnent des
+outils (Façonneur…) pas reliés à la fenêtre ; champ « Chercher… » de 38 px de haut (partagé avec
+« Préparer mes sorts ») ; textes de « Revenir à… » sans espaces insécables ; impression de la
+notice non essayée sur une vraie tablette.
 
 Plus tard (bonnes idées, pas maintenant) : aide « Mon tour » (ce que le personnage peut faire à
 son tour), création guidée d'un personnage de niveau 1, vue du groupe, journal de campagne, outil
@@ -57,10 +76,6 @@ Détail des idées :
   raison (ex. « +2d6 contre les dragons » d'une arme tueuse, « +1d6 radiants contre les
   morts-vivants »), affichés à côté des dégâts comme le fait déjà Fureur divine en Rage
   (demande de Franck, 11/11/2026).
-- Outils : choisir les outils dans une liste (outils d'artisan, boîtes de jeux, instruments)
-  au lieu de les écrire à la main, et faire le lien avec l'outil donné par l'historique (Korgul,
-  Soldat : « une boîte de jeux au choix », signalée « À vérifier » dans l'encadré de l'historique ;
-  à expliquer à Franck) (demande de Franck, 11/11/2026).
 - Grimoire, suites possibles du chantier 4.40.0 (à décider par Franck) : Paladin et Rôdeur
   traités comme Clerc et Druide (fenêtre et rappel de repos long) ou non ; avertissement quand
   un sort préparé dépasse le plus haut emplacement ; cases de lancer gratuit (Châtiment divin,
@@ -75,8 +90,9 @@ Détail des idées :
   Odysséen, style Hoplite, dragonnets, fonds d'écran…) pour jouer une autre campagne. À étudier :
   inventaire des différences, réglage par fiche ou par appareil, compatibilité des sauvegardes.
 - Explications des options (demande de Franck, 18/11/2026) : chaque bouton ou option dit en une
-  phrase à quoi il sert, lisible aussi sur tablette (fait pour le grimoire en 4.40.0 ; reste
-  toute la fiche à passer en revue).
+  phrase à quoi il sert, lisible aussi sur tablette (fait pour le grimoire en 4.40.0 et pour les
+  nouveautés de la 4.41.0 ; le « Mode d'emploi » explique le reste, onglet par onglet ; une revue
+  bouton par bouton de toute la fiche reste possible).
 - Outil pour le MJ (« feuille du MJ », demande de Franck, 18/11/2026) : à discuter d'abord.
   Est-ce une bonne idée, et pour quoi faire ? Dans ce projet (même site, même base, lien avec la
   « Vue du groupe ») ou dans un projet séparé (`E:\2 - CODE\<nouveau projet>\`) ? Rien à
