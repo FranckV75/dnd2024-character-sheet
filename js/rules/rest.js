@@ -24,6 +24,7 @@ import { restSubclassChoices } from './subclass-choices.js';
 import { restCompanions } from './subclass-companions.js';
 import { restFeatSpellUses } from './feat-spells.js';
 import { isHuman } from './feats.js';
+import { longRestPreparation } from './spell-preparation.js';
 
 export const DEATH_SAVE_KEYS = ['ds_s1', 'ds_s2', 'ds_s3', 'ds_f1', 'ds_f2', 'ds_f3'];
 
@@ -353,6 +354,12 @@ export function planLongRest(character) {
             companionsHealed: companions.healed,
             // Rappels propres au repos court (Repas reconstituant du Chef cuisinier) : pas ici
             featNotes: restFeatNotes(character, d).filter(note => note.restKind !== 'short'),
+            // Sorts préparés à changer après le repos (Clerc, Druide, Paladin, Rôdeur : fenêtre
+            // « Préparer mes sorts » ; Magicien : depuis son grimoire) ; null : rien ne change au
+            // repos long (liste fixe, pas de sorts préparés) ; classe inconnue : rappel général
+            spellPreparation: d.classSlug
+                ? longRestPreparation(d.classSlug)
+                : { text: 'Pensez à changer vos sorts préparés si besoin.', window: false },
             canStart: canStartRest(character)
         }
     };

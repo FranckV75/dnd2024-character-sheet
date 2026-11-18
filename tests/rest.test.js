@@ -237,6 +237,20 @@ describe('Repos long', () => {
         assert.equal(plan.summary.heroicInspiration, true);
         assert.deepEqual(plan.patch.spell_slots_state, {});
     });
+
+    test('Sorts préparés à changer après le repos long (PHB 2024, chap. 7)', () => {
+        const preparation = (char_class) => planLongRest(makeCharacter({ char_class })).summary.spellPreparation;
+        // Clerc, Druide : autant que voulu ; Paladin, Rôdeur : un seul ; fenêtre « Préparer mes sorts »
+        for (const name of ['Clerc', 'Druide', 'Paladin', 'Rôdeur']) assert.equal(preparation(name).window, true, name);
+        assert.match(preparation('Clerc').text, /autant que vous voulez/);
+        assert.match(preparation('Paladin').text, /un de vos sorts préparés/);
+        // Magicien : depuis son grimoire, rappel sans fenêtre
+        assert.deepEqual(preparation('Magicien'), { text: 'Vous pouvez changer vos sorts préparés parmi ceux de votre grimoire.', window: false });
+        // Liste fixe (changée en gagnant un niveau) ou pas de sorts préparés : aucun rappel
+        for (const name of ['Barde', 'Ensorceleur', 'Occultiste', 'Guerrier', 'Barbare']) assert.equal(preparation(name), null, name);
+        // Classe inconnue (texte libre) : rappel général, comme avant
+        assert.deepEqual(preparation('Chevalier-mage'), { text: 'Pensez à changer vos sorts préparés si besoin.', window: false });
+    });
 });
 
 test('sorcerousRestorationMax : moitié du niveau d\'Ensorceleur à partir du niveau 5, sinon 0', async () => {

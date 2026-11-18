@@ -6,6 +6,9 @@
 // ce module demande les choix du joueur, lance les dés (Math.random) et
 // envoie le patch au store en une seule fois.
 // Dons : les rappels de fin de repos (Musicien) viennent de summary.featNotes.
+// Sorts préparés (summary.spellPreparation) : Clerc, Druide, Paladin, Rôdeur, rappel à la fin du
+// repos long avec un bouton qui ouvre la fenêtre « Préparer mes sorts » (spells/prepare.js) ;
+// Magicien, rappel dans la confirmation ; liste fixe (Barde, Ensorceleur, Occultiste) : rien.
 // =============================================================================
 
 import { el, signed, icon, setIconLabel } from './dom.js';
@@ -16,6 +19,7 @@ import {
     sorcerousRestorationMax
 } from '../rules/rest.js';
 import { rollDie } from '../rules/numbers.js';
+import { canPrepareSpells, openPrepareSpells } from './spells/prepare.js';
 
 const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
 const agree = (n, word) => `${word}${n > 1 ? 's' : ''}`;
@@ -243,7 +247,8 @@ function longRestMessage(summary) {
     ].filter(Boolean);
     let message = `8 heures de repos, dont au moins 6 de sommeil. Effets : ${effects.join(', ')}.`;
     if (summary.heroicInspiration) message += ' Humain (Ingénieux) : vous gagnez l’Inspiration héroïque.';
-    message += ' Pensez à changer vos sorts préparés si besoin.';
+    // Classes de la fenêtre « Préparer mes sorts » : rappel après le repos (afterLongRest)
+    if (summary.spellPreparation && !summary.spellPreparation.window) message += ` ${summary.spellPreparation.text}`;
     if (!summary.canStart) message = `Attention, règle 2024 : il faut au moins 1 PV pour commencer un repos long. ${message}`;
     return message;
 }
@@ -265,13 +270,37 @@ function confirmLongRest(summary) {
     });
 }
 
+/**
+ * Fin du repos long d'un Clerc, Druide, Paladin ou Rôdeur : rappel qu'il peut changer ses sorts
+ * préparés, avec un bouton qui ouvre la fenêtre « Préparer mes sorts ».
+ */
+function afterLongRest(store, setStatus, preparation) {
+    let prepare = false;
+    openModal({
+        title: 'Repos long terminé',
+        icon: 'bed',
+        body: el('p', { text: preparation.text }),
+        actions: [
+            { label: 'Plus tard' },
+            { label: 'Préparer mes sorts', icon: 'book', primary: true, onClick: () => { prepare = true; } }
+        ],
+        // La fenêtre s'ouvre une fois celle-ci fermée (le focus est d'abord rendu au bouton)
+        onClose: () => {
+            if (prepare) setTimeout(() => { openPrepareSpells({ store, setStatus }); }, 0);
+        }
+    });
+}
+
 async function longRest(store, setStatus, keepSnapshot) {
     const ok = await confirmLongRest(planLongRest(store.get()).summary);
     if (!ok) return;
     // Sauvegarde de secours : le repos long remet beaucoup de compteurs à zéro
     keepSnapshot?.('long-rest');
-    store.update(planLongRest(store.get()).patch);
+    const { patch, summary } = planLongRest(store.get());
+    store.update(patch);
     setStatus('Repos long terminé');
+    const preparation = summary.spellPreparation;
+    if (preparation?.window && canPrepareSpells(derivedOf(store.get()))) afterLongRest(store, setStatus, preparation);
 }
 
 // ---------------------------------------------------------------------------
