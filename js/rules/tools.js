@@ -5,8 +5,8 @@
 // la liste » (js/ui/tools.js). Ici, sans DOM :
 //  - toolsInText : les outils du manuel reconnus dans le texte (accents, majuscules et marque
 //    du pluriel ignorés, mot entier, même au milieu d'un texte libre ou d'une mise en forme) ;
-//  - addToolToText : ajoute un nom en suivant la présentation déjà là (liste à virgules ou une
-//    ligne par outil) ;
+//  - addToolToText : ajoute un nom en suivant la présentation déjà là (liste à virgules, à « ; »
+//    ou à « / », ou une ligne par outil, avec la même puce et le même style de paragraphe) ;
 //  - removeToolFromText : retire ce nom précis et son séparateur, rien d'autre ;
 //  - backgroundToolExpectation / expectedToolNoted : outil (ou catégorie d'outils au choix) donné
 //    par l'historique, et s'il est noté dans la case.
@@ -78,6 +78,14 @@ function needleEnd(folded, taken, from, needle) {
 }
 
 const ENTITIES = { nbsp: ' ', amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
+/** Lettres accentuées écrites en entités dans un texte importé (« Mat&eacute;riel ») ; la casse compte */
+const LETTER_ENTITIES = {
+    agrave: 'à', acirc: 'â', ccedil: 'ç', eacute: 'é', egrave: 'è', ecirc: 'ê', euml: 'ë', icirc: 'î', iuml: 'ï',
+    ocirc: 'ô', ugrave: 'ù', ucirc: 'û', uuml: 'ü', oelig: 'œ',
+    Agrave: 'À', Acirc: 'Â', Ccedil: 'Ç', Eacute: 'É', Egrave: 'È', Ecirc: 'Ê', Icirc: 'Î', Ocirc: 'Ô', Ucirc: 'Û',
+    rsquo: '’', lsquo: '‘', hellip: '…', ndash: '–', mdash: '—', bull: '•', middot: '·'
+};
+
 const PIECE = /<[^>]*>|&(?:#\d+|#x[0-9a-f]+|[a-z]+);|\r\n|[\s\S]/giu;
 
 /**
@@ -100,7 +108,7 @@ function pieces(html) {
             else out.push({ raw, ch: '', inline: name, close: tag?.[1] === '/' });
         } else if (raw.length > 1 && raw.startsWith('&')) {
             const code = raw.slice(1, -1).toLowerCase();
-            let ch = ENTITIES[code];
+            let ch = LETTER_ENTITIES[raw.slice(1, -1)] ?? ENTITIES[code];
             if (ch === undefined && code.startsWith('#')) {
                 const point = code[1] === 'x' ? parseInt(code.slice(2), 16) : parseInt(code.slice(1), 10);
                 ch = point > 0 && point <= 0x10ffff ? String.fromCodePoint(point) : '?';
@@ -182,24 +190,33 @@ function removeMatch({ list, at, chars }, { start, end }) {
 
     const skipSpacesAfter = (i) => { while (isSpace(chars[i])) i++; return i; };
     const skipSpacesBefore = (i) => { while (i >= 0 && isSpace(chars[i])) i--; return i; };
-    const isComma = (ch) => ch === ',' || ch === ';';
+    const isComma = (ch) => ch === ',' || ch === ';' || ch === '/';
     const isBr = (i) => chars[i] === '\n' && list[at[i]]?.br === true;
     const isEt = (i) => chars[i]?.toLowerCase() === 'e' && chars[i + 1]?.toLowerCase() === 't';
 
     const after = skipSpacesAfter(end);
     const before = skipSpacesBefore(start - 1);
-    if (isComma(chars[after])) {
-        // « Luth, Lyre » → « Lyre »
-        drop(end, skipSpacesAfter(after + 1));
+    const etThenWord = (i) => isEt(i) && isSpace(chars[i + 2]) && isWordChar(chars[skipSpacesAfter(i + 2)]);
+    if (chars[after] === '(') {
+        // « Luth (offert), Dés » : la précision du joueur reste à sa place, avec sa virgule
+        if (before < 0 || chars[before] === '\n') drop(end, after);
+    } else if (isComma(chars[after])) {
+        // « Luth, Lyre » → « Lyre » ; « Luth, et Lyre » → « Lyre »
+        const next = skipSpacesAfter(after + 1);
+        drop(end, chars[after] === ',' && etThenWord(next) ? skipSpacesAfter(next + 2) : next);
     } else if (before >= 0 && isComma(chars[before])) {
-        // « Lyre, Luth » → « Lyre »
-        drop(before, start);
+        // « Lyre, Luth » → « Lyre » ; « Lyre ; Luth » → « Lyre »
+        drop(skipSpacesBefore(before - 1) + 1, start);
     } else if (after > end && isEt(after) && isSpace(chars[after + 2]) && isWordChar(chars[skipSpacesAfter(after + 2)])) {
         // « Luth et Lyre » → « Lyre »
         drop(end, skipSpacesAfter(after + 2));
     } else if (before < start - 1 && before >= 1 && isEt(before - 1) && isSpace(chars[before - 2]) && isWordChar(chars[skipSpacesBefore(before - 2)])) {
         // « Lyre et Luth » → « Lyre »
         drop(skipSpacesBefore(before - 2) + 1, start);
+    } else if (before < start - 1 && before >= 1 && isEt(before - 1) && chars[skipSpacesBefore(before - 2)] === ','
+        && skipSpacesBefore(before - 2) < before - 2) {
+        // « Lyre, et Luth » → « Lyre »
+        drop(skipSpacesBefore(before - 2), start);
     }
 
     // Ce qui reste sur la ligne de l'outil : rien, ou seulement la puce ou le tiret du joueur
@@ -248,7 +265,8 @@ function removeMatch({ list, at, chars }, { start, end }) {
 
 /**
  * Retire un outil de la case : son nom (toutes ses écritures reconnues) et son séparateur
- * (virgule, « et », retour à la ligne). Le reste du texte, écrit à la main, ne change pas.
+ * (virgule, « ; », « / », « et », retour à la ligne avec sa puce ou son tiret). Le reste du texte,
+ * écrit à la main, ne change pas ; une précision entre parenthèses après le nom reste en place.
  * @param {string} html - valeur de profs_tools
  * @param {string} toolId
  * @returns {string}
@@ -321,27 +339,40 @@ export function addToolToText(html, toolId) {
 
     const lines = chars.join('').split('\n').filter((line) => line.trim() !== '');
     const lastLine = lines[lines.length - 1];
-    const byLine = lines.length >= 2 && !/[,;]/.test(lastLine);
+    const byLine = lines.length >= 2 && !/[,;/]/.test(lastLine);
     const lastPiece = at[lastChar];
     const insertAfter = (index, added) => list.map((piece, i) => (i === index ? piece.raw + added : piece.raw)).join('');
 
     if (!byLine) {
-        // Après « Luth, » ou « Mes outils : » : une espace suffit (celle déjà écrite, s'il y en a une)
-        if (!/[,;:]/.test(chars[lastChar])) return insertAfter(endOfLastWord(list, lastPiece), `, ${tool.name}`);
-        return isSpace(chars[lastChar + 1]) ? insertAfter(at[lastChar + 1], tool.name) : insertAfter(lastPiece, ` ${tool.name}`);
+        const last = chars[lastChar];
+        // Après « Luth, », « Luth / » ou « Mes outils : » : une espace suffit (celle déjà écrite, s'il y en a une)
+        if (/[,;:/]/.test(last)) {
+            return isSpace(chars[lastChar + 1]) ? insertAfter(at[lastChar + 1], tool.name) : insertAfter(lastPiece, ` ${tool.name}`);
+        }
+        // Séparateur déjà choisi par le joueur (« Luth ; Dés », « Luth / Dés »), sinon la virgule ;
+        // après une phrase finie (« Aucun. »), pas de virgule
+        let separator = ', ';
+        if (last === '.' || last === '!') separator = ' ';
+        else if (!lastLine.includes(',') && lastLine.includes(';')) separator = /\s;/.test(lastLine) ? ' ; ' : '; ';
+        else if (!lastLine.includes(',') && lastLine.includes('/')) separator = /\s\/\s/.test(lastLine) ? ' / ' : '/';
+        return insertAfter(endOfLastWord(list, lastPiece), `${separator}${tool.name}`);
     }
-    // Une ligne par outil : nouvelle ligne du même genre que la dernière (<div>, <p> ou <br>)
+    // Une ligne par outil : nouvelle ligne du même genre que la dernière (<div>, <p> ou <br>), avec
+    // la même puce ou le même tiret (« - Luth ») et le même style de paragraphe (texte centré…)
+    const mark = /^[\s\u00a0]*([-–—•·*‣◦▪●○+>][\s\u00a0]*)/u.exec(lastLine)?.[1] ?? '';
     let next = lastPiece + 1;
     while (next < list.length && !list[next].block) next++;
     if (next < list.length && list[next].close) {
         const tag = list[next].block;
-        return insertAfter(next, `<${tag}>${tool.name}</${tag}>`);
+        let open = lastPiece;
+        while (open >= 0 && !(list[open].block === tag && !list[open].close)) open--;
+        return insertAfter(next, `${open >= 0 ? list[open].raw : `<${tag}>`}${mark}${tool.name}</${tag}>`);
     }
     // Même retour à la ligne que le précédent : <br>, ou celui tapé avec Maj+Entrée
     let previous = lastPiece;
     while (previous >= 0 && !list[previous].br) previous--;
     const lineBreak = previous >= 0 && list[previous].newline ? list[previous].raw : '<br>';
-    return insertAfter(endOfLastWord(list, lastPiece), `${lineBreak}${tool.name}`);
+    return insertAfter(endOfLastWord(list, lastPiece), `${lineBreak}${mark}${tool.name}`);
 }
 
 /**

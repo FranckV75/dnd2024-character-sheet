@@ -89,8 +89,15 @@ describe('Reconnaître les outils dans la case', () => {
     test('« Dés » seulement avec son accent (pas le mot « des »)', () => {
         assert.deepEqual(toolsInText('Outils des voleurs'), []);
         assert.deepEqual(toolsInText('dés'), ['dice']);
-        assert.deepEqual(toolsInText('D&eacute;s pipés'), []);
+        assert.deepEqual(toolsInText('Des pipés'), []);
+        assert.deepEqual(toolsInText('DES'), []);
+        assert.deepEqual(toolsInText('DÉS'), ['dice']);
         assert.deepEqual(toolsInText('Jeu de des'), ['dice']);
+    });
+
+    test('Texte importé : lettres accentuées écrites en entités', () => {
+        assert.deepEqual(toolsInText('Mat&eacute;riel d&rsquo;herboriste, D&eacute;s, Fl&ucirc;te'), ['herbalism', 'dice', 'flute']);
+        assert.equal(removeToolFromText('Mat&eacute;riel de peintre, Luth', 'painter'), 'Luth');
     });
 
     test('Rien de reconnu dans un texte sans outil, une case vide ou absente', () => {
@@ -131,6 +138,27 @@ describe('Ajouter un outil', () => {
         assert.equal(addToolToText('Luth<br>Lyre\nViole', 'drum'), 'Luth<br>Lyre\nViole\nTambour');
         assert.equal(addToolToText('Notes\nLuth, Lyre', 'drum'), 'Notes\nLuth, Lyre, Tambour');
         assert.deepEqual(toolsInText('Luth\nOutils de voleur\nLyre'), ['lute', 'thieves', 'lyre']);
+    });
+
+    test('Séparateur du joueur gardé (« ; », « / ») ; pas de virgule après une phrase finie', () => {
+        assert.equal(addToolToText('Luth ; Dés', 'lyre'), 'Luth ; Dés ; Lyre');
+        assert.equal(addToolToText('Luth; Dés', 'lyre'), 'Luth; Dés; Lyre');
+        assert.equal(addToolToText('Luth / Dés', 'lyre'), 'Luth / Dés / Lyre');
+        assert.equal(addToolToText('Luth/Dés', 'lyre'), 'Luth/Dés/Lyre');
+        assert.equal(addToolToText('Luth, Dés; un jour une viole', 'lyre'), 'Luth, Dés; un jour une viole, Lyre');
+        assert.equal(addToolToText('Aucun.', 'drum'), 'Aucun. Tambour');
+    });
+
+    test('Liste à puces ou à tirets : la nouvelle ligne prend la même puce', () => {
+        assert.equal(addToolToText('- Luth<br>- Lyre', 'drum'), '- Luth<br>- Lyre<br>- Tambour');
+        assert.equal(addToolToText('- Luth<div>- Lyre</div>', 'drum'), '- Luth<div>- Lyre</div><div>- Tambour</div>');
+        assert.equal(addToolToText('• Luth\n• Lyre', 'drum'), '• Luth\n• Lyre\n• Tambour');
+        assert.equal(removeToolFromText(addToolToText('- Luth<br>- Lyre', 'drum'), 'drum'), '- Luth<br>- Lyre');
+    });
+
+    test('Paragraphes mis en forme : la nouvelle ligne reprend le style de la dernière', () => {
+        assert.equal(addToolToText('<p style="text-align: center">Luth</p><p style="text-align: center">Lyre</p>', 'drum'),
+            '<p style="text-align: center">Luth</p><p style="text-align: center">Lyre</p><p style="text-align: center">Tambour</p>');
     });
 
     test('Plusieurs lignes dont la dernière est une liste à virgules : à la suite de cette liste', () => {
@@ -203,10 +231,24 @@ describe('Retirer un outil', () => {
         assert.equal(removeToolFromText('Dés<br>Luth<br><br>Lyre', 'lute'), 'Dés<br><br>Lyre');
     });
 
+    test('Autres séparateurs : « ; », « / », « , et »', () => {
+        assert.equal(removeToolFromText('Luth ; Dés', 'dice'), 'Luth');
+        assert.equal(removeToolFromText('Luth / Dés', 'lute'), 'Dés');
+        assert.equal(removeToolFromText('Luth/Dés', 'dice'), 'Luth');
+        assert.equal(removeToolFromText('Luth, et Lyre', 'lyre'), 'Luth');
+        assert.equal(removeToolFromText('Luth, et Lyre', 'lute'), 'Lyre');
+    });
+
+    test('Précision entre parenthèses après le nom : elle reste à sa place, avec sa virgule', () => {
+        assert.equal(removeToolFromText('Chariots, Luth (offert)', 'lute'), 'Chariots,  (offert)');
+        assert.equal(removeToolFromText('Luth (offert par Mira), Dés', 'lute'), '(offert par Mira), Dés');
+        assert.equal(removeToolFromText('Cartes à jouer (x2), Outils de forgeron (expertise)', 'smith'), 'Cartes à jouer (x2),  (expertise)');
+    });
+
     test('Le texte écrit à la main autour reste tel quel', () => {
         assert.equal(removeToolFromText('Appris chez mon oncle : Outils de forgeron (3 ans)', 'smith'), 'Appris chez mon oncle :  (3 ans)');
         assert.equal(removeToolFromText('Véhicules terrestres, Luth, <b>chariots</b>', 'lute'), 'Véhicules terrestres, <b>chariots</b>');
-        assert.equal(removeToolFromText('<div>Luth (offert par Mira)</div><div>Lyre</div>', 'lute'), '<div> (offert par Mira)</div><div>Lyre</div>');
+        assert.equal(removeToolFromText('<div>Luth (offert par Mira)</div><div>Lyre</div>', 'lute'), '<div>(offert par Mira)</div><div>Lyre</div>');
     });
 
     test('Mise en forme : les balises restent équilibrées, les balises vidées partent', () => {
