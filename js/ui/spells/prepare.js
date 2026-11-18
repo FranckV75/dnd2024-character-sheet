@@ -241,6 +241,13 @@ export async function openPrepareSpells({ store, setStatus }) {
             setStatus(`Sorts ${counter.textContent.toLowerCase()}`);
         }
     });
+    // Hauteur gardée pendant la recherche : la fenêtre (centrée) ne rétrécit pas à chaque lettre,
+    // le champ de recherche reste sous le doigt (et hors du clavier virtuel)
+    const dialog = listBox.closest('dialog');
+    if (dialog) {
+        dialog.classList.add('modal-prep');
+        dialog.style.setProperty('--prep-open-height', `${dialog.offsetHeight}px`);
+    }
     unsubscribe = store.subscribe((character, changedKeys) => {
         // Autre fiche chargée : la fenêtre ne la concerne plus
         if (!changedKeys) close();

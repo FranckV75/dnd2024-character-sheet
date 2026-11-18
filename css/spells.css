@@ -286,6 +286,13 @@
     display: none;
 }
 
+/* La fenêtre garde sa hauteur d'ouverture pendant la recherche (prepare.js), sans dépasser
+   l'écran (même plafond que .modal, repli vh) */
+.modal.modal-prep {
+    min-height: min(var(--prep-open-height, 0px), calc(100vh - 48px));
+    min-height: min(var(--prep-open-height, 0px), calc(100dvh - 48px));
+}
+
 /* Recherche et compteur restent en vue pendant que la liste défile */
 .prep-controls {
     position: sticky;
