@@ -12,10 +12,9 @@ en fin de session :
 
 ## En ce moment
 
-- **En ligne** : version **4.40.0** (grimoire adapté à la classe, liste des sorts au toucher),
-  publiée le 18/11/2026 avec l'accord de Franck.
-- **Prête, pas publiée** : version **4.41.0** sur la branche `v4` (liste des outils, « Mode
-  d'emploi », fenêtre « Nouveautés », personnages d'exemple). Attend le « Publie » de Franck.
+- **En ligne** : version **4.41.0** (liste des outils, « Mode d'emploi », fenêtre « Nouveautés »,
+  personnages d'exemple), publiée le 18/11/2026 avec l'accord de Franck (`master` = `v4`).
+- **En cours** : finitions du grimoire (accord de Franck le 18/11/2026), pour la 4.42.0.
 - **À chaque version** : entrée en tête de `js/data/whats-new.js` et notice `js/data/help.js`
   à jour.
 - **Petits champs sur iPad** : ne rien changer tant que Franck n'a pas d'info sur le zoom.
@@ -31,7 +30,7 @@ en fin de session :
 
 ### À vérifier par Franck (tablette Android, iPad de Catherine)
 
-- 4.41.0 (après publication) : la fenêtre « Nouveautés » s'ouvre une fois ; menu Gestion, « Mode
+- 4.41.0 : la fenêtre « Nouveautés » s'ouvre une fois ; menu Gestion, « Mode
   d'emploi » (lecture, puis « Imprimer le mode d'emploi » sur la tablette) ; onglet Compétences &
   Histoire, « Choisir dans la liste » sous la case Outils ; « Essayer un personnage d'exemple »
   sur une tablette de test, puis « Revenir à… » pour retrouver sa fiche.
