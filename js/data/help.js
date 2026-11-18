@@ -324,7 +324,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Le bouton « Lancer »",
-                text: "Dans la vue « Au combat », chaque sort a un bouton « Lancer ». Choisissez le niveau d'emplacement : il est coché pour vous. « En rituel » lance le sort sans dépenser d'emplacement, quand le sort le permet."
+                text: "Dans la vue « Au combat », chaque sort a un bouton « Lancer ». Choisissez le niveau d'emplacement : il est coché pour vous. « En rituel » lance le sort sans dépenser d'emplacement, quand le sort le permet. Pour l'Occultiste, un sort d'Arcanum mystique se lance par le bouton « Arcanum mystique », sans emplacement : la fiche ne le compte pas, à vous de le retenir."
             },
             {
                 title: "« Lancer gratuit »",

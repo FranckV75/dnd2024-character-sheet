@@ -262,6 +262,26 @@ export function mysticArcanumLevel(classSlug, level) {
 }
 
 /**
+ * Ce niveau de sort est-il couvert par l'Arcanum mystique (niveau 6 au plus haut niveau d'Arcanum) ?
+ * @param {number|string} spellLevel
+ * @param {number} arcanumLevel - mysticArcanumLevel()
+ * @returns {boolean}
+ */
+export function isArcanumSpellLevel(spellLevel, arcanumLevel) {
+    const level = Number(spellLevel);
+    return level >= 6 && level <= arcanumLevel;
+}
+
+/**
+ * Phrase de la fenêtre « Lancer » pour un sort d'Arcanum mystique sans emplacement de son niveau :
+ * il se lance une fois sans emplacement, de nouveau après un repos long (PHB 2024, « Mystic
+ * Arcanum »). La fiche n'a pas de case pour ce lancer : c'est au joueur de le retenir.
+ */
+export function arcanumCastText(level) {
+    return `Arcanum mystique : ce sort de niveau ${level} se lance une fois sans emplacement, puis de nouveau après un repos long. La fiche n'a pas de case pour ce lancer : à vous de le retenir.`;
+}
+
+/**
  * Sort préparé (losange coché ou fixe) d'un niveau plus haut que le plus haut emplacement : il ne
  * peut pas être lancé. Simple avertissement : rien n'est décoché.
  * Jamais pour un sort mineur, un sort non préparé (même un rituel du livre, lancé en rituel), un
@@ -278,7 +298,7 @@ export function missingSlotLevel(row, state, { topSlot = 0, arcanumLevel = 0, fr
     if (state !== 'prepared' && state !== 'list' && state !== 'granted') return 0;
     const level = Number(rowLevel(row));
     if (!(level >= 1) || !(topSlot > 0) || level <= topSlot) return 0;
-    if (freeCast || (level >= 6 && level <= arcanumLevel)) return 0;
+    if (freeCast || isArcanumSpellLevel(level, arcanumLevel)) return 0;
     return level;
 }
 

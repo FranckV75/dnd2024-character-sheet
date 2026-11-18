@@ -9,7 +9,7 @@ import {
     castSlotOptions, useSpellSlot, wholeListSource, fitsWholeList, highestSlotLevel,
     SPELL_PREPARATION, WHOLE_LIST_CLASSES, preparesFromClassList, longRestPreparation, preparationView,
     prepareSpellRows, unprepareSpellRows, setRowPrepared, matchesSpellQuery,
-    highestUsableSlot, mysticArcanumLevel, missingSlotLevel, missingSlotText, combatPlace
+    highestUsableSlot, mysticArcanumLevel, missingSlotLevel, missingSlotText, combatPlace, isArcanumSpellLevel, arcanumCastText
 } from '../js/rules/spell-preparation.js';
 import { EMPTY_SPELL } from '../js/state/schema.js';
 import { spellCounts, spellNameKey, spellLimitWarnings, findSpellByName } from '../js/rules/spells.js';
@@ -424,6 +424,15 @@ describe('Sort préparé au-dessus des emplacements (simple avertissement)', () 
         }
         assert.equal(mysticArcanumLevel('wizard', 20), 0);
         assert.equal(mysticArcanumLevel('', 20), 0);
+        // Niveaux de sort couverts par l'Arcanum (fenêtre « Lancer » : pas de « Aucun emplacement »)
+        assert.equal(isArcanumSpellLevel(6, mysticArcanumLevel('warlock', 11)), true);
+        assert.equal(isArcanumSpellLevel('6', 6), true);
+        assert.equal(isArcanumSpellLevel(7, mysticArcanumLevel('warlock', 11)), false);
+        assert.equal(isArcanumSpellLevel(5, mysticArcanumLevel('warlock', 20)), false);
+        assert.equal(isArcanumSpellLevel(9, mysticArcanumLevel('warlock', 17)), true);
+        assert.equal(isArcanumSpellLevel(6, mysticArcanumLevel('warlock', 10)), false);
+        assert.equal(isArcanumSpellLevel(6, mysticArcanumLevel('wizard', 20)), false);
+        assert.match(arcanumCastText(6), /^Arcanum mystique : ce sort de niveau 6 .*sans emplacement.*repos long/);
     });
 
     test("Signalé : sort préparé (coché ou fixe) d'un niveau plus haut que le plus haut emplacement", () => {

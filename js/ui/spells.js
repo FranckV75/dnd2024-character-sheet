@@ -78,7 +78,7 @@ import { classSpellCounts } from '../rules/class-progression.js';
 import { spellPickerGroups, pickerMaxLevel } from '../rules/spell-picker.js';
 import {
     wholeListSource, fitsWholeList, grantedSpellKeys, spellPrepState, combatPlace, isCastable, castModes, castSlotOptions, useSpellSlot,
-    highestUsableSlot, mysticArcanumLevel, missingSlotLevel, missingSlotText
+    highestUsableSlot, mysticArcanumLevel, missingSlotLevel, missingSlotText, isArcanumSpellLevel, arcanumCastText
 } from '../rules/spell-preparation.js';
 import { hasSpellbook, freeSpellbookSpells, spellbookCount, spellCopyCost, castsRitualsFromBook, isRitualSpell } from '../rules/spellbook.js';
 import { concentrationSpell, setConcentrationPatch } from '../rules/concentration.js';
@@ -138,6 +138,8 @@ const COMBAT_VIEW_HELP = {
 };
 /** Fenêtre « Lancer » : ce que fait le bouton « Lancer gratuit », dit dans la fenêtre (tablette) */
 const FREE_CAST_HELP = "« Lancer gratuit » : sans emplacement ; c'est la case de la capacité qui se coche, là où elle est déjà sur la fiche.";
+/** Où se trouve la case d'un lancer gratuit qui n'est pas sur l'onglet Magie (Ennemi juré du Rôdeur) */
+const FREE_CAST_CLASS_PLACE = ' (onglet « Caractéristiques & Combat »)';
 /** Bouton ▾ (liste des sorts sans clavier virtuel) et bouton ✕ de la ligne de saisie : infobulle
  *  (souris), puis phrase courte dans la barre du haut quand on les touche (tablette) */
 const PICK_TITLE = 'Choisir dans la liste des sorts (sans ouvrir le clavier)';
@@ -677,8 +679,12 @@ export function initSpells(ctx) {
         const free = ritualOnly ? [] : freeCastsFor(character, d, [spellName, ...names]);
         const freeLeft = free.some(cast => cast.left > 0);
         const current = concentrationSpell(character);
+        // Arcanum mystique (Occultiste) : sort de niveau 6+ sans emplacement de son niveau, lancé une
+        // fois par repos long sans emplacement. La fiche n'a pas de case pour lui : la fenêtre le dit
+        // (au lieu de « Aucun emplacement »), et le bouton ne change que la concentration
+        const arcanum = !ritualOnly && options.length === 0 && isArcanumSpellLevel(level, mysticArcanumLevel(d.classSlug, d.level));
         // Sort impossible à lancer (plus aucun emplacement, pas de rituel) : pas de case Concentration
-        const castable = ritual || freeLeft || options.some(option => option.left > 0);
+        const castable = ritual || freeLeft || arcanum || options.some(option => option.left > 0);
         const concentration = castable && needsConcentration && current !== name.slice(0, 80)
             ? el('input', { type: 'checkbox', class: 'round-check', checked: true })
             : null;
@@ -711,7 +717,9 @@ export function initSpells(ctx) {
                 close();
                 return;
             }
-            finish(patch, `${name} : lancer gratuit (${cast.label}), sa case est cochée. Pour annuler, décochez-la.`);
+            finish(patch, cast.kind === 'class'
+                ? `${name} : lancer gratuit (${cast.label}). Pour annuler, décochez sa case (onglet Combat).`
+                : `${name} : lancer gratuit (${cast.label}), sa case est cochée. Pour annuler, décochez-la.`);
         };
 
         const anyLeft = options.some(option => option.left > 0);
@@ -731,10 +739,15 @@ export function initSpells(ctx) {
             on: { click: () => finish({}, `${name} lancé en rituel : 10 minutes de plus, aucun emplacement dépensé.`) }
         }, el('span', { class: 'btn-label', text: 'En rituel' }), el('small', { class: 'spell-cast-left', text: '+10 min, sans emplacement' })) : null;
 
+        const arcanumButton = arcanum ? el('button', {
+            type: 'button', class: 'btn spell-cast-level spell-cast-free',
+            on: { click: () => finish({}, `${name} : Arcanum mystique, sans emplacement. Rien n'est coché, à vous de le retenir.`) }
+        }, el('span', { class: 'btn-label', text: 'Arcanum mystique' }), el('small', { class: 'spell-cast-left', text: 'sans emplacement, 1 fois par repos long' })) : null;
+
         const facts = [`Sort de niveau ${level}`, needsConcentration ? 'Concentration' : '', ritual ? 'Rituel' : ''].filter(Boolean).join(' · ');
         // Sort qui se lance seulement en rituel : cas permis, dit en texte normal (pas en rouge)
         const ritualNote = ritualOnly ? ritualOnlyText || 'Ce sort se lance seulement en rituel.' : '';
-        const missing = ritualOnly ? ''
+        const missing = ritualOnly || arcanum ? ''
             : options.length === 0
             ? `Aucun emplacement de niveau ${level} ou plus.`
             : anyLeft ? '' : `Plus aucun emplacement de niveau ${level} ou plus : ils reviennent au repos ${options.every(o => o.pact) ? 'court ou long' : 'long'}.`;
@@ -747,20 +760,22 @@ export function initSpells(ctx) {
                 el('p', { text: `${facts}. ${anyLeft ? "Touchez le niveau de l'emplacement à dépenser : sa case se coche dans le grimoire." : ''}`.trim() }),
                 free.length ? el('p', { class: 'spell-cast-free-help', text: frenchSpaces(FREE_CAST_HELP) }) : null,
                 ritualNote ? el('p', { text: ritualNote }) : null,
+                arcanum ? el('p', { text: arcanumCastText(level) }) : null,
                 missing ? el('p', { class: 'spell-cast-missing', text: missing }) : null,
-                freeButtons.length || levelButtons.length || ritualButton ? el('div', { class: 'spell-cast-levels' }, freeButtons, levelButtons, ritualButton) : null,
+                freeButtons.length || levelButtons.length || ritualButton || arcanumButton
+                    ? el('div', { class: 'spell-cast-levels' }, freeButtons, arcanumButton, levelButtons, ritualButton) : null,
                 concentration ? el('label', { class: 'spell-cast-concentration' }, concentration,
                     el('span', {
                         text: current ? `Me concentrer sur ce sort (met fin à la concentration sur ${current})`
                             : "Me concentrer sur ce sort (noté dans « États », onglet Combat)"
                     })) : null,
                 anyLeft || freeLeft ? el('p', { class: 'muted', text: freeLeft
-                    ? 'Pour annuler : décochez l\'emplacement dans le grimoire, ou la case du lancer gratuit.'
+                    ? frenchSpaces(`Pour annuler : décochez l'emplacement dans le grimoire, ou la case du lancer gratuit${free.some(cast => cast.kind === 'class') ? FREE_CAST_CLASS_PLACE : ''}.`)
                     : 'Pour annuler : décochez l\'emplacement dans le grimoire.' }) : null
             ].filter(Boolean),
             actions: [{ label: 'Annuler' }]
         });
-        [...freeButtons, ...levelButtons, ritualButton].find(button => button && !button.disabled)?.focus();
+        [...freeButtons, arcanumButton, ...levelButtons, ritualButton].find(button => button && !button.disabled)?.focus();
     }
 
     function setValue(input, value, force) {
