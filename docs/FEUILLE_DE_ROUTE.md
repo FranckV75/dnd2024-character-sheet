@@ -9,13 +9,13 @@ changements dans `docs/CHANGELOG.md`. Rien ne se lance sans l'accord de Franck.
 Ordre décidé par Franck le 11/11/2026 : d'abord l'audit et les découpages, puis les restes et
 points relevés, puis une discussion pour trier toutes les idées.
 
-### 1. Prochain chantier : audit de santé, puis découpage
+### 1. ~~Audit de santé, puis découpage~~ : fait (4.38.0, 11/11/2026)
 
-- Audit de santé (`/audit-fiche`) : beaucoup de changements depuis le dernier.
-- Découpage des plus gros fichiers (`css/sheet.css`, `js/rules/feat-effects.js`,
-  `js/ui/spells.js`) : fait au lot D (voir docs/ARCHITECTURE.md).
+Audit `/audit-fiche` et corrections (lots A, C, D, E) ; découpage de `css/sheet.css`,
+`js/rules/feat-effects.js` et `js/ui/spells.js` au lot D (voir `docs/ARCHITECTURE.md`). Le
+prochain audit se fera à la demande de Franck.
 
-### 2. Ensuite : restes et points relevés
+### 2. Restes et points relevés : faits (4.39.0), décisions en attente
 
 Faits en 4.39.0 (case Maîtrises d'armes, espèces de l'Odyssée, dragonnets 2024, restes des
 sous-classes). Restent des décisions de Franck :
@@ -30,7 +30,7 @@ sous-classes). Restent des décisions de Franck :
 - Monture d'Outremonde (Amazone) : case pour l'action bonus (une fois par repos long) ; noms
   français des actions à vérifier dans le livre ; sorts de la Magie des Amazones pas dans le grimoire.
 
-### 3. Idées, toutes au même niveau (priorités à trier avec Franck après l'audit)
+### 3. Idées, toutes au même niveau (priorités à trier avec Franck : c'est la prochaine étape)
 
 - Lanceur de dés (demande de janvier 2026) : toucher un bonus d'attaque ou une compétence lance le
   dé et affiche le total. Pas prioritaire pour l'instant.
