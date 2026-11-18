@@ -225,6 +225,23 @@
     display: none;
 }
 
+/* Sorts donnés (dons, sous-classe, espèce) : « Lancer » à côté du nom, seulement au combat ;
+   la place ne manque pas, le libellé reste écrit sur tablette */
+.feat-spell .feat-spell-cast {
+    display: none;
+}
+
+@media screen {
+    .spells-body.is-combat .feat-spell .feat-spell-cast {
+        display: inline-flex;
+        align-self: center;
+    }
+
+    .spells-body.is-combat .feat-spell-cast .btn-label {
+        display: inline;
+    }
+}
+
 /* Emplacements restants : seulement au combat */
 .slot-left {
     display: none;

@@ -443,13 +443,22 @@ export function initSpells(ctx) {
     function castRow(r) {
         const row = spellsOf()[r.index];
         if (!row || !isCastable(r.state)) return;
+        castSpell({ name: plainText(row.name), level: Number(rowLevel(row)), concentration: row.c === true, ritual: row.r === true });
+    }
+
+    /**
+     * Fenêtre « Lancer » d'un sort préparé (ligne du tableau, ou sort donné par un don, la
+     * sous-classe ou l'espèce : spells/granted.js).
+     * @param {{ name: string, level: number, concentration?: boolean, ritual?: boolean, ritualOnly?: boolean }} spell
+     *        ritualOnly : sort donné qui ne se lance qu'en rituel (Voie du Cœur sauvage)
+     */
+    function castSpell({ name: spellName, level, concentration: needsConcentration = false, ritual = false, ritualOnly = false }) {
         const character = store.get();
         const d = derivedOf(character);
-        const name = plainText(row.name) || 'ce sort';
-        const level = Number(rowLevel(row));
-        const options = castSlotOptions(level, d.spellSlots, d.classSlug, slotStateOf(character));
+        const name = spellName || 'ce sort';
+        const options = ritualOnly ? [] : castSlotOptions(level, d.spellSlots, d.classSlug, slotStateOf(character));
         const current = concentrationSpell(character);
-        const concentration = row.c === true && current !== plainText(row.name).slice(0, 80)
+        const concentration = needsConcentration && current !== name.slice(0, 80)
             ? el('input', { type: 'checkbox', class: 'round-check', checked: true })
             : null;
         let close = () => {};
@@ -479,13 +488,14 @@ export function initSpells(ctx) {
             on: { click: () => castAt(option.level) }
         }, el('span', { class: 'btn-label', text: `${option.pact ? 'Pacte · ' : ''}Niveau ${option.level}` }),
         el('small', { class: 'spell-cast-left', text: option.left === 0 ? 'plus aucun' : `reste ${option.left}` })));
-        const ritualButton = row.r === true ? el('button', {
+        const ritualButton = ritual ? el('button', {
             type: 'button', class: 'btn spell-cast-level',
             on: { click: () => finish({}, `${name} lancé en rituel : 10 minutes de plus, aucun emplacement dépensé.`) }
         }, el('span', { class: 'btn-label', text: 'En rituel' }), el('small', { class: 'spell-cast-left', text: '+10 min, sans emplacement' })) : null;
 
-        const facts = [`Sort de niveau ${level}`, row.c === true ? 'Concentration' : '', row.r === true ? 'Rituel' : ''].filter(Boolean).join(' · ');
-        const missing = options.length === 0
+        const facts = [`Sort de niveau ${level}`, needsConcentration ? 'Concentration' : '', ritual ? 'Rituel' : ''].filter(Boolean).join(' · ');
+        const missing = ritualOnly ? 'Ce sort se lance seulement en rituel.'
+            : options.length === 0
             ? `Aucun emplacement de niveau ${level} ou plus.`
             : anyLeft ? '' : `Plus aucun emplacement de niveau ${level} ou plus : ils reviennent au repos ${options.every(o => o.pact) ? 'court ou long' : 'long'}.`;
         close = openModal({
@@ -831,7 +841,7 @@ export function initSpells(ctx) {
     }
 
     // Sorts de dons, de sous-classe et d'espèce (spells/granted.js), au-dessus du tableau
-    const granted = createGrantedSpells({ store, tooltip, getSpellsDb: () => spellsDb });
+    const granted = createGrantedSpells({ store, tooltip, getSpellsDb: () => spellsDb, onCast: castSpell });
 
     function render(character, changedKeys, { structural = false } = {}) {
         if (changedKeys && !changedKeys.some(key => RELEVANT_KEYS.has(key))) return;

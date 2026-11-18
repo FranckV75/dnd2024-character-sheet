@@ -8,6 +8,8 @@
 //    serments du Paladin, Cercle de la Terre… ; un sort aussi noté dans la liste porte un repère.
 //  - Sorts d'espèce (js/rules/species.js) : lancers gratuits cochés dans subclass_uses (mêmes
 //    cases que dans l'onglet Combat).
+//  - Vue « au combat » : bouton « Lancer » sur chaque sort de niveau 1+ (fenêtre de spells.js,
+//    contrôle de jeu utilisable verrouillé ; affiché seulement au combat, par spells.css).
 // Jamais écrits dans dynamic_spells : on ne peut pas les effacer par erreur. Chaque bloc n'est
 // reconstruit que si son contenu change ; les cases cochées sont remises à jour sur place.
 // =============================================================================
@@ -24,11 +26,12 @@ import { el, icon, signed } from '../dom.js';
 import { foldButton, bindFolding, applyFolds } from '../fold.js';
 
 /**
- * @param {{ store: Object, tooltip: Object, getSpellsDb: () => Object[] }} deps
+ * @param {{ store: Object, tooltip: Object, getSpellsDb: () => Object[],
+ *   onCast?: (spell: { name: string, level: number, concentration: boolean, ritual: boolean, ritualOnly: boolean }) => void }} deps
  * @returns {{ featBox: HTMLElement, subclassBox: HTMLElement, speciesBox: HTMLElement,
  *   render(character: Object, d: Object): void }}
  */
-export function createGrantedSpells({ store, tooltip, getSpellsDb }) {
+export function createGrantedSpells({ store, tooltip, getSpellsDb, onCast = null }) {
     // Repliables (pastille à chevron du titre, fold.js) : seul le titre reste, retenu sur cet appareil
     const featBox = el('section', { class: 'feat-spells', 'aria-labelledby': 'feat-spells-title', 'data-fold-key': 'feat-spells', hidden: true });
     bindFolding(featBox);
@@ -70,6 +73,27 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb }) {
                 el('span', { text: spell.free.text }))
             : null;
         const details = [spell.slotText ? `Toujours préparé ; ${spell.slotText}.` : '', spell.note].filter(Boolean).join(' ');
+        // Lancer (vue au combat) : sort de niveau 1+ préparé ; pas pour un sort lancé seulement
+        // sans emplacement (Ascendance divine), qui n'est pas un sort préparé
+        const level = Number(spell.level);
+        const ritualOnly = /^Seulement en rituel/.test(spell.note ?? '');
+        const cast = onCast && level >= 1 && !/^Une fois sans emplacement/.test(spell.note ?? '')
+            ? el('button', {
+                type: 'button', class: 'btn-chip spell-cast feat-spell-cast',
+                title: ritualOnly ? 'Lancer en rituel' : "Lancer : choisir l'emplacement à cocher",
+                'aria-label': `Lancer le sort ${spell.name}`,
+                on: {
+                    click: () => {
+                        const entry = getSpellsDb().find(s => s.vo === spell.vo);
+                        onCast({
+                            name: spell.name, level, ritualOnly,
+                            concentration: entry?.concentration === true,
+                            ritual: ritualOnly || spell.ritual === true || entry?.ritual === true
+                        });
+                    }
+                }
+            }, icon('sparkle'), el('span', { class: 'btn-label', text: 'Lancer' }))
+            : null;
         // Sort du type d'Affinité élémentaire (Orbe chromatique, Souffle du dragon…) : « +Cha (+4, feu) »
         const affine = affinityApplies(getSpellsDb().find(s => s.vo === spell.vo), affinity);
         return el('li', { class: 'feat-spell' },
@@ -78,7 +102,8 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb }) {
                 el('span', { class: 'feat-spell-level', text: spellLevelLabel(spell.level) }),
                 spell.ritual ? el('span', { class: 'feat-spell-tag', text: 'Rituel' }) : null,
             spell.listed ? el('span', { class: 'feat-spell-tag', 'data-kind': 'listed', text: 'Aussi dans votre liste' }) : null,
-            affine ? el('span', { class: 'feat-spell-tag', 'data-kind': 'affinity', title: affinity.rule, text: affinity.mention }) : null),
+            affine ? el('span', { class: 'feat-spell-tag', 'data-kind': 'affinity', title: affinity.rule, text: affinity.mention }) : null,
+            cast),
             free,
             details ? el('p', { class: 'feat-spell-note', text: details }) : null);
     }
