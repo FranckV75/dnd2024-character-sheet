@@ -33,14 +33,12 @@ sous-classes). Restent des décisions de Franck :
 ### 3. Idées : ordre validé par Franck le 18/11/2026
 
 Faits en 4.41.0 (18/11/2026) : ~~liste des outils~~, ~~notice « Mode d'emploi », fenêtre
-« Nouveautés », personnages d'exemple~~. Restent, dans l'ordre :
+« Nouveautés », personnages d'exemple~~. Faites en 4.42.0 (18/11/2026, **pas encore publiée** :
+attend le « Publie » de Franck) : ~~finitions du grimoire~~. Restent, dans l'ordre :
 
-1. **Finitions du grimoire** : avertir quand un sort préparé dépasse les emplacements ; lancers
-   gratuits (Châtiment divin, Marque du chasseur…) proposés par « Lancer » ; bouton « Retirer les
-   sorts non préparés » (Clerc, Druide) ; rituels du Magicien repliés en vue « Au combat ».
-2. **Dégâts en plus sur les armes** : lignes dans le réglage ⚙ (dégâts + raison), « toujours » ou
+1. **Dégâts en plus sur les armes** : lignes dans le réglage ⚙ (dégâts + raison), « toujours » ou
    « à allumer » (pastille, comme la Rage).
-3. **Mode Odyssée désactivable** : un des prochains chantiers, courte étude d'abord.
+2. **Mode Odyssée désactivable** : un des prochains chantiers, courte étude d'abord.
 
 **À chaque version, désormais** : ajouter l'entrée de la version en tête de `js/data/whats-new.js`
 (sinon `npm run check` échoue) et mettre à jour la notice `js/data/help.js`.
@@ -54,6 +52,27 @@ Décisions de Franck en attente sur la 4.41.0 :
   garder) ; choix prudent, à confirmer.
 - Fenêtre « Nouveautés » : montrée une fois aux joueurs qui avaient déjà une fiche sur l'appareil,
   jamais à une toute première visite.
+
+Décisions de Franck en attente sur la 4.42.0 :
+- Lancers gratuits sans case dans la fiche, donc pas proposés par « Lancer » : Châtiment divin
+  (Châtiment de paladin), Appel de destrier (Fidèle destrier), Arcanum mystique, Contact avec les
+  plans (Communication avec le protecteur). Les suivre demanderait une nouvelle clé facultative.
+  Pour l'Arcanum, « Lancer » explique la règle mais ne retient pas qu'il a été utilisé.
+- Cases de sous-classe partagées entre plusieurs sorts (Ancêtre divin, Créatures
+  fantasmagoriques, Ressourcement, Mante de majesté, Troisième œil) : pas reliées à « Lancer ».
+- « Retirer les sorts non préparés » : si l'état d'avant ne peut pas être gardé (stockage plein),
+  rien n'est retiré ; un sort d'un niveau sans emplacement reste (noté pour plus tard) ; une
+  vieille ligne écrite dans un autre format que la base va dans « Gardés ». Choix prudents, à
+  confirmer.
+- Personnage multiclassé (Clerc / Magicien noté « Clerc ») : un sort présent sur les deux listes
+  est proposé au retrait ; ne rien proposer dès que des emplacements ont été ajoutés à la main ?
+
+Petits restes de la 4.42.0 (pas urgents) : sous-classe écrite autrement (« Vie » pour « Domaine
+de la Vie ») : ses sorts de domaine non cochés sont proposés au retrait ; Rôdeur : « Lancer
+gratuit » seulement si Marque du chasseur est notée au tableau ; phrase pâle sur un bouton
+« Lancer gratuit » épuisé (comme les boutons « reste 0 ») ; teintes proches en thème sombre entre
+« Pas d'emplacement » et « Lançable en rituel » ; plan de retrait recalculé à chaque rendu du
+grimoire (à mesurer sur tablette) ; pas de test automatique du cas « état non gardé ».
 
 Petits restes de la 4.41.0 (pas urgents) : anciens noms « Main de mage », « Armure de mage » (don
 Initié à la magie) et arme « Bâton » à renommer d'après le manuel 2024, avec conversion testée des
@@ -76,14 +95,12 @@ Détail des idées :
   raison (ex. « +2d6 contre les dragons » d'une arme tueuse, « +1d6 radiants contre les
   morts-vivants »), affichés à côté des dégâts comme le fait déjà Fureur divine en Rage
   (demande de Franck, 11/11/2026).
-- Grimoire, suites possibles du chantier 4.40.0 (à décider par Franck) : Paladin et Rôdeur
-  traités comme Clerc et Druide (fenêtre et rappel de repos long) ou non ; avertissement quand
-  un sort préparé dépasse le plus haut emplacement ; cases de lancer gratuit (Châtiment divin,
-  Marque du chasseur, Arcanum mystique…) proposées par « Lancer » ; Magicien : repères pour
-  Maîtrise des sorts (18) et Sorts de prédilection (20), qui demanderaient une nouvelle clé,
-  rappel de Mémorisation de sort au repos court, Aptitude érudite au niveau 3 (2 ou 3 sorts) ;
-  Barde du Savoir : enregistrer ses deux Découvertes magiques ; rangement des sorts décochés
-  qui s'accumulent au grimoire ; rituels du livre trop nombreux en vue au combat ?
+- Grimoire, suites possibles (à décider par Franck) : Paladin et Rôdeur traités comme Clerc et
+  Druide (fenêtre et rappel de repos long) ou non ; cases de suivi pour les lancers gratuits qui
+  n'en ont pas (voir les décisions en attente sur la 4.42.0) ; Magicien : repères pour Maîtrise
+  des sorts (18) et Sorts de prédilection (20), qui demanderaient une nouvelle clé (trop tôt selon
+  Franck), rappel de Mémorisation de sort au repos court, Aptitude érudite au niveau 3 (2 ou
+  3 sorts) ; Barde du Savoir : enregistrer ses deux Découvertes magiques.
 - Grimoire : comme les objets magiques, un aspect qui monte en puissance avec le niveau du sort.
 - Mode « Odyssée des Seigneurs Dragons » désactivable (demande de Franck, 18/11/2026) : retirer
   ce qui est propre à cette campagne (espèces, sous-classes Seigneur Dragon / Amazone /

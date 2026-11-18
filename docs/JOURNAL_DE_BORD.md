@@ -14,7 +14,10 @@ en fin de session :
 
 - **En ligne** : version **4.41.0** (liste des outils, « Mode d'emploi », fenêtre « Nouveautés »,
   personnages d'exemple), publiée le 18/11/2026 avec l'accord de Franck (`master` = `v4`).
-- **En cours** : finitions du grimoire (accord de Franck le 18/11/2026), pour la 4.42.0.
+- **Prête, pas encore publiée** : version **4.42.0** (finitions du grimoire : mention « Pas
+  d'emplacement », « Lancer gratuit », « Retirer les sorts non préparés », « Rituels du livre »
+  repliés). Elle est sur la branche `v4` de cet ordinateur seulement ; elle attend le « Publie »
+  de Franck.
 - **À chaque version** : entrée en tête de `js/data/whats-new.js` et notice `js/data/help.js`
   à jour.
 - **Petits champs sur iPad** : ne rien changer tant que Franck n'a pas d'info sur le zoom.
@@ -30,6 +33,10 @@ en fin de session :
 
 ### À vérifier par Franck (tablette Android, iPad de Catherine)
 
+- 4.42.0 (après publication), onglet Magie : mention « Pas d'emplacement » (la toucher) ;
+  « Lancer » sur un sort de don ou d'espèce (« Lancer gratuit ») ; pour un Clerc ou un Druide,
+  « Retirer les sorts non préparés » sur une fiche de test, puis « Revenir à… » ; pour un
+  Magicien, vue « Au combat », ligne « Rituels du livre ».
 - 4.41.0 : la fenêtre « Nouveautés » s'ouvre une fois ; menu Gestion, « Mode
   d'emploi » (lecture, puis « Imprimer le mode d'emploi » sur la tablette) ; onglet Compétences &
   Histoire, « Choisir dans la liste » sous la case Outils ; « Essayer un personnage d'exemple »
@@ -63,11 +70,25 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 2. ~~restes et points relevés~~ : faits (4.39.0) ; restent les décisions listées au point 2 de
    `docs/FEUILLE_DE_ROUTE.md` ;
 3. ~~discussion pour trier les idées~~ : faite le 18/11/2026. Ordre validé par Franck : liste des
-   outils et notice (faits, 4.41.0), puis finitions du grimoire, dégâts en plus sur les armes,
-   étude du mode Odyssée désactivable. Détail et décisions en attente au point 3 de
+   outils et notice (faits, 4.41.0), finitions du grimoire (faites, 4.42.0), puis dégâts en plus
+   sur les armes, étude du mode Odyssée désactivable. Détail et décisions en attente au point 3 de
    `docs/FEUILLE_DE_ROUTE.md`.
 
 ## Sessions
+
+### 18/11/2026 — Finitions du grimoire (4.42.0, pas encore publiée)
+
+- Quatre finitions faites en ultracode (un réalisateur, deux relecteurs, un correcteur), puis
+  vérifiées par l'orchestrateur sur des fiches de test (toucher simulé, 0 erreur console,
+  1531 tests) : mention « Pas d'emplacement », « Lancer gratuit » dans « Lancer », bouton
+  « Retirer les sorts non préparés », « Rituels du livre » repliés en vue « Au combat ».
+- Aucune nouvelle clé dans la fiche ; une préférence d'appareil (`dd2024_spell_book_rituals_open`).
+- Défauts trouvés par les relecteurs et corrigés : le retrait emportait une ligne réécrite hors de
+  la colonne Note (elle va maintenant dans « Gardés ») ; mentions trop petites au doigt (44 px) ;
+  « Lancer » sur un sort d'Arcanum mystique disait « Aucun emplacement » (il explique l'Arcanum).
+- Laissé de côté : lancers gratuits sans case (Châtiment divin, Appel de destrier, Arcanum
+  mystique…), cas du multiclassage au retrait, Magicien 18/20. Voir la feuille de route.
+- Non publié : attend l'accord de Franck.
 
 ### 18/11/2026 — Liste des outils, mode d'emploi, nouveautés, personnages d'exemple (4.41.0)
 

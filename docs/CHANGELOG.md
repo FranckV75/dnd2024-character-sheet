@@ -2,6 +2,33 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.42.0] - 2026-11-18 (Finitions du grimoire)
+### Added
+- Mention « Pas d'emplacement » sous le nom d'un sort préparé dont le niveau dépasse le plus haut
+  emplacement du personnage (magie de pacte et niveaux ajoutés à la main compris). Simple repère :
+  rien n'est décoché. Jamais pour un sort mineur, un sort non préparé, un sort qui a son lancer
+  gratuit, un Arcanum mystique ou un personnage sans emplacement (`missingSlotLevel`, testé).
+- Fenêtre « Lancer » : « Lancer gratuit (capacité) — reste N » proposé en premier quand une case
+  de la fiche suit déjà ce lancer : sorts de dons, sorts d'espèce, Marque du chasseur (cases
+  « Ennemi juré » du Rôdeur) et sept cases de sous-classe liées à un seul sort. Le choisir coche
+  cette case, sans emplacement ; épuisé, le bouton est grisé et dit quand il revient. Aucune
+  nouvelle clé (`js/rules/free-casts.js`, testé).
+- Occultiste : « Lancer » sur un sort d'Arcanum mystique explique l'Arcanum et propose un bouton
+  sans emplacement (rien n'est coché : la fiche n'a pas de case pour ce lancer).
+- Bouton « Retirer les sorts non préparés » sous le tableau (Clerc, Druide, Paladin, Rôdeur,
+  fiche déverrouillée, hors vue « Au combat »). La fenêtre liste ce qui part ; les lignes où le
+  joueur a écrit (note, colonne réécrite, case C / R / M cochée en plus) sont à part, gardées par
+  défaut. Ne partent jamais : sort préparé, mineur, donné, d'une autre liste, d'un niveau sans
+  emplacement, ligne vide ou en cours de saisie. L'état d'avant est gardé dans « Revenir à… »
+  (motif « Avant le retrait des sorts non préparés ») ; s'il ne peut pas l'être, rien n'est retiré
+  (`unpreparedCleanup`, `removeSpellRows`, `js/ui/spells/cleanup.js`, testés).
+- Magicien, vue « Au combat » : les rituels du livre non préparés se rangent sous la ligne
+  repliable « Rituels du livre (N) », repliée par défaut (préférence d'appareil
+  `dd2024_spell_book_rituals_open`). Vue complète et impression inchangées.
+### Changed
+- Mentions « Pas d'emplacement » et « Lançable en rituel » : zone de toucher de 44 px sur tablette.
+- Notice (onglet Magie, « Revenir à… ») et fenêtre « Nouveautés » mises à jour.
+
 ## [4.41.0] - 2026-11-18 (Liste des outils, mode d'emploi, nouveautés, personnages d'exemple)
 ### Added
 - Outils : bouton « Choisir dans la liste » sous la case « Outils » (onglet Compétences &
