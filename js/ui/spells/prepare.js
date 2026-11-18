@@ -91,9 +91,8 @@ export async function openPrepareSpells({ store, setStatus }) {
     const listBox = el('div', { class: 'prep-list' });
     const noMatch = el('p', { class: 'prep-empty muted', hidden: true, text: 'Aucun sort ne correspond.' });
 
-    /** Une case par sort de la liste : { spell, item, box } */
+    /** Une ligne par sort de la liste : { spell, li, box } (box : null pour un sort toujours préparé) */
     const entries = [];
-    const sections = [];
 
     function toggleSpell(spell, checked) {
         const rows = rowsOf(store.get());
@@ -135,7 +134,6 @@ export async function openPrepareSpells({ store, setStatus }) {
             const section = el('section', { class: 'prep-group', 'aria-label': `Sorts de niveau ${group.level}` },
                 el('h3', { class: 'prep-level', text: `Niveau ${group.level}` }),
                 el('ul', { class: 'prep-items' }, items));
-            sections.push(section);
             return section;
         });
 
