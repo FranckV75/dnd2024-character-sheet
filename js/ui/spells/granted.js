@@ -27,7 +27,7 @@ import { foldButton, bindFolding, applyFolds } from '../fold.js';
 
 /**
  * @param {{ store: Object, tooltip: Object, getSpellsDb: () => Object[],
- *   onCast?: (spell: { name: string, level: number, concentration: boolean, ritual: boolean, ritualOnly: boolean }) => void }} deps
+ *   onCast?: (spell: { name: string, level: number, concentration: boolean, ritual: boolean, ritualOnly: boolean, names: string[] }) => void }} deps
  * @returns {{ featBox: HTMLElement, subclassBox: HTMLElement, speciesBox: HTMLElement,
  *   render(character: Object, d: Object): void }}
  */
@@ -86,7 +86,7 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb, onCast = null
                     click: () => {
                         const entry = getSpellsDb().find(s => s.vo === spell.vo);
                         onCast({
-                            name: spell.name, level, ritualOnly,
+                            name: spell.name, level, ritualOnly, names: [spell.name, spell.vo],
                             concentration: entry?.concentration === true,
                             ritual: ritualOnly || spell.ritual === true || entry?.ritual === true
                         });

@@ -16,7 +16,10 @@
 //    spells/prepare.js) : cases à cocher sur toute la liste de la classe, utilisable verrouillé.
 //  - Vue « au combat » (bouton de la barre, retenu sur l'appareil) : seulement les sorts mineurs,
 //    les sorts préparés (même d'office) et les blocs de sorts donnés, les emplacements restants en
-//    clair et un bouton « Lancer » qui coche un emplacement (et propose la Concentration).
+//    clair et un bouton « Lancer » qui coche un emplacement (et propose la Concentration) ; un
+//    sort qui a un lancer gratuit suivi par la fiche (don, espèce, Ennemi juré du Rôdeur, quelques
+//    sous-classes : js/rules/free-casts.js) propose d'abord « Lancer gratuit », qui coche la case
+//    existante de la capacité au lieu d'un emplacement.
 //    Sur écran seulement : l'impression garde tout le grimoire.
 //  - Seuls les sorts renseignés sont affichés, suivis d'UNE ligne de saisie : les lignes
 //    vides d'une sauvegarde restent dans la fiche, telles quelles, sans être affichées.
@@ -52,7 +55,7 @@
 import { EMPTY_SPELL } from '../state/schema.js';
 import { derivedOf } from './derived.js';
 import {
-    plainText, cellText, spellDisplayName, effectiveSpellClass, searchSpells, findSpellByName, spellToRow, rowLevel,
+    plainText, cellText, spellDisplayName, spellNames, effectiveSpellClass, searchSpells, findSpellByName, spellToRow, rowLevel,
     isSpellRowEmpty, hasSpellContent, spellRowsView, nextSort, spellCounts,
     formatSpellCount, spellLimitWarnings, cantripLimitNote, spellNameKey, newSpellRow,
     spellcastingStatus, grimoireView, SPELL_LEVELS
@@ -71,10 +74,12 @@ import {
 } from '../rules/spell-preparation.js';
 import { hasSpellbook, freeSpellbookSpells, spellbookCount, spellCopyCost, castsRitualsFromBook, isRitualSpell } from '../rules/spellbook.js';
 import { concentrationSpell, setConcentrationPatch } from '../rules/concentration.js';
+import { freeCastsFor, useFreeCastPatch, FREE_CAST_RESET_TEXT } from '../rules/free-casts.js';
 import { el, icon, setIconLabel } from './dom.js';
 import { cellText as createCellText } from './cell-text.js';
 import { attachAutocomplete } from './autocomplete.js';
 import { confirmModal, openModal } from './modal.js';
+import { frenchSpaces } from './help.js';
 import { isLocked } from './lock.js';
 import { motionOff } from './motion-pref.js';
 import { readGrimoireOpen, saveGrimoireOpen, readCombatView } from './spells/prefs.js';
@@ -115,6 +120,8 @@ const COMBAT_VIEW_HELP = {
     on: "Au combat : seulement vos sorts prêts à lancer ; « Lancer » coche l'emplacement dépensé.",
     off: 'Grimoire complet : tous vos sorts, pour en ajouter ou en modifier.'
 };
+/** Fenêtre « Lancer » : ce que fait le bouton « Lancer gratuit », dit dans la fenêtre (tablette) */
+const FREE_CAST_HELP = "« Lancer gratuit » : sans emplacement ; c'est la case de la capacité qui se coche, là où elle est déjà sur la fiche.";
 /** Bouton ▾ (liste des sorts sans clavier virtuel) et bouton ✕ de la ligne de saisie : infobulle
  *  (souris), puis phrase courte dans la barre du haut quand on les touche (tablette) */
 const PICK_TITLE = 'Choisir dans la liste des sorts (sans ouvrir le clavier)';
@@ -608,9 +615,11 @@ export function initSpells(ctx) {
         const row = spellsOf()[r.index];
         if (!row || !isCastable(r.state)) return;
         // Rituel : case R cochée ou base de sorts, préparé ou non (même règle que le losange)
-        const { ritual, ritualOnly } = castModes(r.state, isRitualSpell(row, findSpellByName(spellsDb, row.name)));
+        const known = findSpellByName(spellsDb, row.name);
+        const { ritual, ritualOnly } = castModes(r.state, isRitualSpell(row, known));
         castSpell({
             name: plainText(row.name), level: Number(rowLevel(row)), concentration: row.c === true,
+            names: [plainText(row.name), ...spellNames(known), known?.vo],
             ritual, ritualOnly,
             ritualOnlyText: ritualOnly ? 'Sort non préparé : depuis votre livre, il se lance seulement en rituel (Savoir rituel).' : ''
         });
@@ -619,18 +628,22 @@ export function initSpells(ctx) {
     /**
      * Fenêtre « Lancer » d'un sort préparé (ligne du tableau, ou sort donné par un don, la
      * sous-classe ou l'espèce : spells/granted.js).
-     * @param {{ name: string, level: number, concentration?: boolean, ritual?: boolean, ritualOnly?: boolean, ritualOnlyText?: string }} spell
+     * @param {{ name: string, level: number, concentration?: boolean, ritual?: boolean, ritualOnly?: boolean, ritualOnlyText?: string, names?: string[] }} spell
+     *        names : tous les noms du sort (noté, français, anglais), pour retrouver ses lancers gratuits
      *        ritualOnly : sort qui ne se lance qu'en rituel (sort donné par la Voie du Cœur sauvage,
      *        rituel du livre non préparé du Magicien) ; ritualOnlyText : la raison, dite dans la fenêtre
      */
-    function castSpell({ name: spellName, level, concentration: needsConcentration = false, ritual = false, ritualOnly = false, ritualOnlyText = '' }) {
+    function castSpell({ name: spellName, level, concentration: needsConcentration = false, ritual = false, ritualOnly = false, ritualOnlyText = '', names = [] }) {
         const character = store.get();
         const d = derivedOf(character);
         const name = spellName || 'ce sort';
         const options = ritualOnly ? [] : castSlotOptions(level, d.spellSlots, d.classSlug, slotStateOf(character));
+        // Lancers gratuits suivis par la fiche (don, espèce, Ennemi juré…), proposés en premier
+        const free = ritualOnly ? [] : freeCastsFor(character, d, [spellName, ...names]);
+        const freeLeft = free.some(cast => cast.left > 0);
         const current = concentrationSpell(character);
         // Sort impossible à lancer (plus aucun emplacement, pas de rituel) : pas de case Concentration
-        const castable = ritual || options.some(option => option.left > 0);
+        const castable = ritual || freeLeft || options.some(option => option.left > 0);
         const concentration = castable && needsConcentration && current !== name.slice(0, 80)
             ? el('input', { type: 'checkbox', class: 'round-check', checked: true })
             : null;
@@ -655,7 +668,24 @@ export function initSpells(ctx) {
                 `${name} : emplacement de niveau ${slotLevel} coché. Pour annuler, décochez-le.`);
         };
 
+        const castFree = (cast) => {
+            const now = store.get();
+            const patch = useFreeCastPatch(now, derivedOf(now), cast.id);
+            if (!patch) {
+                setStatus(`${cast.label} : plus aucun lancer gratuit, il ${FREE_CAST_RESET_TEXT[cast.reset]}.`);
+                close();
+                return;
+            }
+            finish(patch, `${name} : lancer gratuit (${cast.label}), sa case est cochée. Pour annuler, décochez-la.`);
+        };
+
         const anyLeft = options.some(option => option.left > 0);
+        // « Lancer gratuit (Ennemi juré) — reste 2 » ; épuisé : grisé, avec le repos qui le rend
+        const freeButtons = free.map(cast => el('button', {
+            type: 'button', class: 'btn spell-cast-level spell-cast-free', disabled: cast.left === 0,
+            on: { click: () => castFree(cast) }
+        }, el('span', { class: 'btn-label', text: `Lancer gratuit (${cast.label})` }),
+        el('small', { class: 'spell-cast-left', text: cast.left === 0 ? `déjà utilisé, ${FREE_CAST_RESET_TEXT[cast.reset]}` : `reste ${cast.left}` })));
         const levelButtons = options.map(option => el('button', {
             type: 'button', class: 'btn spell-cast-level', disabled: option.left === 0,
             on: { click: () => castAt(option.level) }
@@ -680,19 +710,22 @@ export function initSpells(ctx) {
             body: [
                 // Ce que fait un bouton de niveau, dit en clair (pas d'infobulle au toucher)
                 el('p', { text: `${facts}. ${anyLeft ? "Touchez le niveau de l'emplacement à dépenser : sa case se coche dans le grimoire." : ''}`.trim() }),
+                free.length ? el('p', { class: 'spell-cast-free-help', text: frenchSpaces(FREE_CAST_HELP) }) : null,
                 ritualNote ? el('p', { text: ritualNote }) : null,
                 missing ? el('p', { class: 'spell-cast-missing', text: missing }) : null,
-                levelButtons.length || ritualButton ? el('div', { class: 'spell-cast-levels' }, levelButtons, ritualButton) : null,
+                freeButtons.length || levelButtons.length || ritualButton ? el('div', { class: 'spell-cast-levels' }, freeButtons, levelButtons, ritualButton) : null,
                 concentration ? el('label', { class: 'spell-cast-concentration' }, concentration,
                     el('span', {
                         text: current ? `Me concentrer sur ce sort (met fin à la concentration sur ${current})`
                             : "Me concentrer sur ce sort (noté dans « États », onglet Combat)"
                     })) : null,
-                anyLeft ? el('p', { class: 'muted', text: 'Pour annuler : décochez l\'emplacement dans le grimoire.' }) : null
+                anyLeft || freeLeft ? el('p', { class: 'muted', text: freeLeft
+                    ? 'Pour annuler : décochez l\'emplacement dans le grimoire, ou la case du lancer gratuit.'
+                    : 'Pour annuler : décochez l\'emplacement dans le grimoire.' }) : null
             ].filter(Boolean),
             actions: [{ label: 'Annuler' }]
         });
-        [...levelButtons, ritualButton].find(button => button && !button.disabled)?.focus();
+        [...freeButtons, ...levelButtons, ritualButton].find(button => button && !button.disabled)?.focus();
     }
 
     function setValue(input, value, force) {

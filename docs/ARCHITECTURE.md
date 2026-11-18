@@ -96,6 +96,8 @@ js/
 │   │   ├── choice-notes.js     Notes des choix mémorisés (choiceNotes)
 │   │   └── weapon-notes.js     Rappels sous chaque arme (weaponFeatNotes)
 │   ├── feat-spells.js  Sorts donnés par un don (lot 6) : DD du don, lancers gratuits
+│   ├── free-casts.js   Lancers gratuits proposés par « Lancer » : relie un sort aux cases
+│   │                   existantes (dons, espèce, Ennemi juré, quelques sous-classes)
 │   ├── rest.js         Repos court et repos long
 │   ├── conditions.js   États cochés (clé facultative « conditions ») et rappel de leurs effets
 │   ├── species.js      Espèce : option choisie (clé facultative « species_choices »), Vision dans

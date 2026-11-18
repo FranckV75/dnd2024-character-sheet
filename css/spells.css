@@ -503,6 +503,11 @@
     font-weight: 400;
 }
 
+/* « Lancer gratuit (Ennemi juré) » : en premier, sur toute la largeur (libellé long) */
+.modal .btn.spell-cast-free {
+    flex: 1 1 100%;
+}
+
 .spell-cast-missing {
     color: var(--ko);
 }
