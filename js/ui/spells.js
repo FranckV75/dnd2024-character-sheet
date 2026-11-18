@@ -7,8 +7,11 @@
 //  - Le filtre de niveau et le tri ne changent que l'affichage : l'ordre enregistré
 //    du tableau n'est jamais modifié.
 //  - Les emplacements de sorts cochés et le losange « préparé » sont des contrôles de JEU
-//    (utilisables verrouillé : PHB 2024, la liste des sorts préparés change à chaque repos
-//    long) ; les boutons + / − du nombre d'emplacements sont réservés à l'édition.
+//    (utilisables verrouillé : PHB 2024, la liste des sorts préparés du Clerc, du Druide et du
+//    Magicien change à chaque repos long) ; les boutons + / − du nombre d'emplacements sont
+//    réservés à l'édition. Barde, Ensorceleur, Occultiste (liste fixe) et sorts donnés par la
+//    classe, la sous-classe, un don ou l'espèce : losange plein fixe « toujours préparé », calculé
+//    à l'affichage (js/rules/spell-preparation.js), jamais écrit dans la fiche.
 //  - Seuls les sorts renseignés sont affichés, suivis d'UNE ligne de saisie : les lignes
 //    vides d'une sauvegarde restent dans la fiche, telles quelles, sans être affichées.
 //    La ligne de saisie n'existe pas dans la fiche : la première saisie qui a du contenu
@@ -51,7 +54,8 @@ import { speciesSpellNames } from '../rules/species.js';
 import { FEAT_SLOT_ORDER } from '../state/schema.js';
 import { ABILITY_IDS } from '../data/constants.js';
 import { loadSpells } from '../data/spells.js';
-import { classSpellCounts, classAlwaysPreparedSpells } from '../rules/class-progression.js';
+import { classSpellCounts } from '../rules/class-progression.js';
+import { preparesWholeList, grantedSpellKeys, spellPrepState } from '../rules/spell-preparation.js';
 import { el, icon, setIconLabel } from './dom.js';
 import { cellText as createCellText } from './cell-text.js';
 import { attachAutocomplete } from './autocomplete.js';
@@ -80,6 +84,11 @@ const TEXT_COLUMNS = [
     ['time', 'Temps d\'incantation'],
     ['range', 'Portée']
 ];
+/** Losange plein fixe : explication (infobulle, et message au toucher sur tablette) */
+const PREP_HELP = {
+    list: "Toujours préparé : votre classe prépare tous les sorts de sa liste. Elle ne change qu'en gagnant un niveau (un sort à la fois).",
+    granted: 'Toujours préparé : donné par votre classe, votre sous-classe, un don ou votre espèce. Il ne compte pas dans vos sorts préparés.'
+};
 const FLAG_COLUMNS = [
     ['c', 'C', 'Concentration'],
     ['r', 'R', 'Rituel'],
@@ -261,6 +270,11 @@ export function initSpells(ctx) {
                 click: () => {
                     const row = spellsOf()[r.index];
                     if (!row || rowLevel(row) === '0') return;
+                    // Toujours préparé : rien à cocher, le toucher (tablette) dit pourquoi
+                    if (r.state === 'list' || r.state === 'granted') {
+                        setStatus(PREP_HELP[r.state]);
+                        return;
+                    }
                     editRow(r.index, { prep: row.prep !== true });
                 }
             }
@@ -425,7 +439,7 @@ export function initSpells(ctx) {
      * @param {{ force: boolean, locked: boolean, entry: boolean, line: number }} options
      *        entry : ligne de saisie ; line : rang de la ligne dans le tableau affiché
      */
-    function writeRow(r, row, { force, locked, entry, line, elements = [], affinity = null }) {
+    function writeRow(r, row, { force, locked, entry, line, elements = [], affinity = null, state = 'unprepared' }) {
         const name = plainText(row.name);
         const known = entry || (!elements.length && !affinity) ? null : findSpellByName(spellsDb, row.name);
         const types = adeptTypes(known, elements);
@@ -440,7 +454,9 @@ export function initSpells(ctx) {
         if (affine) r.affinity.title = affinity.rule;
         const level = rowLevel(row);
         const what = entry ? 'nouveau sort' : name ? `« ${name} »` : `ligne ${line}`;
-        const prepared = row.prep === true;
+        r.state = entry ? null : state;
+        const always = state === 'list' || state === 'granted';
+        const prepared = state === 'prepared' || always;
         const cantrip = level === '0';
 
         r.tr.classList.toggle('spell-entry', entry);
@@ -455,6 +471,7 @@ export function initSpells(ctx) {
         r.prep.classList.toggle('is-entry', entry);
         r.prep.classList.toggle('is-cantrip', !entry && cantrip);
         r.prep.classList.toggle('is-prepared', !entry && !cantrip && prepared);
+        r.prep.classList.toggle('is-always', !entry && !cantrip && always);
         if (entry) {
             // Ligne de saisie : simple repère « + » (décoratif), pas encore de sort à préparer
             r.prep.textContent = '';
@@ -471,6 +488,12 @@ export function initSpells(ctx) {
                 r.prep.removeAttribute('aria-pressed');
                 r.prep.title = 'Sort mineur : toujours disponible';
                 r.prep.setAttribute('aria-label', `Sort mineur ${what} : toujours disponible`);
+            } else if (always) {
+                // Repère fixe : pas un interrupteur (le toucher affiche l'explication)
+                r.prep.textContent = '◆';
+                r.prep.removeAttribute('aria-pressed');
+                r.prep.title = PREP_HELP[state];
+                r.prep.setAttribute('aria-label', `Sort ${what} : toujours préparé`);
             } else {
                 r.prep.textContent = prepared ? '◆' : '◇';
                 r.prep.setAttribute('aria-pressed', String(prepared));
@@ -528,12 +551,18 @@ export function initSpells(ctx) {
         const { order, shown, hasDraft } = spellRowsView(rows, { level: view.level, sort: view.sort, pinned });
         const lines = new Map(order.filter(i => shown.has(i)).map((i, rank) => [i, rank + 1]));
         const elements = adeptElements(character);
-        const affinity = elementalAffinity(derivedOf(character));
+        const derivedNow = derivedOf(character);
+        const affinity = elementalAffinity(derivedNow);
+        // Losange : liste fixe (Barde, Ensorceleur, Occultiste) et sorts donnés, toujours préparés
+        const granted = grantedSpellKeys(character, derivedNow);
+        const wholeList = preparesWholeList(derivedNow.classSlug, derivedNow.subclass);
+        const states = rows.map(row => spellPrepState(row, { wholeList, granted }));
 
         rowEls.forEach((r, i) => {
             const isEntry = r === entry;
             writeRow(r, isEntry ? newSpellRow(EMPTY_SPELL, entryLevel ?? view.level) : rows[i], {
-                force, locked, entry: isEntry, line: isEntry ? lines.size + 1 : lines.get(i) ?? i + 1, elements, affinity
+                force, locked, entry: isEntry, line: isEntry ? lines.size + 1 : lines.get(i) ?? i + 1, elements, affinity,
+                state: isEntry ? null : states[i]
             });
             if (!isEntry) r.tr.hidden = !shown.has(i);
         });
@@ -550,8 +579,7 @@ export function initSpells(ctx) {
             tbody.append(...trs.filter(tr => tr.parentNode !== tbody));
         }
 
-        const derivedNow = derivedOf(character);
-        const counts = spellCounts(rows, view.level, grantedSpellKeys(character, derivedNow));
+        const counts = spellCounts(rows, view.level, granted, wholeList);
         const anySpell = rows.some(hasSpellContent);
         const anyShown = shown.size > 0;
         container.toggleAttribute('data-no-spells', !anySpell);
@@ -767,19 +795,4 @@ export function initSpells(ctx) {
         // Base chargée : les repères « Adepte » et « +Cha » (Affinité élémentaire) peuvent maintenant s'afficher
         else if (adeptElements(store.get()).length || elementalAffinity(derivedOf(store.get()))) render(store.get(), ['dynamic_spells']);
     });
-}
-
-/**
- * Sorts déjà donnés à la fiche (toujours préparés par la classe, sorts de sous-classe atteints,
- * sorts de dons) : notés aussi au grimoire, ils ne comptent pas dans la table de la classe.
- * @returns {Set<string>} noms comparables (spellNameKey)
- */
-function grantedSpellKeys(character, derived) {
-    const names = derived.classSlug ? classAlwaysPreparedSpells(derived.classSlug, derived.level) : [];
-    for (const spell of subclassSpells(derived).reached) names.push(spell.name, spell.vo, ...(spell.aka ?? []));
-    for (const group of featSpellGroups(character, derived)) {
-        for (const spell of group.spells) names.push(spell.name, spell.vo);
-    }
-    names.push(...speciesSpellNames(character, derived));
-    return new Set(names.filter(Boolean).map(spellNameKey));
 }

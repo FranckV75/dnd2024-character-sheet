@@ -397,8 +397,11 @@ export function nextSort(current, col) {
  *          total / visible : sorts renseignés (les lignes vides ne comptent pas)
  * @param {Set<string>|null} [granted] - noms (spellNameKey) des sorts donnés par la classe, la
  *          sous-classe ou un don : notés au grimoire, ils ne comptent ni en préparés ni en mineurs
+ * @param {boolean} [wholeList] - classe à liste fixe (Barde, Ensorceleur, Occultiste : voir
+ *          js/rules/spell-preparation.js) : chaque sort de niveau 1+ noté compte comme préparé,
+ *          losange coché ou non
  */
-export function spellCounts(rows, levelFilter = '', granted = null) {
+export function spellCounts(rows, levelFilter = '', granted = null, wholeList = false) {
     let total = 0;
     let visible = 0;
     let prepared = 0;
@@ -409,7 +412,7 @@ export function spellCounts(rows, levelFilter = '', granted = null) {
         if (matchesLevelFilter(row, levelFilter)) visible++;
         // Sort déjà donné par la classe, la sous-classe ou un don : hors du compte de la table
         if (granted?.has(spellNameKey(row.name))) continue;
-        if (isPrepared(row)) prepared++;
+        if (isPrepared(row) || (wholeList && rowLevel(row) !== '0')) prepared++;
         // Sort mineur : niveau 0 écrit (une case de niveau vide ne compte pas)
         if (parseInt(plainText(row?.lvl), 10) === 0) cantrips++;
     }

@@ -419,6 +419,18 @@
     cursor: default;
 }
 
+/* Toujours préparé (liste fixe du Barde, de l'Ensorceleur, de l'Occultiste ; sort donné) :
+   losange plein, cerclé d'un filet discret, qui ne se coche pas (le toucher l'explique) */
+.spell-prep.is-always {
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px var(--border-soft);
+    cursor: help;
+}
+
+.spell-prep.is-always:hover {
+    background: transparent;
+}
+
 /* Écrans tactiles : zone de toucher agrandie par un calque invisible (taille visible inchangée),
    sans déborder sur les cases voisines : tri = toute la marge de l'en-tête (4 px × 6 px, voir
    .data-table th) ; losange = presque toute la hauteur de la ligne */
