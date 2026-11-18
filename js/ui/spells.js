@@ -521,7 +521,9 @@ export function initSpells(ctx) {
         }, el('span', { class: 'btn-label', text: 'En rituel' }), el('small', { class: 'spell-cast-left', text: '+10 min, sans emplacement' })) : null;
 
         const facts = [`Sort de niveau ${level}`, needsConcentration ? 'Concentration' : '', ritual ? 'Rituel' : ''].filter(Boolean).join(' · ');
-        const missing = ritualOnly ? ritualOnlyText || 'Ce sort se lance seulement en rituel.'
+        // Sort qui se lance seulement en rituel : cas permis, dit en texte normal (pas en rouge)
+        const ritualNote = ritualOnly ? ritualOnlyText || 'Ce sort se lance seulement en rituel.' : '';
+        const missing = ritualOnly ? ''
             : options.length === 0
             ? `Aucun emplacement de niveau ${level} ou plus.`
             : anyLeft ? '' : `Plus aucun emplacement de niveau ${level} ou plus : ils reviennent au repos ${options.every(o => o.pact) ? 'court ou long' : 'long'}.`;
@@ -531,6 +533,7 @@ export function initSpells(ctx) {
             focusField: false,
             body: [
                 el('p', { text: `${facts}. ${anyLeft ? 'Emplacement à utiliser :' : ''}`.trim() }),
+                ritualNote ? el('p', { text: ritualNote }) : null,
                 missing ? el('p', { class: 'spell-cast-missing', text: missing }) : null,
                 levelButtons.length || ritualButton ? el('div', { class: 'spell-cast-levels' }, levelButtons, ritualButton) : null,
                 concentration ? el('label', { class: 'spell-cast-concentration' }, concentration,
