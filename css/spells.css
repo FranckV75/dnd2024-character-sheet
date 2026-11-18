@@ -196,6 +196,106 @@
     display: none;
 }
 
+/* ---------- Vue « au combat » (bouton de la barre ; écran seulement, l'impression garde tout) ---------- */
+
+/* Colonne « Lancer » : seulement au combat, à la place de la colonne Supprimer */
+.spells-table .col-cast {
+    display: none;
+    width: 108px;
+    text-align: center;
+}
+
+/* Tablettes : l'icône seule (nom complet lu par aria-label, « Lancer » au survol), la colonne
+   prend la place de la colonne Supprimer : le tableau garde les largeurs de la vue normale */
+@media (max-width: 1100px) {
+    .spells-table .col-cast {
+        width: 48px;
+    }
+
+    .spell-cast {
+        padding: 0 10px;
+    }
+
+    .spell-cast .btn-label {
+        display: none;
+    }
+}
+
+.spell-cast[hidden] {
+    display: none;
+}
+
+/* Emplacements restants : seulement au combat */
+.slot-left {
+    display: none;
+    margin-left: 2px;
+    color: var(--accent-ink);
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.slot-left.is-empty {
+    color: var(--ko);
+}
+
+@media screen {
+    .spells-body.is-combat .spells-table tr.is-out-of-combat,
+    .spells-body.is-combat .spells-table .col-del,
+    .spells-body.is-combat .add-row {
+        display: none;
+    }
+
+    .spells-body.is-combat .spells-table .col-cast {
+        display: table-cell;
+    }
+
+    .spells-body.is-combat .slot-left {
+        display: inline;
+    }
+
+    /* Emplacements bien en vue : cadre plein */
+    .spells-body.is-combat .spell-slots {
+        border-style: solid;
+        border-color: var(--border);
+    }
+}
+
+/* Fenêtre « Lancer » : un bouton par niveau d'emplacement (reste N dessous) */
+.spell-cast-levels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.modal .btn.spell-cast-level {
+    flex-direction: column;
+    gap: 3px;
+    min-width: 104px;
+    min-height: 44px;
+}
+
+.spell-cast-left {
+    font-family: var(--font-text);
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
+.spell-cast-missing {
+    color: var(--ko);
+}
+
+.spell-cast-concentration {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0 8px;
+    cursor: pointer;
+}
+
 /* ---------- Emplacements de sorts ---------- */
 
 .spell-slots {

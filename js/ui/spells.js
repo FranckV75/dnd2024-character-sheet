@@ -12,6 +12,10 @@
 //    réservés à l'édition. Barde, Ensorceleur, Occultiste (liste fixe) et sorts donnés par la
 //    classe, la sous-classe, un don ou l'espèce : losange plein fixe « toujours préparé », calculé
 //    à l'affichage (js/rules/spell-preparation.js), jamais écrit dans la fiche.
+//  - Vue « au combat » (bouton de la barre, retenu sur l'appareil) : seulement les sorts mineurs,
+//    les sorts préparés (même d'office) et les blocs de sorts donnés, les emplacements restants en
+//    clair et un bouton « Lancer » qui coche un emplacement (et propose la Concentration).
+//    Sur écran seulement : l'impression garde tout le grimoire.
 //  - Seuls les sorts renseignés sont affichés, suivis d'UNE ligne de saisie : les lignes
 //    vides d'une sauvegarde restent dans la fiche, telles quelles, sans être affichées.
 //    La ligne de saisie n'existe pas dans la fiche : la première saisie qui a du contenu
@@ -55,14 +59,17 @@ import { FEAT_SLOT_ORDER } from '../state/schema.js';
 import { ABILITY_IDS } from '../data/constants.js';
 import { loadSpells } from '../data/spells.js';
 import { classSpellCounts } from '../rules/class-progression.js';
-import { preparesWholeList, grantedSpellKeys, spellPrepState } from '../rules/spell-preparation.js';
+import {
+    preparesWholeList, grantedSpellKeys, spellPrepState, inCombatView, isCastable, castSlotOptions, useSpellSlot
+} from '../rules/spell-preparation.js';
+import { concentrationSpell, setConcentrationPatch } from '../rules/concentration.js';
 import { el, icon, setIconLabel } from './dom.js';
 import { cellText as createCellText } from './cell-text.js';
 import { attachAutocomplete } from './autocomplete.js';
-import { confirmModal } from './modal.js';
+import { confirmModal, openModal } from './modal.js';
 import { isLocked } from './lock.js';
 import { motionOff } from './motion-pref.js';
-import { readGrimoireOpen, saveGrimoireOpen } from './spells/prefs.js';
+import { readGrimoireOpen, saveGrimoireOpen, readCombatView } from './spells/prefs.js';
 import { createSpellTooltip, adeptTypes, adeptRule, affinityApplies } from './spells/tooltip.js';
 import { elementalAffinity } from '../rules/subclass-combat.js';
 import { createSpellFilters } from './spells/filters.js';
@@ -112,7 +119,7 @@ export function initSpells(ctx) {
     const container = root.querySelector('#spells-feature');
     if (!container) return;
 
-    const view = { level: '', sort: { col: null, dir: 'asc' } };
+    const view = { level: '', sort: { col: null, dir: 'asc' }, combat: readCombatView() };
     let grimoireOpen = readGrimoireOpen();
     let spellsDb = [];
     // Un élément par ligne de dynamic_spells (même indice), plus la ligne de saisie, toujours
@@ -190,7 +197,8 @@ export function initSpells(ctx) {
             entryLevel = null; // la ligne de saisie reprend le niveau du filtre
             tooltip.hide();
             render(store.get(), null, { structural: true });
-        }
+        },
+        onCombat: () => render(store.get(), null, { structural: true })
     });
     const { countOut } = filters;
 
@@ -236,6 +244,7 @@ export function initSpells(ctx) {
                 el('abbr', { title: 'Rituel', text: 'R' }), ' / ',
                 el('abbr', { title: 'Composante matérielle', text: 'M' })),
             el('th', { scope: 'col', class: 'col-note', text: 'Notes' }),
+            el('th', { scope: 'col', class: 'col-cast', 'aria-label': 'Lancer' }),
             el('th', { scope: 'col', class: 'col-del edit-only', 'aria-label': 'Supprimer' }))),
         tbody);
     const tableScroll = el('div', { class: 'table-scroll spells-scroll' }, table);
@@ -314,6 +323,12 @@ export function initSpells(ctx) {
             return el('label', { class: 'spell-flag', title }, r.flags[key], el('span', { 'aria-hidden': 'true', text: letter }));
         });
 
+        // Vue « au combat » : lancer le sort (contrôle de jeu, utilisable verrouillé)
+        r.cast = el('button', {
+            type: 'button', class: 'btn-chip spell-cast', hidden: true, title: "Lancer : choisir l'emplacement à cocher",
+            on: { click: () => castRow(r) }
+        }, icon('sparkle'), el('span', { class: 'btn-label', text: 'Lancer' }));
+
         r.del = el('button', {
             type: 'button', class: 'btn-icon is-danger spell-del', title: 'Supprimer le sort', 'aria-label': 'Supprimer le sort',
             on: { click: () => deleteRow(r) }
@@ -355,6 +370,7 @@ export function initSpells(ctx) {
             el('td', { class: 'col-range' }, r.texts.range),
             el('td', { class: 'col-crm' }, el('span', { class: 'spell-flags' }, flagLabels)),
             el('td', { class: 'col-note' }, r.note),
+            el('td', { class: 'col-cast' }, r.cast),
             el('td', { class: 'col-del edit-only' }, r.del));
 
         // La ligne reste affichée (et à sa place) tant que le focus y est ; le filtre de niveau
@@ -415,6 +431,77 @@ export function initSpells(ctx) {
         const target = body.hidden ? toggleBtn
             : next ? (next.tr.classList.contains('spell-entry') ? next.name : next.del) : addBtn;
         target.focus();
+    }
+
+    /**
+     * Bouton « Lancer » (vue au combat) : niveaux d'emplacement possibles (niveau du sort et
+     * au-dessus, emplacements de pacte compris), lancer en rituel (sans emplacement) pour un sort
+     * marqué R, Concentration proposée pour un sort marqué C. Choisir un niveau coche un emplacement
+     * de ce niveau : le décocher suffit à annuler.
+     */
+    function castRow(r) {
+        const row = spellsOf()[r.index];
+        if (!row || !isCastable(r.state)) return;
+        const character = store.get();
+        const d = derivedOf(character);
+        const name = plainText(row.name) || 'ce sort';
+        const level = Number(rowLevel(row));
+        const options = castSlotOptions(level, d.spellSlots, d.classSlug, slotStateOf(character));
+        const current = concentrationSpell(character);
+        const concentration = row.c === true && current !== plainText(row.name).slice(0, 80)
+            ? el('input', { type: 'checkbox', class: 'round-check', checked: true })
+            : null;
+        let close = () => {};
+
+        const finish = (patch, message) => {
+            const now = store.get();
+            if (concentration?.checked) Object.assign(patch, setConcentrationPatch(now, name));
+            if (Object.keys(patch).length) store.update(patch);
+            setStatus(message);
+            close();
+        };
+        const castAt = (slotLevel) => {
+            const now = store.get();
+            const next = useSpellSlot(slotStateOf(now), slotLevel, derivedOf(now).spellSlots[slotLevel] ?? 0);
+            if (!next) {
+                setStatus(`Plus aucun emplacement de niveau ${slotLevel}.`);
+                close();
+                return;
+            }
+            finish({ spell_slots_state: next },
+                `${name} : emplacement de niveau ${slotLevel} coché. Pour annuler, décochez-le.`);
+        };
+
+        const anyLeft = options.some(option => option.left > 0);
+        const levelButtons = options.map(option => el('button', {
+            type: 'button', class: 'btn spell-cast-level', disabled: option.left === 0,
+            on: { click: () => castAt(option.level) }
+        }, el('span', { class: 'btn-label', text: `${option.pact ? 'Pacte · ' : ''}Niveau ${option.level}` }),
+        el('small', { class: 'spell-cast-left', text: option.left === 0 ? 'plus aucun' : `reste ${option.left}` })));
+        const ritualButton = row.r === true ? el('button', {
+            type: 'button', class: 'btn spell-cast-level',
+            on: { click: () => finish({}, `${name} lancé en rituel : 10 minutes de plus, aucun emplacement dépensé.`) }
+        }, el('span', { class: 'btn-label', text: 'En rituel' }), el('small', { class: 'spell-cast-left', text: '+10 min, sans emplacement' })) : null;
+
+        const facts = [`Sort de niveau ${level}`, row.c === true ? 'Concentration' : '', row.r === true ? 'Rituel' : ''].filter(Boolean).join(' · ');
+        const missing = options.length === 0
+            ? `Aucun emplacement de niveau ${level} ou plus.`
+            : anyLeft ? '' : `Plus aucun emplacement de niveau ${level} ou plus : ils reviennent au repos ${options.every(o => o.pact) ? 'court ou long' : 'long'}.`;
+        close = openModal({
+            title: `Lancer ${name}`,
+            icon: 'sparkle',
+            focusField: false,
+            body: [
+                el('p', { text: `${facts}. ${anyLeft ? 'Emplacement à utiliser :' : ''}`.trim() }),
+                missing ? el('p', { class: 'spell-cast-missing', text: missing }) : null,
+                levelButtons.length || ritualButton ? el('div', { class: 'spell-cast-levels' }, levelButtons, ritualButton) : null,
+                concentration ? el('label', { class: 'spell-cast-concentration' }, concentration,
+                    el('span', { text: current ? `Me concentrer sur ce sort (met fin à ${current})` : 'Me concentrer sur ce sort (menu Concentration)' })) : null,
+                anyLeft ? el('p', { class: 'muted', text: 'Pour annuler : décochez l\'emplacement dans le grimoire.' }) : null
+            ].filter(Boolean),
+            actions: [{ label: 'Annuler' }]
+        });
+        [...levelButtons, ritualButton].find(button => button && !button.disabled)?.focus();
     }
 
     function setValue(input, value, force) {
@@ -508,6 +595,8 @@ export function initSpells(ctx) {
         r.note.setAttribute('aria-label', `Notes, ${what}`);
         for (const [key, , title] of FLAG_COLUMNS) r.flags[key].setAttribute('aria-label', `${title}, ${what}`);
         r.del.setAttribute('aria-label', `Supprimer le sort ${what}`);
+        r.cast.hidden = entry || !isCastable(state);
+        r.cast.setAttribute('aria-label', `Lancer le sort ${what}`);
         r.del.disabled = entry;
         applyRowLock(r, locked);
     }
@@ -558,17 +647,26 @@ export function initSpells(ctx) {
         const wholeList = preparesWholeList(derivedNow.classSlug, derivedNow.subclass);
         const states = rows.map(row => spellPrepState(row, { wholeList, granted }));
 
+        // Vue « au combat » : les sorts de niveau 1+ non préparés se retirent de l'écran (classe
+        // CSS, l'impression garde tout) ; pas la ligne en cours de saisie, qui ne disparaît pas
+        // sous les doigts (son losange vient d'être décoché, par exemple)
+        const outOfCombat = (i) => view.combat && !inCombatView(states[i]) && !pinned.includes(i);
+
         rowEls.forEach((r, i) => {
             const isEntry = r === entry;
             writeRow(r, isEntry ? newSpellRow(EMPTY_SPELL, entryLevel ?? view.level) : rows[i], {
                 force, locked, entry: isEntry, line: isEntry ? lines.size + 1 : lines.get(i) ?? i + 1, elements, affinity,
                 state: isEntry ? null : states[i]
             });
-            if (!isEntry) r.tr.hidden = !shown.has(i);
+            if (!isEntry) {
+                r.tr.hidden = !shown.has(i);
+                r.tr.classList.toggle('is-out-of-combat', outOfCombat(i));
+            }
         });
         // Une seule ligne vide à l'écran : la ligne de saisie s'efface pendant qu'une ligne
-        // vidée est encore en cours de saisie ; aucune saisie possible verrouillé
-        entry.tr.hidden = locked || hasDraft;
+        // vidée est encore en cours de saisie ; aucune saisie possible verrouillé, ni au combat
+        entry.tr.hidden = locked || hasDraft || view.combat;
+        body.classList.toggle('is-combat', view.combat);
 
         const trs = [...order.map(i => rowEls[i].tr), entry.tr];
         if (force || structural || (countChanged && !creatingFromEntry)) {
@@ -581,7 +679,7 @@ export function initSpells(ctx) {
 
         const counts = spellCounts(rows, view.level, granted, wholeList);
         const anySpell = rows.some(hasSpellContent);
-        const anyShown = shown.size > 0;
+        const anyShown = [...shown].some(i => !outOfCombat(i));
         container.toggleAttribute('data-no-spells', !anySpell);
         tableScroll.hidden = !anyShown && entry.tr.hidden;
         emptyMain.textContent = '';
@@ -595,6 +693,9 @@ export function initSpells(ctx) {
                 ? 'Aucun autre sort noté.'
                 : locked ? 'Aucun sort dans le grimoire.' : 'Aucun sort pour l\'instant.';
             if (!locked) emptyHint.textContent = ' Tapez un nom dans la ligne ci-dessus : la saisie propose les sorts du manuel.';
+        } else if (!anyShown && view.combat) {
+            emptyMain.textContent = view.level === '' ? 'Aucun sort mineur ni sort préparé.'
+                : view.level === '0' ? 'Aucun sort mineur.' : `Aucun sort préparé de niveau ${view.level}.`;
         } else if (!anyShown) {
             emptyMain.textContent = view.level === '0' ? 'Aucun sort mineur.' : `Aucun sort de niveau ${view.level}.`;
         }

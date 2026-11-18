@@ -4,6 +4,7 @@
 // Cases cochées = emplacements utilisés : contrôle de JEU (utilisable verrouillé). Les boutons
 // + / − du nombre d'emplacements sont réservés à l'édition. État enregistré dans
 // spell_slots_state ; règles (nombres du manuel, ajustements) dans js/rules/spells.js.
+// Vue « au combat » : le nombre d'emplacements restants s'affiche à côté des cases (spells.css).
 // =============================================================================
 
 import { derivedOf } from '../derived.js';
@@ -47,6 +48,7 @@ export function createSpellSlots({ store, view }) {
             el('span', { class: 'label', text: info.label }),
             el('span', { class: 'slot-boxes' }, boxes,
                 max === 0 ? el('span', { class: 'slot-none', text: 'aucun' }) : null),
+            max > 0 ? el('span', { class: 'slot-left' }) : null,
             el('button', {
                 type: 'button', class: 'btn-icon edit-only',
                 'aria-label': `Retirer un emplacement de niveau ${info.level}`, disabled: max === 0,
@@ -98,6 +100,15 @@ export function createSpellSlots({ store, view }) {
         }
         for (const group of slotsBox.querySelectorAll('.slot-group')) {
             group.classList.toggle('is-active', group.dataset.level === view.level);
+        }
+        // Emplacements restants (affichés dans la vue « au combat »)
+        for (const v of views) {
+            const left = slotsBox.querySelector(`.slot-group[data-level="${v.info.level}"] .slot-left`);
+            if (!left) continue;
+            const count = v.max - v.used;
+            const text = count === 0 ? 'plus aucun' : `reste ${count}`;
+            if (left.textContent !== text) left.textContent = text;
+            left.classList.toggle('is-empty', count === 0);
         }
     }
 

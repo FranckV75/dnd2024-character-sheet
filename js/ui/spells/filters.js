@@ -1,21 +1,25 @@
 // =============================================================================
-// SPELLS/FILTERS.JS - Barre du grimoire : filtre de niveau, liste de sorts de l'auto-complétion,
-// bouton des infobulles, compteur de sorts
+// SPELLS/FILTERS.JS - Barre du grimoire : filtre de niveau, vue « au combat », liste de sorts de
+// l'auto-complétion, bouton des infobulles, compteur de sorts
 //
-// Le filtre de niveau ne change que l'affichage (view.level) ; la liste de sorts choisie est
-// enregistrée dans la fiche (spell_class_filter, clé v3).
+// Le filtre de niveau et la vue « au combat » ne changent que l'affichage (view.level,
+// view.combat ; la vue au combat est retenue sur cet appareil, spells/prefs.js) ; la liste de
+// sorts choisie est enregistrée dans la fiche (spell_class_filter, clé v3).
 // =============================================================================
 
 import { SPELL_CLASS_OPTIONS, SPELL_LEVELS, effectiveSpellClass } from '../../rules/spells.js';
 import { el, icon } from '../dom.js';
+import { saveCombatView } from './prefs.js';
 
 /**
- * @param {{ store: Object, view: { level: string }, tooltip: Object, onLevel: () => void }} deps
- *   onLevel : appelé après le choix d'un niveau (view.level déjà changé), pour réafficher
+ * @param {{ store: Object, view: { level: string, combat: boolean }, tooltip: Object, onLevel: () => void,
+ *   onCombat: () => void }} deps
+ *   onLevel : appelé après le choix d'un niveau (view.level déjà changé), pour réafficher ;
+ *   onCombat : de même après la bascule de la vue « au combat » (view.combat déjà changé)
  * @returns {{ toolbar: HTMLElement, countOut: HTMLOutputElement, renderChips(): void,
  *   renderClassFilter(character: Object, d: Object): void }}
  */
-export function createSpellFilters({ store, view, tooltip, onLevel }) {
+export function createSpellFilters({ store, view, tooltip, onLevel, onCombat }) {
     const levelChips = ['', ...SPELL_LEVELS].map(level => el('button', {
         type: 'button', class: 'btn-chip', 'data-level': level, 'aria-pressed': 'false',
         'aria-label': level === '' ? 'Tous les niveaux' : level === '0' ? 'Sorts mineurs (niveau 0)' : `Niveau ${level}`,
@@ -27,6 +31,20 @@ export function createSpellFilters({ store, view, tooltip, onLevel }) {
             }
         }
     }));
+
+    // Vue « au combat » : contrôle d'affichage, utilisable fiche verrouillée
+    const combatBtn = el('button', {
+        type: 'button', class: 'btn-chip spell-combat-toggle', 'aria-pressed': String(view.combat),
+        title: "N'afficher que les sorts mineurs, les sorts préparés et les sorts donnés, avec un bouton « Lancer »",
+        on: {
+            click: () => {
+                view.combat = !view.combat;
+                saveCombatView(view.combat);
+                tooltip.hide();
+                onCombat();
+            }
+        }
+    }, icon('swords'), el('span', { class: 'btn-label', text: 'Au combat' }));
 
     const classSelect = el('select', {
         id: 'spell-class-filter', class: 'input spell-class-select',
@@ -51,6 +69,7 @@ export function createSpellFilters({ store, view, tooltip, onLevel }) {
 
     const toolbar = el('div', { class: 'spells-toolbar' },
         el('div', { class: 'spell-level-chips btn-segments', role: 'group', 'aria-label': 'Filtrer les sorts par niveau' }, levelChips),
+        combatBtn,
         el('div', { class: 'spell-class-filter' },
             el('label', { for: 'spell-class-filter', text: 'Liste de sorts' }),
             classSelect),
@@ -59,6 +78,7 @@ export function createSpellFilters({ store, view, tooltip, onLevel }) {
 
     function renderChips() {
         for (const chip of levelChips) chip.setAttribute('aria-pressed', String(chip.dataset.level === view.level));
+        combatBtn.setAttribute('aria-pressed', String(view.combat));
     }
 
     function renderClassFilter(character, d) {
