@@ -5,8 +5,9 @@
 // publiques) : un Guerrier de niveau 3, simple, et une Magicienne de niveau 5, avec ses sorts.
 // Chaque fiche est une sauvegarde partielle au format habituel (mêmes clés que la v3) : elle est
 // complétée comme un fichier importé (js/state/examples.js) avant d'être ouverte.
-// Les lignes d'armes, d'armures et de sorts sont celles que remplit l'auto-complétion (noms du
-// manuel français, data/spells.json). tests/examples.test.js vérifie leur cohérence avec les
+// Les lignes d'armes et de sorts sont celles que remplit l'auto-complétion (js/data/dd-rules.js,
+// data/spells.json) ; l'équipement et les armures suivent les noms du manuel français de 2024
+// (paquetage, grimoire, armure du mage). tests/examples.test.js vérifie leur cohérence avec les
 // règles de 2024 (PV, CA, maîtrises, Expertise, emplacements, sorts préparés, grimoire).
 //  - id : identifiant stable ; title : nom du personnage ; subtitle : classe, niveau, espèce,
 //    historique ; pitch : une phrase pour le joueur, dans la fenêtre de choix.
@@ -65,7 +66,7 @@ export const EXAMPLE_CHARACTERS = Object.freeze([
             ],
             profs_tools: "Dés",
             langs: "Commun, nain, orc",
-            equipment: "Sac d'explorateur, 4 javelines, arc court et 20 flèches, uniforme de voyage, symbole de sa compagnie.",
+            equipment: "Paquetage d'exploration souterraine, 4 javelines, arc court et 20 flèches, uniforme de voyage, symbole de sa compagnie.",
             gp: "25",
             sp: "8",
             appearance: "Grand, épaules larges, une cicatrice au menton. Porte toujours son bouclier dans le dos.",
@@ -117,7 +118,7 @@ export const EXAMPLE_CHARACTERS = Object.freeze([
                 { name: "Dague", prop: "Finesse, Légère, Lancer (6/18 m)", prof: "", ammo: "", note: "", category: "Courante", atkKey: "DEX", baseDmg: "1d4 perf.", weaponConfig: "" }
             ],
             dynamic_armors: [
-                { name: "Armure de mage (sort)", type: "Bonus", ca: "+3", str: "", stealth: false, weight: "", price: "", comment: "À cocher quand le sort est lancé (8 h)", equipped: false }
+                { name: "Armure du mage (sort)", type: "Bonus", ca: "+3", str: "", stealth: false, weight: "", price: "", comment: "À cocher quand le sort est lancé (8 h)", equipped: false }
             ],
             dynamic_spells: [
                 { lvl: "0", name: "Trait de feu", time: "Action", range: "36 m", note: "Fire Bolt", c: false, r: false, m: false, prep: false, school: "Évocation" },
@@ -145,7 +146,7 @@ export const EXAMPLE_CHARACTERS = Object.freeze([
             spell_slots_state: { "1": { used: 1 } },
             profs_tools: "Matériel de calligraphe",
             langs: "Commun, elfique, draconique",
-            equipment: "Livre de sorts, bâton (focaliseur arcanique), sacoche à composantes, sac d'érudit, matériel de calligraphe, robe.",
+            equipment: "Grimoire, bâton de combat (focaliseur arcanique), sacoche à composantes, paquetage d'érudit, matériel de calligraphe, robe.",
             gp: "84",
             sp: "12",
             appearance: "Mince, cheveux roux noués, doigts tachés d'encre. Un petit carnet dépasse toujours de sa poche.",

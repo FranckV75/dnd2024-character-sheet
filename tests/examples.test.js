@@ -203,10 +203,22 @@ describe('Personnages d\'exemple : cohérence avec les règles de 2024', () => {
         assert.deepEqual(d.spellcasting, { ability: 'int', dc: 15, attack: 7 });
         assert.deepEqual(d.spellSlots, { 1: 4, 2: 3, 3: 2 });
         assert.deepEqual(slotView(character.spell_slots_state, '1', 4), { max: 4, used: 1 });
-        assert.equal(d.armorClass.value, 12, 'sans armure ; la ligne « Armure de mage » n\'est pas cochée');
+        assert.equal(d.armorClass.value, 12, 'sans armure ; la ligne « Armure du mage » n\'est pas cochée');
         const cast = structuredClone(character);
         cast.dynamic_armors[0].equipped = true;
-        assert.equal(deriveCharacter(cast).armorClass.value, 15, 'Armure de mage lancée : 13 + Dex');
+        assert.equal(deriveCharacter(cast).armorClass.value, 15, 'Armure du mage lancée : 13 + Dex');
+    });
+
+    test('Équipement : noms du manuel français de 2024 (paquetage, grimoire, armure du mage)', () => {
+        const fighter = byId(FIGHTER);
+        const wizard = byId(WIZARD);
+        assert.match(fighter.equipment, /^Paquetage d'exploration souterraine/);
+        assert.match(wizard.equipment, /^Grimoire, bâton de combat/);
+        assert.match(wizard.equipment, /paquetage d'érudit/);
+        assert.equal(wizard.dynamic_armors[0].name, 'Armure du mage (sort)');
+        for (const text of [fighter.equipment, wizard.equipment]) {
+            assert.doesNotMatch(text, /sac d'|livre de sorts/i, 'anciens noms');
+        }
     });
 
     test('Magicienne : Érudition (niveau 2), l\'Expertise dans une compétence maîtrisée de la liste du Magicien', () => {
