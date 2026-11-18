@@ -4,6 +4,8 @@
 //  - Repli : sur tablette (≤ 1100 px, ou écran tactile ≤ 1400 px en paysage), la barre démarre repliée sur un seul bouton
 //    « Gestion » qui déplie les commandes (affichage et compte compris).
 //  - Groupe « Fiche » : verrou (lock.js), puis nouvelle fiche, import, export, impression.
+//  - Groupe « Découvrir » (#toolbar-help), sous le groupe Fiche : « Essayer un personnage
+//    d'exemple » (examples.js ; masqué fiche verrouillée, il remplace la fiche).
 //  - Groupe « Affichage » (#view-controls) : thème, mode cinéma et animations, avant « Fonds »
 //    (gallery.js). « Animations » coupe tout ce qui bouge dans la fiche (motion-pref.js) : choix
 //    retenu sur l'appareil, jamais dans la sauvegarde.
@@ -22,6 +24,7 @@ import { isLocked, toggleLocked } from './lock.js';
 import { openModal, confirmModal } from './modal.js';
 import { createDefaultCharacter } from '../state/schema.js';
 import { parseCharacterFile, serializeCharacter, exportFileName, STORAGE_KEYS } from '../state/persistence.js';
+import { openExamples, EXAMPLES_TITLE } from './examples.js';
 
 /** Écrans où la barre démarre repliée : tablettes (même seuil que sheet-tablet.css), et tablettes tactiles
  *  en paysage (Lenovo 1280 px, iPad 1180 px). Même condition que css/toolbar.css. */
@@ -40,7 +43,7 @@ export function initToolbar({ store, setStatus }) {
     // ---------------------------------------------------------------- Boutons
     const toggleButton = el('button', {
         type: 'button', class: 'btn toolbar-toggle', id: 'btn-toolbar-toggle',
-        'aria-expanded': 'true', 'aria-controls': 'toolbar-panel view-group account-group',
+        'aria-expanded': 'true', 'aria-controls': 'toolbar-panel toolbar-help view-group account-group',
         on: { click: () => setCollapsed(!bar.classList.contains(COLLAPSED_CLASS)) }
     });
     setIconLabel(toggleButton, 'menu', 'Gestion');
@@ -89,6 +92,13 @@ export function initToolbar({ store, setStatus }) {
     });
     setIconLabel(printButton, 'printer', 'Imprimer');
 
+    const exampleButton = el('button', {
+        type: 'button', class: 'btn edit-only', id: 'btn-example',
+        'aria-haspopup': 'dialog', title: EXAMPLES_TITLE,
+        on: { click: () => openExamples({ store, setStatus }) }
+    });
+    setIconLabel(exampleButton, 'user', "Essayer un personnage d'exemple");
+
     const themeButton = el('button', {
         type: 'button', class: 'btn btn-icon-only', id: 'btn-theme',
         on: { click: toggleTheme }
@@ -99,10 +109,15 @@ export function initToolbar({ store, setStatus }) {
         lockButton,
         el('div', { class: 'btn-group' }, newButton, importButton, exportButton, printButton));
 
+    // Pour découvrir la fiche : sous les commandes de la fiche (css/toolbar.css)
+    const helpGroup = el('div', { class: 'app-bar-group toolbar-help', id: 'toolbar-help', role: 'group', 'aria-label': 'Découvrir la fiche' },
+        el('div', { class: 'btn-group' }, exampleButton));
+
     host.replaceChildren(
         toggleButton,
         el('span', { class: 'app-bar-title', text: 'Gestion' }),
-        panel
+        panel,
+        helpGroup
     );
 
     // Affichage : thème et cinéma ouvrent le groupe (gallery.js y ajoute « Fonds »)

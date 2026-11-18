@@ -14,6 +14,7 @@ import { characterName } from '../js/state/persistence.js';
 import { migrateCharacter } from '../js/state/migrate.js';
 import { createDefaultCharacter } from '../js/state/schema.js';
 import { fakeSupabase } from './helpers/fake-supabase.js';
+import { exampleCharacter, EXAMPLE_SOURCE } from '../js/state/examples.js';
 
 const U = { id: 'user-1', email: 'joueur@example.com' };
 const OTHER = { id: 'user-2', email: 'autre@example.com' };
@@ -859,5 +860,154 @@ describe('Retour à une sauvegarde de secours (source « snapshot »)', () => {
         await t.sync.setUser(U);
         t.store.replace(sheet('Iria'), { source: 'snapshot' });
         assert.equal(t.sync.getState().name, '');
+    });
+});
+
+describe('Personnage d\'exemple (source « example »)', () => {
+    const example = () => exampleCharacter('guerrier-3');
+    const openExample = (t, character = example()) => t.store.replace(character, { source: EXAMPLE_SOURCE });
+
+    test('Fiche liée et à jour : l\'exemple ne lit ni n\'écrit rien en ligne, le personnage en ligne est intact', async () => {
+        const online = sheet('Korgul', { char_level: '5', hp_current: '31' });
+        const db = fakeSupabase([row('Korgul', online, T0)]);
+        const t = tab({ db, storage: linkedStorage(online), character: online });
+        await t.sync.setUser(U);
+        const before = db.calls.length;
+        openExample(t);
+        await t.runTimers();
+        await t.sync.check();                            // retour sur l'onglet / réseau revenu
+        await t.sync.flush();                            // page masquée
+        assert.deepEqual(db.calls.slice(before), [], 'aucune requête en ligne');
+        assert.deepEqual(t.asked, []);
+        assert.equal(db.table.length, 1);
+        assert.deepEqual(cloud(db, 'Korgul').data, JSON.parse(JSON.stringify(online)));
+        assert.equal(Date.parse(cloud(db, 'Korgul').updated_at), Date.parse(T0));
+        const state = t.sync.getState();
+        assert.equal(state.name, '', 'fiche non liée');
+        assert.equal(state.detached, true, 'gardée dans ce navigateur seulement');
+        assert.equal(state.dirty, false);
+    });
+
+    test('L\'exemple modifié, puis renommé comme un personnage en ligne : toujours rien d\'envoyé', async () => {
+        const online = sheet('Korgul', { char_level: '5' });
+        const db = fakeSupabase([row('Korgul', online, T0)]);
+        const t = tab({ db, storage: linkedStorage(online), character: online });
+        await t.sync.setUser(U);
+        openExample(t);
+        t.store.update({ hp_current: '3' });
+        t.store.update({ char_name: 'Korgul' });
+        await t.sync.nameCommitted();
+        t.store.update({ hp_current: '2' });
+        await t.runTimers();
+        await t.sync.check();
+        assert.deepEqual(writes(db), []);
+        assert.deepEqual(t.asked, []);
+        assert.equal(cloud(db, 'Korgul').data.char_level, '5');
+    });
+
+    test('Modification pas encore envoyée de la fiche remplacée : l\'envoi est abandonné, rien n\'est écrasé', async () => {
+        const online = sheet('Korgul', { hp_current: '31' });
+        const db = fakeSupabase([row('Korgul', online, T0)]);
+        const t = tab({ db, storage: linkedStorage(online), character: online });
+        await t.sync.setUser(U);
+        t.store.update({ hp_current: '9' });             // envoi différé en attente
+        openExample(t);
+        await t.runTimers();
+        assert.deepEqual(writes(db), []);
+        assert.equal(cloud(db, 'Korgul').data.hp_current, '31');
+        assert.equal(t.sync.getState().detached, true);
+    });
+
+    test('Exemple ouvert pendant un envoi en cours : la réponse ne lie pas l\'exemple au personnage', async () => {
+        const online = sheet('Korgul', { hp_current: '31' });
+        let t;
+        let opened = false;
+        const db = fakeSupabase([row('Korgul', online, T0)], {
+            onWrite: () => {
+                if (opened) return;
+                opened = true;
+                openExample(t);
+            }
+        });
+        t = tab({ db, storage: linkedStorage(online), character: online });
+        await t.sync.setUser(U);
+        t.store.update({ hp_current: '9' });
+        await t.runTimers();                             // l'envoi part ; l'exemple s'ouvre pendant la requête
+        await t.runTimers();
+        // La modification de Korgul, déjà partie, est arrivée en ligne ; l'exemple n'y est pas
+        assert.deepEqual(writes(db).map(c => c.op), ['update']);
+        assert.equal(cloud(db, 'Korgul').data.hp_current, '9');
+        assert.equal(cloud(db, 'Korgul').data.char_name, 'Korgul');
+        assert.equal(db.table.length, 1);
+        assert.equal(t.sync.getState().name, '');
+        assert.equal(t.sync.getState().detached, true);
+        assert.equal(t.store.get().char_name, 'Aldric Pierrefeu');
+    });
+
+    test('Sans connexion puis connexion : l\'exemple n\'est pas ajouté au compte, et n\'est pas remplacé', async () => {
+        const db = fakeSupabase([row('Korgul', sheet('Korgul'), T0)]);
+        const t = tab({ db });
+        openExample(t);
+        await t.sync.setUser(U);
+        await t.runTimers();
+        assert.deepEqual(writes(db), []);
+        assert.equal(t.store.get().char_name, 'Aldric Pierrefeu', 'pas remplacé par le dernier personnage en ligne');
+        assert.equal(t.sync.getState().detached, true);
+    });
+
+    test('Rechargement de la page : l\'exemple reste hors ligne', async () => {
+        const db = fakeSupabase([row('Korgul', sheet('Korgul'), T0)]);
+        const t = tab({ db, storage: linkedStorage(sheet('Korgul')), character: sheet('Korgul') });
+        await t.sync.setUser(U);
+        openExample(t);
+        // Enregistrement automatique de main.js (fiche et base ensemble)
+        t.storage.set(CHAR_KEY, JSON.stringify(t.store.get()));
+        t.storage.set(SYNC_KEY, JSON.stringify(t.sync.getBase()));
+        const again = t.reload();
+        await again.sync.setUser(U);
+        await again.runTimers();
+        assert.deepEqual(writes(db), []);
+        assert.equal(again.sync.getState().detached, true);
+        assert.equal(again.sync.getState().name, '');
+    });
+
+    test('« Enregistrer en ligne » : l\'exemple est créé dans le compte, sans toucher aux autres personnages', async () => {
+        const db = fakeSupabase([row('Korgul', sheet('Korgul'), T0)]);
+        const t = tab({ db, storage: linkedStorage(sheet('Korgul')), character: sheet('Korgul') });
+        await t.sync.setUser(U);
+        openExample(t);
+        await t.sync.reattach();
+        assert.deepEqual(writes(db).map(c => c.op), ['insert']);
+        assert.equal(t.sync.getState().name, 'Aldric Pierrefeu');
+        assert.equal(t.sync.getState().detached, false);
+        assert.equal(Date.parse(cloud(db, 'Korgul').updated_at), Date.parse(T0));
+        assert.equal(cloud(db, 'Aldric Pierrefeu').data.char_level, '3');
+    });
+
+    test('« Enregistrer en ligne », le compte ayant déjà un personnage différent du même nom : question, rien d\'écrasé sans accord', async () => {
+        const kept = { ...example(), hp_current: '5', char_level: '4' };
+        const db = fakeSupabase([row('Aldric Pierrefeu', kept, T0)]);
+        const t = tab({ db });
+        await t.sync.setUser(U);
+        openExample(t);
+        await t.sync.reattach();
+        assert.deepEqual(t.asked.map(a => a.kind), ['exists']);
+        assert.deepEqual(writes(db), []);
+        assert.equal(cloud(db, 'Aldric Pierrefeu').data.char_level, '4');
+        assert.equal(t.sync.getState().detached, true);
+    });
+
+    test('Retour à la fiche précédente (« Revenir à… ») : reliée sans question si elle n\'a pas changé en ligne', async () => {
+        const online = sheet('Korgul', { hp_current: '31' });
+        const db = fakeSupabase([row('Korgul', online, T0)]);
+        const t = tab({ db, storage: linkedStorage(online), character: online });
+        await t.sync.setUser(U);
+        openExample(t);
+        t.store.replace(online, { source: 'snapshot' });
+        await t.runTimers();
+        assert.deepEqual(t.asked, []);
+        assert.deepEqual(writes(db), []);
+        assert.equal(t.sync.getState().name, 'Korgul');
+        assert.equal(t.sync.getState().detached, false);
     });
 });

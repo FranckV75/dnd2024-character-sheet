@@ -1,7 +1,8 @@
 /* =============================================================================
    TOOLBAR.CSS - Barre « Gestion » (index.html, js/ui/toolbar.js)
    - Barre flottante en verre dépoli, double filet doré, posée au-dessus de la fiche.
-   - Groupes : Fiche (#toolbar-panel), Affichage (#view-group), Compte (#account-group),
+   - Groupes : Fiche (#toolbar-panel), Découvrir (#toolbar-help : mode d'emploi, personnage
+     d'exemple), Affichage (#view-group), Compte (#account-group),
      états du compte et de l'enregistrement (.app-bar-statuses). Le contenu des groupes
      vient de toolbar.js, gallery.js et account.js ; leur place est réglée ici.
    - Repli sur tablette (≤ 1100 px, et écrans tactiles ≤ 1400 px : tablettes en paysage) :
@@ -12,8 +13,9 @@
    ============================================================================= */
 
 /* ---------- Barre ----------
-   Ordinateur, deux lignes alignées à gauche :
+   Ordinateur, trois lignes alignées à gauche :
      Gestion   [verrou] [nouvelle | importer | exporter | imprimer]        états
+               [mode d'emploi | personnage d'exemple]
      [thème | cinéma | fonds]  position  zoom  opacité        [compte] [personnages]
    Les deux premières colonnes prennent la taille de leurs boutons ; la dernière prend le
    reste. Les états (texte variable : « enregistrement en ligne… », nom de la fiche…) y sont
@@ -27,6 +29,7 @@
     grid-template-columns: auto auto minmax(0, 1fr);
     grid-template-areas:
         "brand fiche statuses"
+        "brand help statuses"
         "view view account";
     align-items: center;
     gap: 10px 16px;
@@ -95,6 +98,11 @@
 #toolbar-panel {
     grid-area: fiche;
     flex-wrap: nowrap;
+}
+
+/* Mode d'emploi et personnage d'exemple : deuxième ligne du groupe Fiche */
+#toolbar-help {
+    grid-area: help;
 }
 
 #view-group {
@@ -254,6 +262,7 @@
         grid-template-areas:
             "brand statuses"
             "fiche fiche"
+            "help help"
             "view view"
             "account account";
         gap: 10px 12px;
@@ -305,6 +314,7 @@
     }
 
     #app-bar.app-bar--collapsed #toolbar-panel,
+    #app-bar.app-bar--collapsed #toolbar-help,
     #app-bar.app-bar--collapsed #view-group,
     #app-bar.app-bar--collapsed #account-group {
         display: none;

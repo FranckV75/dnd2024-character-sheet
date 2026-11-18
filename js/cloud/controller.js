@@ -35,6 +35,8 @@
 // Garanties :
 //  - une version en ligne modifiée ailleurs n'est jamais écrasée sans accord ;
 //  - une nouvelle fiche ou un import ne peut que CRÉER un personnage en ligne ;
+//  - un personnage d'exemple (source « example ») n'est ni lié ni envoyé : il reste dans ce
+//    navigateur tant que le joueur ne choisit pas « Enregistrer en ligne » ;
 //  - aucun envoi pendant qu'une question est posée ; fermer une question sans
 //    répondre choisit l'option la plus prudente (ne rien écraser) ;
 //  - une opération en ligne commencée avant un changement de fiche (nouvelle
@@ -658,7 +660,12 @@ export function createCloudSync({
             epoch += 1;
             clearTimer(timer);
             timer = null;
-            base = { ...EMPTY_BASE };
+            // Personnage d'exemple : en plus, gardé dans ce navigateur seulement (comme après
+            // « Ne rien faire ») : rien n'est lu ni écrit en ligne tant que le joueur ne choisit
+            // pas « Enregistrer en ligne » (reattach), qui ne fait que créer ou demander
+            base = meta.source === 'example'
+                ? { ...EMPTY_BASE, userId: user?.id || '', detached: true }
+                : { ...EMPTY_BASE };
             legacyName = '';
             emit();
             if (user && current()) schedulePush();

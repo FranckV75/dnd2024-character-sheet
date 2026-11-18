@@ -185,7 +185,7 @@ export function syncStatusLabel(state) {
     if (state.detached) {
         return {
             label: 'fiche ouverte gardée dans ce navigateur seulement',
-            hint: 'Cette fiche n\'est pas enregistrée dans votre compte (par exemple après l\'avoir supprimée de « Mes personnages », ou après avoir choisi « Ne rien faire »). « Enregistrer en ligne » l\'ajoute à votre compte ; « Mes personnages » ouvre un autre personnage.'
+            hint: 'Cette fiche n\'est pas enregistrée dans votre compte (par exemple un personnage d\'exemple, une fiche supprimée de « Mes personnages », ou le choix « Ne rien faire »). « Enregistrer en ligne » l\'ajoute à votre compte ; « Mes personnages » ouvre un autre personnage.'
         };
     }
     if (state.lastError || state.needsCheck) return { label: 'synchronisation en échec, nouvel essai automatique', hint: '' };

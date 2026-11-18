@@ -5,7 +5,7 @@
 // (SNAPSHOTS_KEY), jamais dans la sauvegarde ni en ligne : un retour en arrière reste possible
 // après une erreur de saisie, un import ou un chargement malheureux.
 // Moments : ouverture de la fiche, avant un repos long, avant tout remplacement de la fiche
-// (import, nouvelle fiche, chargement depuis le compte, retour à un état).
+// (import, nouvelle fiche, personnage d'exemple, chargement depuis le compte, retour à un état).
 //
 // Sécurité des données :
 //  - un état dont le contenu est déjà dans la liste n'est pas ajouté (ouvrir dix fois la fiche, ou
@@ -36,6 +36,7 @@ export const SNAPSHOT_REASONS = Object.freeze({
     'level-up': 'Avant une montée de niveau',
     import: 'Avant un import',
     new: 'Avant une nouvelle fiche',
+    example: "Avant un personnage d'exemple",
     cloud: 'Avant un chargement depuis le compte',
     restore: 'Avant un retour en arrière',
     replace: 'Avant un remplacement de la fiche'
@@ -46,6 +47,7 @@ export function reasonForReplace(source) {
     switch (source) {
         case 'file': return 'import';
         case 'new': return 'new';
+        case 'example': return 'example';
         case 'cloud': return 'cloud';
         case 'snapshot': return 'restore';
         default: return 'replace';
