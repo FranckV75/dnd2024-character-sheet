@@ -3,6 +3,8 @@
 // l'ordinateur de développement (localhost), jamais sur le site publié (même stockage que la
 // fiche des joueurs).
 import { parseCharacterFile, saveLocal } from '../js/state/persistence.js';
+import { SEEN_VERSION_KEY } from '../js/state/whats-new.js';
+import { APP_VERSION } from '../js/version.js';
 
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
 
@@ -19,5 +21,10 @@ if (!LOCAL_HOSTS.has(location.hostname)) {
     localStorage.setItem('dd2024_theme', params.get('theme') === 'dark' ? 'dark' : 'light');
     localStorage.setItem('dd2024_active_tab', params.get('tab') || 'combat');
     localStorage.setItem('dd2024_lock_mode', 'false');
+    // Fenêtre « Nouveautés » : jamais pendant une capture, sauf demande (&news=4.39.0 : dernière
+    // version vue sur l'appareil ; &news=none : aucune, comme un joueur venu avant cette fenêtre)
+    const news = params.get('news');
+    if (news === 'none') localStorage.removeItem(SEEN_VERSION_KEY);
+    else localStorage.setItem(SEEN_VERSION_KEY, /^\d+\.\d+\.\d+$/.test(news ?? '') ? news : APP_VERSION);
     location.replace(new URL('../index.html', import.meta.url));
 }

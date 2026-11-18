@@ -11,13 +11,20 @@
 // de fermer puis rouvrir la fiche. Hors ligne ou site injoignable : rien ne se passe.
 // Jamais pendant qu'une fenêtre est ouverte (choix en cours) : la vérification attend le retour
 // suivant sur l'onglet.
+// Fenêtre « Nouveautés » (js/ui/whats-new.js) : annoncée après la vérification d'ouverture, et
+// seulement si aucune installation n'est lancée (la mise à jour passe d'abord ; site lent ou
+// hors ligne : on n'attend pas plus de NEWS_WAIT_MS). À sa fermeture, la vérification est
+// refaite : une mise à jour arrivée pendant qu'elle était ouverte n'attend pas le retour suivant.
 // =============================================================================
 
 import { APP_VERSION } from '../version.js';
 import { isNewerVersion, appFilesToRefresh } from '../state/update-check.js';
+import { announceNews } from './whats-new.js';
 
 const TRIED_KEY = 'dd2024_update_tried';
 const MIN_INTERVAL_MS = 60_000;
+/** Attente maximale de la vérification d'ouverture avant d'annoncer les nouveautés */
+const NEWS_WAIT_MS = 4000;
 
 function readSession(key) {
     try {
@@ -45,9 +52,9 @@ async function onlineVersion() {
 }
 
 /**
- * @param {{ setStatus: (message: string) => void, saveNow: () => void }} ctx
+ * @param {{ setStatus: (message: string) => void, saveNow: () => void, hadSavedSheet?: boolean }} ctx
  */
-export function initUpdates({ setStatus, saveNow }) {
+export function initUpdates({ setStatus, saveNow, hadSavedSheet = false }) {
     // Numéro de version en haut à droite, sous les états du compte et de l'enregistrement
     const version = document.getElementById('app-version');
     if (version) {
@@ -64,31 +71,37 @@ export function initUpdates({ setStatus, saveNow }) {
 
     let lastCheck = 0;
     let busy = false;
+    let installing = false;
 
+    /** @returns {Promise<boolean>} true si une installation (rechargement de la page) est lancée */
     const check = async () => {
-        if (busy || Date.now() - lastCheck < MIN_INTERVAL_MS) return;
-        if (document.querySelector('dialog[open]')) return;
+        if (busy || Date.now() - lastCheck < MIN_INTERVAL_MS) return false;
+        if (document.querySelector('dialog[open]')) return false;
         busy = true;
         lastCheck = Date.now();
         try {
             const remote = await onlineVersion();
-            if (!isNewerVersion(remote, APP_VERSION)) return;
+            if (!isNewerVersion(remote, APP_VERSION)) return false;
             // Une seule tentative par version : la page n'entre jamais dans une boucle de rechargements
             if (readSession(TRIED_KEY) === remote || !writeSession(TRIED_KEY, remote)) {
                 setStatus(`Nouvelle version ${remote} en ligne : fermez puis rouvrez la fiche pour l'installer.`);
-                return;
+                return false;
             }
             if (document.querySelector('dialog[open]')) {
                 writeSession(TRIED_KEY, null);
-                return;
+                return false;
             }
+            installing = true;
             setStatus(`Installation de la version ${remote}…`);
             saveNow();
             const urls = appFilesToRefresh(performance.getEntriesByType('resource').map((entry) => entry.name), location.origin);
             await Promise.allSettled([location.href.split('#')[0], ...urls].map((url) => fetch(url, { cache: 'reload' })));
             location.reload();
+            return true;
         } catch {
             // Hors ligne, site injoignable, réponse illisible : on réessaiera au prochain retour
+            installing = false;
+            return false;
         } finally {
             busy = false;
         }
@@ -97,6 +110,16 @@ export function initUpdates({ setStatus, saveNow }) {
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') check();
     });
-    // À l'ouverture, une fois la fiche affichée
-    setTimeout(check, 2000);
+    // À l'ouverture, une fois la fiche affichée : la mise à jour d'abord, puis les nouveautés
+    setTimeout(async () => {
+        await Promise.race([check(), new Promise((resolve) => { setTimeout(resolve, NEWS_WAIT_MS); })]);
+        if (installing) return;
+        announceNews({
+            returning: hadSavedSheet,
+            onClosed: () => {
+                lastCheck = 0;
+                check();
+            }
+        });
+    }, 2000);
 }

@@ -1,7 +1,7 @@
 // =============================================================================
 // MAIN.JS - Point d'entrée de l'application (v4)
 // Crée le store, construit la fiche puis branche chaque fonctionnalité.
-// Chaque module reçoit le même contexte : { root, store, setStatus, saveWithCharacter, saveNow, keepSnapshot }.
+// Chaque module reçoit le même contexte : { root, store, setStatus, saveWithCharacter, saveNow, keepSnapshot, hadSavedSheet }.
 // Enregistre la fiche dans le navigateur et reprend celle qu'un autre onglet y a enregistrée.
 // =============================================================================
 
@@ -156,7 +156,9 @@ const ctx = {
     /** Enregistre tout de suite la fiche (et les données associées) */
     saveNow: () => localSave.saveNow(),
     /** Garde l'état actuel de la fiche dans les sauvegardes de secours (avant un repos long…) */
-    keepSnapshot: (reason) => takeSnapshot(store.get(), reason)
+    keepSnapshot: (reason) => takeSnapshot(store.get(), reason),
+    /** Une fiche était déjà enregistrée dans ce navigateur à l'ouverture (joueur déjà venu) */
+    hadSavedSheet: bootText !== null
 };
 
 // Écouteurs posés AVANT ceux des fonctionnalités : au retour sur l'onglet, la fiche des autres
