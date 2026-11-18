@@ -9,8 +9,10 @@
 // data/spells.json) ; l'équipement et les armures suivent les noms du manuel français de 2024
 // (paquetage, grimoire, armure du mage). tests/examples.test.js vérifie leur cohérence avec les
 // règles de 2024 (PV, CA, maîtrises, Expertise, emplacements, sorts préparés, grimoire).
+// Les deux personnages s'ouvrent reposés : PV au maximum, aucun dé de vie ni emplacement dépensé.
 //  - id : identifiant stable ; title : nom du personnage ; subtitle : classe, niveau, espèce,
-//    historique ; pitch : une phrase pour le joueur, dans la fenêtre de choix.
+//    historique, écrits comme dans les listes de la fiche ; pitch : une phrase pour le joueur,
+//    dans la fenêtre de choix.
 // =============================================================================
 
 export const EXAMPLE_CHARACTERS = Object.freeze([
@@ -76,7 +78,7 @@ export const EXAMPLE_CHARACTERS = Object.freeze([
     {
         id: "magicienne-5",
         title: "Ysolde Clairvent",
-        subtitle: "Magicienne (Évocateur) de niveau 5 · Humaine · Sage",
+        subtitle: "Magicien (Évocateur) de niveau 5 · Humain · Sage",
         pitch: "Pour essayer le grimoire : sorts préparés, emplacements, vue « Au combat » et bouton « Lancer ».",
         character: {
             char_name: "Ysolde Clairvent",
@@ -103,10 +105,10 @@ export const EXAMPLE_CHARACTERS = Object.freeze([
             skill_prof_perception: true,
             skill_exp_arcana: true,
             hp_max: "32",
-            hp_current: "25",
+            hp_current: "32",
             hp_temp: "0",
             hd_type: "d6",
-            hd_current: "1",
+            hd_current: "0",
             speed: "9m",
             spell_ability: "int",
             feat_1: "initie_a_la_magie",
@@ -143,7 +145,6 @@ export const EXAMPLE_CHARACTERS = Object.freeze([
                 { lvl: "3", name: "Contresort", time: "Réaction", range: "18 m", note: "Counterspell", c: false, r: false, m: false, prep: true, school: "Abjuration" },
                 { lvl: "3", name: "Éclair", time: "Action", range: "Perso", note: "Lightning Bolt", c: false, r: false, m: true, prep: false, school: "Évocation" }
             ],
-            spell_slots_state: { "1": { used: 1 } },
             profs_tools: "Matériel de calligraphe",
             langs: "Commun, elfique, draconique",
             equipment: "Grimoire, bâton de combat (focaliseur arcanique), sacoche à composantes, paquetage d'érudit, matériel de calligraphe, robe.",

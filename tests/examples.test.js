@@ -56,6 +56,9 @@ describe('Personnages d\'exemple : liste et lecture', () => {
             assert.ok(example.title && example.subtitle && example.pitch, example.id);
             assert.equal(example.title, characterName(byId(example.id)), 'le titre est le nom du personnage');
             assert.ok(example.pitch.length <= 110, `phrase courte : ${example.pitch}`);
+            // Sous-titre : classe et espèce écrites comme dans les listes de la fiche
+            const sheet = byId(example.id);
+            assert.ok(example.subtitle.startsWith(`${sheet.char_class} (${sheet.char_subclass}) de niveau ${sheet.char_level} · ${sheet.char_species} · ${sheet.char_background}`), example.subtitle);
         }
     });
 
@@ -118,10 +121,10 @@ describe('Personnages d\'exemple : cohérence avec les règles de 2024', () => {
             const expected = faces + d.mods.con + (d.level - 1) * (faces / 2 + 1 + d.mods.con) + tough;
             const hp = hitPointState(character);
             assert.equal(hp.max, expected);
-            assert.ok(hp.current >= 1 && hp.current <= hp.max);
+            assert.equal(hp.current, hp.max, 'prêt à jouer : PV au maximum');
             assert.equal(character.hd_type, cls.hitDice);
             const dice = hitDiceState(character);
-            assert.ok(dice.used >= 0 && dice.used < d.level, 'au moins un dé de vie disponible');
+            assert.equal(dice.used, 0, 'prêt à jouer : aucun dé de vie dépensé');
         });
 
         test(`${id} : PX du niveau, sans montée de niveau en attente`, () => {
@@ -197,12 +200,14 @@ describe('Personnages d\'exemple : cohérence avec les règles de 2024', () => {
         assert.equal(new Set(masteries).size, 3);
     });
 
-    test('Magicienne : DD 15, attaque +7, emplacements 4 / 3 / 2, un emplacement de niveau 1 déjà dépensé', () => {
+    test('Magicienne : DD 15, attaque +7, emplacements 4 / 3 / 2, aucun dépensé', () => {
         const character = byId(WIZARD);
         const d = deriveCharacter(character);
         assert.deepEqual(d.spellcasting, { ability: 'int', dc: 15, attack: 7 });
         assert.deepEqual(d.spellSlots, { 1: 4, 2: 3, 3: 2 });
-        assert.deepEqual(slotView(character.spell_slots_state, '1', 4), { max: 4, used: 1 });
+        for (const [level, max] of Object.entries(d.spellSlots)) {
+            assert.deepEqual(slotView(character.spell_slots_state, level, max), { max, used: 0 });
+        }
         assert.equal(d.armorClass.value, 12, 'sans armure ; la ligne « Armure du mage » n\'est pas cochée');
         const cast = structuredClone(character);
         cast.dynamic_armors[0].equipped = true;
