@@ -129,27 +129,40 @@ export function grantedSpellKeys(character, derived) {
  *  - 'granted'    : donné par la classe, la sous-classe, un don ou l'espèce (toujours préparé, hors du compte) ;
  *  - 'list'       : classe à liste fixe (toujours préparé, compté) ;
  *  - 'prepared' / 'unprepared' : losange coché ou non par le joueur (aussi, dans une classe à
- *    liste fixe, pour un sort hors de cette liste : voir fitsWholeList).
+ *    liste fixe, pour un sort hors de cette liste : voir fitsWholeList) ;
+ *  - 'ritual'     : non préparé, mais lançable en rituel depuis le livre (Savoir rituel du
+ *    Magicien : js/rules/spellbook.js) ; losange à cocher comme 'unprepared'.
  * @param {Object} row - ligne de dynamic_spells
- * @param {{ wholeList?: boolean, granted?: Set<string>|null, fits?: ((row: Object) => boolean)|null }} [options]
- *        fits : le sort fait-il partie de la liste fixe (fitsWholeList) ? Absent : oui
- * @returns {'cantrip'|'granted'|'list'|'prepared'|'unprepared'}
+ * @param {{ wholeList?: boolean, granted?: Set<string>|null, fits?: ((row: Object) => boolean)|null,
+ *   bookRitual?: ((row: Object) => boolean)|null }} [options]
+ *        fits : le sort fait-il partie de la liste fixe (fitsWholeList) ? Absent : oui ;
+ *        bookRitual : le sort non préparé se lance-t-il en rituel depuis le livre ? Absent : non
+ * @returns {'cantrip'|'granted'|'list'|'prepared'|'unprepared'|'ritual'}
  */
-export function spellPrepState(row, { wholeList = false, granted = null, fits = null } = {}) {
+export function spellPrepState(row, { wholeList = false, granted = null, fits = null, bookRitual = null } = {}) {
     if (rowLevel(row) === '0') return 'cantrip';
     if (granted?.has(spellNameKey(row?.name))) return 'granted';
     if (wholeList && (!fits || fits(row))) return 'list';
-    return row?.prep === true ? 'prepared' : 'unprepared';
+    if (row?.prep === true) return 'prepared';
+    return bookRitual?.(row) ? 'ritual' : 'unprepared';
 }
 
-/** Ligne affichée dans la vue « au combat » : sort mineur ou sort préparé (même d'office) */
+/** Ligne affichée dans la vue « au combat » : sort mineur, sort préparé (même d'office), rituel du livre */
 export function inCombatView(state) {
     return state !== 'unprepared';
 }
 
-/** Sort de niveau 1+ préparé (même d'office) : il peut être lancé avec un emplacement */
+/**
+ * Sort de niveau 1+ qui a un bouton « Lancer » : préparé (même d'office), avec un emplacement ;
+ * rituel du livre non préparé, seulement en rituel (isRitualOnly)
+ */
 export function isCastable(state) {
-    return state === 'prepared' || state === 'list' || state === 'granted';
+    return state === 'prepared' || state === 'list' || state === 'granted' || state === 'ritual';
+}
+
+/** Sort qui ne peut se lancer qu'en rituel (rituel du livre non préparé) */
+export function isRitualOnly(state) {
+    return state === 'ritual';
 }
 
 /**
