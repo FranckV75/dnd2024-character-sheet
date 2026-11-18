@@ -8,7 +8,7 @@ import {
     preparesWholeList, grantedSpellKeys, spellPrepState, inCombatView, isCastable,
     castSlotOptions, useSpellSlot, wholeListSource, fitsWholeList, highestSlotLevel,
     SPELL_PREPARATION, WHOLE_LIST_CLASSES, preparesFromClassList, longRestPreparation, preparationView,
-    prepareSpellRows, unprepareSpellRows, unprepareRow, matchesSpellQuery
+    prepareSpellRows, unprepareSpellRows, setRowPrepared, matchesSpellQuery
 } from '../js/rules/spell-preparation.js';
 import { EMPTY_SPELL } from '../js/state/schema.js';
 import { spellCounts, spellNameKey, spellLimitWarnings, findSpellByName } from '../js/rules/spells.js';
@@ -327,11 +327,13 @@ describe('Fenêtre « Préparer mes sorts »', () => {
         assert.deepEqual(unprepareSpellRows(twice, spell('Soins'), db).map(r => r.prep), [false, false]);
     });
 
-    test('Décocher un autre sort préparé : prep à false, jamais retiré', () => {
+    test('Autre sort préparé : seulement son losange, la ligne n\'est jamais retirée', () => {
         const rows = [row('Projectile magique', true), row('Bouclier')];
-        assert.deepEqual(unprepareRow(rows, 0), [{ ...rows[0], prep: false }, rows[1]]);
-        assert.equal(unprepareRow(rows, 1), rows);
-        assert.equal(unprepareRow(rows, 9), rows);
+        assert.deepEqual(setRowPrepared(rows, 0, false), [{ ...rows[0], prep: false }, rows[1]]);
+        assert.deepEqual(setRowPrepared(rows, 1, true), [rows[0], { ...rows[1], prep: true }]);
+        assert.equal(setRowPrepared(rows, 0, true), rows);
+        assert.equal(setRowPrepared(rows, 1, false), rows);
+        assert.equal(setRowPrepared(rows, 9, true), rows);
     });
 
     test('Compteur : la fenêtre et le grimoire comptent pareil (sorts donnés exclus)', () => {

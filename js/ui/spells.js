@@ -12,6 +12,8 @@
 //    réservés à l'édition. Barde, Ensorceleur, Occultiste (liste fixe) et sorts donnés par la
 //    classe, la sous-classe, un don ou l'espèce : losange plein fixe « toujours préparé », calculé
 //    à l'affichage (js/rules/spell-preparation.js), jamais écrit dans la fiche.
+//  - Fenêtre « Préparer mes sorts » (bouton de la barre, Clerc, Druide, Paladin, Rôdeur ;
+//    spells/prepare.js) : cases à cocher sur toute la liste de la classe, utilisable verrouillé.
 //  - Vue « au combat » (bouton de la barre, retenu sur l'appareil) : seulement les sorts mineurs,
 //    les sorts préparés (même d'office) et les blocs de sorts donnés, les emplacements restants en
 //    clair et un bouton « Lancer » qui coche un emplacement (et propose la Concentration).
@@ -40,7 +42,7 @@
 //
 // Fichiers du grimoire (js/ui/spells/) : barre de filtres (filters.js), emplacements de sorts
 // (slots.js), sorts de dons, de sous-classe et d'espèce (granted.js), infobulle (tooltip.js),
-// réglages de l'appareil (prefs.js). Ici : le tableau des sorts, le grimoire replié et l'assemblage.
+// fenêtre « Préparer mes sorts » (prepare.js), réglages de l'appareil (prefs.js). Ici : le tableau des sorts, le grimoire replié et l'assemblage.
 // =============================================================================
 
 import { EMPTY_SPELL } from '../state/schema.js';
@@ -75,6 +77,7 @@ import { elementalAffinity } from '../rules/subclass-combat.js';
 import { createSpellFilters } from './spells/filters.js';
 import { createSpellSlots, slotStateOf } from './spells/slots.js';
 import { createGrantedSpells } from './spells/granted.js';
+import { createPrepareButton } from './spells/prepare.js';
 
 // Dons et leurs choix : repère « Adepte » (Adepte élémentaire) sur les sorts du type choisi
 // Sorts de dons : leurs choix, leurs lancers gratuits (feat_uses) et la caractéristique du DD
@@ -192,8 +195,11 @@ export function initSpells(ctx) {
     // Barre de filtres (spells/filters.js)
     // -----------------------------------------------------------------------
 
+    // Bouton « Préparer mes sorts » (spells/prepare.js), affiché pour les classes concernées
+    const prepare = createPrepareButton({ store, setStatus });
+
     const filters = createSpellFilters({
-        store, view, tooltip,
+        store, view, tooltip, actions: [prepare.button],
         onLevel: () => {
             entryLevel = null; // la ligne de saisie reprend le niveau du filtre
             tooltip.hide();
@@ -847,6 +853,7 @@ export function initSpells(ctx) {
         if (changedKeys && !changedKeys.some(key => RELEVANT_KEYS.has(key))) return;
         const d = derivedOf(character);
         filters.renderClassFilter(character, d);
+        prepare.render(d);
         renderHeader();
         renderRows(character, changedKeys === null && !structural, structural);
         slots.render(character, d);

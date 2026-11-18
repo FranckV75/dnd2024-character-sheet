@@ -24,7 +24,7 @@
 
 import {
     rowLevel, spellNameKey, slotView, slotLevels, toggleSlotUsed, findSpellByName, spellToRow, spellNames,
-    spellDisplayName, isPrepared, isSpellRowEmpty, normalizeText
+    spellDisplayName, isPrepared, isSpellRowEmpty, normalizeText, plainText
 } from './spells.js';
 import { classAlwaysPreparedSpells } from './class-progression.js';
 import { featSpellGroups } from './feat-spells.js';
@@ -266,7 +266,7 @@ export function preparationView(rows, db, { classSlug, maxLevel, granted = null 
         if (isSpellRowEmpty(row) || !isPrepared(row) || granted?.has(spellNameKey(row.name))) return;
         const spell = findSpellByName(spells, row.name);
         if (spell && inList(spell)) prepared.add(spell);
-        else others.push({ index, name: String(row.name ?? '').trim(), level: Number(rowLevel(row)) });
+        else others.push({ index, name: plainText(row.name).trim(), level: Number(rowLevel(row)) });
     });
     const groups = [];
     for (let level = 1; level <= Math.min(9, maxLevel); level++) {
@@ -343,16 +343,18 @@ export function unprepareSpellRows(rows, spell, db, added = null) {
 }
 
 /**
- * Décocher un « autre sort préparé » (ligne hors de la liste affichée) : prep: false, jamais retirée.
+ * Cocher ou décocher un « autre sort préparé » (ligne hors de la liste affichée) : seulement son
+ * losange (prep), la ligne n'est jamais retirée.
  * @param {Array<Object>} rows
  * @param {number} index
- * @returns {Array<Object>}
+ * @param {boolean} prepared
+ * @returns {Array<Object>} nouvelles lignes (les mêmes s'il n'y a rien à changer)
  */
-export function unprepareRow(rows, index) {
+export function setRowPrepared(rows, index, prepared) {
     const list = Array.isArray(rows) ? rows : [];
-    if (list[index]?.prep !== true) return list;
+    if (!list[index] || (list[index].prep === true) === prepared) return list;
     const next = list.slice();
-    next[index] = { ...list[index], prep: false };
+    next[index] = { ...list[index], prep: prepared };
     return next;
 }
 

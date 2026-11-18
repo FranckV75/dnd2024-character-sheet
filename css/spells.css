@@ -280,6 +280,130 @@
     }
 }
 
+/* ---------- Fenêtre « Préparer mes sorts » (js/ui/spells/prepare.js) ---------- */
+
+.spell-prepare-btn[hidden] {
+    display: none;
+}
+
+/* Recherche et compteur restent en vue pendant que la liste défile */
+.prep-controls {
+    position: sticky;
+    top: -2px;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    padding: 4px 0 8px;
+    background: var(--box-strong);
+}
+
+.modal-body .prep-search {
+    flex: 1 1 220px;
+    max-width: 320px;
+}
+
+.prep-count {
+    margin-left: auto;
+    font-family: var(--font-title);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--quiet-ink);
+}
+
+/* Plus de sorts préparés que la table de la classe */
+.prep-count.is-over {
+    color: var(--ko);
+}
+
+.prep-group + .prep-group {
+    margin-top: 12px;
+}
+
+.prep-group[hidden],
+.prep-item[hidden],
+.prep-empty[hidden] {
+    display: none;
+}
+
+.modal-body .prep-level {
+    margin: 0 0 4px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid var(--border-soft);
+    font-family: var(--font-title);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+}
+
+/* Plusieurs colonnes de sorts (trois sur tablette) */
+.modal-body .prep-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 0 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.prep-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 2px 0;
+}
+
+/* Toute la ligne coche la case : cible confortable au doigt. Texte des sorts : comme le grimoire
+   (pas le style des libellés de champs) */
+.modal-body .prep-label {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    font-family: var(--font-text);
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: normal;
+    color: var(--text);
+    text-transform: none;
+    cursor: pointer;
+}
+
+.prep-label .round-check,
+.prep-mark {
+    flex: 0 0 auto;
+}
+
+/* Losange fixe des sorts toujours préparés : à la place de la case (même largeur) */
+.prep-mark {
+    width: 20px;
+    color: var(--accent);
+    text-align: center;
+}
+
+.prep-text {
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.prep-tag {
+    margin-left: 5px;
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-weight: 700;
+    color: var(--quiet-ink);
+    text-decoration: none;
+}
+
+.modal-body .prep-note {
+    display: block;
+    font-style: italic;
+}
+
 /* Fenêtre « Lancer » : un bouton par niveau d'emplacement (reste N dessous) */
 .spell-cast-levels {
     display: flex;
