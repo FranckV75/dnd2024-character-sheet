@@ -305,6 +305,27 @@ describe('Fenêtre « Préparer mes sorts »', () => {
         assert.deepEqual(Object.keys(added.added).sort(), Object.keys(EMPTY_SPELL).sort());
     });
 
+    test('Cocher un sort noté sans niveau (vieille fiche v3) : son niveau est complété depuis la base', () => {
+        const granted = new Set();
+        for (const lvl of ['', '0']) {
+            const rows = [{ ...EMPTY_SPELL, lvl, name: "Peau d'écorce", note: 'ma note' }];
+            const before = preparationView(rows, db, { classSlug: 'druid', maxLevel: 2, granted });
+            assert.equal(before.groups[1].items.find(item => item.name === "Peau d'écorce").state, 'unprepared');
+            const { rows: next, added } = prepareSpellRows(rows, spell("Peau d'écorce"), db, EMPTY_SPELL);
+            assert.equal(added, null, 'la ligne existante est reprise, pas de doublon');
+            assert.deepEqual(next[0], { ...rows[0], lvl: '2', prep: true });
+            const after = preparationView(next, db, { classSlug: 'druid', maxLevel: 2, granted });
+            assert.equal(after.groups[1].items.find(item => item.name === "Peau d'écorce").state, 'prepared');
+            assert.equal(spellCounts(next, '', granted).prepared, 1);
+        }
+        // Déjà cochée (prep: true) mais sans niveau : le niveau est complété aussi
+        const hidden = [{ ...EMPTY_SPELL, lvl: '0', name: "Peau d'écorce", prep: true }];
+        assert.equal(prepareSpellRows(hidden, spell("Peau d'écorce"), db, EMPTY_SPELL).rows[0].lvl, '2');
+        // Sort mineur de la base noté au niveau 0 : rien à compléter
+        const cantrip = [{ ...EMPTY_SPELL, lvl: '0', name: 'Druidisme', prep: true }];
+        assert.equal(prepareSpellRows(cantrip, spell('Druidisme'), db, EMPTY_SPELL).rows, cantrip);
+    });
+
     test('Décocher : prep à false ; la ligne ajoutée par la fenêtre, restée telle quelle, est retirée', () => {
         const rows = [row('Lumière'), row('Soins', true, { note: 'à garder' })];
         assert.deepEqual(unprepareSpellRows(rows, spell('Soins'), db)[1], { ...rows[1], prep: false });

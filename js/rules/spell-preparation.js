@@ -295,7 +295,9 @@ function matchingIndices(rows, spell, db) {
 /**
  * Cocher un sort dans la fenêtre : la première ligne du grimoire qui le porte passe à prep: true ;
  * absent du grimoire, il y est ajouté (à la fin, rempli depuis la base comme l'auto-complétion :
- * note = nom anglais) et préparé.
+ * note = nom anglais) et préparé. Ligne sans niveau (lvl vide ou « 0 », vieilles fiches v3) alors
+ * que le sort de la base est de niveau 1+ : son niveau est complété depuis la base (c'est le geste
+ * du joueur qui le demande), sinon elle resterait un sort mineur, jamais préparé.
  * @param {Array<Object>} rows - dynamic_spells
  * @param {Object} spell - sort de la base
  * @param {Array<Object>} db
@@ -306,9 +308,11 @@ export function prepareSpellRows(rows, spell, db, emptySpell) {
     const list = Array.isArray(rows) ? rows : [];
     const [first] = matchingIndices(list, spell, db);
     if (first !== undefined) {
-        if (list[first].prep === true) return { rows: list, added: null };
+        const level = Number(spell?.level);
+        const missingLevel = rowLevel(list[first]) === '0' && Number.isInteger(level) && level >= 1 && level <= 9;
+        if (list[first].prep === true && !missingLevel) return { rows: list, added: null };
         const next = list.slice();
-        next[first] = { ...list[first], prep: true };
+        next[first] = { ...list[first], ...(missingLevel ? { lvl: String(level) } : {}), prep: true };
         return { rows: next, added: null };
     }
     const added = { ...spellToRow(spell, { ...emptySpell }), prep: true };
