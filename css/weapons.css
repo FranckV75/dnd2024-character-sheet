@@ -623,3 +623,128 @@
 .weapons-table tr.is-entry .cell-input::placeholder {
     font-style: italic;
 }
+
+/* ---------- Dégâts en plus écrits par le joueur (js/rules/weapon-extras.js) ---------- */
+
+/* Dans la case des dégâts : même police, taille, graisse et couleur que le reste des dégâts
+   (aucune règle de couleur ni de graisse ici). Un mot très long ne déborde jamais de la colonne. */
+.weapons-calc-extra {
+    overflow-wrap: anywhere;
+}
+
+/* Le toucher dit le texte complet dans la barre du haut (js/ui/weapons.js, sayDamage) */
+.weapons-calc.has-extras {
+    cursor: help;
+}
+
+/* Tablettes (colonne des dégâts étroite) : chaque dégât en plus tient sur deux lignes au plus,
+   abrégé avec « … » ; le texte complet est dit au toucher et dans l'infobulle */
+@media screen and (max-width: 1000px) {
+    .weapons-calc-extra {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        overflow: hidden;
+    }
+}
+
+/* Pastilles « À allumer » : une ligne sous l'arme, collée à elle (pas de filet entre les deux) */
+.weapons-table tr.has-extra-pills td {
+    border-bottom-color: transparent;
+}
+
+.weapons-table tr.weapons-extra-row td {
+    padding: 0 6px 7px;
+}
+
+.weapons-extra-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* Même pastille que Rage (.btn-chip.weapons-buff) ; un libellé trop long pour la carte est
+   abrégé avec « … » (texte complet dans la barre du haut au toucher, et dans l'infobulle) */
+.weapons-extra-pill {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.weapons-extra-pill .btn-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Mention imprimée à la place des pastilles (css/print.css) */
+.weapons-extra-print {
+    display: none;
+}
+
+/* ---------- Fenêtre « Configuration de l'arme » : rubrique « Dégâts en plus » ---------- */
+
+.weapons-config-extras {
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-soft);
+}
+
+.weapons-extra-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.weapons-extra-lines:empty {
+    display: none;
+}
+
+/* Dégâts | Raison | Quand | corbeille : une ligne par dégât en plus, même à 768 px */
+.weapons-extra-line {
+    display: grid;
+    grid-template-columns: 4.6rem minmax(0, 1fr) 7.4rem 36px;
+    align-items: center;
+    gap: 6px;
+}
+
+.weapons-extra-line .input {
+    min-width: 0;
+}
+
+.weapons-extra-line .input[aria-invalid="true"] {
+    border-color: var(--ko);
+}
+
+.weapons-extra-line .btn-icon {
+    justify-self: center;
+}
+
+.weapons-extra-head[hidden] {
+    display: none;
+}
+
+.weapons-extra-head > span {
+    font-family: var(--font-title);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--label);
+    text-transform: uppercase;
+}
+
+.modal .weapons-extra-add {
+    align-self: flex-start;
+}
+
+/* Écrans tactiles : corbeille de 36 px avec sa zone de toucher de 44 px (components.css) */
+@media (pointer: coarse) {
+    .weapons-extra-line {
+        grid-template-columns: 4.6rem minmax(0, 1fr) 7.4rem 44px;
+        row-gap: 8px;
+    }
+
+    .weapons-extra-lines {
+        gap: 8px;
+    }
+}

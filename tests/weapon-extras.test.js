@@ -6,6 +6,7 @@
  */
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
     EXTRA_DAMAGE_KEY, EXTRA_DAMAGE_MAX, EXTRA_REASON_MAX,
     normalizeExtraDamage, validateExtraLine, validateExtraDamageList, readExtraDamage,
@@ -358,5 +359,33 @@ describe('Dégâts en plus : remise à zéro au repos', () => {
         const patch = shortRestPatch(sheet);
         assert.equal('dynamic_weapons' in patch, false);
         assert.equal('combat_buffs' in patch, false);
+    });
+});
+
+describe('Dégâts en plus : interface (js/ui/weapons.js)', () => {
+    const ui = readFileSync(new URL('../js/ui/weapons.js', import.meta.url), 'utf8');
+    const css = readFileSync(new URL('../css/weapons.css', import.meta.url), 'utf8');
+
+    test('le texte du joueur n\'est jamais posé comme du HTML', () => {
+        assert.doesNotMatch(ui, /innerHTML|insertAdjacentHTML|outerHTML/);
+    });
+
+    test('pastille : même classe que le bouton Rage, utilisable fiche verrouillée (comme lui)', () => {
+        assert.match(ui, /class: 'btn-chip weapons-buff weapons-extra-pill'/);
+        const toggle = ui.slice(ui.indexOf('function toggleExtra('), ui.indexOf('function writeExtraPills('));
+        assert.ok(toggle.length > 100);
+        assert.doesNotMatch(toggle, /isLocked\(/, 'contrôle de jeu : pas de verrou, comme les bonus de combat');
+        assert.match(toggle, /setStatus\(frenchSpaces\(/, 'une phrase dans la barre du haut à chaque toucher');
+    });
+
+    test('libellés de la fenêtre : ceux que cite le mode d\'emploi', () => {
+        for (const label of ['Dégâts en plus', 'Ajouter un dégât en plus', 'Toujours', 'À allumer']) assert.ok(ui.includes(`'${label}'`), label);
+        assert.match(ui, /text: frenchSpaces\(EXTRA_HELP\)/, 'aide affichée dans la fenêtre, avec les espaces insécables');
+    });
+
+    test('dégâts en plus dans la case : aucune couleur, graisse ni police propre', () => {
+        const rule = css.slice(css.indexOf('.weapons-calc-extra {'), css.indexOf('}', css.indexOf('.weapons-calc-extra {')));
+        assert.ok(rule.length > 10);
+        assert.doesNotMatch(rule, /color|font/);
     });
 });

@@ -569,6 +569,36 @@ h1, h2, h3, h4 {
     display: none;
 }
 
+/* Dégâts en plus écrits par le joueur (js/rules/weapon-extras.js). « Toujours » : imprimés dans les
+   dégâts, chacun sur sa ligne, avec retour à la ligne permis (une longue raison n'élargit pas la
+   colonne). « À allumer » : jamais dans la case, même allumés au moment d'imprimer (le papier ne
+   s'éteint pas) ; ils sont cités sous l'arme, « Selon le cas : +1d6 radiants contre… ». */
+.weapons-calc-extra {
+    display: block;
+    max-width: 24ch;
+    white-space: normal;
+}
+
+.weapons-calc-extra.is-toggle {
+    display: none;
+}
+
+.weapons-table tr.weapons-extra-row td {
+    padding: 0 4px 3px;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 0.76rem;
+    font-style: italic;
+    font-weight: 400;
+}
+
+.weapons-extra-pills {
+    display: none;
+}
+
+.weapons-extra-print {
+    display: inline;
+}
+
 /* Liseré « armure à vérifier » : avertissement d'écran, pas de sens sur papier */
 .armors-table tr.armor-warning td:first-child {
     box-shadow: none;

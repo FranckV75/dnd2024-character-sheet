@@ -12,6 +12,10 @@
 // valeurs calculées pour l'arme et la capacité Bottes d'arme de la classe, fiche verrouillée
 // ou non. Elle est hors du flux (position absolue) : elle ne rehausse jamais la ligne. La saisie
 // n'est jamais réécrite : la pastille apparaît ou disparaît selon ce qui est écrit.
+// Dégâts en plus écrits par le joueur (« +2d6 contre les dragons », réglage de l'arme, règles dans
+// js/rules/weapon-extras.js) : « Toujours » = ajoutés au texte des dégâts ; « À allumer » = pastille
+// dans une ligne sous l'arme (même aspect et même règle de verrou que Rage), dont l'état est rangé
+// dans la ligne de l'arme (weaponConfig), jamais à part.
 // Les règles (filtres, remplissage depuis le manuel, validation) sont dans js/rules/weapons.js.
 // =============================================================================
 
@@ -38,7 +42,12 @@ import {
     isBlankWeapon,
     removeWeapon, restoreWeapon, WEAPON_DAMAGE_TYPES
 } from '../rules/weapons.js';
+import {
+    EXTRA_DAMAGE_MAX, EXTRA_REASON_MAX, readExtraDamage, activeExtraDamage, extraDamageText, extraDamageLabel,
+    offBookDamage, toggleExtraDamage
+} from '../rules/weapon-extras.js';
 import { el, icon, setIconLabel } from './dom.js';
+import { frenchSpaces } from './help.js';
 import { cellText } from './cell-text.js';
 import { openModal, confirmModal } from './modal.js';
 import { attachAutocomplete } from './autocomplete.js';
@@ -180,6 +189,16 @@ const BUFF_DEFS = {
 
 /** Bonus de Charge dans le texte des dégâts (computeWeapon : « +1d8 (Charge) ») */
 const CHARGE_BONUS = /\+1d8 \(Charge\)/;
+
+/** Réglage « Quand » d'un dégât en plus (fenêtre de configuration) */
+const EXTRA_MODE_OPTIONS = [['always', 'Toujours'], ['toggle', 'À allumer']];
+
+/** Aide de la rubrique « Dégâts en plus » (dans la fenêtre : la barre du haut est cachée derrière) */
+const EXTRA_HELP = "Pour une arme spéciale, par exemple +2d6 contre les dragons. « Toujours » : compté en permanence dans les dégâts. "
+    + "« À allumer » : une pastille apparaît sous l'arme ; touchez-la quand la condition est remplie. La corbeille retire la ligne.";
+
+/** Dernier contenu écrit dans une case calculée (texte et découpage) : rien n'est réécrit s'il n'a pas changé */
+const calcSignatures = new WeakMap();
 
 let configCounter = 0;
 let notesCounter = 0;
@@ -429,6 +448,14 @@ export function initWeapons(ctx) {
             el('td', { colspan: String(COLUMN_COUNT) }, notesList));
         // Règle de la botte d'arme : bouton posé sur le bord droit de la case (zone de toucher),
         // pastille visible dans son coin bas droit ; affiché seulement pour une botte du manuel
+        // Dégâts en plus « À allumer » : pastilles dans une ligne sous l'arme (contrôles de jeu,
+        // utilisables fiche verrouillée comme Rage) ; à l'impression, une mention à la place
+        const extraPills = el('div', { class: 'weapons-extra-pills', role: 'group' });
+        const extraPrint = el('span', { class: 'weapons-extra-print' });
+        const extraTr = el('tr', { class: 'weapons-extra-row', hidden: true },
+            el('td', { colspan: String(COLUMN_COUNT) }, extraPills, extraPrint));
+        // Dégâts abrégés sur tablette (colonne étroite) : au toucher, le texte complet dans la barre
+        dmg.addEventListener('click', () => sayDamage(index));
         const masteryBtn = el('button', {
             type: 'button', class: 'weapons-mastery-btn', hidden: true, 'aria-haspopup': 'dialog',
             on: { click: () => openMastery(index) }
@@ -453,7 +480,10 @@ export function initWeapons(ctx) {
                 : el('td', {}, inputs[c.key]))),
             el('td', { class: 'weapons-actions edit-only' }, configBtn, deleteBtn));
 
-        const row = { tr, inputs, magic, atk, dmg, configBtn, deleteBtn, notesBtn, notesTr, notesList, notesOpen: false, notesSignature: '', masteryBtn, detach };
+        const row = {
+            tr, inputs, magic, atk, dmg, configBtn, deleteBtn, notesBtn, notesTr, notesList, notesOpen: false, notesSignature: '',
+            masteryBtn, extraTr, extraPills, extraPrint, extraSignature: null, detach
+        };
 
         // Ligne épinglée tant que le focus y reste ; le filtre est réappliqué à la sortie
         // (après la fin du changement de focus, pour qu'un passage d'une cellule à l'autre
@@ -474,7 +504,7 @@ export function initWeapons(ctx) {
     function rebuild(list) {
         for (const row of rows) row.detach();
         rows = list.map((_, i) => buildRow(i));
-        tbody.replaceChildren(...rows.flatMap(r => [r.tr, r.notesTr]), emptyRow);
+        tbody.replaceChildren(...rows.flatMap(r => [r.tr, r.extraTr, r.notesTr]), emptyRow);
         applyLockState();
     }
 
@@ -532,30 +562,123 @@ export function initWeapons(ctx) {
      * Texte calculé ; le bonus de Charge (« +1d8 (Charge) », Expert de la charge) est isolé dans
      * un span : il ne vaut que pour une attaque, l'impression ne le reprend pas (css/print.css),
      * la colonne des dégâts garde sa largeur et la page ne déborde pas. À l'écran, rien ne change.
+     * Dégâts en plus du joueur (`parts`, toujours à la fin du texte) : un span chacun, même police
+     * que le reste ; sur tablette il est abrégé avec « … » (css/weapons.css), et ceux d'une pastille
+     * allumée (`toggle`) ne sont pas imprimés dans la case (mention sous l'arme à la place).
+     * @param {HTMLElement} node
+     * @param {string} text
+     * @param {Array<{ die: string, type: string, toggle: boolean }>} [parts]
      */
-    function writeCalcText(node, text) {
-        if (node.textContent === text) return;
-        const match = text.match(CHARGE_BONUS);
-        if (!match) {
-            node.textContent = text;
-            return;
+    function writeCalcText(node, text, parts = []) {
+        const tail = parts.map(extraDamageText).join('');
+        // Arme hors manuel sans valeur enregistrée : le texte n'est fait que des dégâts en plus
+        const cut = tail === '' ? -1 : text.endsWith(tail) ? tail.length : text === tail.trimStart() ? text.length : -1;
+        const split = cut !== -1;
+        const signature = `${text}\n${split ? parts.map(part => (part.toggle ? 't' : 'a')).join('') : ''}`;
+        if (calcSignatures.get(node) === signature && node.textContent === text) return;
+        calcSignatures.set(node, signature);
+        const head = split ? text.slice(0, text.length - cut) : text;
+        const match = head.match(CHARGE_BONUS);
+        const children = match
+            ? [head.slice(0, match.index), el('span', { class: 'weapons-calc-charge', text: match[0] }), head.slice(match.index + match[0].length)]
+            : [head];
+        if (split) {
+            for (const part of parts) {
+                // L'espace reste hors du span : chaque dégât en plus peut passer seul à la ligne
+                const piece = extraDamageText(part);
+                if (children.some(child => child !== '')) children.push(' ');
+                children.push(el('span', {
+                    class: part.toggle ? 'weapons-calc-extra is-toggle' : 'weapons-calc-extra',
+                    text: piece.trimStart()
+                }));
+            }
         }
-        node.replaceChildren(text.slice(0, match.index),
-            el('span', { class: 'weapons-calc-charge', text: match[0] }),
-            text.slice(match.index + match[0].length));
+        node.replaceChildren(...children.filter(child => child !== ''));
     }
 
-    function writeCalc(node, computed, legacy) {
+    /**
+     * @param {HTMLElement} node
+     * @param {{ text: string, tooltip: string }|undefined} computed - valeur calculée (arme du manuel)
+     * @param {*} legacy - ancienne valeur enregistrée (arme hors manuel)
+     * @param {Object} [weapon] - pour la case des dégâts : ligne de l'arme (dégâts en plus)
+     */
+    function writeCalc(node, computed, legacy, weapon) {
         if (computed) {
-            writeCalcText(node, computed.text);
+            writeCalcText(node, computed.text, weapon ? activeExtraDamage(weapon.weaponConfig) : []);
             node.title = computed.tooltip;
             node.classList.remove('is-legacy');
             return;
         }
-        const text = plain(legacy);
-        node.textContent = text;
-        node.title = text ? 'Valeur enregistrée : arme hors manuel, pas de calcul automatique' : '';
-        node.classList.toggle('is-legacy', Boolean(text));
+        // Arme écrite à la main, non rattachée au manuel : valeur enregistrée, puis dégâts en plus
+        const shown = offBookDamage(plain(legacy), weapon ? weapon.weaponConfig : '');
+        writeCalcText(node, shown.text, shown.parts);
+        node.title = shown.tooltip;
+        node.classList.toggle('is-legacy', shown.legacy);
+    }
+
+    /** Nom d'une arme dans une phrase : « Épée longue », ou « cette arme » sans nom */
+    function weaponInSentence(weapon) {
+        const name = plain(weapon?.name);
+        return name ? `« ${name} »` : 'cette arme';
+    }
+
+    /** Toucher les dégâts d'une arme qui porte des dégâts en plus : le texte complet dans la barre du haut */
+    function sayDamage(index) {
+        const weapon = weapons()[index];
+        const row = rows[index];
+        if (!weapon || !row || activeExtraDamage(weapon.weaponConfig).length === 0) return;
+        setStatus(frenchSpaces(`Dégâts de ${weaponInSentence(weapon)} : ${row.dmg.textContent}`));
+    }
+
+    /** Pastille « À allumer » touchée : l'état est écrit dans la ligne de l'arme (weaponConfig) */
+    function toggleExtra(index, lineIndex, label) {
+        const weapon = weapons()[index];
+        const line = weapon ? readExtraDamage(weapon.weaponConfig).find(entry => entry.index === lineIndex) : null;
+        // La ligne a changé entre-temps (autre onglet) : on ne bascule jamais un autre dégât que celui affiché
+        if (!line || line.mode !== 'toggle' || extraDamageLabel(line) !== label) {
+            refresh(store.get());
+            return;
+        }
+        updateRow(index, (w) => ({ ...w, weaponConfig: toggleExtraDamage(w.weaponConfig, lineIndex) }));
+        setStatus(frenchSpaces(line.on
+            ? `${label} : n'est plus compté dans les dégâts de ${weaponInSentence(weapon)}.`
+            : `${label} : compté dans les dégâts de ${weaponInSentence(weapon)}.`));
+    }
+
+    /**
+     * Ligne des pastilles « À allumer » d'une arme, et mention imprimée à leur place.
+     * @param {Object} row
+     * @param {number} index - place de l'arme dans dynamic_weapons
+     * @param {Object} weapon
+     * @param {boolean} shown - la ligne de l'arme est affichée (filtres)
+     */
+    function writeExtraPills(row, index, weapon, shown) {
+        const lines = readExtraDamage(weapon.weaponConfig).filter(line => line.mode === 'toggle');
+        const who = weaponInSentence(weapon);
+        const signature = `${who}\n${lines.map(line => `${line.index}:${extraDamageLabel(line)}`).join('\n')}`;
+        if (row.extraSignature !== signature) {
+            row.extraSignature = signature;
+            row.extraPills.setAttribute('aria-label', frenchSpaces(`Dégâts en plus à allumer, arme ${who}`));
+            row.extraPills.replaceChildren(...lines.map((line) => {
+                const label = extraDamageLabel(line);
+                return el('button', {
+                    type: 'button', class: 'btn-chip weapons-buff weapons-extra-pill', 'data-extra': String(line.index),
+                    'aria-pressed': 'false',
+                    title: frenchSpaces(`À allumer quand la condition est remplie : ${label} s'ajoute aux dégâts de ${who}.`),
+                    on: { click: () => toggleExtra(index, line.index, label) }
+                }, icon('sparkle'), el('span', { class: 'btn-label', text: label }));
+            }));
+            row.extraPrint.textContent = lines.length
+                ? frenchSpaces(`Selon le cas : ${lines.map(extraDamageLabel).join(' ; ')}`)
+                : '';
+        }
+        for (const button of row.extraPills.children) {
+            const line = lines.find(entry => String(entry.index) === button.dataset.extra);
+            button.setAttribute('aria-pressed', String(line?.on === true));
+        }
+        const visible = lines.length > 0 && shown;
+        row.extraTr.hidden = !visible;
+        row.tr.classList.toggle('has-extra-pills', visible);
     }
 
     function refreshRows(list, derived, buffs, character) {
@@ -583,7 +706,8 @@ export function initWeapons(ctx) {
 
             const computed = computeWeapon(weapon, derived, buffs);
             writeCalc(row.atk, computed?.attack, weapon.atk);
-            writeCalc(row.dmg, computed?.damage, weapon.dmg);
+            writeCalc(row.dmg, computed?.damage, weapon.dmg, weapon);
+            row.dmg.classList.toggle('has-extras', activeExtraDamage(weapon.weaponConfig).length > 0);
 
             // Aspect : palier 1 à 3 ; texte : le bonus que le calcul ajoute vraiment (une ancienne
             // fiche peut en garder un autre)
@@ -603,6 +727,7 @@ export function initWeapons(ctx) {
             if (blank && shown) entryShown = true;
             row.tr.hidden = !shown;
             row.tr.classList.toggle('is-entry', blank);
+            writeExtraPills(row, i, weapon, shown);
             writeFeatNotes(row, weaponFeatNotes(weapon, character, derived, buffs), label, shown);
             writeMasteryButton(row, findMastery(weapon.prof), label);
             row.inputs.name.placeholder = blank ? 'Nouvelle arme…' : 'Nom…';
@@ -749,6 +874,73 @@ export function initWeapons(ctx) {
         const field = (key, label, control, ...extra) => el('div', { class: 'weapons-config-field' },
             el('label', { for: `${id}-${key}`, text: label }), control, ...extra);
 
+        // Dégâts en plus : lignes modifiables (4 au plus). L'état allumé d'une pastille (on) est
+        // gardé tant que la ligne reste « À allumer ». Rien n'est enregistré avant « Appliquer ».
+        const extras = readExtraDamage(weapon.weaponConfig).map(({ dmg, reason, mode, on }) => ({ dmg, reason, mode, on }));
+        const extraError = el('p', { class: 'weapons-config-error', id: `${id}-extra-error`, role: 'alert', hidden: true });
+        const extraList = el('div', { class: 'weapons-extra-lines' });
+        const extraAdd = el('button', {
+            type: 'button', class: 'btn weapons-extra-add',
+            on: {
+                click: () => {
+                    if (extras.length >= EXTRA_DAMAGE_MAX) return;
+                    extras.push({ dmg: '', reason: '', mode: 'always', on: false });
+                    renderExtras();
+                    extraList.lastElementChild?.querySelector('input')?.focus();
+                }
+            }
+        });
+        setIconLabel(extraAdd, 'plus', 'Ajouter un dégât en plus');
+        const extraFull = el('small', { class: 'weapons-config-help', text: `${EXTRA_DAMAGE_MAX} dégâts en plus au maximum par arme.`, hidden: true });
+        /** @type {Array<{ dmg: HTMLInputElement, reason: HTMLInputElement, mode: HTMLSelectElement }>} */
+        let extraControls = [];
+
+        function renderExtras() {
+            extraControls = extras.map((line, i) => {
+                const n = i + 1;
+                const dmgInput = el('input', {
+                    class: 'input', type: 'text', autocomplete: 'off', spellcheck: 'false', autocapitalize: 'off',
+                    placeholder: '2d6', value: line.dmg, 'aria-label': `Dégâts en plus n° ${n}`,
+                    on: { input: (event) => { line.dmg = event.target.value; } }
+                });
+                const reasonInput = el('input', {
+                    class: 'input', type: 'text', autocomplete: 'off', autocapitalize: 'off', maxlength: String(EXTRA_REASON_MAX),
+                    placeholder: 'contre les dragons', value: line.reason, 'aria-label': `Raison du dégât en plus n° ${n}`,
+                    on: { input: (event) => { line.reason = event.target.value; } }
+                });
+                const modeSelect = el('select', {
+                    class: 'input', 'aria-label': `Quand compter le dégât en plus n° ${n}`,
+                    on: { change: (event) => { line.mode = event.target.value; } }
+                }, EXTRA_MODE_OPTIONS.map(([value, label]) => el('option', { value, text: label, selected: value === line.mode })));
+                const removeBtn = el('button', {
+                    type: 'button', class: 'btn-icon is-danger', title: 'Retirer ce dégât en plus',
+                    'aria-label': `Retirer le dégât en plus n° ${n}`,
+                    on: {
+                        click: () => {
+                            extras.splice(i, 1);
+                            renderExtras();
+                            (extraList.children[Math.min(i, extras.length - 1)]?.querySelector('input') || extraAdd).focus();
+                        }
+                    }
+                }, icon('trash'));
+                return { dmg: dmgInput, reason: reasonInput, mode: modeSelect, remove: removeBtn };
+            });
+            extraList.replaceChildren(...extraControls.map(c => el('div', { class: 'weapons-extra-line' }, c.dmg, c.reason, c.mode, c.remove)));
+            extraHead.hidden = extras.length === 0;
+            extraAdd.hidden = extras.length >= EXTRA_DAMAGE_MAX;
+            extraFull.hidden = extras.length < EXTRA_DAMAGE_MAX;
+            extraError.hidden = true;
+        }
+        // En-têtes des colonnes (les champs ont chacun leur nom pour les lecteurs d'écran)
+        const extraHead = el('div', { class: 'weapons-extra-line weapons-extra-head', 'aria-hidden': 'true' },
+            el('span', { text: 'Dégâts' }), el('span', { text: 'Raison' }), el('span', { text: 'Quand' }), el('span'));
+        const extraTitleId = `${id}-extra-title`;
+        const extraBox = el('div', { class: 'weapons-config-field weapons-config-extras', role: 'group', 'aria-labelledby': extraTitleId },
+            el('span', { class: 'label', id: extraTitleId, text: 'Dégâts en plus' }),
+            el('small', { class: 'weapons-config-help', text: frenchSpaces(EXTRA_HELP) }),
+            extraHead, extraList, extraAdd, extraFull, extraError);
+        renderExtras();
+
         const body = el('div', { class: 'weapons-config' },
             el('p', { class: 'weapons-config-name', text: plain(weapon.name) || 'Arme sans nom' }),
             weapon.atkKey ? null : el('p', {
@@ -767,7 +959,8 @@ export function initWeapons(ctx) {
                 error),
             field('type', 'Type de dégâts', typeSelect),
             field('prof', 'Arme maîtrisée', profSelect,
-                el('small', { id: `${id}-prof-help`, class: 'weapons-config-help', text: proficiencyHelp(auto) })));
+                el('small', { id: `${id}-prof-help`, class: 'weapons-config-help', text: proficiencyHelp(auto) })),
+            extraBox);
         profSelect.setAttribute('aria-describedby', `${id}-prof-help`);
 
         openModal({
@@ -781,23 +974,56 @@ export function initWeapons(ctx) {
                     onClick: () => {
                         const current = weapons()[index];
                         if (!current) return true;
+                        // Ligne ajoutée puis laissée vide : retirée, sans message
+                        if (extras.some(line => !line.dmg.trim() && !line.reason.trim())) {
+                            for (let i = extras.length - 1; i >= 0; i--) {
+                                if (!extras[i].dmg.trim() && !extras[i].reason.trim()) extras.splice(i, 1);
+                            }
+                            renderExtras();
+                        }
                         const result = buildWeaponConfig({
                             statOverride: statSelect.value,
                             magicBonus: Number(magicSelect.value),
                             dmgDieOverride: dieInput.value,
                             dmgTypeOverride: typeSelect.value,
-                            proficiency: profSelect.value
+                            proficiency: profSelect.value,
+                            extraDamage: extras.map(({ dmg, reason, mode, on }) => ({ dmg, reason, mode, on }))
                         }, current.weaponConfig);
                         if (!result.ok) {
-                            error.textContent = Object.values(result.errors).join(' ');
-                            error.hidden = false;
+                            // Chaque message près de ses champs : réglages de l'arme, puis dégâts en plus
+                            const { extraDamage: extraMessage, ...others } = result.errors;
+                            error.textContent = Object.values(others).join(' ');
+                            error.hidden = Object.keys(others).length === 0;
                             const dieInvalid = Boolean(result.errors.dmgDieOverride);
                             dieInput.setAttribute('aria-invalid', String(dieInvalid));
                             dieInput.setAttribute('aria-describedby', `${id}-die-help ${id}-error`);
+                            extraError.textContent = extraMessage ? frenchSpaces(`${extraMessage} Rien n'a été enregistré.`) : '';
+                            extraError.hidden = !extraMessage;
+                            const invalid = result.invalidExtras || [];
+                            extraControls.forEach((controls, i) => {
+                                for (const key of ['dmg', 'reason', 'mode']) {
+                                    const bad = invalid.some(entry => entry.index === i && entry.field === key);
+                                    controls[key].setAttribute('aria-invalid', String(bad));
+                                    if (bad) controls[key].setAttribute('aria-describedby', `${id}-extra-error`);
+                                    else controls[key].removeAttribute('aria-describedby');
+                                }
+                            });
+                            const firstBad = invalid[0] ? extraControls[invalid[0].index]?.[invalid[0].field] : null;
                             if (dieInvalid) dieInput.focus();
+                            else if (firstBad) firstBad.focus();
+                            else if (extraMessage) extraError.scrollIntoView({ block: 'nearest' });
                             return false;
                         }
                         updateRow(index, (w) => ({ ...w, weaponConfig: result.value }));
+                        // Nouvelle pastille : fenêtre refermée, la barre du haut dit où elle est et à quoi elle sert
+                        const pills = (raw) => readExtraDamage(raw).filter(line => line.mode === 'toggle');
+                        const known = new Set(pills(current.weaponConfig).map(extraDamageLabel));
+                        const added = pills(result.value).map(extraDamageLabel).filter(label => !known.has(label));
+                        if (added.length) {
+                            setStatus(frenchSpaces(added.length === 1
+                                ? `Pastille ${added[0]} ajoutée sous ${weaponInSentence(current)} : touchez-la quand la condition est remplie.`
+                                : `${added.length} pastilles ajoutées sous ${weaponInSentence(current)} : touchez-les quand leur condition est remplie.`));
+                        }
                         // Nouveau bonus magique : l'arme s'enchante sous les yeux, fenêtre refermée
                         if (magicLevel(readWeaponConfig(result.value).magicBonus) > config.magicBonus) {
                             setTimeout(() => {
