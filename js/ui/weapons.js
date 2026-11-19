@@ -921,7 +921,9 @@ export function initWeapons(ctx) {
                         click: () => {
                             extras.splice(i, 1);
                             renderExtras();
-                            (extraList.children[Math.min(i, extras.length - 1)]?.querySelector('input') || extraAdd).focus();
+                            // Jamais dans un champ de texte : sur tablette, le clavier s'ouvrirait
+                            // alors qu'on vient seulement de retirer une ligne
+                            (extraControls[Math.min(i, extras.length - 1)]?.remove || extraAdd).focus();
                         }
                     }
                 }, icon('trash'));

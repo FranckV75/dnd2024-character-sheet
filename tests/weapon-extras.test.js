@@ -393,6 +393,13 @@ describe('Dégâts en plus : interface (js/ui/weapons.js)', () => {
         assert.match(show, /zone\.scrollTop \+=/, 'la zone défile jusqu\'au message et à sa ligne');
     });
 
+    test('corbeille d\'une ligne : le focus va à une corbeille ou au bouton d\'ajout, jamais dans un champ (clavier de tablette)', () => {
+        const remove = ui.slice(ui.indexOf('const removeBtn = el('), ui.indexOf('return {', ui.indexOf('const removeBtn = el(')));
+        assert.ok(remove.length > 100);
+        assert.match(remove, /\(extraControls\[Math\.min\(i, extras\.length - 1\)\]\?\.remove \|\| extraAdd\)\.focus\(\)/);
+        assert.doesNotMatch(remove, /querySelector\('input'\)/);
+    });
+
     test('dégâts en plus dans la case : aucune couleur, graisse ni police propre', () => {
         const rule = css.slice(css.indexOf('.weapons-calc-extra {'), css.indexOf('}', css.indexOf('.weapons-calc-extra {')));
         assert.ok(rule.length > 10);
