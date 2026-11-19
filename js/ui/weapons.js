@@ -197,7 +197,8 @@ const EXTRA_MODE_OPTIONS = [['always', 'Toujours'], ['toggle', 'À allumer']];
 
 /** Aide de la rubrique « Dégâts en plus » (dans la fenêtre : la barre du haut est cachée derrière) */
 const EXTRA_HELP = "Pour une arme spéciale, par exemple +2d6 contre les dragons. « Toujours » : compté en permanence dans les dégâts. "
-    + "« À allumer » : une pastille apparaît sous l'arme ; touchez-la quand la condition est remplie. La corbeille retire la ligne.";
+    + "« À allumer » : une pastille apparaît sous l'arme ; touchez-la quand la condition est remplie. La corbeille retire la ligne. "
+    + `Raison : ${EXTRA_REASON_MAX} caractères au plus.`;
 
 /**
  * La barre du haut tient sur une ligne (591 px à 768 px, soit une centaine de caractères) : une
