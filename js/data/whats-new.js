@@ -13,6 +13,14 @@
 /** @type {ReadonlyArray<{ version: string, items: ReadonlyArray<string> }>} */
 export const WHATS_NEW = Object.freeze([
     {
+        version: '4.43.0',
+        items: [
+            'Armes spéciales : dans la roue dentée d\'une arme (« Configuration de l\'arme »), la rubrique « Dégâts en plus » ajoute jusqu\'à 4 dégâts avec leur raison, par exemple +2d6 contre les dragons.',
+            '« Toujours » : le dégât est compté en permanence, à côté des dégâts de l\'arme. « À allumer » : une pastille apparaît sous l\'arme, à toucher quand la condition est remplie, même fiche verrouillée.',
+            'Le repos long éteint ces pastilles, comme les autres bonus de combat. Sur papier, les dégâts « À allumer » sont cités sous l\'arme.'
+        ]
+    },
+    {
         version: '4.42.0',
         items: [
             'Grimoire : la mention « Pas d\'emplacement » signale un sort préparé d\'un niveau pour lequel vous n\'avez pas encore d\'emplacement. Rien n\'est décoché.',

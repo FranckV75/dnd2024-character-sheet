@@ -78,6 +78,8 @@ js/
 │   ├── logic.js        Calculs élémentaires (modificateurs, maîtrise, armes, ressources)
 │   ├── character.js    Statistiques dérivées d'une fiche complète (deriveCharacter, computeWeapon)
 │   ├── weapons.js      Tableau des armes (filtres, bonus de combat, configuration)
+│   ├── weapon-extras.js  « Dégâts en plus » d'une arme écrits par le joueur (validation, lecture
+│   │                   tolérante, ajout aux dégâts, pastille allumée / éteinte, repos long)
 │   ├── class-features.js  Capacités de classe calculées (Aura de protection, Touche-à-tout,
 │   │                   Défense sans armure de sous-classe) et maîtrise des armes
 │   ├── armors.js       Tableau des armures (types, ligne d'armure) ; le calcul de CA est dans
@@ -363,6 +365,19 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   Collège de la Vaillance, Roublard L'Odysséen dont le trident compte comme Finesse) ;
   sans maîtrise, `computeWeapon` n'ajoute pas le bonus de maîtrise à l'attaque et `weaponFeatNotes` met
   le rappel « Sans maîtrise » en tête des notes de l'arme (pastille ⚠ orange sous le bonus d'attaque).
+- Dégâts en plus d'une arme (4.43.0, `js/rules/weapon-extras.js`) : propriété facultative `extraDamage`
+  de `weaponConfig`, comme `proficiency` — une liste de 4 lignes au plus `{ dmg, reason, mode }`, `mode`
+  valant `always` (« Toujours ») ou `toggle` (« À allumer »), plus `on: true` quand la pastille est
+  allumée. Absente quand l'arme n'a aucun dégât en plus : `weaponConfig` est alors celui d'avant. Aucune
+  clé au premier niveau de la fiche, aucune clé en plus dans la ligne d'arme. L'état allumé est rangé
+  dans la ligne de l'arme, pas dans `combat_buffs` : il suit l'arme quand une ligne est retirée, rétablie
+  ou filtrée, et `planLongRest` l'éteint avec les bonus de combat (`clearExtraDamageOn`, qui ne réécrit
+  `dynamic_weapons` que si une pastille était allumée). `computeWeapon` ajoute les lignes comptées à la
+  fin du texte des dégâts (`activeExtraDamage`) ; une arme hors manuel (`computeWeapon` null) les montre
+  par `offBookDamage`. Lecture tolérante : une ligne illisible est ignorée, jamais corrigée par
+  l'affichage. La v3 recopie `weaponConfig` tel quel à chaque enregistrement ; seul SON réglage de
+  l'arme, s'il est appliqué, réécrit les quatre propriétés d'origine et fait donc perdre `proficiency`
+  et `extraDamage` de cette arme.
 - Le +1 des dons généraux sans autre choix vient du champ « asi » de `js/data/feats.js`
   (`GENERAL_ASI_RULES`, `js/rules/feat-choices.js`) : un menu « Caractéristique +1 » s'il y a un choix,
   sinon une caractéristique fixe sans menu (Gaillard : Constitution). Rien n'est ajouté à la valeur saisie.

@@ -201,6 +201,10 @@ export const HELP_SECTIONS = Object.freeze([
                 text: "Selon votre classe et vos dons, des pastilles apparaissent au-dessus des armes (la Rage du Barbare, par exemple). Allumez-en une quand le bonus s'applique : il est ajouté aux dégâts des armes concernées."
             },
             {
+                title: "Les dégâts en plus d'une arme",
+                text: "Pour une arme spéciale, ouvrez sa roue dentée, rubrique « Dégâts en plus », puis « Ajouter un dégât en plus » : écrivez les dégâts (2d6) et la raison (contre les dragons). « Toujours » les compte en permanence. « À allumer » pose une pastille sous l'arme : touchez-la quand la condition est remplie, même fiche verrouillée. Le repos long éteint ces pastilles."
+            },
+            {
                 title: "Les armures",
                 text: "Sous « Maîtrises d'armures », cochez les armures que votre personnage sait porter. « Ajouter une armure » crée une ligne pour une armure, un bouclier ou un autre bonus de défense. Cochez « Équipée / actif » quand vous la portez : la classe d'armure est recalculée. Touchez la valeur de la colonne CA pour voir le calcul."
             },
