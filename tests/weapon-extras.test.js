@@ -67,6 +67,16 @@ describe('Dégâts en plus : validation d\'une ligne', () => {
 
     test('dégâts illisibles, raison vide ou trop longue, mode inconnu : refusés avec un message', () => {
         assert.match(validateExtraLine({ dmg: 'beaucoup', reason: 'x' }).errors.dmg, /2d6, 1d6\+2 ou 2/);
+        // Des mots dans la case des dégâts : le message dit où les écrire
+        for (const words of ['1d6 feu', 'beaucoup', '2d6 contre les dragons', 'DEUX']) {
+            assert.match(validateExtraLine({ dmg: words, reason: 'x' }).errors.dmg, /^dégâts illisibles\..*va dans « Raison »\.$/, words);
+        }
+        // Chiffres et dés hors limites : le message rappelle les dés acceptés, sans parler de « Raison »
+        for (const digits of ['1d7', '0', '100d6', '1d6-1', '1d6++2', '', 'd', 'dd']) {
+            const message = validateExtraLine({ dmg: digits, reason: 'x' }).errors.dmg;
+            assert.match(message, /^dégâts illisibles\..*d4, d6, d8, d10, d12, d20/, digits);
+            assert.doesNotMatch(message, /Raison/, digits);
+        }
         assert.match(validateExtraLine({ dmg: '2d6', reason: '   ' }).errors.reason, /raison/);
         assert.match(validateExtraLine({ dmg: '2d6' }).errors.reason, /raison/);
         assert.equal(validateExtraLine({ dmg: '2d6', reason: 'x'.repeat(EXTRA_REASON_MAX) }).ok, true);
@@ -82,6 +92,19 @@ describe('Dégâts en plus : validation d\'une ligne', () => {
         assert.equal(extraDamageText({ die: line.dmg, type: line.reason }), ' +1d4 (<img src=x onerror=alert(1)>)');
         // Retour à la ligne collé : une seule ligne
         assert.equal(validateExtraLine({ dmg: '1', reason: 'contre\nles\tdragons' }).value.reason, 'contre les dragons');
+    });
+
+    test('raison : caractères invisibles retirés (une raison faite de « rien » est refusée)', () => {
+        assert.match(validateExtraLine({ dmg: '2d6', reason: '\u200b' }).errors.reason, /raison/);
+        assert.match(validateExtraLine({ dmg: '2d6', reason: ' \ufeff\u2060 ' }).errors.reason, /raison/);
+        assert.equal(validateExtraLine({ dmg: '2d6', reason: 'contre\u200b les dragons' }).value.reason, 'contre les dragons');
+        assert.equal(validateExtraLine({ dmg: '2d6', reason: '\u202efeu\u202c' }).value.reason, 'feu', 'sens d\'écriture non retourné');
+        // Lettres accentuées, émojis et apostrophes : gardés tels quels
+        assert.equal(validateExtraLine({ dmg: '2d6', reason: 'à l\'épée, près d\'un allié 🐉' }).value.reason, 'à l\'épée, près d\'un allié 🐉');
+        // Une ligne déjà enregistrée avec un tel caractère reste lue (affichée nettoyée, jamais réécrite)
+        const raw = JSON.stringify({ ...BASE, extraDamage: [{ dmg: '2d6', reason: 'contre\u200b les dragons', mode: 'toggle' }] });
+        assert.equal(readExtraDamage(raw)[0].reason, 'contre les dragons');
+        assert.equal(JSON.parse(toggleExtraDamage(raw, 0)).extraDamage[0].reason, 'contre\u200b les dragons');
     });
 
     test('liste : 4 lignes au plus, messages numérotés', () => {

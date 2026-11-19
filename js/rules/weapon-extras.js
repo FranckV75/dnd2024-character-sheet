@@ -19,7 +19,10 @@
 // réglage de l'arme, qui réécrit les quatre propriétés d'origine seulement.
 //
 // LECTURE TOLÉRANTE : une ligne illisible (fichier retouché à la main, autre format) est ignorée,
-// jamais corrigée ni effacée par l'affichage ; les autres réglages de l'arme ne sont pas touchés.
+// jamais corrigée ni effacée par l'affichage, la bascule d'une pastille ou le repos ; les autres
+// réglages de l'arme ne sont pas touchés. Seul « Appliquer », dans la fenêtre de réglage, réécrit
+// la liste : il n'y remet que les lignes lisibles (4 au plus) et leurs propriétés connues
+// (dmg, reason, mode, on) ; une ligne illisible ou une propriété inconnue disparaît alors.
 // Le texte du joueur n'est jamais du HTML : il est affiché tel quel (textContent).
 // =============================================================================
 
@@ -72,11 +75,20 @@ export function normalizeExtraDamage(value) {
     return { ok: true, value: clean.join('+') };
 }
 
+/**
+ * Caractères sans dessin (espace sans chasse, marque d'ordre des octets) ou qui retournent le sens
+ * d'écriture : retirés, pour qu'une raison ne soit jamais faite de « rien » ni écrite à l'envers.
+ */
+const INVISIBLE = /[\u200b\u2060\ufeff\u202a-\u202e\u2066-\u2069]/g;
+
 /** Raison : texte sur une ligne, espaces resserrés (jamais interprété comme du HTML) */
 function cleanReason(value) {
     if (typeof value !== 'string') return '';
-    return value.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim();
+    return value.replace(INVISIBLE, '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim();
 }
+
+/** Des mots dans la case « Dégâts » (« 1d6 feu », « beaucoup ») : toute lettre autre que le « d » des dés */
+const WORDS_IN_DAMAGE = /[a-ce-zà-öø-ÿ]/i;
 
 /**
  * Valide une ligne « dégâts en plus ».
@@ -90,7 +102,10 @@ export function validateExtraLine(input) {
     const line = input && typeof input === 'object' ? input : {};
     const dmg = normalizeExtraDamage(line.dmg);
     if (!dmg.ok) {
-        errors.dmg = 'dégâts illisibles. Écrivez par exemple 2d6, 1d6+2 ou 2 (dés : d4, d6, d8, d10, d12, d20).';
+        // « 1d6 feu » : le type écrit dans la mauvaise case, l'erreur la plus probable
+        errors.dmg = typeof line.dmg === 'string' && WORDS_IN_DAMAGE.test(line.dmg)
+            ? 'dégâts illisibles. Écrivez seulement les dés et les nombres, par exemple 2d6, 1d6+2 ou 2 : le type de dégâts ou la condition va dans « Raison ».'
+            : 'dégâts illisibles. Écrivez par exemple 2d6, 1d6+2 ou 2 (dés : d4, d6, d8, d10, d12, d20).';
     }
     const reason = cleanReason(line.reason);
     if (!reason) errors.reason = 'écrivez la raison (par exemple « contre les dragons »).';
