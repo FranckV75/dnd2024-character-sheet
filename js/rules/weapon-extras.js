@@ -40,7 +40,8 @@ export const EXTRA_REASON_MAX = 40;
 /** 'always' : « Toujours » ; 'toggle' : « À allumer » */
 export const EXTRA_DAMAGE_MODES = ['always', 'toggle'];
 
-const DIE_SIZES = new Set([4, 6, 8, 10, 12, 20]);
+/** Dés acceptés : pour les dégâts en plus, et pour le dé de l'arme remplacé (js/rules/weapons.js) */
+export const DAMAGE_DIE_SIZES = new Set([4, 6, 8, 10, 12, 20]);
 const MAX_TERMS = 3;
 const MAX_DICE = 20;
 const MAX_FLAT = 99;
@@ -63,7 +64,7 @@ export function normalizeExtraDamage(value) {
         if (die) {
             const count = die[1] === '' ? 1 : Number(die[1]);
             const size = Number(die[2]);
-            if (count < 1 || count > MAX_DICE || !DIE_SIZES.has(size)) return { ok: false, value: text };
+            if (count < 1 || count > MAX_DICE || !DAMAGE_DIE_SIZES.has(size)) return { ok: false, value: text };
             clean.push(`${count}d${size}`);
             continue;
         }

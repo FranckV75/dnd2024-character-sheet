@@ -8,12 +8,12 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-    EXTRA_DAMAGE_KEY, EXTRA_DAMAGE_MAX, EXTRA_REASON_MAX,
+    EXTRA_DAMAGE_KEY, EXTRA_DAMAGE_MAX, EXTRA_REASON_MAX, EXTRA_DAMAGE_MODES, DAMAGE_DIE_SIZES,
     normalizeExtraDamage, validateExtraLine, validateExtraDamageList, readExtraDamage,
     activeExtraDamage, extraDamageText, extraDamageLabel, offBookDamage,
     toggleExtraDamage, clearExtraDamageOn
 } from '../js/rules/weapon-extras.js';
-import { buildWeaponConfig, readWeaponConfig, rowFromRulebookWeapon, matchesWeaponFilter, isBlankWeapon, removeWeapon, restoreWeapon } from '../js/rules/weapons.js';
+import { buildWeaponConfig, readWeaponConfig, normalizeDamageDie, rowFromRulebookWeapon, matchesWeaponFilter, isBlankWeapon, removeWeapon, restoreWeapon } from '../js/rules/weapons.js';
 import { computeWeapon, deriveCharacter } from '../js/rules/character.js';
 import { longRestPatch, shortRestPatch } from '../js/rules/rest.js';
 import { migrateCharacter } from '../js/state/migrate.js';
@@ -41,6 +41,14 @@ describe('Dégâts en plus : saisie des dégâts', () => {
         assert.deepEqual(normalizeExtraDamage(3), { ok: true, value: '3' });
         assert.deepEqual(normalizeExtraDamage('d8'), { ok: true, value: '1d8' });
         assert.deepEqual(normalizeExtraDamage('1d4+1d6+1'), { ok: true, value: '1d4+1d6+1' });
+    });
+
+    test('mêmes dés que le dé de l\'arme remplacé (une seule liste)', () => {
+        for (const size of [2, 3, 4, 5, 6, 7, 8, 10, 12, 20, 100]) {
+            const ok = DAMAGE_DIE_SIZES.has(size);
+            assert.equal(normalizeExtraDamage(`1d${size}`).ok, ok, `dégât en plus 1d${size}`);
+            assert.equal(normalizeDamageDie(`1d${size}`).ok, ok, `dé de l'arme 1d${size}`);
+        }
     });
 
     test('illisible : refusé', () => {
@@ -399,6 +407,13 @@ describe('Dégâts en plus : interface (js/ui/weapons.js)', () => {
         assert.ok(toggle.length > 100);
         assert.doesNotMatch(toggle, /isLocked\(/, 'contrôle de jeu : pas de verrou, comme les bonus de combat');
         assert.match(toggle, /setStatus\(frenchSpaces\(/, 'une phrase dans la barre du haut à chaque toucher');
+    });
+
+    test('réglage « Quand » : un libellé pour chaque mode des règles, et rien d\'autre', () => {
+        const labels = ui.match(/const EXTRA_MODE_LABELS = \{([^}]*)\};/)[1];
+        const keys = [...labels.matchAll(/(\w+): '/g)].map(match => match[1]);
+        assert.deepEqual(keys, EXTRA_DAMAGE_MODES);
+        assert.match(ui, /const EXTRA_MODE_OPTIONS = EXTRA_DAMAGE_MODES\.map\(/);
     });
 
     test('libellés de la fenêtre : ceux que cite le mode d\'emploi', () => {

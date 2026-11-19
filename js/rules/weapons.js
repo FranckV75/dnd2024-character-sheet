@@ -12,7 +12,7 @@
 
 import { parseWeaponConfig } from './logic.js';
 import { reachedFeatIds, subclassOf, characterLevel } from './feats.js';
-import { EXTRA_DAMAGE_KEY, validateExtraDamageList } from './weapon-extras.js';
+import { EXTRA_DAMAGE_KEY, DAMAGE_DIE_SIZES, validateExtraDamageList } from './weapon-extras.js';
 
 export const WEAPON_FILTERS = ['all', 'simple', 'martial', 'melee', 'ranged', 'magic'];
 
@@ -32,7 +32,6 @@ export const WEAPON_DAMAGE_TYPES = [
  */
 export const WEAPON_PROFICIENCY_CHOICES = ['auto', 'yes', 'no'];
 
-const DIE_SIZES = new Set([4, 6, 8, 10, 12, 20]);
 const MAX_MAGIC_BONUS = 3;
 
 /** Bonus de combat ouverts par chaque classe (clé de combat_buffs) */
@@ -231,7 +230,7 @@ export function normalizeDamageDie(value) {
     if (!match) return { ok: false, value: text };
     const count = Number(match[1]);
     const size = Number(match[2]);
-    if (count < 1 || count > 20 || !DIE_SIZES.has(size)) return { ok: false, value: text };
+    if (count < 1 || count > 20 || !DAMAGE_DIE_SIZES.has(size)) return { ok: false, value: text };
     return { ok: true, value: `${count}d${size}` };
 }
 

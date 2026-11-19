@@ -45,7 +45,7 @@ import {
     removeWeapon, restoreWeapon, WEAPON_DAMAGE_TYPES
 } from '../rules/weapons.js';
 import {
-    EXTRA_DAMAGE_MAX, EXTRA_REASON_MAX, readExtraDamage, activeExtraDamage, extraDamageText, extraDamageLabel,
+    EXTRA_DAMAGE_MAX, EXTRA_REASON_MAX, EXTRA_DAMAGE_MODES, readExtraDamage, activeExtraDamage, extraDamageText, extraDamageLabel,
     offBookDamage, toggleExtraDamage
 } from '../rules/weapon-extras.js';
 import { el, icon, setIconLabel } from './dom.js';
@@ -192,8 +192,9 @@ const BUFF_DEFS = {
 /** Bonus de Charge dans le texte des dégâts (computeWeapon : « +1d8 (Charge) ») */
 const CHARGE_BONUS = /\+1d8 \(Charge\)/;
 
-/** Réglage « Quand » d'un dégât en plus (fenêtre de configuration) */
-const EXTRA_MODE_OPTIONS = [['always', 'Toujours'], ['toggle', 'À allumer']];
+/** Réglage « Quand » d'un dégât en plus (fenêtre de configuration) : un libellé par mode des règles */
+const EXTRA_MODE_LABELS = { always: 'Toujours', toggle: 'À allumer' };
+const EXTRA_MODE_OPTIONS = EXTRA_DAMAGE_MODES.map(mode => [mode, EXTRA_MODE_LABELS[mode]]);
 
 /** Aide de la rubrique « Dégâts en plus » (dans la fenêtre : la barre du haut est cachée derrière) */
 const EXTRA_HELP = "Pour une arme spéciale, par exemple +2d6 contre les dragons. « Toujours » : compté en permanence dans les dégâts. "
