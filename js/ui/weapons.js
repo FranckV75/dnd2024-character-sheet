@@ -499,16 +499,21 @@ export function initWeapons(ctx) {
 
         // Ligne épinglée tant que le focus y reste ; le filtre est réappliqué à la sortie
         // (après la fin du changement de focus, pour qu'un passage d'une cellule à l'autre
-        // de la même ligne ne la cache pas)
-        tr.addEventListener('focusin', () => { pinnedRow = row; });
-        tr.addEventListener('focusout', (event) => {
-            if (tr.contains(event.relatedTarget)) return;
-            setTimeout(() => {
-                if (pinnedRow !== row || tr.contains(document.activeElement)) return;
-                pinnedRow = null;
-                refresh(store.get());
-            }, 0);
-        });
+        // de la même ligne ne la cache pas). Les pastilles « À allumer » font partie de l'arme :
+        // sans cela, passer d'une case à une pastille cachait la ligne avant la fin du clic,
+        // et la pastille n'était pas basculée.
+        const inRow = (node) => tr.contains(node) || extraTr.contains(node);
+        for (const part of [tr, extraTr]) {
+            part.addEventListener('focusin', () => { pinnedRow = row; });
+            part.addEventListener('focusout', (event) => {
+                if (inRow(event.relatedTarget)) return;
+                setTimeout(() => {
+                    if (pinnedRow !== row || inRow(document.activeElement)) return;
+                    pinnedRow = null;
+                    refresh(store.get());
+                }, 0);
+            });
+        }
 
         return row;
     }

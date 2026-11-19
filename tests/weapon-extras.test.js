@@ -428,6 +428,13 @@ describe('Dégâts en plus : interface (js/ui/weapons.js)', () => {
         assert.match(print, /\.weapons-extra-pills,\n\.weapons-extra-detail \{\n    display: none;/, 'le détail ne s\'imprime pas');
     });
 
+    test('filtre actif : la ligne où l\'on écrit reste affichée quand le focus passe à l\'une de ses pastilles', () => {
+        const pin = ui.slice(ui.indexOf('const inRow = '), ui.indexOf('return row;', ui.indexOf('const inRow = ')));
+        assert.match(pin, /const inRow = \(node\) => tr\.contains\(node\) \|\| extraTr\.contains\(node\);/);
+        assert.match(pin, /for \(const part of \[tr, extraTr\]\)/, 'la ligne des pastilles compte comme la ligne de l\'arme');
+        assert.match(pin, /if \(inRow\(event\.relatedTarget\)\) return;/);
+    });
+
     test('dégâts en plus dans la case : aucune couleur, graisse ni police propre', () => {
         const rule = css.slice(css.indexOf('.weapons-calc-extra {'), css.indexOf('}', css.indexOf('.weapons-calc-extra {')));
         assert.ok(rule.length > 10);
