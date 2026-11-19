@@ -449,14 +449,21 @@ describe('Dégâts en plus : interface (js/ui/weapons.js)', () => {
     });
 
     test('toucher les dégâts : ils s\'écrivent en entier sous l\'arme, la barre du haut ne dit qu\'une phrase courte', () => {
-        const toggle = ui.slice(ui.indexOf('function toggleDamageDetail('), ui.indexOf('function writeDamageDetail('));
+        // Le corps de la fonction seulement (sans le commentaire de la suivante)
+        const start = ui.indexOf('function toggleDamageDetail(');
+        const toggle = ui.slice(start, ui.indexOf('\n    }\n', start));
         assert.ok(toggle.length > 100);
         assert.doesNotMatch(toggle, /isLocked\(/, 'lecture seule : ouvert fiche verrouillée aussi');
         assert.doesNotMatch(toggle, /textContent/, 'le texte des dégâts ne va plus dans la barre du haut (une ligne, il y était coupé)');
-        // La barre du haut tient sur une ligne : 591 px à 768 px, soit une centaine de caractères
-        const phrases = [...toggle.matchAll(/["']([^"'\n]{20,})["']/g)].map(match => match[1]);
-        assert.equal(phrases.length, 2);
-        for (const phrase of phrases) assert.ok(phrase.length <= 75, phrase);
+        // Les deux messages écrits dans la fonction (entre guillemets doubles ou simples)
+        const phrases = [...toggle.matchAll(/"([^"\n]{20,})"|'([^'\n]{20,})'/g)].map(match => match[1] ?? match[2]);
+        assert.deepEqual(phrases.map(phrase => phrase.slice(0, 6)), ['Dégâts', 'Détail']);
+        // Tablette : une ligne de 591 px à 768 px (une centaine de caractères).
+        // Ordinateur : colonne des messages de 175 px sur deux lignes, soit une trentaine de caractères par ligne
+        for (const phrase of phrases) {
+            assert.ok(phrase.length <= 60, phrase);
+            for (const sentence of phrase.split(/(?<=\.)\s+/)) assert.ok(sentence.length <= 30, sentence);
+        }
         const detail = ui.slice(ui.indexOf('function writeDamageDetail('), ui.indexOf('function toggleExtra('));
         assert.match(detail, /setAttribute\('role', 'button'\)/, 'case des dégâts : un vrai bouton, au clavier aussi');
         assert.match(detail, /setAttribute\('aria-expanded', String\(open\)\)/);

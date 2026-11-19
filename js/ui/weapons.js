@@ -651,7 +651,8 @@ export function initWeapons(ctx) {
     /**
      * Toucher les dégâts d'une arme qui porte des dégâts en plus : ils s'écrivent en entier sous
      * l'arme (nouveau toucher : le détail se referme). La barre du haut tient sur une ligne et
-     * coupait ce texte ; elle dit seulement où le lire, en une phrase courte.
+     * coupait ce texte ; elle dit seulement où le lire, en deux phrases de 30 caractères au plus :
+     * sur ordinateur, la colonne des messages fait 175 px sur deux lignes (une phrase par ligne).
      */
     function toggleDamageDetail(index) {
         const weapon = weapons()[index];
@@ -660,7 +661,7 @@ export function initWeapons(ctx) {
         row.detailOpen = !row.detailOpen;
         refresh(store.get());
         setStatus(row.detailOpen
-            ? "Dégâts écrits en entier sous l'arme. Touchez-les encore pour refermer."
+            ? "Dégâts en entier sous l'arme. Touchez encore pour refermer."
             : 'Détail des dégâts refermé.');
     }
 
