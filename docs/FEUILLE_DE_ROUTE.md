@@ -34,11 +34,51 @@ sous-classes). Restent des décisions de Franck :
 
 Faits en 4.41.0 (18/11/2026) : ~~liste des outils~~, ~~notice « Mode d'emploi », fenêtre
 « Nouveautés », personnages d'exemple~~. Faites en 4.42.0 (18/11/2026, publiée) :
-~~finitions du grimoire~~. Restent, dans l'ordre :
+~~finitions du grimoire~~. Faits en 4.43.0 (19/11/2026, **pas encore publiée** : attend le
+« Publie » de Franck) : ~~dégâts en plus sur les armes~~, ~~étude du mode Odyssée désactivable~~
+(`docs/etudes/MODE_ODYSSEE.md`). Reste :
 
-1. **Dégâts en plus sur les armes** : lignes dans le réglage ⚙ (dégâts + raison), « toujours » ou
-   « à allumer » (pastille, comme la Rage).
-2. **Mode Odyssée désactivable** : un des prochains chantiers, courte étude d'abord.
+1. **Mode Odyssée désactivable** : l'étude est faite, rien n'est construit. Elle conseille un
+   réglage par fiche, actif par défaut (les fiches actuelles ne changent pas), où ce que la fiche
+   utilise déjà reste toujours en place. Chantier petit à moyen, en 4 lots. Il attend les
+   réponses de Franck aux questions ci-dessous, puis son accord.
+
+Questions de l'étude du mode Odyssée (réponses de Franck attendues) :
+- Réglage par fiche, actif par défaut ? (conseil : oui)
+- Mode coupé mais la fiche a un destin héroïque ou des points de renommée : garder l'encadré ?
+  (conseil : oui, il ne se cache que vide)
+- Les 8 fonds d'écran fournis sont les images du groupe : les retirer de la galerie quand le mode
+  est coupé ? (conseil : non pour l'instant)
+- Où placer la case : dans l'encadré « Odyssée » de l'onglet 3 ou dans le menu « Gestion » ?
+  (conseil : dans l'encadré)
+- Les « points de Foi » (libellé « Inspiration héroïque ou points de Foi », onglet Combat)
+  viennent-ils de l'Odyssée ? Si oui, le libellé devient « Inspiration héroïque » mode coupé.
+- « Nouvelle fiche » : proposer tout de suite le choix de la campagne ? (conseil : plus tard)
+- Les deux personnages d'exemple : mode coupé d'office ? (conseil : oui, plus tard)
+
+Décisions de Franck en attente sur la 4.43.0 (dégâts en plus) :
+- Repos court : il n'éteint pas les pastilles (comme la Rage) ; seul le repos long les éteint.
+- Tableau : un dégât en plus tient sur une ligne, abrégé par « … » (sur tablette en portrait
+  même une raison courte est abrégée) ; le texte entier se lit sur la pastille ou en touchant les
+  dégâts. L'autre choix (deux lignes par dégât) allonge les lignes d'armes.
+- Impression : les « À allumer » sont cités sous l'arme (« Selon le cas : … », petit italique
+  d'environ 7 pt), jamais dans la case. Taille à grossir ?
+- Limites : 4 lignes par arme, raison de 40 caractères, dés d4 à d20, pas de soustraction, pas
+  de champ à part pour le type de dégâts (il s'écrit dans la raison).
+- Rappels des dons qui citent les dégâts de l'arme (Maître d'hast, arme lancée, attaque Légère) :
+  ils reprennent les dégâts en plus, pastilles allumées comprises ; la botte Enchaînement non.
+- Ancien site (v3) : appliquer SON réglage d'arme efface les dégâts en plus de cette arme (comme
+  « Arme maîtrisée » depuis la 4.15.0). Rien à corriger ; à savoir tant que la v3 sert encore.
+
+Petits restes de la 4.43.0 (pas urgents) : « Appliquer » dans le réglage retire une ligne
+illisible ou une propriété inconnue (fichier retouché à la main seulement) ; un onglet de
+l'ancien site resté ouvert voit une pastille allumée comme un vrai changement des armes (question
+de conflit au lieu d'un choix automatique) ; toucher les dégâts d'une arme sans dégât en plus ne
+dit rien ; sur ordinateur, la colonne des messages coupe les phrases des pastilles (texte entier
+au survol) ; l'affichage suppose que les dégâts en plus sont à la fin du texte des dégâts (un
+seul test le vérifie). Défauts plus anciens vus au passage, non touchés : le tableau des armes
+peut défiler de 8 px dans son cadre ; à 768 px « Ralentissement » et l'en-tête « Notes » se
+coupent ; à 1024 px « FOR : +6 » passe sur deux lignes.
 
 **À chaque version, désormais** : ajouter l'entrée de la version en tête de `js/data/whats-new.js`
 (sinon `npm run check` échoue) et mettre à jour la notice `js/data/help.js`.
@@ -101,10 +141,6 @@ Détail des idées :
   dé et affiche le total. Pas prioritaire pour l'instant.
 - Fiche utilisable sans wifi, installée comme une application sur la tablette (attention aux
   mises à jour, qui doivent toujours arriver). Chantier seul. Pas prioritaire pour l'instant.
-- Armes : dans le réglage ⚙ d'une arme, pouvoir ajouter des dégâts supplémentaires avec leur
-  raison (ex. « +2d6 contre les dragons » d'une arme tueuse, « +1d6 radiants contre les
-  morts-vivants »), affichés à côté des dégâts comme le fait déjà Fureur divine en Rage
-  (demande de Franck, 11/11/2026).
 - Grimoire, suites possibles (à décider par Franck) : Paladin et Rôdeur traités comme Clerc et
   Druide (fenêtre et rappel de repos long) ou non ; cases de suivi pour les lancers gratuits qui
   n'en ont pas (voir les décisions en attente sur la 4.42.0) ; Magicien : repères pour Maîtrise
@@ -112,10 +148,11 @@ Détail des idées :
   Franck), rappel de Mémorisation de sort au repos court, Aptitude érudite au niveau 3 (2 ou
   3 sorts) ; Barde du Savoir : enregistrer ses deux Découvertes magiques.
 - Grimoire : comme les objets magiques, un aspect qui monte en puissance avec le niveau du sort.
-- Mode « Odyssée des Seigneurs Dragons » désactivable (demande de Franck, 18/11/2026) : retirer
-  ce qui est propre à cette campagne (espèces, sous-classes Seigneur Dragon / Amazone /
-  Odysséen, style Hoplite, dragonnets, fonds d'écran…) pour jouer une autre campagne. À étudier :
-  inventaire des différences, réglage par fiche ou par appareil, compatibilité des sauvegardes.
+- Mode « Odyssée des Seigneurs Dragons » désactivable (demande de Franck, 18/11/2026) : ne plus
+  proposer ce qui est propre à cette campagne (6 espèces, 12 sous-classes, style Hoplite, encadré
+  de l'onglet 3) pour jouer une autre campagne. Étude faite le 19/11/2026
+  (`docs/etudes/MODE_ODYSSEE.md`) : inventaire, options, pièges techniques, découpage en lots.
+  Voir « Reste » et les questions en tête de ce point 3.
 - Explications des options (demande de Franck, 18/11/2026) : chaque bouton ou option dit en une
   phrase à quoi il sert, lisible aussi sur tablette (fait pour le grimoire en 4.40.0 et pour les
   nouveautés de la 4.41.0 ; le « Mode d'emploi » explique le reste, onglet par onglet ; une revue

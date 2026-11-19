@@ -2,6 +2,30 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.43.0] - 2026-11-19 (Dégâts en plus sur les armes)
+### Added
+- Fenêtre « Configuration de l'arme » (roue dentée) : rubrique « Dégâts en plus », jusqu'à
+  4 lignes « Dégâts / Raison / Quand ». Dégâts acceptés : dés et nombres ajoutés (2d6, 1d6+2, 2 ;
+  dés d4 à d20, pas de soustraction). Raison : 40 caractères au plus. Une saisie fausse n'est
+  jamais enregistrée : le message s'affiche au-dessus de la ligne fautive.
+- « Toujours » : le dégât est écrit à la fin des dégâts de l'arme, comme Fureur divine
+  (« 1d8 +4 TRAN +1 (feu) »), même police que le reste. « À allumer » : une pastille de 44 px sous
+  l'arme (« +2d6 contre les dragons »), utilisable fiche verrouillée comme la Rage ; allumée, ses
+  dégâts s'ajoutent. Le repos long éteint les pastilles (pas le repos court, comme la Rage).
+- Dans le tableau, chaque dégât en plus tient sur une ligne, abrégé par « … » ; toucher les
+  dégâts de l'arme les écrit en entier dans une ligne sous l'arme (second toucher : refermé).
+- Arme écrite à la main (hors manuel) et attaque à mains nues : les dégâts en plus s'affichent
+  aussi. Impression : les « Toujours » dans la case ; les « À allumer » cités sous l'arme
+  (« Selon le cas : … »), jamais dans la case.
+- Format : propriété facultative `extraDamage` dans `weaponConfig` de la ligne d'arme (comme
+  `proficiency` depuis la 4.15.0), état allumé compris (`"on": true`). Aucune nouvelle clé de
+  fiche. Une arme sans dégât en plus garde exactement le même `weaponConfig` qu'avant. Règles
+  pures dans `js/rules/weapon-extras.js` (testées, lecture tolérante d'un réglage abîmé).
+- Étude du mode « Odyssée » désactivable : `docs/etudes/MODE_ODYSSEE.md` (rien de construit).
+### Changed
+- Notice (« Les dégâts en plus d'une arme ») et fenêtre « Nouveautés » mises à jour.
+- Une seule liste des dés de dégâts acceptés (dé de l'arme remplacé et dégâts en plus).
+
 ## [4.42.0] - 2026-11-18 (Finitions du grimoire)
 ### Added
 - Mention « Pas d'emplacement » sous le nom d'un sort préparé dont le niveau dépasse le plus haut

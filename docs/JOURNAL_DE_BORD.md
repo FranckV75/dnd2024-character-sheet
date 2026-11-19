@@ -15,8 +15,14 @@ en fin de session :
 - **En ligne** : version **4.42.0** (finitions du grimoire : mention « Pas d'emplacement »,
   « Lancer gratuit », « Retirer les sorts non préparés », « Rituels du livre » repliés), publiée
   le 18/11/2026 avec l'accord de Franck (`master` = `v4`).
-- **Prochain chantier** (sur demande de Franck) : dégâts en plus sur les armes, puis étude du
-  mode Odyssée désactivable. **Multiclassage** : chantier à venir, voulu par Franck (18/11/2026).
+- **Prête, pas encore publiée** : version **4.43.0** (dégâts en plus sur les armes : rubrique
+  dans la roue dentée, « Toujours » ou pastille « À allumer »). Elle est sur la branche `v4` de
+  cet ordinateur seulement ; elle attend le « Publie » de Franck.
+- **Étude du mode Odyssée désactivable** : faite (`docs/etudes/MODE_ODYSSEE.md`), rien de
+  construit. Elle attend les réponses de Franck (7 questions, point 3 de la feuille de route).
+- **Multiclassage** : chantier à venir, voulu par Franck (18/11/2026), à étudier d'abord.
+- **Vérifications sur tablette** : Franck les fera quand il aura le temps (demande du
+  19/11/2026) ; la liste ci-dessous fait foi et s'allonge à chaque version.
 - **À chaque version** : entrée en tête de `js/data/whats-new.js` et notice `js/data/help.js`
   à jour.
 - **Petits champs sur iPad** : ne rien changer tant que Franck n'a pas d'info sur le zoom.
@@ -32,6 +38,13 @@ en fin de session :
 
 ### À vérifier par Franck (tablette Android, iPad de Catherine)
 
+- 4.43.0 (après publication), onglet Combat, sur une arme de test : roue dentée, rubrique
+  « Dégâts en plus » avec le clavier de la tablette ouvert (les champs et « Appliquer » restent
+  atteignables ; après une saisie fausse, le message rouge et le champ se voient ensemble ;
+  après la corbeille, le clavier ne s'ouvre pas) ; la pastille s'allume d'un seul toucher, fiche
+  verrouillée ou non ; dans le tableau, le dégât en plus est abrégé par « … » sur une ligne
+  (Safari) ; toucher les dégâts ouvre le détail sous l'arme, un second toucher le referme ;
+  impression depuis la tablette : mention « Selon le cas : … » lisible ou trop petite.
 - 4.42.0, onglet Magie : mention « Pas d'emplacement » (la toucher) ;
   « Lancer » sur un sort de don ou d'espèce (« Lancer gratuit ») ; pour un Clerc ou un Druide,
   « Retirer les sorts non préparés » sur une fiche de test, puis « Revenir à… » ; pour un
@@ -69,11 +82,32 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 2. ~~restes et points relevés~~ : faits (4.39.0) ; restent les décisions listées au point 2 de
    `docs/FEUILLE_DE_ROUTE.md` ;
 3. ~~discussion pour trier les idées~~ : faite le 18/11/2026. Ordre validé par Franck : liste des
-   outils et notice (faits, 4.41.0), finitions du grimoire (faites, 4.42.0), puis dégâts en plus
-   sur les armes, étude du mode Odyssée désactivable. Détail et décisions en attente au point 3 de
+   outils et notice (faits, 4.41.0), finitions du grimoire (faites, 4.42.0), dégâts en plus sur
+   les armes et étude du mode Odyssée désactivable (faits, 4.43.0). Reste le mode Odyssée à
+   construire, après les réponses de Franck. Détail et décisions en attente au point 3 de
    `docs/FEUILLE_DE_ROUTE.md`.
 
 ## Sessions
+
+### 19/11/2026 — Dégâts en plus sur les armes (4.43.0, pas encore publiée) et étude du mode Odyssée
+
+- Deux chantiers menés en parallèle en ultracode (accord de Franck) : les dégâts en plus (un
+  réalisateur, deux relecteurs, un correcteur) et l'étude du mode Odyssée (une étude, une
+  contre-vérification). Puis vérification par l'orchestrateur : 1579 tests, relecture des règles
+  de sauvegarde et de repos, essai au doigt simulé à 820 et 768 px sur une fiche de test (ajout
+  par la roue dentée, pastille, détail, rechargement, repos long, saisie fausse, retrait : le
+  réglage redevient exactement celui d'avant), 0 erreur console.
+- Choix de fond : tout est rangé dans `weaponConfig` de la ligne d'arme (propriété facultative
+  `extraDamage`, état allumé compris), aucune nouvelle clé. L'état allumé suit ainsi l'arme
+  (suppression, filtre) et l'ancien site le recopie sans le lire.
+- Défauts trouvés par les relecteurs et corrigés : message d'erreur hors de l'écran dans la
+  fenêtre ; texte « complet » coupé dans la barre du haut (remplacé par un détail sous l'arme) ;
+  lignes d'armes trop hautes (un dégât en plus = une ligne) ; clavier ouvert après la corbeille.
+- Étude Odyssée rangée dans `docs/etudes/MODE_ODYSSEE.md` : réglage par fiche conseillé, actif
+  par défaut ; 7 questions pour Franck dans la feuille de route.
+- Franck a demandé de garder en mémoire toutes les vérifications sur tablette : section « À
+  vérifier par Franck » ci-dessus, à lui ressortir quand il aura le temps.
+- Non publié : attend l'accord de Franck.
 
 ### 18/11/2026 — Finitions du grimoire (4.42.0)
 
