@@ -383,6 +383,16 @@ describe('Dégâts en plus : interface (js/ui/weapons.js)', () => {
         assert.match(ui, /text: frenchSpaces\(EXTRA_HELP\)/, 'aide affichée dans la fenêtre, avec les espaces insécables');
     });
 
+    test('saisie refusée : le message est posé au-dessus de la ligne fautive, jamais en bas de la rubrique', () => {
+        const box = ui.slice(ui.indexOf('const extraBox = el('), ui.indexOf('renderExtras();', ui.indexOf('const extraBox = el(')));
+        assert.ok(box.length > 100);
+        assert.doesNotMatch(box, /extraError/, 'plus de place fixe sous le bouton « Ajouter » (hors de vue quand la fenêtre défile)');
+        const show = ui.slice(ui.indexOf('function showExtraError('), ui.indexOf('const body = el('));
+        assert.match(show, /extraList\.insertBefore\(extraError, bad \? bad\.line : extraList\.firstChild\)/);
+        assert.match(show, /focus\(\{ preventScroll: true \}\)/, 'le curseur ne fait pas défiler la fenêtre loin du message');
+        assert.match(show, /zone\.scrollTop \+=/, 'la zone défile jusqu\'au message et à sa ligne');
+    });
+
     test('dégâts en plus dans la case : aucune couleur, graisse ni police propre', () => {
         const rule = css.slice(css.indexOf('.weapons-calc-extra {'), css.indexOf('}', css.indexOf('.weapons-calc-extra {')));
         assert.ok(rule.length > 10);

@@ -877,6 +877,8 @@ export function initWeapons(ctx) {
         // Dégâts en plus : lignes modifiables (4 au plus). L'état allumé d'une pastille (on) est
         // gardé tant que la ligne reste « À allumer ». Rien n'est enregistré avant « Appliquer ».
         const extras = readExtraDamage(weapon.weaponConfig).map(({ dmg, reason, mode, on }) => ({ dmg, reason, mode, on }));
+        // Message de refus : posé dans la liste, juste au-dessus de la première ligne fautive
+        // (en bas de la rubrique, il restait hors de vue dès que la fenêtre défile)
         const extraError = el('p', { class: 'weapons-config-error', id: `${id}-extra-error`, role: 'alert', hidden: true });
         const extraList = el('div', { class: 'weapons-extra-lines' });
         const extraAdd = el('button', {
@@ -892,7 +894,7 @@ export function initWeapons(ctx) {
         });
         setIconLabel(extraAdd, 'plus', 'Ajouter un dégât en plus');
         const extraFull = el('small', { class: 'weapons-config-help', text: `${EXTRA_DAMAGE_MAX} dégâts en plus au maximum par arme.`, hidden: true });
-        /** @type {Array<{ dmg: HTMLInputElement, reason: HTMLInputElement, mode: HTMLSelectElement }>} */
+        /** @type {Array<{ dmg: HTMLInputElement, reason: HTMLInputElement, mode: HTMLSelectElement, remove: HTMLButtonElement, line: HTMLElement }>} */
         let extraControls = [];
 
         function renderExtras() {
@@ -923,9 +925,13 @@ export function initWeapons(ctx) {
                         }
                     }
                 }, icon('trash'));
-                return { dmg: dmgInput, reason: reasonInput, mode: modeSelect, remove: removeBtn };
+                return {
+                    dmg: dmgInput, reason: reasonInput, mode: modeSelect, remove: removeBtn,
+                    line: el('div', { class: 'weapons-extra-line' }, dmgInput, reasonInput, modeSelect, removeBtn)
+                };
             });
-            extraList.replaceChildren(...extraControls.map(c => el('div', { class: 'weapons-extra-line' }, c.dmg, c.reason, c.mode, c.remove)));
+            // Le message d'un refus précédent sort de la liste avec les anciennes lignes
+            extraList.replaceChildren(...extraControls.map(c => c.line));
             extraHead.hidden = extras.length === 0;
             extraAdd.hidden = extras.length >= EXTRA_DAMAGE_MAX;
             extraFull.hidden = extras.length < EXTRA_DAMAGE_MAX;
@@ -938,8 +944,32 @@ export function initWeapons(ctx) {
         const extraBox = el('div', { class: 'weapons-config-field weapons-config-extras', role: 'group', 'aria-labelledby': extraTitleId },
             el('span', { class: 'label', id: extraTitleId, text: 'Dégâts en plus' }),
             el('small', { class: 'weapons-config-help', text: frenchSpaces(EXTRA_HELP) }),
-            extraHead, extraList, extraAdd, extraFull, extraError);
+            extraHead, extraList, extraAdd, extraFull);
         renderExtras();
+
+        /**
+         * Refus d'un dégât en plus : le message au-dessus de la ligne fautive, le curseur dans le
+         * champ à corriger, et la zone de la fenêtre déroulée pour que les deux se voient ensemble.
+         * @param {string} message
+         * @param {{ line: HTMLElement }|undefined} bad - première ligne fautive
+         * @param {HTMLElement|null} field - champ à corriger (null : le curseur ne bouge pas)
+         */
+        function showExtraError(message, bad, field) {
+            extraError.textContent = frenchSpaces(`${message} Rien n'a été enregistré.`);
+            extraError.hidden = false;
+            extraList.insertBefore(extraError, bad ? bad.line : extraList.firstChild);
+            field?.focus({ preventScroll: true });
+            const zone = extraError.closest('.modal-body');
+            if (!zone) return;
+            const frame = zone.getBoundingClientRect();
+            const top = extraError.getBoundingClientRect().top - frame.top;
+            const bottom = (bad ? bad.line : extraError).getBoundingClientRect().bottom - frame.top;
+            const margin = 6;
+            // Trop haut : on remonte jusqu'au message ; trop bas : on descend juste assez, sans
+            // jamais faire sortir le message par le haut
+            if (top < margin) zone.scrollTop += top - margin;
+            else if (bottom > zone.clientHeight - margin) zone.scrollTop += Math.min(top - margin, bottom - zone.clientHeight + margin);
+        }
 
         const body = el('div', { class: 'weapons-config' },
             el('p', { class: 'weapons-config-name', text: plain(weapon.name) || 'Arme sans nom' }),
@@ -997,8 +1027,6 @@ export function initWeapons(ctx) {
                             const dieInvalid = Boolean(result.errors.dmgDieOverride);
                             dieInput.setAttribute('aria-invalid', String(dieInvalid));
                             dieInput.setAttribute('aria-describedby', `${id}-die-help ${id}-error`);
-                            extraError.textContent = extraMessage ? frenchSpaces(`${extraMessage} Rien n'a été enregistré.`) : '';
-                            extraError.hidden = !extraMessage;
                             const invalid = result.invalidExtras || [];
                             extraControls.forEach((controls, i) => {
                                 for (const key of ['dmg', 'reason', 'mode']) {
@@ -1008,10 +1036,12 @@ export function initWeapons(ctx) {
                                     else controls[key].removeAttribute('aria-describedby');
                                 }
                             });
-                            const firstBad = invalid[0] ? extraControls[invalid[0].index]?.[invalid[0].field] : null;
+                            // Dé de l'arme faux : il passe d'abord (son message est sous son champ) ;
+                            // le message des dégâts en plus est posé quand même, sans prendre le curseur
+                            const bad = invalid[0] ? extraControls[invalid[0].index] : undefined;
+                            if (extraMessage) showExtraError(extraMessage, bad, dieInvalid ? null : bad?.[invalid[0].field] ?? null);
+                            else extraError.hidden = true;
                             if (dieInvalid) dieInput.focus();
-                            else if (firstBad) firstBad.focus();
-                            else if (extraMessage) extraError.scrollIntoView({ block: 'nearest' });
                             return false;
                         }
                         updateRow(index, (w) => ({ ...w, weaponConfig: result.value }));
