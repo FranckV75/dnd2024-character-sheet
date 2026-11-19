@@ -25,6 +25,7 @@ import { restCompanions } from './subclass-companions.js';
 import { restFeatSpellUses } from './feat-spells.js';
 import { isHuman } from './feats.js';
 import { longRestPreparation } from './spell-preparation.js';
+import { clearExtraDamageOn } from './weapon-extras.js';
 
 export const DEATH_SAVE_KEYS = ['ds_s1', 'ds_s2', 'ds_s3', 'ds_f1', 'ds_f2', 'ds_f3'];
 
@@ -317,6 +318,10 @@ export function planLongRest(character) {
 
     for (const key of DEATH_SAVE_KEYS) patch[key] = false;
     patch.combat_buffs = {};
+    // Pastilles « À allumer » des dégâts en plus des armes : éteintes avec les bonus de combat
+    // (l'état est rangé dans la ligne de l'arme ; rien n'est écrit si aucune n'est allumée)
+    const weaponsOff = clearExtraDamageOn(character.dynamic_weapons);
+    if (weaponsOff !== character.dynamic_weapons) patch.dynamic_weapons = weaponsOff;
 
     // Dons à usages limités : tous reviennent (Chanceux, Tueur de mages, Rituel rapide), puis les
     // lancers gratuits des sorts de dons (lus sur la fiche déjà mise à jour : même clé feat_uses)

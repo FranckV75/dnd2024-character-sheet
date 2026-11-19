@@ -15,6 +15,7 @@ import {
 } from './logic.js';
 import { reachedFeatIds } from './feats.js';
 import { weaponReach, isUnarmedStrike } from './weapons.js';
+import { activeExtraDamage } from './weapon-extras.js';
 import { divineFuryDie } from './subclass-features.js';
 import { subclassInitiativeBonuses, subclassSkillBonus, subclassWeaponStat, danceUnarmedDie } from './subclass-calcs.js';
 import { subclassBuffDamage } from './subclass-combat.js';
@@ -508,6 +509,9 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     // Style Armes de lancer (Manuel des joueurs français p. 209) : +2 aux dégâts d'une attaque à distance avec une arme de
     // Lancer (rappel sous l'arme, featEffects)
     if (buffs.thrownWeapon) extraDmg.push({ die: '2', type: 'Armes de lancer' });
+    // Dégâts en plus écrits par le joueur dans le réglage de l'arme (« +2d6 contre les dragons ») :
+    // les « Toujours », puis les « À allumer » allumés, toujours à la fin du texte (weapon-extras.js)
+    extraDmg.push(...activeExtraDamage(config).map(({ die, type }) => ({ die, type })));
     // Style Archerie (Manuel des joueurs français p. 209) : +2 aux jets d'attaque avec les armes à distance (pas les
     // armes de corps à corps lancées)
     const attackBonuses = (stats.feats ?? []).includes('archerie') && !reach.melee && reach.ranged

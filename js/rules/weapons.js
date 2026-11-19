@@ -3,6 +3,7 @@
 //  - filtres d'affichage (Courantes / Guerre / Corps à corps / Distance / Magiques)
 //  - ligne d'arme remplie à partir du manuel (DD_RULES.weapons)
 //  - configuration personnalisée d'une arme (champ weaponConfig, format v3)
+//    (les « dégâts en plus » écrits par le joueur ont leurs règles dans weapon-extras.js)
 //  - bonus de combat proposés selon la classe (Rage, Attaque sournoise, Marque du chasseur)
 //    ou selon un don (Cogneur lourd, Expert de la charge)
 //  - type de dégâts d'une arme (rappels des dons Trancheur, Broyeur, Perforateur)
@@ -11,6 +12,7 @@
 
 import { parseWeaponConfig } from './logic.js';
 import { reachedFeatIds, subclassOf, characterLevel } from './feats.js';
+import { EXTRA_DAMAGE_KEY, validateExtraDamageList } from './weapon-extras.js';
 
 export const WEAPON_FILTERS = ['all', 'simple', 'martial', 'melee', 'ranged', 'magic'];
 
@@ -266,9 +268,13 @@ export function readWeaponConfig(raw) {
  * seulement si le joueur a choisi ; « Auto » n'écrit rien et efface un ancien choix). Les autres clés éventuellement
  * présentes dans l'ancienne configuration sont conservées, de même qu'un ancien dé de dégâts
  * libre (format v3) laissé tel quel dans le formulaire.
+ * Dégâts en plus (propriété facultative `extraDamage`, 4.43.0, js/rules/weapon-extras.js) :
+ * `input.extraDamage` absent = la liste enregistrée n'est pas touchée ; liste vide = la propriété
+ * est retirée (une arme sans dégât en plus garde exactement le weaponConfig d'avant la 4.43.0).
  * @param {Object} input - valeurs du formulaire
  * @param {string|Object} [previous] - ancienne valeur de weaponConfig
- * @returns {{ ok: true, value: string } | { ok: false, errors: Object<string, string> }}
+ * @returns {{ ok: true, value: string } | { ok: false, errors: Object<string, string>,
+ *            invalidExtras?: Array<{ index: number, field: string }> }}
  */
 export function buildWeaponConfig(input, previous = '') {
     const errors = {};
@@ -297,9 +303,17 @@ export function buildWeaponConfig(input, previous = '') {
     if (!WEAPON_PROFICIENCY_CHOICES.includes(proficiency)) {
         errors.proficiency = 'Réglage de maîtrise inconnu.';
     }
-    if (Object.keys(errors).length) return { ok: false, errors };
+    // Dégâts en plus : validés seulement si le formulaire les fournit
+    const extras = input?.extraDamage === undefined ? null : validateExtraDamageList(input.extraDamage);
+    if (extras && !extras.ok) errors.extraDamage = extras.message;
+    if (Object.keys(errors).length) return { ok: false, errors, ...(extras && !extras.ok ? { invalidExtras: extras.invalid } : {}) };
 
-    const { proficiency: _previousProficiency, ...kept } = previousConfig;
+    const { proficiency: _previousProficiency, ...withExtras } = previousConfig;
+    const { [EXTRA_DAMAGE_KEY]: previousExtras, ...kept } = withExtras;
+    // Liste écrite en dernier : absente si vide ; non fournie = l'ancienne valeur, telle quelle
+    const extraDamage = extras
+        ? (extras.value.length ? { [EXTRA_DAMAGE_KEY]: extras.value } : {})
+        : (previousExtras === undefined ? {} : { [EXTRA_DAMAGE_KEY]: previousExtras });
     return {
         ok: true,
         value: JSON.stringify({
@@ -308,7 +322,8 @@ export function buildWeaponConfig(input, previous = '') {
             magicBonus,
             dmgDieOverride: die.value,
             dmgTypeOverride,
-            ...(proficiency === 'auto' ? {} : { proficiency })
+            ...(proficiency === 'auto' ? {} : { proficiency }),
+            ...extraDamage
         })
     };
 }
