@@ -12,12 +12,9 @@ en fin de session :
 
 ## En ce moment
 
-- **En ligne** : version **4.42.0** (finitions du grimoire : mention « Pas d'emplacement »,
-  « Lancer gratuit », « Retirer les sorts non préparés », « Rituels du livre » repliés), publiée
-  le 18/11/2026 avec l'accord de Franck (`master` = `v4`).
-- **Prête, pas encore publiée** : version **4.43.0** (dégâts en plus sur les armes : rubrique
-  dans la roue dentée, « Toujours » ou pastille « À allumer »). Elle est sur la branche `v4` de
-  cet ordinateur seulement ; elle attend le « Publie » de Franck.
+- **En ligne** : version **4.43.0** (dégâts en plus sur les armes : rubrique dans la roue
+  dentée, « Toujours » ou pastille « À allumer »), publiée le 19/11/2026 avec l'accord de Franck
+  (`master` = `v4`).
 - **Étude du mode Odyssée désactivable** : faite (`docs/etudes/MODE_ODYSSEE.md`), rien de
   construit. Elle attend les réponses de Franck (7 questions, point 3 de la feuille de route).
 - **Multiclassage** : chantier à venir, voulu par Franck (18/11/2026), à étudier d'abord.
@@ -38,7 +35,7 @@ en fin de session :
 
 ### À vérifier par Franck (tablette Android, iPad de Catherine)
 
-- 4.43.0 (après publication), onglet Combat, sur une arme de test : roue dentée, rubrique
+- 4.43.0, onglet Combat, sur une arme de test : roue dentée, rubrique
   « Dégâts en plus » avec le clavier de la tablette ouvert (les champs et « Appliquer » restent
   atteignables ; après une saisie fausse, le message rouge et le champ se voient ensemble ;
   après la corbeille, le clavier ne s'ouvre pas) ; la pastille s'allume d'un seul toucher, fiche
@@ -89,7 +86,7 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 
 ## Sessions
 
-### 19/11/2026 — Dégâts en plus sur les armes (4.43.0, pas encore publiée) et étude du mode Odyssée
+### 19/11/2026 — Dégâts en plus sur les armes (4.43.0) et étude du mode Odyssée
 
 - Deux chantiers menés en parallèle en ultracode (accord de Franck) : les dégâts en plus (un
   réalisateur, deux relecteurs, un correcteur) et l'étude du mode Odyssée (une étude, une
@@ -107,7 +104,8 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
   par défaut ; 7 questions pour Franck dans la feuille de route.
 - Franck a demandé de garder en mémoire toutes les vérifications sur tablette : section « À
   vérifier par Franck » ci-dessus, à lui ressortir quand il aura le temps.
-- Non publié : attend l'accord de Franck.
+- Publié le 19/11/2026 après le « Publie » de Franck (`v4` puis `master`), version en ligne
+  vérifiée.
 
 ### 18/11/2026 — Finitions du grimoire (4.42.0)
 

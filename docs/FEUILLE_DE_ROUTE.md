@@ -34,9 +34,8 @@ sous-classes). Restent des décisions de Franck :
 
 Faits en 4.41.0 (18/11/2026) : ~~liste des outils~~, ~~notice « Mode d'emploi », fenêtre
 « Nouveautés », personnages d'exemple~~. Faites en 4.42.0 (18/11/2026, publiée) :
-~~finitions du grimoire~~. Faits en 4.43.0 (19/11/2026, **pas encore publiée** : attend le
-« Publie » de Franck) : ~~dégâts en plus sur les armes~~, ~~étude du mode Odyssée désactivable~~
-(`docs/etudes/MODE_ODYSSEE.md`). Reste :
+~~finitions du grimoire~~. Faits en 4.43.0 (19/11/2026, publiée) : ~~dégâts en plus sur les
+armes~~, ~~étude du mode Odyssée désactivable~~ (`docs/etudes/MODE_ODYSSEE.md`). Reste :
 
 1. **Mode Odyssée désactivable** : l'étude est faite, rien n'est construit. Elle conseille un
    réglage par fiche, actif par défaut (les fiches actuelles ne changent pas), où ce que la fiche
