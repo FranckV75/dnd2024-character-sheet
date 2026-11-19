@@ -199,6 +199,13 @@ const EXTRA_MODE_OPTIONS = [['always', 'Toujours'], ['toggle', 'À allumer']];
 const EXTRA_HELP = "Pour une arme spéciale, par exemple +2d6 contre les dragons. « Toujours » : compté en permanence dans les dégâts. "
     + "« À allumer » : une pastille apparaît sous l'arme ; touchez-la quand la condition est remplie. La corbeille retire la ligne.";
 
+/**
+ * La barre du haut tient sur une ligne (591 px à 768 px, soit une centaine de caractères) : une
+ * phrase qui cite l'arme n'y est écrite que si elle y tient, sinon sa version courte la remplace.
+ */
+const STATUS_ROOM = 95;
+const fitStatus = (full, short) => (full.length <= STATUS_ROOM ? full : short);
+
 /** Dernier contenu écrit dans une case calculée (texte et découpage) : rien n'est réécrit s'il n'a pas changé */
 const calcSignatures = new WeakMap();
 
@@ -701,9 +708,8 @@ export function initWeapons(ctx) {
             return;
         }
         updateRow(index, (w) => ({ ...w, weaponConfig: toggleExtraDamage(w.weaponConfig, lineIndex) }));
-        setStatus(frenchSpaces(line.on
-            ? `${label} : n'est plus compté dans les dégâts de ${weaponInSentence(weapon)}.`
-            : `${label} : compté dans les dégâts de ${weaponInSentence(weapon)}.`));
+        const said = line.on ? `${label} : n'est plus compté dans les dégâts` : `${label} : compté dans les dégâts`;
+        setStatus(frenchSpaces(fitStatus(`${said} de ${weaponInSentence(weapon)}.`, `${said}.`)));
     }
 
     /**
@@ -940,7 +946,9 @@ export function initWeapons(ctx) {
 
         // Dégâts en plus : lignes modifiables (4 au plus). L'état allumé d'une pastille (on) est
         // gardé tant que la ligne reste « À allumer ». Rien n'est enregistré avant « Appliquer ».
-        const extras = readExtraDamage(weapon.weaponConfig).map(({ dmg, reason, mode, on }) => ({ dmg, reason, mode, on }));
+        // wasPill : la ligne avait déjà sa pastille à l'ouverture (elle n'est pas annoncée comme nouvelle)
+        const extras = readExtraDamage(weapon.weaponConfig)
+            .map(({ dmg, reason, mode, on }) => ({ dmg, reason, mode, on, wasPill: mode === 'toggle' }));
         // Message de refus : posé dans la liste, juste au-dessus de la première ligne fautive
         // (en bas de la rubrique, il restait hors de vue dès que la fenêtre défile)
         const extraError = el('p', { class: 'weapons-config-error', id: `${id}-extra-error`, role: 'alert', hidden: true });
@@ -950,7 +958,7 @@ export function initWeapons(ctx) {
             on: {
                 click: () => {
                     if (extras.length >= EXTRA_DAMAGE_MAX) return;
-                    extras.push({ dmg: '', reason: '', mode: 'always', on: false });
+                    extras.push({ dmg: '', reason: '', mode: 'always', on: false, wasPill: false });
                     renderExtras();
                     extraList.lastElementChild?.querySelector('input')?.focus();
                 }
@@ -1111,14 +1119,15 @@ export function initWeapons(ctx) {
                             return false;
                         }
                         updateRow(index, (w) => ({ ...w, weaponConfig: result.value }));
-                        // Nouvelle pastille : fenêtre refermée, la barre du haut dit où elle est et à quoi elle sert
-                        const pills = (raw) => readExtraDamage(raw).filter(line => line.mode === 'toggle');
-                        const known = new Set(pills(current.weaponConfig).map(extraDamageLabel));
-                        const added = pills(result.value).map(extraDamageLabel).filter(label => !known.has(label));
-                        if (added.length) {
-                            setStatus(frenchSpaces(added.length === 1
-                                ? `Pastille ${added[0]} ajoutée sous ${weaponInSentence(current)} : touchez-la quand la condition est remplie.`
-                                : `${added.length} pastilles ajoutées sous ${weaponInSentence(current)} : touchez-les quand leur condition est remplie.`));
+                        // Nouvelle pastille (ligne ajoutée, ou passée de « Toujours » à « À allumer ») :
+                        // fenêtre refermée, la barre du haut dit où elle est et à quoi elle sert. Une
+                        // pastille déjà là dont on a seulement corrigé le texte n'est pas annoncée.
+                        const added = extras.filter(line => line.mode === 'toggle' && !line.wasPill).length;
+                        if (added) {
+                            const said = (where) => (added === 1
+                                ? `Pastille ajoutée sous ${where} : touchez-la quand la condition est remplie.`
+                                : `${added} pastilles ajoutées sous ${where} : touchez-les quand leur condition est remplie.`);
+                            setStatus(frenchSpaces(fitStatus(said(weaponInSentence(current)), said("l'arme"))));
                         }
                         // Nouveau bonus magique : l'arme s'enchante sous les yeux, fenêtre refermée
                         if (magicLevel(readWeaponConfig(result.value).magicBonus) > config.magicBonus) {

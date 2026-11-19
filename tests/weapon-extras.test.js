@@ -435,6 +435,17 @@ describe('Dégâts en plus : interface (js/ui/weapons.js)', () => {
         assert.match(pin, /if \(inRow\(event\.relatedTarget\)\) return;/);
     });
 
+    test('phrases de la barre du haut : jamais plus longues que la ligne, pastille annoncée seulement si elle est nouvelle', () => {
+        assert.match(ui, /const fitStatus = \(full, short\) => \(full\.length <= STATUS_ROOM \? full : short\);/);
+        const toggle = ui.slice(ui.indexOf('function toggleExtra('), ui.indexOf('function writeExtraPills('));
+        assert.match(toggle, /setStatus\(frenchSpaces\(fitStatus\(/, 'arme citée seulement si la phrase tient sur la ligne');
+        const apply = ui.slice(ui.indexOf("label: 'Appliquer'"));
+        assert.match(apply, /extras\.filter\(line => line\.mode === 'toggle' && !line\.wasPill\)\.length/,
+            'une pastille déjà là, dont on corrige la raison, n\'est pas annoncée comme ajoutée');
+        assert.match(apply, /setStatus\(frenchSpaces\(fitStatus\(/);
+        assert.doesNotMatch(apply, /Pastille \$\{/, 'le libellé de la pastille (jusqu\'à 50 caractères) n\'allonge plus la phrase');
+    });
+
     test('dégâts en plus dans la case : aucune couleur, graisse ni police propre', () => {
         const rule = css.slice(css.indexOf('.weapons-calc-extra {'), css.indexOf('}', css.indexOf('.weapons-calc-extra {')));
         assert.ok(rule.length > 10);
