@@ -591,7 +591,13 @@ h1, h2, h3, h4 {
     font-weight: 400;
 }
 
-.weapons-extra-pills {
+.weapons-extra-pills,
+.weapons-extra-detail {
+    display: none;
+}
+
+/* Ligne ouverte seulement pour le détail des dégâts (aucune pastille) : rien à imprimer */
+.weapons-table tr.weapons-extra-row.is-detail-only {
     display: none;
 }
 

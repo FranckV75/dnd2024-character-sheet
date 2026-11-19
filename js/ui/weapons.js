@@ -15,7 +15,9 @@
 // Dégâts en plus écrits par le joueur (« +2d6 contre les dragons », réglage de l'arme, règles dans
 // js/rules/weapon-extras.js) : « Toujours » = ajoutés au texte des dégâts ; « À allumer » = pastille
 // dans une ligne sous l'arme (même aspect et même règle de verrou que Rage), dont l'état est rangé
-// dans la ligne de l'arme (weaponConfig), jamais à part.
+// dans la ligne de l'arme (weaponConfig), jamais à part. Dans la case, chaque dégât en plus tient
+// sur une ligne, abrégé avec « … » ; toucher la case écrit les dégâts en entier sous l'arme
+// (toggleDamageDetail), fiche verrouillée ou non.
 // Les règles (filtres, remplissage depuis le manuel, validation) sont dans js/rules/weapons.js.
 // =============================================================================
 
@@ -452,10 +454,20 @@ export function initWeapons(ctx) {
         // utilisables fiche verrouillée comme Rage) ; à l'impression, une mention à la place
         const extraPills = el('div', { class: 'weapons-extra-pills', role: 'group' });
         const extraPrint = el('span', { class: 'weapons-extra-print' });
+        // Dégâts écrits en entier (la case les abrège) : sous les pastilles, qui ne bougent donc pas
+        // quand il s'ouvre ; toute la largeur du tableau, le texte n'y est jamais coupé
+        const extraDetail = el('p', { class: 'weapons-extra-detail', id: `weapon-damage-${notesCounter}`, hidden: true },
+            el('strong'), ' ', el('span'));
         const extraTr = el('tr', { class: 'weapons-extra-row', hidden: true },
-            el('td', { colspan: String(COLUMN_COUNT) }, extraPills, extraPrint));
-        // Dégâts abrégés sur tablette (colonne étroite) : au toucher, le texte complet dans la barre
-        dmg.addEventListener('click', () => sayDamage(index));
+            el('td', { colspan: String(COLUMN_COUNT) }, extraPills, extraDetail, extraPrint));
+        // Toute la case se touche (44 px de haut et plus), pas seulement le texte ; au clavier,
+        // Entrée ou Espace sur les dégâts (bouton seulement quand l'arme a des dégâts en plus)
+        const dmgCell = el('td', { on: { click: () => toggleDamageDetail(index) } }, dmg);
+        dmg.addEventListener('keydown', (event) => {
+            if (dmg.getAttribute('role') !== 'button' || (event.key !== 'Enter' && event.key !== ' ')) return;
+            event.preventDefault();
+            toggleDamageDetail(index);
+        });
         const masteryBtn = el('button', {
             type: 'button', class: 'weapons-mastery-btn', hidden: true, 'aria-haspopup': 'dialog',
             on: { click: () => openMastery(index) }
@@ -474,7 +486,7 @@ export function initWeapons(ctx) {
             // Bouton des rappels à côté du bonus d'attaque : sur tablette, il loge sous « FOR : +7 »
             // (une seule ligne, les dégâts en ont deux ou plus) sans rehausser la ligne de l'arme
             el('td', { class: 'weapons-atk' }, atk, notesBtn),
-            el('td', {}, dmg),
+            dmgCell,
             TEXT_COLUMNS.map(c => (c.key === 'prof'
                 ? el('td', { class: 'weapons-prof' }, inputs.prof, masteryBtn)
                 : el('td', {}, inputs[c.key]))),
@@ -482,7 +494,7 @@ export function initWeapons(ctx) {
 
         const row = {
             tr, inputs, magic, atk, dmg, configBtn, deleteBtn, notesBtn, notesTr, notesList, notesOpen: false, notesSignature: '',
-            masteryBtn, extraTr, extraPills, extraPrint, extraSignature: null, detach
+            masteryBtn, extraTr, extraPills, extraPrint, extraDetail, detailOpen: false, extraSignature: null, detach
         };
 
         // Ligne épinglée tant que le focus y reste ; le filtre est réappliqué à la sortie
@@ -622,12 +634,56 @@ export function initWeapons(ctx) {
         return name ? `« ${name} »` : 'cette arme';
     }
 
-    /** Toucher les dégâts d'une arme qui porte des dégâts en plus : le texte complet dans la barre du haut */
-    function sayDamage(index) {
+    /**
+     * Toucher les dégâts d'une arme qui porte des dégâts en plus : ils s'écrivent en entier sous
+     * l'arme (nouveau toucher : le détail se referme). La barre du haut tient sur une ligne et
+     * coupait ce texte ; elle dit seulement où le lire, en une phrase courte.
+     */
+    function toggleDamageDetail(index) {
         const weapon = weapons()[index];
         const row = rows[index];
         if (!weapon || !row || activeExtraDamage(weapon.weaponConfig).length === 0) return;
-        setStatus(frenchSpaces(`Dégâts de ${weaponInSentence(weapon)} : ${row.dmg.textContent}`));
+        row.detailOpen = !row.detailOpen;
+        refresh(store.get());
+        setStatus(row.detailOpen
+            ? "Dégâts écrits en entier sous l'arme. Touchez-les encore pour refermer."
+            : 'Détail des dégâts refermé.');
+    }
+
+    /**
+     * Case des dégâts d'une arme qui porte des dégâts en plus : elle devient un bouton (toucher,
+     * Entrée, Espace) qui ouvre le détail écrit sous l'arme.
+     * @param {Object} row
+     * @param {Object} weapon
+     * @param {boolean} offBook - arme hors manuel sans valeur enregistrée : seuls les dégâts en plus sont connus
+     * @param {boolean} shown - la ligne de l'arme est affichée (filtres)
+     * @returns {boolean} le détail est affiché
+     */
+    function writeDamageDetail(row, weapon, offBook, shown) {
+        const active = activeExtraDamage(weapon.weaponConfig).length > 0;
+        row.dmg.classList.toggle('has-extras', active);
+        // Plus rien à détailler (dernière pastille éteinte, dégât retiré) : le détail se referme
+        if (!active) row.detailOpen = false;
+        const open = row.detailOpen && shown;
+        if (active) {
+            row.dmg.setAttribute('role', 'button');
+            row.dmg.setAttribute('tabindex', '0');
+            row.dmg.setAttribute('aria-expanded', String(open));
+            row.dmg.setAttribute('aria-controls', row.extraDetail.id);
+        } else {
+            for (const name of ['role', 'tabindex', 'aria-expanded', 'aria-controls']) row.dmg.removeAttribute(name);
+        }
+        if (open) {
+            const [title, text] = row.extraDetail.children;
+            const label = offBook ? 'Dégâts en plus' : 'Dégâts';
+            const full = offBook
+                ? `${row.dmg.textContent}. Arme hors manuel : ses propres dégâts ne sont pas calculés, ajoutez-les vous-même.`
+                : row.dmg.textContent;
+            if (title.textContent !== label) title.textContent = label;
+            if (text.textContent !== full) text.textContent = full;
+        }
+        row.extraDetail.hidden = !open;
+        return open;
     }
 
     /** Pastille « À allumer » touchée : l'état est écrit dans la ligne de l'arme (weaponConfig) */
@@ -651,8 +707,9 @@ export function initWeapons(ctx) {
      * @param {number} index - place de l'arme dans dynamic_weapons
      * @param {Object} weapon
      * @param {boolean} shown - la ligne de l'arme est affichée (filtres)
+     * @param {boolean} detail - le détail des dégâts est ouvert dans la même ligne (writeDamageDetail)
      */
-    function writeExtraPills(row, index, weapon, shown) {
+    function writeExtraPills(row, index, weapon, shown, detail) {
         const lines = readExtraDamage(weapon.weaponConfig).filter(line => line.mode === 'toggle');
         const who = weaponInSentence(weapon);
         const signature = `${who}\n${lines.map(line => `${line.index}:${extraDamageLabel(line)}`).join('\n')}`;
@@ -676,8 +733,10 @@ export function initWeapons(ctx) {
             const line = lines.find(entry => String(entry.index) === button.dataset.extra);
             button.setAttribute('aria-pressed', String(line?.on === true));
         }
-        const visible = lines.length > 0 && shown;
+        const visible = (lines.length > 0 && shown) || detail;
         row.extraTr.hidden = !visible;
+        // Sans pastille, la ligne ne porte que le détail : rien à imprimer (css/print.css)
+        row.extraTr.classList.toggle('is-detail-only', lines.length === 0);
         row.tr.classList.toggle('has-extra-pills', visible);
     }
 
@@ -707,7 +766,6 @@ export function initWeapons(ctx) {
             const computed = computeWeapon(weapon, derived, buffs);
             writeCalc(row.atk, computed?.attack, weapon.atk);
             writeCalc(row.dmg, computed?.damage, weapon.dmg, weapon);
-            row.dmg.classList.toggle('has-extras', activeExtraDamage(weapon.weaponConfig).length > 0);
 
             // Aspect : palier 1 à 3 ; texte : le bonus que le calcul ajoute vraiment (une ancienne
             // fiche peut en garder un autre)
@@ -727,7 +785,8 @@ export function initWeapons(ctx) {
             if (blank && shown) entryShown = true;
             row.tr.hidden = !shown;
             row.tr.classList.toggle('is-entry', blank);
-            writeExtraPills(row, i, weapon, shown);
+            const offBook = !computed?.damage && !row.dmg.classList.contains('is-legacy');
+            writeExtraPills(row, i, weapon, shown, writeDamageDetail(row, weapon, offBook, shown));
             writeFeatNotes(row, weaponFeatNotes(weapon, character, derived, buffs), label, shown);
             writeMasteryButton(row, findMastery(weapon.prof), label);
             row.inputs.name.placeholder = blank ? 'Nouvelle arme…' : 'Nom…';

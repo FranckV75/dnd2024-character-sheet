@@ -202,7 +202,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Les dégâts en plus d'une arme",
-                text: "Pour une arme spéciale, ouvrez sa roue dentée, rubrique « Dégâts en plus », puis « Ajouter un dégât en plus » : écrivez les dégâts (2d6) et la raison (contre les dragons). « Toujours » les compte en permanence. « À allumer » pose une pastille sous l'arme : touchez-la quand la condition est remplie, même fiche verrouillée. Le repos long éteint ces pastilles."
+                text: "Pour une arme spéciale, ouvrez sa roue dentée, rubrique « Dégâts en plus », puis « Ajouter un dégât en plus » : écrivez les dégâts (2d6) et la raison (contre les dragons). « Toujours » les compte en permanence. « À allumer » pose une pastille sous l'arme : touchez-la quand la condition est remplie, même fiche verrouillée. Le repos long éteint ces pastilles. Touchez les dégâts de l'arme pour les lire en entier."
             },
             {
                 title: "Les armures",

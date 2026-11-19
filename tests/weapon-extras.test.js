@@ -410,6 +410,24 @@ describe('Dégâts en plus : interface (js/ui/weapons.js)', () => {
         assert.doesNotMatch(css, /line-clamp/, 'plus de coupe sur deux lignes réservée aux écrans de moins de 1000 px');
     });
 
+    test('toucher les dégâts : ils s\'écrivent en entier sous l\'arme, la barre du haut ne dit qu\'une phrase courte', () => {
+        const toggle = ui.slice(ui.indexOf('function toggleDamageDetail('), ui.indexOf('function writeDamageDetail('));
+        assert.ok(toggle.length > 100);
+        assert.doesNotMatch(toggle, /isLocked\(/, 'lecture seule : ouvert fiche verrouillée aussi');
+        assert.doesNotMatch(toggle, /textContent/, 'le texte des dégâts ne va plus dans la barre du haut (une ligne, il y était coupé)');
+        // La barre du haut tient sur une ligne : 591 px à 768 px, soit une centaine de caractères
+        const phrases = [...toggle.matchAll(/["']([^"'\n]{20,})["']/g)].map(match => match[1]);
+        assert.equal(phrases.length, 2);
+        for (const phrase of phrases) assert.ok(phrase.length <= 75, phrase);
+        const detail = ui.slice(ui.indexOf('function writeDamageDetail('), ui.indexOf('function toggleExtra('));
+        assert.match(detail, /setAttribute\('role', 'button'\)/, 'case des dégâts : un vrai bouton, au clavier aussi');
+        assert.match(detail, /setAttribute\('aria-expanded', String\(open\)\)/);
+        assert.match(detail, /text\.textContent = full/, 'texte du joueur : jamais du HTML');
+        assert.match(css, /\.weapons-extra-detail \{[^}]*overflow-wrap: anywhere/, 'le détail passe à la ligne, il n\'est jamais coupé');
+        const print = readFileSync(new URL('../css/print.css', import.meta.url), 'utf8');
+        assert.match(print, /\.weapons-extra-pills,\n\.weapons-extra-detail \{\n    display: none;/, 'le détail ne s\'imprime pas');
+    });
+
     test('dégâts en plus dans la case : aucune couleur, graisse ni police propre', () => {
         const rule = css.slice(css.indexOf('.weapons-calc-extra {'), css.indexOf('}', css.indexOf('.weapons-calc-extra {')));
         assert.ok(rule.length > 10);

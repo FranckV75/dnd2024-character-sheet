@@ -632,9 +632,14 @@
     overflow-wrap: anywhere;
 }
 
-/* Le toucher dit le texte complet dans la barre du haut (js/ui/weapons.js, sayDamage) */
+/* Le toucher (ou Entrée) écrit les dégâts en entier sous l'arme (js/ui/weapons.js, toggleDamageDetail) */
 .weapons-calc.has-extras {
-    cursor: help;
+    cursor: pointer;
+}
+
+.weapons-calc.has-extras:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
 }
 
 /* À l'écran, chaque dégât en plus tient sur UNE ligne de la case, abrégé avec « … » : la colonne
@@ -678,6 +683,36 @@
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Dégâts écrits en entier, ouverts en touchant la case des dégâts : même encadré que les rappels
+   des dons (.weapons-feat-notes), sur toute la largeur du tableau ; le texte passe à la ligne,
+   il n'est jamais coupé */
+.weapons-extra-detail {
+    margin: 0;
+    padding: 6px 10px;
+    border-left: 3px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+    background: var(--feat-invite-bg);
+    font-weight: 400;
+    font-size: 0.9rem;
+    overflow-wrap: anywhere;
+}
+
+.weapons-extra-detail[hidden] {
+    display: none;
+}
+
+.weapons-extra-pills:not(:empty) + .weapons-extra-detail {
+    margin-top: 6px;
+}
+
+.weapons-extra-detail strong {
+    margin-right: 6px;
+    font-family: var(--font-title);
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+    color: var(--accent);
 }
 
 /* Mention imprimée à la place des pastilles (css/print.css) */
