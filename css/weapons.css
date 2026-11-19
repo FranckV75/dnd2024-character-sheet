@@ -637,15 +637,18 @@
     cursor: help;
 }
 
-/* Tablettes (colonne des dégâts étroite) : chaque dégât en plus tient sur deux lignes au plus,
-   abrégé avec « … » ; le texte complet est dit au toucher et dans l'infobulle */
-@media screen and (max-width: 1000px) {
+/* À l'écran, chaque dégât en plus tient sur UNE ligne de la case, abrégé avec « … » : la colonne
+   des dégâts est étroite à toutes les largeurs (64 px à 768 px, 91 px à 1024 px, guère plus sur
+   ordinateur), et écrit en entier, un seul dégât en plus y prenait jusqu'à 5 lignes (la ligne de
+   l'arme passait de 74 à 434 px). Le texte complet se lit au toucher et dans l'infobulle. Coupe
+   simple (une ligne, text-overflow) : comprise par tous les navigateurs, Safari d'iPad compris.
+   L'impression garde le texte entier (css/print.css). */
+@media screen {
     .weapons-calc-extra {
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
+        display: block;
         overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 }
 

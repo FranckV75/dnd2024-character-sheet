@@ -400,6 +400,16 @@ describe('Dégâts en plus : interface (js/ui/weapons.js)', () => {
         assert.doesNotMatch(remove, /querySelector\('input'\)/);
     });
 
+    test('dégâts en plus dans la case : une ligne chacun à toutes les largeurs d\'écran, abrégé avec « … »', () => {
+        const at = css.indexOf('@media screen {\n    .weapons-calc-extra {');
+        assert.notEqual(at, -1, 'règle d\'écran sans largeur limite : la colonne des dégâts est étroite partout (91 px à 1024 px)');
+        const rule = css.slice(at, css.indexOf('}', at));
+        assert.match(rule, /white-space: nowrap/);
+        assert.match(rule, /text-overflow: ellipsis/);
+        assert.doesNotMatch(rule, /color|font/);
+        assert.doesNotMatch(css, /line-clamp/, 'plus de coupe sur deux lignes réservée aux écrans de moins de 1000 px');
+    });
+
     test('dégâts en plus dans la case : aucune couleur, graisse ni police propre', () => {
         const rule = css.slice(css.indexOf('.weapons-calc-extra {'), css.indexOf('}', css.indexOf('.weapons-calc-extra {')));
         assert.ok(rule.length > 10);
