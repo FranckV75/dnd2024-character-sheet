@@ -375,7 +375,13 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   `dynamic_weapons` que si une pastille était allumée). `computeWeapon` ajoute les lignes comptées à la
   fin du texte des dégâts (`activeExtraDamage`) ; une arme hors manuel (`computeWeapon` null) les montre
   par `offBookDamage`. Lecture tolérante : une ligne illisible est ignorée, jamais corrigée par
-  l'affichage. La v3 recopie `weaponConfig` tel quel à chaque enregistrement ; seul SON réglage de
+  l'affichage, la bascule d'une pastille ou le repos ; seul « Appliquer » dans la fenêtre de réglage
+  réécrit la liste (lignes lisibles et propriétés connues seulement). À l'écran (`js/ui/weapons.js`),
+  chaque dégât en plus tient sur une ligne de la case des dégâts, abrégé par « … » à toutes les
+  largeurs ; toucher la case écrit les dégâts en entier dans la ligne placée sous l'arme, sous les
+  pastilles (`toggleDamageDetail` : simple affichage, rien n'est enregistré). La barre du haut tient
+  sur une ligne : les phrases des armes n'y citent l'arme que si elles y tiennent (`fitStatus`).
+  La v3 recopie `weaponConfig` tel quel à chaque enregistrement ; seul SON réglage de
   l'arme, s'il est appliqué, réécrit les quatre propriétés d'origine et fait donc perdre `proficiency`
   et `extraDamage` de cette arme.
 - Le +1 des dons généraux sans autre choix vient du champ « asi » de `js/data/feats.js`
