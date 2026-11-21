@@ -4,9 +4,10 @@
 // Étude : docs/etudes/MODE_ODYSSEE.md (réponses de Franck du 21/11/2026, section 6).
 // Sauvegarde : clé facultative « odyssey_mode », qui vaut "off" quand le mode est coupé. Clé
 // absente, ou toute autre valeur : mode ACTIF (toutes les fiches d'avant, sans rien y écrire).
-// La clé n'est écrite que lorsque le joueur touche la case du menu « Gestion » (js/ui/odyssey.js) ;
-// elle n'est jamais dans la fiche vierge (js/state/schema.js : migrate.js l'ajouterait à toutes les
-// fiches). L'ancien site (v3) l'ignore (V4_ONLY_KEYS, js/cloud/sync.js).
+// La clé n'est écrite que lorsque le joueur décoche la case du menu « Gestion » (js/ui/odyssey.js) ;
+// recocher la retire : la fiche redevient strictement celle d'avant (même empreinte, rien à renvoyer
+// au compte). Elle n'est jamais dans la fiche vierge (js/state/schema.js : migrate.js l'ajouterait
+// à toutes les fiches). L'ancien site (v3) l'ignore (V4_ONLY_KEYS, js/cloud/sync.js).
 //
 // Mode coupé : les 6 espèces, les 12 sous-classes et le style de combat de l'Odyssée ne sont plus
 // PROPOSÉS dans les listes. Ce que la fiche utilise déjà reste proposé, affiché et calculé : aucune
@@ -27,7 +28,6 @@ export const ODYSSEY_MODE_KEY = 'odyssey_mode';
 /** Valeur du champ « source » des données venues de L'Odyssée des Seigneurs Dragons */
 export const ODYSSEY_SOURCE = 'Odyssée';
 const MODE_OFF = 'off';
-const MODE_ON = 'on';
 
 /** Place de la barre du haut sur tablette (une ligne, une centaine de caractères à 768 px) */
 export const STATUS_ROOM = 95;
@@ -57,11 +57,14 @@ export function odysseyActive(record) {
  * Modification à enregistrer quand le joueur coche ou décoche la case.
  * @param {Object} record
  * @param {boolean} active - mode voulu
- * @returns {Object} { odyssey_mode } ou {} si rien ne change (une fiche active sans la clé le reste)
+ * @returns {Object} {} si rien ne change (une fiche active sans la clé le reste) ; { odyssey_mode:
+ *          "off" } pour couper ; { odyssey_mode: undefined } pour réactiver : la clé est retirée (une
+ *          valeur undefined n'est ni enregistrée ni comptée dans l'empreinte, canonicalJSON de
+ *          js/cloud/sync.js), la fiche décochée puis recochée est la même qu'avant.
  */
 export function setOdysseyModePatch(record, active) {
     if (Boolean(active) === odysseyActive(record)) return {};
-    return { [ODYSSEY_MODE_KEY]: active ? MODE_ON : MODE_OFF };
+    return { [ODYSSEY_MODE_KEY]: active ? undefined : MODE_OFF };
 }
 
 /** Don noté dans un emplacement (valeur nettoyée, comme featSlots de js/rules/feats.js) */

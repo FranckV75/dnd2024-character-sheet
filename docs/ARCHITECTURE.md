@@ -317,9 +317,10 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   la v4 le reprend une fois, dans la fiche v3 du navigateur (`importV3DeviceState`).
 - `odyssey_mode` : mode « Odyssée des Seigneurs Dragons » de la fiche (`js/rules/odyssey.js`). Facultative :
   absente, ou toute autre valeur que `"off"`, = mode actif. Elle n'est jamais dans la fiche vierge
-  (`migrate.js` y ajoute les valeurs par défaut) et n'est écrite que quand le joueur touche la case « Mode
-  Odyssée » du menu « Gestion » (`"off"` décochée, `"on"` recochée) : une fiche sans la clé garde la même
-  empreinte. Elle fait partie de `V4_ONLY_KEYS`. Mode coupé, les espèces, les sous-classes et le style de
+  (`migrate.js` y ajoute les valeurs par défaut) et n'est écrite que quand le joueur décoche la case « Mode
+  Odyssée » du menu « Gestion » (`"off"`) ; recocher la retire (valeur `undefined` dans le store, jamais
+  enregistrée ni comptée dans l'empreinte) : une fiche sans la clé garde la même empreinte, une fiche
+  décochée puis recochée la retrouve. Elle fait partie de `V4_ONLY_KEYS`. Mode coupé, les espèces, les sous-classes et le style de
   combat marqués `source: "Odyssée"` (`js/data/dd-rules.js`, `js/data/feats.js`) ne sont plus proposés
   (`proposedSpecies`, `proposedSubclasses`, `hiddenFeatIds`, listes refaites par `renderDynamicSelects` de
   `js/ui/sheet.js`, phrase de `js/rules/level-up.js`) ; ce que la fiche utilise déjà reste dans ses listes

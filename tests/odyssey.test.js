@@ -92,10 +92,13 @@ describe('Mode Odyssée : actif ou coupé', () => {
         assert.deepEqual(setOdysseyModePatch(sheet(OFF), false), {});
     });
 
-    test('Décocher écrit "off", recocher écrit "on"', () => {
+    test('Décocher écrit "off", recocher retire la clé (valeur undefined, jamais enregistrée)', () => {
         assert.deepEqual(setOdysseyModePatch(sheet(), false), { odyssey_mode: 'off' });
-        assert.deepEqual(setOdysseyModePatch(sheet(OFF), true), { odyssey_mode: 'on' });
-        assert.equal(odysseyActive({ ...sheet(OFF), ...setOdysseyModePatch(sheet(OFF), true) }), true);
+        const back = setOdysseyModePatch(sheet(OFF), true);
+        assert.deepEqual(Object.keys(back), [ODYSSEY_MODE_KEY]);
+        assert.equal(back[ODYSSEY_MODE_KEY], undefined);
+        assert.equal(odysseyActive({ ...sheet(OFF), ...back }), true);
+        assert.ok(!JSON.stringify({ ...sheet(OFF), ...back }).includes(ODYSSEY_MODE_KEY));
     });
 
     test('Rien d\'autre que la clé du mode n\'est modifié', () => {
@@ -472,7 +475,7 @@ describe('Mode Odyssée : sauvegarde et synchronisation', () => {
         });
     }
 
-    test("Décocher : une seule clé change, l'empreinte aussi ; recocher garde la clé (on)", () => {
+    test("Décocher : une seule clé change, l'empreinte aussi", () => {
         const store = createStore(sheet({ char_species: 'Centaure' }));
         const before = store.get();
         const changes = [];
@@ -481,9 +484,40 @@ describe('Mode Odyssée : sauvegarde et synchronisation', () => {
         assert.deepEqual(changes, [[ODYSSEY_MODE_KEY]]);
         assert.deepEqual({ ...store.get(), [ODYSSEY_MODE_KEY]: undefined }, { ...before, [ODYSSEY_MODE_KEY]: undefined });
         assert.notEqual(sheetFingerprint(store.get()), sheetFingerprint(before));
-        store.update(setOdysseyModePatch(store.get(), true));
-        assert.equal(store.get()[ODYSSEY_MODE_KEY], 'on');
-        assert.equal(odysseyActive(store.get()), true);
+    });
+
+    for (const [name, url] of ALL_FIXTURES) {
+        test(`${name} : décochée puis recochée, la fiche redevient strictement la même (empreinte, texte enregistré)`, () => {
+            const { character } = migrateCharacter(readFixture(url));
+            const before = sheetFingerprint(character);
+            const savedBefore = serializeCharacter(character);
+            const store = createStore(character);
+            const changes = [];
+            store.subscribe((state, changed) => changes.push(changed));
+            store.update(setOdysseyModePatch(store.get(), false));
+            assert.equal(odysseyActive(store.get()), false);
+            assert.notEqual(sheetFingerprint(store.get()), before);
+            store.update(setOdysseyModePatch(store.get(), true));
+            // Les abonnés sont prévenus des deux changements (les listes sont refaites)
+            assert.deepEqual(changes, [[ODYSSEY_MODE_KEY], [ODYSSEY_MODE_KEY]]);
+            assert.equal(odysseyActive(store.get()), true);
+            assert.equal(sheetFingerprint(store.get()), before);
+            assert.equal(fingerprint(normalizeCharacter(store.get())), before);
+            assert.equal(fingerprint(store.get()), fingerprint(character));
+            // Ce qui est enregistré (appareil, export, compte) ne contient plus la clé
+            assert.equal(serializeCharacter(store.get()), savedBefore);
+            assert.deepEqual(JSON.parse(JSON.stringify(store.get())), JSON.parse(JSON.stringify(character)));
+            assert.ok(!(ODYSSEY_MODE_KEY in migrateCharacter(JSON.parse(JSON.stringify(store.get()))).character));
+            // Recocher une seconde fois n'écrit plus rien
+            assert.deepEqual(setOdysseyModePatch(store.get(), true), {});
+        });
+    }
+
+    test('Une fiche qui porterait une autre valeur (« on ») reste active et n\'est pas réécrite', () => {
+        const record = sheet({ [ODYSSEY_MODE_KEY]: 'on' });
+        assert.equal(odysseyActive(record), true);
+        assert.deepEqual(setOdysseyModePatch(record, true), {});
+        assert.deepEqual(setOdysseyModePatch(record, false), { odyssey_mode: 'off' });
     });
 
     test('Fiche vierge dont le mode a été coupé : vierge pour le compte en ligne ET pour les sauvegardes de secours', () => {
