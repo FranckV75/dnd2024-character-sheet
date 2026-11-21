@@ -12,12 +12,10 @@ en fin de session :
 
 ## En ce moment
 
-- **En ligne** : version **4.43.1** (« XP » au lieu de « PX », palier du niveau suivant sous la
-  case XP), publiée le 21/11/2026 avec l'accord de Franck (`master` = `v4`). La 4.43.0 (dégâts
-  en plus sur les armes) a été publiée le 19/11/2026.
-- **Prête, pas encore publiée** : version **4.44.0** sur `v4` (mode Odyssée désactivable : case
-  « Mode Odyssée » du menu « Gestion »). 1667 tests, essais à l'écran faits ; attend le
-  « Publie » de Franck. Ses décisions en attente sont au point 3 de `docs/FEUILLE_DE_ROUTE.md`.
+- **En ligne** : version **4.44.0** (mode Odyssée désactivable : case « Mode Odyssée » du menu
+  « Gestion »), publiée le 22/11/2026 avec l'accord de Franck (`master` = `v4`). La 4.43.1
+  (« XP ») a été publiée le 21/11/2026. Décisions en attente sur la 4.44.0 : point 3 de
+  `docs/FEUILLE_DE_ROUTE.md`.
 - **Multiclassage** : étude faite et contre-vérifiée (`docs/etudes/MULTICLASSAGE.md`). Rien de
   construit : attend les réponses de Franck (14 questions, section 8) et les photos du chapitre 2
   du manuel français (section 9).
@@ -70,7 +68,7 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 3. ~~discussion pour trier les idées~~ : faite le 18/11/2026. Ordre validé par Franck : liste des
    outils et notice (faits, 4.41.0), finitions du grimoire (faites, 4.42.0), dégâts en plus sur
    les armes et étude du mode Odyssée désactivable (faits, 4.43.0), mode Odyssée (fait, 4.44.0,
-   pas encore publié), étude du multiclassage (faite). Reste le multiclassage à construire, après
+   publié), étude du multiclassage (faite). Reste le multiclassage à construire, après
    les réponses de Franck. Détail et décisions en attente au point 3 de
    `docs/FEUILLE_DE_ROUTE.md`.
 
@@ -92,7 +90,8 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 - Mode Odyssée construit en 4.44.0 (Fable 5.2, une réalisation, deux relectures, une correction) :
   clé facultative `odyssey_mode` = "off" écrite seulement quand on touche la case, retirée quand
   on recoche (fiche strictement identique). Revérifié par Claude : `npm run check` vert, 35
-  contrôles sur 35 à 820 px clair et 768 px sombre, 0 erreur console. Pas encore publié.
+  contrôles sur 35 à 820 px clair et 768 px sombre, 0 erreur console. Publié le 22/11/2026
+  après le « Publie » de Franck, version en ligne vérifiée.
 - Étude du multiclassage faite puis contre-vérifiée : option « cases actuelles + une clé
   facultative pour les classes en plus », 5 lots en 3 versions. 14 questions et des photos du
   chapitre 2 du manuel français à demander à Franck.

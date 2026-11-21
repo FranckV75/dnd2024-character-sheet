@@ -37,7 +37,7 @@ Faits en 4.41.0 (18/11/2026) : ~~liste des outils~~, ~~notice « Mode d'emploi �
 ~~finitions du grimoire~~. Faits en 4.43.0 (19/11/2026, publiée) : ~~dégâts en plus sur les
 armes~~, ~~étude du mode Odyssée désactivable~~ (`docs/etudes/MODE_ODYSSEE.md`). Fait en 4.43.1
 (21/11/2026, publiée) : ~~« XP » au lieu de « PX » et palier du niveau suivant sous la case
-XP~~. Fait en 4.44.0 (21/11/2026, **pas encore publiée**) : ~~mode Odyssée désactivable~~ (case
+XP~~. Fait en 4.44.0 (21/11/2026, publiée le 22/11/2026) : ~~mode Odyssée désactivable~~ (case
 « Mode Odyssée » du menu « Gestion », d'après les réponses de Franck du 21/11/2026, section 6 de
 l'étude). Faite le 21/11/2026 : ~~étude du multiclassage~~ (`docs/etudes/MULTICLASSAGE.md`).
 Reste :
