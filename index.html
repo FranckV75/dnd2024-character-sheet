@@ -190,6 +190,7 @@
                                 <output class="value-md" data-out="pb"></output>
                             </div>
                             <div class="stat-cell">
+                                <!-- « Inspiration héroïque » seul quand le mode Odyssée est coupé (js/ui/odyssey.js) -->
                                 <label class="label" for="f-heroic_inspiration">Inspiration héroïque ou points de
                                     Foi</label>
                                 <input id="f-heroic_inspiration" data-field="heroic_inspiration"
@@ -394,6 +395,8 @@
                     </div>
                 </section>
 
+                <!-- Caché quand le mode Odyssée de la fiche est coupé et que l'encadré est vide
+                     (case « Mode Odyssée » du menu Gestion, js/ui/odyssey.js) -->
                 <section class="box odyssey" data-fold-box="odyssey">
                     <h3 data-icon="crown">Odyssée des Seigneurs Dragons</h3>
                     <div class="odyssey-grid">

@@ -24,6 +24,8 @@ import { parseCharacterFile, serializeCharacter } from '../js/state/persistence.
 import { takeSnapshot, readSnapshots } from '../js/state/snapshots.js';
 import { createStore } from '../js/state/store.js';
 import { ALL_FIXTURES, readFixture } from './helpers/fixtures.js';
+import { HELP_SECTIONS } from '../js/data/help.js';
+import { DEFAULT_BGS } from '../js/data/constants.js';
 
 const sheet = (extra = {}) => ({ ...createDefaultCharacter(), char_name: 'Test', ...extra });
 const OFF = { [ODYSSEY_MODE_KEY]: 'off' };
@@ -505,5 +507,67 @@ describe('Mode Odyssée : sauvegarde et synchronisation', () => {
         assert.deepEqual(takeSnapshot(sheet(OFF), 'import', { storage, now: new Date(Date.UTC(2026, 10, 21, 10, 5)) }), { saved: true });
         assert.deepEqual(takeSnapshot(sheet(OFF), 'open', { storage, now: new Date(Date.UTC(2026, 10, 21, 10, 6)) }), { saved: false, why: 'same' });
         assert.equal(readSnapshots(storage).length, 2);
+    });
+});
+
+describe('Mode Odyssée : écran, impression et notice', () => {
+    const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
+    const ui = read('js/ui/odyssey.js');
+
+    test('La case est dans le menu « Gestion », masquée fiche verrouillée, et porte le nom de la règle', () => {
+        assert.match(ui, /getElementById\('toolbar-help'\)/);
+        assert.match(ui, /class: 'btn toolbar-check edit-only'/);
+        assert.match(ui, /type: 'checkbox', class: 'round-check'/);
+        assert.match(ui, /text: ODYSSEY_MODE_LABEL/);
+        assert.match(read('js/ui/toolbar.js'), /id: 'toolbar-help'/);
+        // Branchée après la barre (la rangée existe) et après les compteurs (boutons de l'Inspiration)
+        const inits = read('js/main.js').match(/for \(const init of \[([^\]]+)\]/)[1].split(',').map((name) => name.trim());
+        assert.ok(inits.indexOf('initOdyssey') > inits.indexOf('initToolbar'));
+        assert.ok(inits.indexOf('initOdyssey') > inits.indexOf('initCounters'));
+    });
+
+    test('La case n\u2019écrit dans la fiche que par la règle, et seulement au toucher', () => {
+        assert.equal((ui.match(/store\.update\(/g) || []).length, 1);
+        assert.match(ui, /setOdysseyModePatch\(store\.get\(\), box\.checked\)/);
+        assert.match(ui, /box\.addEventListener\('change'/);
+        // Aucun autre module de l'interface n'écrit la clé
+        for (const file of ['js/ui/sheet.js', 'js/ui/toolbar.js', 'js/ui/counters.js', 'js/main.js', 'js/state/migrate.js', 'js/state/schema.js']) {
+            assert.doesNotMatch(read(file), /odyssey_mode|ODYSSEY_MODE_KEY/, file);
+        }
+    });
+
+    test('Encadré de l\u2019onglet 3 : caché par la règle, jamais imprimé quand il est inutile', () => {
+        assert.match(read('index.html'), /<section class="box odyssey" data-fold-box="odyssey">/);
+        assert.match(ui, /odysseyBoxUseful\(character\)/);
+        assert.match(ui, /toggleAttribute\('data-odyssey-unused', !useful\)/);
+        assert.match(read('css/print.css'), /\.odyssey\[data-odyssey-unused\] \{\s*display: none;\s*\}/);
+    });
+
+    test('Libellé d\u2019Inspiration : posé par la règle, boutons − / + renommés', () => {
+        assert.match(ui, /inspirationWording\(character\)/);
+        assert.match(ui, /renameSteppers\(input, wording\.noun\)/);
+        assert.match(read('js/ui/stepper.js'), /export function renameSteppers\(/);
+    });
+
+    test('Les 8 fonds fournis restent dans la galerie (liste inchangée)', () => {
+        assert.equal(DEFAULT_BGS.length, 8);
+        assert.ok(DEFAULT_BGS.includes('Fond_Odyssée.webp'));
+        assert.doesNotMatch(read('js/ui/gallery.js'), /odyssey/i);
+        assert.doesNotMatch(read('js/rules/gallery.js'), /odyssey/i);
+    });
+
+    test('Notice : la case est expliquée (pour commencer, verrou, onglet 3)', () => {
+        const section = (id) => HELP_SECTIONS.find((entry) => entry.id === id).entries;
+        const start = section('start').find((entry) => entry.title === 'La case « Mode Odyssée »');
+        assert.ok(start, 'entrée de la rubrique Pour commencer');
+        assert.match(start.text, /menu « Gestion »/);
+        assert.match(start.text, /fiche modifiable/);
+        assert.match(start.text, /ne sont plus proposés/);
+        assert.match(start.text, /Recochez-la/);
+        const kept = section('start').find((entry) => entry.title === '« Mode Odyssée » décoché : ce qui reste');
+        assert.match(kept.text, new RegExp(`« ${inspirationWording({}).label} »`));
+        assert.match(kept.text, new RegExp(`« ${inspirationWording({ [ODYSSEY_MODE_KEY]: 'off' }).label} »`));
+        assert.ok(section('lock').some((entry) => entry.text.includes(`« ${ODYSSEY_MODE_LABEL} »`)));
+        assert.ok(section('role').find((entry) => entry.title === '« Odyssée des Seigneurs Dragons »').text.includes(`« ${ODYSSEY_MODE_LABEL} »`));
     });
 });

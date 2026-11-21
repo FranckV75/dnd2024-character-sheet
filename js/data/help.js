@@ -39,6 +39,14 @@ export const HELP_SECTIONS = Object.freeze([
                 text: "Sur tablette, le bouton « Gestion », tout en haut, déplie les commandes : enregistrer, imprimer, changer l'affichage, se connecter. Touchez-le de nouveau pour les replier. Sur un grand écran d'ordinateur, elles sont déjà affichées."
             },
             {
+                title: "La case « Mode Odyssée »",
+                text: "Dans le menu « Gestion », fiche modifiable, cette case dit si le personnage joue la campagne de L'Odyssée des Seigneurs Dragons. Elle est cochée au départ. Décochez-la pour une autre campagne : les espèces, les sous-classes et le style de combat de l'Odyssée ne sont plus proposés dans les listes. Recochez-la pour tout retrouver. Ce réglage est enregistré avec le personnage."
+            },
+            {
+                title: "« Mode Odyssée » décoché : ce qui reste",
+                text: "Rien n'est retiré de votre fiche. Un Centaure reste un Centaure, avec ses traits et ses calculs, et la fiche vous dit ce qu'elle garde. L'encadré « Odyssée des Seigneurs Dragons » reste affiché s'il contient un destin ou des points de renommée ; vide, il disparaît. La case « Inspiration héroïque ou points de Foi » s'appelle alors « Inspiration héroïque »."
+            },
+            {
                 title: "Les phrases d'aide",
                 text: "En haut à droite, une ligne vous dit ce que la fiche vient de faire. Plusieurs boutons y écrivent aussi une courte explication quand vous les touchez. À la souris, laissez le pointeur sur un bouton pour lire à quoi il sert."
             },
@@ -164,7 +172,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Ce qui est masqué",
-                text: "Fiche verrouillée, les boutons qui construisent ou remplacent la fiche disparaissent. C'est le cas des boutons pour ajouter ou supprimer une arme, une armure ou un sort. C'est aussi le cas de « Nouvelle fiche », « Importer », « Revenir à… », du personnage d'exemple et de la montée de niveau. Le mode d'emploi reste disponible."
+                text: "Fiche verrouillée, les boutons qui construisent ou remplacent la fiche disparaissent. C'est le cas des boutons pour ajouter ou supprimer une arme, une armure ou un sort. C'est aussi le cas de « Nouvelle fiche », « Importer », « Revenir à… », de la case « Mode Odyssée », du personnage d'exemple et de la montée de niveau. Le mode d'emploi reste disponible."
             }
         ]
     },
@@ -278,7 +286,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "« Odyssée des Seigneurs Dragons »",
-                text: "Cet encadré sert à la campagne du même nom : il contient notamment le « Destin héroïque » et les « Points de renommée »."
+                text: "Cet encadré sert à la campagne du même nom : il contient notamment le « Destin héroïque » et les « Points de renommée ». Si vous décochez la case « Mode Odyssée » du menu « Gestion », il disparaît quand il est vide ; rempli, il reste affiché et imprimé."
             }
         ]
     },

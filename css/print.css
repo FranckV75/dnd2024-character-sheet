@@ -639,6 +639,12 @@ h1, h2, h3, h4 {
     gap: 10px;
 }
 
+/* Mode Odyssée coupé et encadré vide : jamais imprimé, même s'il est encore à l'écran (vidé à
+   l'instant, js/ui/odyssey.js). Rempli, ou mode actif : toujours imprimé. */
+.odyssey[data-odyssey-unused] {
+    display: none;
+}
+
 .odyssey-grid .field:first-child {
     grid-column: auto;
 }

@@ -6,6 +6,8 @@
 //    contient du texte (« 2 (Chanceux) ») n'est pas touchée : seule la saisie à la main la change.
 //  - Pièces : bouton « Bourse » sous les cinq cases : choisir la pièce, taper le montant, puis
 //    Gagner ou Dépenser (pas de monnaie rendue automatiquement).
+// Le libellé de l'Inspiration (et le nom de ses boutons) perd « ou points de Foi » quand le mode
+// Odyssée de la fiche est coupé : js/ui/odyssey.js.
 // Épuisement, Inspiration et pièces sont des champs de jeu (utilisables fiche verrouillée) ;
 // les boutons de la renommée sont masqués fiche verrouillée (edit-only), comme sa case.
 // Règles : js/rules/counters.js. Mise en forme : css/stepper.css.

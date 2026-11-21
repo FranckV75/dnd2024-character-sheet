@@ -89,3 +89,18 @@ export function wrapWithSteppers(input, { noun, onStep, className = '', rowClass
     row.append(minus, input, plus);
     return { row, minus, plus };
 }
+
+/**
+ * Renomme les boutons − et + qui entourent une case (ce qu'elle compte a changé de nom : « point
+ * d'Inspiration ou de Foi » ou « point d'Inspiration », mode Odyssée, js/ui/odyssey.js).
+ * @param {HTMLElement} input - case entourée par wrapWithSteppers
+ * @param {string} noun
+ */
+export function renameSteppers(input, noun) {
+    const buttons = input.closest('.stepper')?.querySelectorAll(':scope > .step-btn') ?? [];
+    for (const [button, label] of [[buttons[0], `Retirer 1 ${noun}`], [buttons[1], `Ajouter 1 ${noun}`]]) {
+        if (!button || button.getAttribute('aria-label') === label) continue;
+        button.setAttribute('aria-label', label);
+        button.title = `${label} (appui long : plusieurs)`;
+    }
+}
