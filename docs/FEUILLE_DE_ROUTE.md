@@ -36,27 +36,19 @@ Faits en 4.41.0 (18/11/2026) : ~~liste des outils~~, ~~notice « Mode d'emploi �
 « Nouveautés », personnages d'exemple~~. Faites en 4.42.0 (18/11/2026, publiée) :
 ~~finitions du grimoire~~. Faits en 4.43.0 (19/11/2026, publiée) : ~~dégâts en plus sur les
 armes~~, ~~étude du mode Odyssée désactivable~~ (`docs/etudes/MODE_ODYSSEE.md`). Fait en 4.43.1
-(21/11/2026, **pas encore publiée** : attend le « Publie » de Franck) : ~~« XP » au lieu de « PX »
-et palier du niveau suivant sous la case XP~~. Reste :
+(21/11/2026, publiée) : ~~« XP » au lieu de « PX » et palier du niveau suivant sous la case
+XP~~. Reste :
 
 1. **Mode Odyssée désactivable** : l'étude est faite, rien n'est construit. Elle conseille un
    réglage par fiche, actif par défaut (les fiches actuelles ne changent pas), où ce que la fiche
-   utilise déjà reste toujours en place. Chantier petit à moyen, en 4 lots. Il attend les
-   réponses de Franck aux questions ci-dessous, puis son accord.
+   utilise déjà reste toujours en place. Chantier petit à moyen, en 4 lots. Franck a répondu aux
+   questions (21/11/2026, ci-dessous) ; il attend son accord pour être construit.
 
-Questions de l'étude du mode Odyssée (réponses de Franck attendues) :
-- Réglage par fiche, actif par défaut ? (conseil : oui)
-- Mode coupé mais la fiche a un destin héroïque ou des points de renommée : garder l'encadré ?
-  (conseil : oui, il ne se cache que vide)
-- Les 8 fonds d'écran fournis sont les images du groupe : les retirer de la galerie quand le mode
-  est coupé ? (conseil : non pour l'instant)
-- Où placer la case : dans l'encadré « Odyssée » de l'onglet 3 ou dans le menu « Gestion » ?
-  (conseil : dans l'encadré)
-- ~~Les « points de Foi » viennent-ils de l'Odyssée ?~~ Réponse trouvée le 21/11/2026 : oui,
-  règle « Sacrifices et prières » du guide du MJ de l'Odyssée (page photographiée dans
-  `..\Ressources\Manuels\`). Le libellé deviendra « Inspiration héroïque » mode coupé.
-- « Nouvelle fiche » : proposer tout de suite le choix de la campagne ? (conseil : plus tard)
-- Les deux personnages d'exemple : mode coupé d'office ? (conseil : oui, plus tard)
+Réponses de Franck aux questions de l'étude (21/11/2026, détail dans l'étude, section 6) :
+réglage par fiche, actif par défaut ; encadré gardé s'il n'est pas vide ; les 8 fonds restent
+dans la galerie ; la case va dans le **menu « Gestion »** ; les « points de Foi » viennent de
+l'Odyssée (libellé « Inspiration héroïque » mode coupé) ; choix de la campagne dans « Nouvelle
+fiche » plus tard ; personnages d'exemple mode coupé d'office, plus tard.
 
 Décisions de Franck en attente sur la 4.43.0 (dégâts en plus) :
 - Repos court : il n'éteint pas les pastilles (comme la Rage) ; seul le repos long les éteint.

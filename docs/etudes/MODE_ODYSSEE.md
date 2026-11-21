@@ -167,3 +167,16 @@ cases de sous-classe, les tests existants, `data/spells.json`, le README. Les lo
 6. **« Nouvelle fiche » : proposer tout de suite le choix de la campagne ?** Conseil : plus tard.
 7. **(ajouté) Les deux personnages d'exemple : mode coupé d'office ?** Conseil : oui, ils sont
    faits avec le seul manuel. À faire avec le lot 6.
+
+## 6. Réponses de Franck (21/11/2026)
+
+1. Réglage **par fiche, actif par défaut** : oui.
+2. Mode coupé, encadré avec un destin ou des points de renommée : **gardé** (caché seulement vide).
+3. Les 8 fonds : **gardés** dans la galerie (lot 5 abandonné pour l'instant).
+4. La case va dans le **menu « Gestion »**, pas dans l'encadré (choix de Franck, différent du
+   conseil). Conséquences : la case reste trouvable même quand l'encadré est caché ; elle a sa
+   phrase d'aide (barre du haut au toucher, `title` à la souris) ; la ligne « Cette fiche
+   garde : … » s'affiche près de la case ou dans le message qui suit le changement.
+5. « Points de Foi » : viennent de l'Odyssée (trouvé le 21/11/2026).
+6. Choix de la campagne dans « Nouvelle fiche » : **plus tard**.
+7. Personnages d'exemple mode coupé d'office : **oui, plus tard** (lot 6).

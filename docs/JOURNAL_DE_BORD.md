@@ -12,14 +12,12 @@ en fin de session :
 
 ## En ce moment
 
-- **En ligne** : version **4.43.0** (dégâts en plus sur les armes : rubrique dans la roue
-  dentée, « Toujours » ou pastille « À allumer »), publiée le 19/11/2026 avec l'accord de Franck
-  (`master` = `v4`).
-- **Prête, pas encore publiée** : version **4.43.1** (« XP » au lieu de « PX », palier du niveau
-  suivant sous la case XP). Sur la branche `v4` de cet ordinateur ; attend le « Publie » de Franck.
-- **Étude du mode Odyssée désactivable** : faite (`docs/etudes/MODE_ODYSSEE.md`), rien de
-  construit. Elle attend les réponses de Franck (6 questions restantes, point 3 de la feuille de
-  route ; celle des « points de Foi » est réglée : ils viennent de l'Odyssée).
+- **En ligne** : version **4.43.1** (« XP » au lieu de « PX », palier du niveau suivant sous la
+  case XP), publiée le 21/11/2026 avec l'accord de Franck (`master` = `v4`). La 4.43.0 (dégâts
+  en plus sur les armes) a été publiée le 19/11/2026.
+- **Mode Odyssée désactivable** : étude faite (`docs/etudes/MODE_ODYSSEE.md`), Franck a répondu
+  à toutes les questions le 21/11/2026 (réglage par fiche, actif par défaut, case dans le menu
+  « Gestion »). Rien de construit : attend son accord pour lancer le chantier.
 - **Multiclassage** : chantier à venir, voulu par Franck (18/11/2026), à étudier d'abord.
 - **Vérifications sur tablette** : faites par Franck le 21/11/2026 sur Android et PC, tout est
   bon ; reste l'iPad de Patricia (liste ci-dessous, elle fait foi et s'allonge à chaque version).
@@ -67,7 +65,7 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 
 ## Sessions
 
-### 21/11/2026 — Vérifications sur tablette et « XP » au lieu de « PX » (4.43.1, pas encore publiée)
+### 21/11/2026 — Vérifications sur tablette et « XP » au lieu de « PX » (4.43.1)
 
 - Franck a fait toutes les vérifications en attente sur sa tablette Android (Lenovo P12) et son
   PC : tout est bon. Il n'a pas d'iPad (celui du groupe est à Patricia) : les points iPad restent.
@@ -76,7 +74,10 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 - Demande de Franck : « XP » au lieu de « PX » partout dans ce qui s'affiche, et le palier du
   niveau suivant entre parenthèses sous la case. Fait en 4.43.1 : 1580 tests, essai à 768, 820,
   1024 et 1366 px (clair et sombre), 0 erreur console. Clés de sauvegarde inchangées.
-- Non publié : attend l'accord de Franck.
+- Publié le 21/11/2026 après le « Publie » de Franck (`v4` puis `master`), version en ligne
+  vérifiée.
+- Réponses de Franck aux questions du mode Odyssée : tout comme conseillé, sauf la case, qu'il
+  veut dans le menu « Gestion » plutôt que dans l'encadré (noté dans l'étude, section 6).
 
 ### 19/11/2026 — Dégâts en plus sur les armes (4.43.0) et étude du mode Odyssée
 
