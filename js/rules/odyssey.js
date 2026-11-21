@@ -29,8 +29,15 @@ export const ODYSSEY_MODE_KEY = 'odyssey_mode';
 export const ODYSSEY_SOURCE = 'Odyssée';
 const MODE_OFF = 'off';
 
-/** Place de la barre du haut sur tablette (une ligne, une centaine de caractères à 768 px) */
+/**
+ * Place de la barre du haut (#save-status), en caractères, selon l'écran (css/toolbar.css) :
+ *  - tablette, menu « Gestion » replié : une ligne (une centaine de caractères à 768 px) ;
+ *  - tablette, menu ouvert (c'est là qu'est la case) : deux lignes ;
+ *  - ordinateur : colonne étroite, deux lignes courtes.
+ */
 export const STATUS_ROOM = 95;
+export const STATUS_ROOM_OPEN = 180;
+export const STATUS_ROOM_NARROW = 56;
 
 /** Nom de la case du menu « Gestion » */
 export const ODYSSEY_MODE_LABEL = 'Mode Odyssée';
@@ -199,21 +206,34 @@ export function odysseyModeHint(record) {
     return kept ? `${hint} ${kept}` : hint;
 }
 
+/** La phrase la plus complète qui tient dans la place donnée ; à défaut la dernière, la plus courte */
+const fitting = (choices, room) => choices.find((text) => text.length <= room) ?? choices.at(-1);
+
 /**
- * Message écrit dans la barre du haut après un toucher de la case : ce que le mode fait, et ce
- * que la fiche garde. La barre tient sur une ligne sur tablette : la phrase la plus complète qui
- * y tient est choisie.
+ * Message écrit dans la barre du haut après un toucher de la case. Au doigt, c'est la seule
+ * explication de la case (l'infobulle ne se voit qu'à la souris) : il commence toujours par dire
+ * que le mode vient d'être coupé (ou réactivé), puis ce que cela change, ce que la fiche garde et
+ * comment revenir en arrière. La phrase la plus complète qui tient dans la place est choisie ; sur
+ * ordinateur (colonne étroite) il reste l'essentiel, le détail est dans l'infobulle de la case.
  * @param {Object} record - fiche APRÈS le changement
- * @param {number} [room] - nombre de caractères disponibles
+ * @param {number} [room] - nombre de caractères disponibles (STATUS_ROOM_OPEN : menu ouvert sur tablette)
  * @returns {string}
  */
-export function odysseyModeMessage(record, room = STATUS_ROOM) {
+export function odysseyModeMessage(record, room = STATUS_ROOM_OPEN) {
     if (odysseyActive(record)) {
-        return `${ODYSSEY_MODE_LABEL} actif : ses espèces, sous-classes et style de combat sont de nouveau proposés.`;
+        const on = `${ODYSSEY_MODE_LABEL} actif : ses espèces, sous-classes et style de combat sont de nouveau proposés.`;
+        return fitting([`${on} Décochez pour une autre campagne.`, on, `${ODYSSEY_MODE_LABEL} actif : ses choix sont de nouveau proposés.`], room);
     }
     const off = `${ODYSSEY_MODE_LABEL} coupé : ses espèces, sous-classes et style de combat ne sont plus proposés.`;
+    const short = `${ODYSSEY_MODE_LABEL} coupé : ses choix ne sont plus proposés.`;
+    const back = 'Recochez pour tout retrouver.';
     const kept = keptSentence(record);
-    if (!kept) return off;
-    const choices = [`${off} ${kept}`, `${ODYSSEY_MODE_LABEL} coupé : ses choix ne sont plus proposés. ${kept}`, `${ODYSSEY_MODE_LABEL} coupé. ${kept}`, kept];
-    return choices.find((text) => text.length <= room) ?? kept;
+    if (!kept) return fitting([`${off} ${back}`, off, short], room);
+    return fitting([
+        `${off} ${kept} ${back}`,
+        `${short} ${kept} ${back}`,
+        `${short} ${kept}`,
+        `${ODYSSEY_MODE_LABEL} coupé. ${kept}`,
+        `${ODYSSEY_MODE_LABEL} coupé. Votre fiche garde ce qu'elle utilise déjà.`
+    ], room);
 }

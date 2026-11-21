@@ -4,8 +4,10 @@
 // Règles : js/rules/odyssey.js (clé facultative « odyssey_mode », actif par défaut).
 //  - Case « Mode Odyssée » du menu « Gestion », au bout de la rangée « Mode d'emploi » : cochée =
 //    mode actif. Réglage de la fiche : masquée fiche verrouillée (edit-only), comme « Nouvelle
-//    fiche ». Au toucher, la barre du haut dit ce que le mode fait et ce que la fiche garde ; à la
-//    souris, l'infobulle l'explique.
+//    fiche ». Au toucher, la barre du haut dit que le mode vient d'être coupé, ce que cela change,
+//    ce que la fiche garde et comment revenir en arrière (deux lignes sur tablette, menu ouvert ;
+//    l'essentiel sur ordinateur, où la colonne des messages est étroite) ; à la souris, l'infobulle
+//    l'explique.
 //  - Encadré « Odyssée des Seigneurs Dragons » (onglet 3) : caché quand le mode est coupé ET qu'il
 //    est vide (ni destin héroïque ni points de renommée). Il n'est caché qu'à un moment calme :
 //    changement du mode, ouverture ou remplacement de la fiche, verrou. Vidé à la main, mode coupé,
@@ -21,8 +23,10 @@ import { el } from './dom.js';
 import { isLocked } from './lock.js';
 import { frenchSpaces } from './help.js';
 import { renameSteppers } from './stepper.js';
+import { COMPACT_QUERY } from './toolbar.js';
 import {
-    ODYSSEY_MODE_KEY, ODYSSEY_MODE_LABEL, odysseyActive, setOdysseyModePatch, odysseyModeHint, odysseyModeMessage,
+    ODYSSEY_MODE_KEY, ODYSSEY_MODE_LABEL, STATUS_ROOM_OPEN, STATUS_ROOM_NARROW,
+    odysseyActive, setOdysseyModePatch, odysseyModeHint, odysseyModeMessage,
     odysseyBoxUseful, inspirationWording
 } from '../rules/odyssey.js';
 
@@ -32,6 +36,8 @@ import {
 export function initOdyssey({ root, store, setStatus }) {
     initBox(root, store);
     initInspiration(root, store);
+    // Tablette (barre repliable, message sur toute la largeur) ou ordinateur (colonne étroite)
+    const compact = window.matchMedia(COMPACT_QUERY);
     const host = document.getElementById('toolbar-help');
     if (!host) return;
 
@@ -56,7 +62,8 @@ export function initOdyssey({ root, store, setStatus }) {
             return;
         }
         store.update(patch);
-        setStatus(frenchSpaces(odysseyModeMessage(store.get())));
+        // La case est dans le menu ouvert : sur tablette, le message y dispose de deux lignes
+        setStatus(frenchSpaces(odysseyModeMessage(store.get(), compact.matches ? STATUS_ROOM_OPEN : STATUS_ROOM_NARROW)));
     });
 
     store.subscribe((character) => render(character));

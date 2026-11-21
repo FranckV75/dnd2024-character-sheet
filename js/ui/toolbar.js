@@ -30,8 +30,9 @@ import { openExamples, EXAMPLES_TITLE } from './examples.js';
 import { openHelp, HELP_TITLE } from './help.js';
 
 /** Écrans où la barre démarre repliée : tablettes (même seuil que sheet-tablet.css), et tablettes tactiles
- *  en paysage (Lenovo 1280 px, iPad 1180 px). Même condition que css/toolbar.css. */
-const COMPACT_QUERY = '(max-width: 1100px), (pointer: coarse) and (max-width: 1400px)';
+ *  en paysage (Lenovo 1280 px, iPad 1180 px). Même condition que css/toolbar.css. Ailleurs (ordinateur),
+ *  la colonne des messages est étroite : js/ui/odyssey.js y écrit des phrases plus courtes. */
+export const COMPACT_QUERY = '(max-width: 1100px), (pointer: coarse) and (max-width: 1400px)';
 const COLLAPSED_CLASS = 'app-bar--collapsed';
 const CINEMA_CLASS = 'cinema';
 

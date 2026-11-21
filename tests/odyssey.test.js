@@ -7,7 +7,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-    ODYSSEY_MODE_KEY, ODYSSEY_SOURCE, ODYSSEY_MODE_LABEL, STATUS_ROOM, fromOdyssey,
+    ODYSSEY_MODE_KEY, ODYSSEY_SOURCE, ODYSSEY_MODE_LABEL, STATUS_ROOM, STATUS_ROOM_OPEN, STATUS_ROOM_NARROW, fromOdyssey,
     odysseyActive, setOdysseyModePatch, odysseyUse, odysseyKept, proposedSpecies, proposedSubclasses,
     hiddenFeatIds, odysseyBoxUseful, inspirationWording, odysseyModeHint, odysseyModeMessage
 } from '../js/rules/odyssey.js';
@@ -378,22 +378,29 @@ describe('Mode Odyssée : phrases pour le joueur', () => {
         assert.ok(odysseyModeHint(sheet({ ...OFF, char_species: 'Centaure' })).endsWith('Cette fiche garde : Centaure.'));
     });
 
-    test('Message après avoir décoché : ce qui n\'est plus proposé, et ce que la fiche garde', () => {
-        assert.equal(odysseyModeMessage(sheet(OFF)),
-            'Mode Odyssée coupé : ses espèces, sous-classes et style de combat ne sont plus proposés.');
+    const BACK = 'Recochez pour tout retrouver.';
+    const OFF_LONG = 'Mode Odyssée coupé : ses espèces, sous-classes et style de combat ne sont plus proposés.';
+    const OFF_SHORT = 'Mode Odyssée coupé : ses choix ne sont plus proposés.';
+
+    test('Message après avoir décoché (tablette, menu ouvert) : le mode est coupé, ce qui change, ce que la fiche garde, comment revenir', () => {
+        assert.equal(odysseyModeMessage(sheet(OFF)), `${OFF_LONG} ${BACK}`);
         assert.equal(odysseyModeMessage(sheet({ ...OFF, char_species: 'Centaure' })),
-            'Mode Odyssée coupé : ses choix ne sont plus proposés. Cette fiche garde : Centaure.');
-        assert.equal(odysseyModeMessage(sheet({ ...OFF, char_species: 'Centaure', feat_2: 'hoplite' })),
-            'Mode Odyssée coupé. Cette fiche garde : Centaure, style Hoplite.');
-        assert.match(odysseyModeMessage(worst), /Cette fiche garde : Minotaure, Serment du Seigneur Dragon, style Hoplite, encadré Odyssée\.$/);
+            `${OFF_LONG} Cette fiche garde : Centaure. ${BACK}`);
+        assert.equal(odysseyModeMessage(sheet({ ...OFF, char_species: 'Centaure', char_class: 'Guerrier', char_subclass: "L'Hoplite", feat_2: 'hoplite', glory_score: '5' })),
+            `${OFF_SHORT} Cette fiche garde : Centaure, L'Hoplite, style Hoplite, encadré Odyssée. ${BACK}`);
+        assert.equal(odysseyModeMessage(worst),
+            `${OFF_SHORT} Cette fiche garde : Minotaure, Serment du Seigneur Dragon, style Hoplite, encadré Odyssée. ${BACK}`);
     });
 
     test('Message après avoir recoché', () => {
-        assert.equal(odysseyModeMessage(sheet({ [ODYSSEY_MODE_KEY]: 'on' })),
-            'Mode Odyssée actif : ses espèces, sous-classes et style de combat sont de nouveau proposés.');
+        const on = 'Mode Odyssée actif : ses espèces, sous-classes et style de combat sont de nouveau proposés.';
+        assert.equal(odysseyModeMessage(sheet()), `${on} Décochez pour une autre campagne.`);
+        assert.equal(odysseyModeMessage(sheet({ [ODYSSEY_MODE_KEY]: 'on' })), `${on} Décochez pour une autre campagne.`);
+        assert.equal(odysseyModeMessage(sheet(), STATUS_ROOM), on);
+        assert.equal(odysseyModeMessage(sheet(), STATUS_ROOM_NARROW), 'Mode Odyssée actif : ses choix sont de nouveau proposés.');
     });
 
-    test('La barre du haut tient sur une ligne : chaque message y tient, même la fiche la plus chargée', () => {
+    test('Menu ouvert sur tablette (deux lignes) : chaque message est complet, même pour la fiche la plus chargée', () => {
         const species = Object.values(DD_RULES.species).filter(fromOdyssey);
         const subclasses = Object.values(DD_RULES.subclasses).filter(fromOdyssey);
         const className = (slug) => DD_RULES.classes[slug].nameFr;
@@ -403,24 +410,48 @@ describe('Mode Odyssée : phrases pour le joueur', () => {
                 const record = sheet({ ...OFF, char_species: s.nameFr, char_class: className(sub.class), char_subclass: sub.nameFr, feat_2: 'hoplite', glory_score: '3' });
                 assert.equal(odysseyKept(record).length, 4, `${s.nameFr} / ${sub.nameFr}`);
                 const message = odysseyModeMessage(record);
-                assert.ok(message.length <= STATUS_ROOM, `${message.length} caractères : ${message}`);
-                assert.match(message, /Cette fiche garde : /);
+                assert.ok(message.length <= STATUS_ROOM_OPEN, `${message.length} caractères : ${message}`);
+                // Le joueur de l'Odyssée a toute l'explication : mode coupé, ce qui change, ce qui reste, retour
+                assert.ok(message.startsWith('Mode Odyssée coupé : '), message);
+                assert.match(message, /ne sont plus proposés\./);
+                assert.ok(message.includes(`Cette fiche garde : ${s.nameFr}, ${sub.nameFr}, style Hoplite, encadré Odyssée.`), message);
+                assert.ok(message.endsWith(BACK), message);
                 if (message.length > longest.length) longest = message;
             }
         }
-        assert.ok(longest.length > 80, longest);
+        assert.ok(longest.length > 160, longest);
         for (const record of [sheet(), sheet(OFF), sheet({ [ODYSSEY_MODE_KEY]: 'on' })]) {
-            assert.ok(odysseyModeMessage(record).length <= STATUS_ROOM, odysseyModeMessage(record));
+            assert.ok(odysseyModeMessage(record).length <= STATUS_ROOM_OPEN, odysseyModeMessage(record));
         }
     });
 
-    test('Place plus petite : la phrase la plus complète qui tient', () => {
+    test('Place plus petite : la phrase la plus complète qui tient, et « Mode Odyssée coupé » toujours en tête', () => {
         const record = sheet({ ...OFF, char_species: 'Centaure' });
-        assert.equal(odysseyModeMessage(record, 200),
-            'Mode Odyssée coupé : ses espèces, sous-classes et style de combat ne sont plus proposés. Cette fiche garde : Centaure.');
+        assert.equal(odysseyModeMessage(record, 200), `${OFF_LONG} Cette fiche garde : Centaure. ${BACK}`);
+        assert.equal(odysseyModeMessage(record, 115), `${OFF_SHORT} Cette fiche garde : Centaure. ${BACK}`);
+        assert.equal(odysseyModeMessage(record, STATUS_ROOM), `${OFF_SHORT} Cette fiche garde : Centaure.`);
         assert.equal(odysseyModeMessage(record, 60), 'Mode Odyssée coupé. Cette fiche garde : Centaure.');
-        assert.equal(odysseyModeMessage(record, 40), 'Cette fiche garde : Centaure.');
-        assert.equal(odysseyModeMessage(record, 5), 'Cette fiche garde : Centaure.');
+        assert.equal(odysseyModeMessage(record, 40), "Mode Odyssée coupé. Votre fiche garde ce qu'elle utilise déjà.");
+        assert.equal(odysseyModeMessage(record, 5), "Mode Odyssée coupé. Votre fiche garde ce qu'elle utilise déjà.");
+        assert.equal(odysseyModeMessage(sheet(OFF), STATUS_ROOM), OFF_LONG);
+        assert.equal(odysseyModeMessage(sheet(OFF), 5), OFF_SHORT);
+        for (const room of [0, 5, 40, STATUS_ROOM_NARROW, 60, STATUS_ROOM, 115, STATUS_ROOM_OPEN, 300]) {
+            for (const item of [sheet(OFF), record, worst]) {
+                assert.ok(odysseyModeMessage(item, room).startsWith('Mode Odyssée coupé'), `${room} : ${odysseyModeMessage(item, room)}`);
+            }
+            assert.ok(odysseyModeMessage(sheet(), room).startsWith('Mode Odyssée actif'));
+        }
+    });
+
+    test('Ordinateur (colonne étroite) : l\u2019essentiel en deux lignes courtes, le détail est dans l\u2019infobulle', () => {
+        assert.equal(odysseyModeMessage(sheet(OFF), STATUS_ROOM_NARROW), OFF_SHORT);
+        assert.equal(odysseyModeMessage(worst, STATUS_ROOM_NARROW), "Mode Odyssée coupé. Votre fiche garde ce qu'elle utilise déjà.");
+        assert.equal(odysseyModeMessage(sheet({ ...OFF, char_species: 'Centaure' }), STATUS_ROOM_NARROW), 'Mode Odyssée coupé. Cette fiche garde : Centaure.');
+        // Deux lignes de la colonne : 62 caractères au plus (vérifié à l'écran, 1280 px)
+        for (const record of [sheet(), sheet(OFF), worst, sheet({ ...OFF, char_species: 'Centaure' })]) {
+            assert.ok(odysseyModeMessage(record, STATUS_ROOM_NARROW).length <= 62, odysseyModeMessage(record, STATUS_ROOM_NARROW));
+        }
+        assert.match(odysseyModeHint(worst), /Cette fiche garde : Minotaure, Serment du Seigneur Dragon, style Hoplite, encadré Odyssée\.$/);
     });
 
     test('Le nom de la case est repris dans les messages', () => {
@@ -576,6 +607,14 @@ describe('Mode Odyssée : écran, impression et notice', () => {
         assert.match(ui, /odysseyBoxUseful\(character\)/);
         assert.match(ui, /toggleAttribute\('data-odyssey-unused', !useful\)/);
         assert.match(read('css/print.css'), /\.odyssey\[data-odyssey-unused\] \{\s*display: none;\s*\}/);
+    });
+
+    test('Messages de la barre : place choisie selon l\u2019écran', () => {
+        assert.match(ui, /odysseyModeMessage\(store\.get\(\), compact\.matches \? STATUS_ROOM_OPEN : STATUS_ROOM_NARROW\)/);
+        assert.match(ui, /matchMedia\(COMPACT_QUERY\)/);
+        assert.match(read('js/ui/toolbar.js'), /export const COMPACT_QUERY = /);
+        // Menu ouvert sur tablette : deux lignes, place réservée (rien ne bouge sous le doigt)
+        assert.match(read('css/toolbar.css'), /#app-bar:not\(\.app-bar--collapsed\) #save-status \{[^}]*min-height: 2\.5em;[^}]*white-space: normal;/);
     });
 
     test('Libellé d\u2019Inspiration : posé par la règle, boutons − / + renommés', () => {

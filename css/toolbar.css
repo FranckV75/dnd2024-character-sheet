@@ -315,6 +315,16 @@
         overflow-wrap: normal;
     }
 
+    /* Menu ouvert : le dernier message peut s'écrire sur deux lignes (la case « Mode Odyssée »
+       s'explique là, au toucher). La place des deux lignes est réservée dès l'ouverture : rien ne
+       bouge sous le doigt quand le message arrive ou s'efface. */
+    #app-bar:not(.app-bar--collapsed) #save-status {
+        display: -webkit-box;
+        min-height: 2.5em;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
     .app-bar .toolbar-toggle {
         display: inline-flex;
         grid-area: brand;
