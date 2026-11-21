@@ -282,6 +282,17 @@
     outline-offset: 2px;
 }
 
+/* Au doigt, le survol reste « collé » au dernier bouton touché : la case qu'on vient de décocher
+   paraîtrait allumée (texte doré, halo). Sans souris, elle garde donc son aspect de repos ; son
+   état se lit dans le rond, plein ou vide. */
+@media (hover: none) {
+    .app-bar .toolbar-check:hover:not(:disabled) {
+        border-color: var(--btn-border);
+        color: var(--text);
+        box-shadow: var(--btn-shadow);
+    }
+}
+
 /* Bouton « Gestion » : uniquement sur tablette */
 .app-bar .toolbar-toggle {
     display: none;

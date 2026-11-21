@@ -695,6 +695,8 @@ describe('Mode Odyssée : écran, impression et notice', () => {
         assert.match(read('js/ui/toolbar.js'), /export const COMPACT_QUERY = /);
         // Menu ouvert sur tablette : deux lignes, place réservée (rien ne bouge sous le doigt)
         assert.match(read('css/toolbar.css'), /#app-bar:not\(\.app-bar--collapsed\) #save-status \{[^}]*min-height: 2\.5em;[^}]*white-space: normal;/);
+        // Au doigt, la case qu'on vient de toucher ne reste pas « allumée »
+        assert.match(read('css/toolbar.css'), /@media \(hover: none\) \{\s*\.app-bar \.toolbar-check:hover:not\(:disabled\) \{/);
     });
 
     test('Libellé d\u2019Inspiration : posé par la règle, boutons − / + renommés', () => {
