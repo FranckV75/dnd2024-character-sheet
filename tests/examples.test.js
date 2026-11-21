@@ -127,7 +127,7 @@ describe('Personnages d\'exemple : cohérence avec les règles de 2024', () => {
             assert.equal(dice.used, 0, 'prêt à jouer : aucun dé de vie dépensé');
         });
 
-        test(`${id} : PX du niveau, sans montée de niveau en attente`, () => {
+        test(`${id} : XP du niveau, sans montée de niveau en attente`, () => {
             const progress = experienceProgress(character);
             assert.equal(progress.ready, false);
             assert.equal(progress.nextLevel, d.level + 1);

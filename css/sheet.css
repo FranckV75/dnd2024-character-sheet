@@ -444,8 +444,8 @@ fieldset.inline-checks {
 }
 
 /* Trois lignes à toutes les largeurs : Nom + Classe / Niveau + Historique + Espèce /
-   Sous-classe + Taille + PX. La fiche ne dépasse jamais 1100 px de large : sur deux lignes,
-   le nom et les PX étaient coupés (« … ») sur tablette en paysage comme sur ordinateur */
+   Sous-classe + Taille + XP. La fiche ne dépasse jamais 1100 px de large : sur deux lignes,
+   le nom et les XP étaient coupés (« … ») sur tablette en paysage comme sur ordinateur */
 .sheet-header .field-name {
     grid-column: span 8;
 }
@@ -468,7 +468,7 @@ fieldset.inline-checks {
     grid-column: span 6;
 }
 
-/* Taille (une mesure courte, « 1m98 ») et PX (jusqu'à « 355000/355000 ») */
+/* Taille (une mesure courte, « 1m98 ») et XP (jusqu'à « 355000/355000 ») */
 .sheet-header .field-narrow:nth-of-type(7) {
     grid-column: span 2;
 }

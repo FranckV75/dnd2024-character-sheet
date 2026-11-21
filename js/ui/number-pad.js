@@ -1,7 +1,7 @@
 // =============================================================================
 // NUMBER-PAD.JS - Fenêtre « pavé de chiffres » : gros chiffres, puis un bouton d'action
 //
-// Sert aux Dégâts / Soins (js/ui/hit-points.js), aux PX gagnés et à la bourse. La fenêtre reste
+// Sert aux Dégâts / Soins (js/ui/hit-points.js), aux XP gagnés et à la bourse. La fenêtre reste
 // ouverte pour enchaîner ; chaque action affiche son résultat. Une fiche remplacée pendant que la
 // fenêtre est ouverte (autre onglet, compte, import, « Revenir à… ») efface le montant tapé.
 // Clavier d'ordinateur : chiffres, retour arrière, Suppr. Mise en forme : css/stepper.css.

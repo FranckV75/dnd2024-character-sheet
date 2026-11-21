@@ -1,10 +1,10 @@
 // =============================================================================
-// EXPERIENCE.JS (interface) - Points d'expérience : « Encore X PX avant le niveau N » et pavé « + PX »
+// EXPERIENCE.JS (interface) - Points d'expérience : « Encore X XP avant le niveau N (palier) » et pavé « + XP »
 //
-//  - Sous la case PX : PX restants avant le niveau suivant, ou « PX du niveau N atteints » quand
-//    le seuil est passé ; rien pour une progression par étapes (0 PX au-delà du niveau 1),
-//    un texte ou le niveau 20.
-//  - Bouton + à côté de la case : pavé de chiffres (js/ui/number-pad.js) pour ajouter les PX
+//  - Sous la case XP : XP restants avant le niveau suivant et son palier (« … avant le
+//    niveau 7 (23 000 XP) »), ou « XP du niveau N atteints » quand le seuil est passé ; rien
+//    pour une progression par étapes (0 XP au-delà du niveau 1), un texte ou le niveau 20.
+//  - Bouton + à côté de la case : pavé de chiffres (js/ui/number-pad.js) pour ajouter les XP
 //    gagnés. Utilisable fiche verrouillée (un ajout se fait toujours par un bouton explicite).
 //  - Seuil atteint : le bouton « Passer au niveau N » (js/ui/level-up.js) s'illumine (is-ready).
 // Règles : js/rules/experience.js. Mise en forme : css/stepper.css.
@@ -14,11 +14,11 @@ import { el, icon } from './dom.js';
 import { openNumberPad } from './number-pad.js';
 import { experienceProgress, addExperience, formatXp, MAX_XP_ENTRY } from '../rules/experience.js';
 
-/** Texte sous la case PX (vide si rien à dire) */
+/** Texte sous la case XP (vide si rien à dire) */
 export function progressText(progress) {
     if (!progress.known || progress.nextLevel === null) return '';
-    if (progress.ready) return `PX du niveau ${progress.reachable} atteints`;
-    return `Encore ${formatXp(progress.remaining)} PX avant le niveau ${progress.nextLevel}`;
+    if (progress.ready) return `XP du niveau ${progress.reachable} atteints`;
+    return `Encore ${formatXp(progress.remaining)} XP avant le niveau ${progress.nextLevel} (${formatXp(progress.needed)} XP)`;
 }
 
 /**
@@ -30,7 +30,7 @@ export function initExperience({ root, store }) {
     if (!field) return;
     const button = el('button', {
         type: 'button', class: 'btn-icon xp-add-btn', 'aria-haspopup': 'dialog',
-        'aria-label': 'Ajouter des PX gagnés', title: 'Ajouter des PX gagnés',
+        'aria-label': 'Ajouter des XP gagnés', title: 'Ajouter des XP gagnés',
         on: { click: () => openPad(store) }
     }, icon('plus'));
     const row = el('div', { class: 'xp-input-row' });
@@ -51,11 +51,11 @@ export function initExperience({ root, store }) {
     render(store.get());
 }
 
-/** « Korgul : 21 800 PX · encore 1 200 PX avant le niveau 7 » */
+/** « Korgul : 21 800 XP · encore 1 200 XP avant le niveau 7 (23 000 XP) » */
 function summaryText(record) {
     const progress = experienceProgress(record);
     const name = String(record?.char_name ?? '').replace(/<[^>]*>/g, '').trim();
-    const xp = progress.xp === null ? 'PX à corriger' : `${formatXp(Math.max(0, progress.xp))} PX`;
+    const xp = progress.xp === null ? 'XP à corriger' : `${formatXp(Math.max(0, progress.xp))} XP`;
     const next = progressText(progress);
     const text = next ? `${xp} · ${next.charAt(0).toLowerCase()}${next.slice(1)}` : xp;
     return name ? `${name} : ${text}` : text;
@@ -64,17 +64,17 @@ function summaryText(record) {
 function openPad(store) {
     openNumberPad({
         store,
-        title: 'PX gagnés',
+        title: 'XP gagnés',
         summary: summaryText,
         max: MAX_XP_ENTRY,
-        label: 'PX gagnés',
+        label: 'XP gagnés',
         actions: [{
             label: 'Ajouter', className: 'is-heal',
             run: (record, amount) => {
                 const outcome = addExperience(record, amount);
                 if (!outcome.ok) return outcome;
                 const after = experienceProgress({ ...record, ...outcome.patch });
-                const lines = [{ text: `+ ${formatXp(Number(amount))} PX : ${formatXp(outcome.before)} → ${formatXp(outcome.after)}.`, className: 'is-heal' }];
+                const lines = [{ text: `+ ${formatXp(Number(amount))} XP : ${formatXp(outcome.before)} → ${formatXp(outcome.after)}.`, className: 'is-heal' }];
                 if (after.ready) lines.push({ text: `${progressText(after)} : touchez + à côté du Niveau (fiche déverrouillée).` });
                 return { ok: true, patch: outcome.patch, lines };
             }

@@ -28,7 +28,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Le haut de la fiche",
-                text: "Le nom, la classe, la sous-classe, le niveau, l'historique, l'espèce et les PX restent affichés en haut, quel que soit l'onglet. Choisissez la classe, la sous-classe, l'espèce et l'historique dans leurs listes : la fiche affiche alors ce qui va avec."
+                text: "Le nom, la classe, la sous-classe, le niveau, l'historique, l'espèce et les XP restent affichés en haut, quel que soit l'onglet. Choisissez la classe, la sous-classe, l'espèce et l'historique dans leurs listes : la fiche affiche alors ce qui va avec."
             },
             {
                 title: "Les quatre onglets",
@@ -376,7 +376,7 @@ export const HELP_SECTIONS = Object.freeze([
         entries: [
             {
                 title: "Noter les points d'expérience",
-                text: "Le bouton + à côté de la case PX (« Ajouter des PX gagnés ») ouvre un pavé de chiffres : tapez les « PX gagnés », puis « Ajouter ». Sous la case, la fiche dit combien de PX il manque avant le niveau suivant."
+                text: "Le bouton + à côté de la case XP (« Ajouter des XP gagnés ») ouvre un pavé de chiffres : tapez les « XP gagnés », puis « Ajouter ». Sous la case, la fiche dit combien d'XP il manque avant le niveau suivant."
             },
             {
                 title: "Passer au niveau suivant",

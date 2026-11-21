@@ -1,16 +1,16 @@
 /**
- * POINTS D'EXPÉRIENCE — seuils de niveau et PX restants (fonctions pures)
+ * POINTS D'EXPÉRIENCE — seuils de niveau et XP restants (fonctions pures)
  *
- * Table « Progression des personnages » du Manuel des joueurs 2024 (chapitre 2) : PX à atteindre
+ * Table « Progression des personnages » du Manuel des joueurs 2024 (chapitre 2) : XP à atteindre
  * pour chaque niveau. Clé char_xp, en texte (format v3, « 0 » par défaut).
- * Une fiche à 0 PX au-delà du niveau 1 progresse par étapes (sans PX) : aucun
+ * Une fiche à 0 XP au-delà du niveau 1 progresse par étapes (sans XP) : aucun
  * décompte n'est affiché.
  */
 
 import { readCount } from './counters.js';
 import { parseNumber } from './character.js';
 
-/** PX à atteindre pour chaque niveau (index = niveau ; 0 inutilisé) */
+/** XP à atteindre pour chaque niveau (index = niveau ; 0 inutilisé) */
 export const XP_THRESHOLDS = [
     0, 0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000,
     85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000
@@ -18,8 +18,8 @@ export const XP_THRESHOLDS = [
 export const MAX_XP_ENTRY = 999999;
 
 /**
- * PX lus dans la case, sous les formes que les joueurs écrivent : « 2930 », « 1 200 »,
- * « 4990/6500 » (PX / seuil suivant), avec ou sans mise en forme v3 (« <font …>2930</font> »).
+ * XP lus dans la case, sous les formes que les joueurs écrivent : « 2930 », « 1 200 »,
+ * « 4990/6500 » (XP / seuil suivant), avec ou sans mise en forme v3 (« <font …>2930</font> »).
  * @param {unknown} value
  * @returns {number|null} null : texte libre (« voir MJ »)
  */
@@ -36,8 +36,8 @@ export function readXp(value) {
  * @param {Object} record
  * @returns {{ known: boolean, xp: number|null, level: number, nextLevel: number|null,
  *             needed: number|null, remaining: number|null, ready: boolean, reachable: number }}
- *   known : PX lisibles et utilisés (pas une progression par étapes) ;
- *   ready : assez de PX pour le niveau suivant ; reachable : niveau que ces PX permettent
+ *   known : XP lisibles et utilisés (pas une progression par étapes) ;
+ *   ready : assez d'XP pour le niveau suivant ; reachable : niveau que ces XP permettent
  */
 export function experienceProgress(record) {
     const level = Math.min(20, Math.max(1, parseNumber(record?.char_level, 1)));
@@ -56,7 +56,7 @@ export function experienceProgress(record) {
 }
 
 /**
- * PX gagnés.
+ * XP gagnés.
  * @param {Object} record
  * @param {unknown} value - montant saisi (entier de 1 à MAX_XP_ENTRY)
  * @returns {{ ok: false, reason: string } | { ok: true, patch: Object, before: number, after: number }}
@@ -64,9 +64,9 @@ export function experienceProgress(record) {
 export function addExperience(record, value) {
     const text = String(value ?? '').trim();
     const amount = /^\d+$/.test(text) ? Number(text) : 0;
-    if (amount < 1 || amount > MAX_XP_ENTRY) return { ok: false, reason: 'Saisissez un nombre de PX.' };
+    if (amount < 1 || amount > MAX_XP_ENTRY) return { ok: false, reason: 'Saisissez un nombre d\'XP.' };
     const raw = readXp(record?.char_xp);
-    if (raw === null) return { ok: false, reason: 'La case PX contient du texte : corrigez-la d\'abord à la main.' };
+    if (raw === null) return { ok: false, reason: 'La case XP contient du texte : corrigez-la d\'abord à la main.' };
     // Écrit en nombre seul (« 5090 ») : le décompte sous la case remplace un « /6500 » éventuel
     const before = Math.max(0, raw);
     const after = before + amount;

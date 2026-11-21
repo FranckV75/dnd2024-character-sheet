@@ -49,7 +49,7 @@ describe('Points d\'expérience', () => {
         assert.equal(XP_THRESHOLDS[20], 355000);
     });
 
-    test('PX restants avant le niveau suivant', () => {
+    test('XP restants avant le niveau suivant', () => {
         const p = experienceProgress({ char_level: '6', char_xp: '21800' });
         assert.equal(p.known, true);
         assert.equal(p.nextLevel, 7);
@@ -57,14 +57,14 @@ describe('Points d\'expérience', () => {
         assert.equal(p.ready, false);
     });
 
-    test('Assez de PX : niveau suivant prêt', () => {
+    test('Assez d\'XP : niveau suivant prêt', () => {
         const p = experienceProgress({ char_level: '6', char_xp: '25000' });
         assert.equal(p.ready, true);
         assert.equal(p.remaining, 0);
         assert.equal(p.reachable, 7);
     });
 
-    test('Progression par étapes (0 PX au-delà du niveau 1), texte, niveau 20 : pas de décompte', () => {
+    test('Progression par étapes (0 XP au-delà du niveau 1), texte, niveau 20 : pas de décompte', () => {
         assert.equal(experienceProgress({ char_level: '5', char_xp: '0' }).known, false);
         assert.equal(experienceProgress({ char_level: '1', char_xp: '0' }).remaining, 300);
         assert.equal(experienceProgress({ char_level: '3', char_xp: 'voir MJ' }).known, false);
@@ -72,7 +72,7 @@ describe('Points d\'expérience', () => {
         assert.equal(experienceProgress({ char_level: '<b>6</b>', char_xp: '21800' }).remaining, 1200);
     });
 
-    test('PX gagnés', () => {
+    test('XP gagnés', () => {
         assert.deepEqual(addExperience({ char_xp: '21800' }, '1500').patch, { char_xp: '23300' });
         assert.deepEqual(addExperience({ char_xp: '' }, '50').patch, { char_xp: '50' });
         assert.equal(addExperience({ char_xp: 'voir MJ' }, '50').ok, false);
@@ -82,10 +82,22 @@ describe('Points d\'expérience', () => {
     test('Milliers séparés comme en français', () => {
         assert.equal(formatXp(23000), '23\u00a0000');
     });
+
+    test('Phrase sous la case XP : XP restants, niveau suivant et son palier', async () => {
+        const { progressText } = await import('../js/ui/experience.js');
+        const say = (record) => progressText(experienceProgress(record));
+        assert.equal(say({ char_level: '6', char_xp: '21800' }),
+            'Encore 1\u00a0200 XP avant le niveau 7 (23\u00a0000 XP)');
+        assert.equal(say({ char_level: '1', char_xp: '0' }), 'Encore 300 XP avant le niveau 2 (300 XP)');
+        assert.equal(say({ char_level: '6', char_xp: '25000' }), 'XP du niveau 7 atteints');
+        assert.equal(say({ char_level: '5', char_xp: '0' }), '');
+        assert.equal(say({ char_level: '20', char_xp: '400000' }), '');
+        assert.doesNotMatch(say({ char_level: '19', char_xp: '300000' }), /PX/);
+    });
 });
 
 describe('Relecture : formats écrits par les joueurs', () => {
-    test('PX avec mise en forme v3, milliers, « PX/seuil »', async () => {
+    test('XP avec mise en forme v3, milliers, « XP/seuil »', async () => {
         const { readXp } = await import('../js/rules/experience.js');
         assert.equal(readXp('<font size="5">2930</font>'), 2930);
         assert.equal(readXp('4990/6500'), 4990);
@@ -96,7 +108,7 @@ describe('Relecture : formats écrits par les joueurs', () => {
         assert.equal(experienceProgress({ char_level: '4', char_xp: '<b>4990/6500</b>' }).remaining, 1510);
     });
 
-    test('PX négatifs : comptés comme 0', () => {
+    test('XP négatifs : comptés comme 0', () => {
         const outcome = addExperience({ char_xp: '-50' }, '100');
         assert.equal(outcome.before, 0);
         assert.deepEqual(outcome.patch, { char_xp: '100' });

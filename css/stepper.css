@@ -1,6 +1,6 @@
 /* =============================================================================
    STEPPER.CSS - Boutons − / + autour d'une case de nombre (js/ui/stepper.js), pavé de
-   chiffres (js/ui/number-pad.js : Dégâts / Soins, PX, bourse), PX (js/ui/experience.js),
+   chiffres (js/ui/number-pad.js : Dégâts / Soins, XP, bourse), XP (js/ui/experience.js),
    compteurs et bourse (js/ui/counters.js), numéro de version (js/ui/update.js).
    ============================================================================= */
 
@@ -130,7 +130,7 @@
     color: var(--ok);
 }
 
-/* ---------- PX : bouton + à côté de la case, PX restants en dessous ---------- */
+/* ---------- XP : bouton + à côté de la case, XP restants en dessous ---------- */
 
 .xp-input-row {
     position: relative;
@@ -182,7 +182,7 @@
     font-weight: 700;
 }
 
-/* Assez de PX pour le niveau suivant : le + du Niveau s'illumine */
+/* Assez d'XP pour le niveau suivant : le + du Niveau s'illumine */
 .level-up-btn.is-ready {
     border-color: var(--gold);
     color: var(--gold);

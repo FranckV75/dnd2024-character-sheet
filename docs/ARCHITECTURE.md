@@ -30,7 +30,7 @@ css/                    Une feuille par fonctionnalité ; toute couleur passe pa
 ├── weapons.css · armors.css · spells.css · rest.css · style-editor.css
 ├── conditions.css · origins.css   Encadrés « États » (onglet 1) et « Espèce & historique » (onglet 2)
 ├── hit-points.css      PV en jeu : boutons − / + des cases PV, bouton « Dégâts / Soins »
-├── stepper.css         Boutons − / + et pavé de chiffres (PV, PX, compteurs, bourse)
+├── stepper.css         Boutons − / + et pavé de chiffres (PV, XP, compteurs, bourse)
 ├── level-up.css        Bouton « Passer au niveau N » et sa fenêtre
 ├── magic.css           Armes et armures magiques (+1 à +3 de plus en plus marqués, enchantement)
 ├── motion.css          Mouvements (ouverture en cascade, onglets, survol, thème, cinéma) ;
@@ -110,7 +110,7 @@ js/
 │   ├── concentration.js  Sort de concentration (clé facultative « concentration »), jet après dégâts
 │   ├── hit-points.js   PV en jeu : dégâts, soins, PV temporaires, boutons − / + (écran : ui/hit-points.js)
 │   ├── class-progression.js  Aptitudes atteintes / à venir, sorts mineurs et préparés permis
-│   ├── experience.js   PX : seuils de niveau, PX restants, PX gagnés
+│   ├── experience.js   XP : seuils de niveau, XP restants, XP gagnés
 │   ├── counters.js     Compteurs − / + (Épuisement, Inspiration, renommée) et pièces (Bourse)
 │   ├── level-up.js     Assistant « Passer au niveau N » : ce qui change, PV gagnés, modification
 │   │                   appliquée (niveau, PV max, PV actuels sur demande ; écran : ui/level-up.js)
