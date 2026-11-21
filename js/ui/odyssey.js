@@ -8,6 +8,8 @@
 //    ce que la fiche garde et comment revenir en arrière (deux lignes sur tablette, menu ouvert ;
 //    l'essentiel sur ordinateur, où la colonne des messages est étroite) ; à la souris, l'infobulle
 //    l'explique.
+//  - Mode coupé, un choix de l'Odyssée abandonné (espèce, sous-classe, style) sort aussitôt de sa
+//    liste : la barre du haut dit comment le retrouver (recocher la case).
 //  - Encadré « Odyssée des Seigneurs Dragons » (onglet 3) : caché quand le mode est coupé ET qu'il
 //    est vide (ni destin héroïque ni points de renommée). Il n'est caché qu'à un moment calme :
 //    changement du mode, ouverture ou remplacement de la fiche, verrou. Vidé à la main, mode coupé,
@@ -25,8 +27,8 @@ import { frenchSpaces } from './help.js';
 import { renameSteppers } from './stepper.js';
 import { COMPACT_QUERY } from './toolbar.js';
 import {
-    ODYSSEY_MODE_KEY, ODYSSEY_MODE_LABEL, STATUS_ROOM_OPEN, STATUS_ROOM_NARROW,
-    odysseyActive, setOdysseyModePatch, odysseyModeHint, odysseyModeMessage,
+    ODYSSEY_MODE_KEY, ODYSSEY_MODE_LABEL, STATUS_ROOM, STATUS_ROOM_OPEN, STATUS_ROOM_NARROW,
+    odysseyActive, setOdysseyModePatch, odysseyModeHint, odysseyModeMessage, odysseyDroppedMessage,
     odysseyBoxUseful, inspirationWording
 } from '../rules/odyssey.js';
 
@@ -38,6 +40,7 @@ export function initOdyssey({ root, store, setStatus }) {
     initInspiration(root, store);
     // Tablette (barre repliable, message sur toute la largeur) ou ordinateur (colonne étroite)
     const compact = window.matchMedia(COMPACT_QUERY);
+    initDroppedNotice(store, setStatus, compact);
     const host = document.getElementById('toolbar-help');
     if (!host) return;
 
@@ -68,6 +71,25 @@ export function initOdyssey({ root, store, setStatus }) {
 
     store.subscribe((character) => render(character));
     render(store.get());
+}
+
+/**
+ * Mode coupé : un choix de l'Odyssée que la fiche abandonne (autre espèce, autre classe ou
+ * sous-classe, autre style de combat) sort aussitôt de sa liste. La barre du haut le dit, avec le
+ * moyen de le retrouver. Rien à l'ouverture ou au remplacement de la fiche (changedKeys nul).
+ * @param {Object} store
+ * @param {(message: string) => void} setStatus
+ * @param {MediaQueryList} compact
+ */
+function initDroppedNotice(store, setStatus, compact) {
+    let previous = store.get();
+    store.subscribe((character, changedKeys) => {
+        const before = previous;
+        previous = character;
+        if (changedKeys === null) return;
+        const message = odysseyDroppedMessage(before, character, compact.matches ? STATUS_ROOM : STATUS_ROOM_NARROW);
+        if (message) setStatus(frenchSpaces(message));
+    });
 }
 
 /**

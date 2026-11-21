@@ -9,7 +9,8 @@ import { readFileSync } from 'node:fs';
 import {
     ODYSSEY_MODE_KEY, ODYSSEY_SOURCE, ODYSSEY_MODE_LABEL, STATUS_ROOM, STATUS_ROOM_OPEN, STATUS_ROOM_NARROW, fromOdyssey,
     odysseyActive, setOdysseyModePatch, odysseyUse, odysseyKept, proposedSpecies, proposedSubclasses,
-    hiddenFeatIds, odysseyBoxUseful, inspirationWording, odysseyModeHint, odysseyModeMessage
+    hiddenFeatIds, odysseyBoxUseful, inspirationWording, odysseyModeHint, odysseyModeMessage,
+    odysseyDropped, odysseyDroppedMessage
 } from '../js/rules/odyssey.js';
 import { DD_RULES } from '../js/data/dd-rules.js';
 import { FEATS_DATA } from '../js/data/feats.js';
@@ -460,6 +461,81 @@ describe('Mode Odyssée : phrases pour le joueur', () => {
     });
 });
 
+describe('Mode Odyssée : choix abandonné quand le mode est coupé', () => {
+    const hero = { char_species: 'Centaure', char_class: 'Guerrier', char_subclass: "L'Hoplite", feat_2: 'hoplite', heroic_destiny: 'damned', glory_score: '5' };
+    const off = sheet({ ...OFF, ...hero });
+
+    test('Mode coupé : l\u2019espèce, la sous-classe ou le style quittés sont nommés', () => {
+        assert.deepEqual(odysseyDropped(off, { ...off, char_species: 'Humain' }), ['Centaure']);
+        assert.deepEqual(odysseyDropped(off, { ...off, char_subclass: 'Champion' }), ["L'Hoplite"]);
+        assert.deepEqual(odysseyDropped(off, { ...off, char_class: 'Paladin', char_subclass: '' }), ["L'Hoplite"]);
+        assert.deepEqual(odysseyDropped(off, { ...off, feat_2: 'defense' }), ['style Hoplite']);
+        assert.deepEqual(odysseyDropped(off, { ...off, feat_2: '' }), ['style Hoplite']);
+        assert.deepEqual(odysseyDropped(off, { ...off, char_species: 'Humain', char_subclass: '', feat_2: '' }), ['Centaure', "L'Hoplite", 'style Hoplite']);
+    });
+
+    test('Passer d\u2019un choix de l\u2019Odyssée à un autre : l\u2019ancien est sorti de la liste', () => {
+        assert.deepEqual(odysseyDropped(off, { ...off, char_species: 'Minotaure' }), ['Centaure']);
+    });
+
+    test('Rien à dire : mode actif, changement du mode, autre champ, style déplacé, encadré vidé', () => {
+        const on = sheet(hero);
+        assert.deepEqual(odysseyDropped(on, { ...on, char_species: 'Humain' }), []);
+        // Le toucher de la case a son propre message (odysseyModeMessage)
+        assert.deepEqual(odysseyDropped(on, { ...off, char_species: 'Humain' }), []);
+        assert.deepEqual(odysseyDropped(off, { ...on, char_species: 'Humain' }), []);
+        assert.deepEqual(odysseyDropped(off, off), []);
+        assert.deepEqual(odysseyDropped(off, { ...off, char_name: 'Nessos', str_score: '18' }), []);
+        assert.deepEqual(odysseyDropped(off, { ...off, feat_2: '', feat_7: 'hoplite' }), []);
+        // L'encadré de l'onglet 3 n'est pas un choix de liste
+        assert.deepEqual(odysseyDropped(off, { ...off, heroic_destiny: '', glory_score: '0' }), []);
+        // Fiche du manuel : jamais rien
+        const human = sheet({ ...OFF, char_species: 'Humain', char_class: 'Guerrier', char_subclass: 'Champion' });
+        assert.deepEqual(odysseyDropped(human, { ...human, char_species: 'Elfe', char_subclass: 'Maître de guerre' }), []);
+        assert.deepEqual(odysseyDropped(null, undefined), []);
+    });
+
+    test('Anciennes écritures : la même espèce écrite autrement n\u2019est pas un abandon', () => {
+        const english = sheet({ ...OFF, char_species: 'Centaur', char_class: 'Fighter', char_subclass: 'Odyssean Champion' });
+        assert.deepEqual(odysseyDropped(english, { ...english, char_species: 'Centaure', char_class: 'Guerrier', char_subclass: "L'Hoplite" }), []);
+        assert.deepEqual(odysseyDropped(english, { ...english, char_species: 'Human' }), ['Centaure']);
+    });
+
+    test('Message : dit comment retrouver le choix (recocher la case), sans accord à faire', () => {
+        assert.equal(odysseyDroppedMessage(off, { ...off, char_species: 'Humain' }),
+            "Centaure n'est plus dans la liste : recochez « Mode Odyssée » pour retrouver ce choix.");
+        assert.equal(odysseyDroppedMessage(off, { ...off, feat_2: 'defense' }),
+            "Style Hoplite n'est plus dans la liste : recochez « Mode Odyssée » pour retrouver ce choix.");
+        assert.equal(odysseyDroppedMessage(off, { ...off, char_species: 'Humain', feat_2: '' }, 200),
+            'Centaure, style Hoplite ne sont plus dans les listes : recochez « Mode Odyssée » pour retrouver ces choix.');
+        assert.equal(odysseyDroppedMessage(off, { ...off, char_name: 'Nessos' }), '');
+        assert.equal(odysseyDroppedMessage(sheet(hero), { ...sheet(hero), char_species: 'Humain' }), '');
+    });
+
+    test('Message : tient sur une ligne de la barre (tablette) pour chaque espèce, sous-classe et style', () => {
+        const className = (slug) => DD_RULES.classes[slug].nameFr;
+        const cases = [
+            ...Object.values(DD_RULES.species).filter(fromOdyssey).map((s) => [{ char_species: s.nameFr }, { char_species: 'Humain' }, s.nameFr]),
+            ...Object.values(DD_RULES.subclasses).filter(fromOdyssey).map((sub) => [{ char_class: className(sub.class), char_subclass: sub.nameFr }, { char_subclass: '' }, sub.nameFr]),
+            [{ feat_2: 'hoplite' }, { feat_2: '' }, 'Style Hoplite']
+        ];
+        assert.equal(cases.length, 19);
+        for (const [had, change, name] of cases) {
+            const before = sheet({ ...OFF, ...had });
+            const message = odysseyDroppedMessage(before, { ...before, ...change });
+            assert.ok(message.startsWith(name), `${name} : ${message}`);
+            assert.ok(message.length <= STATUS_ROOM, `${message.length} caractères : ${message}`);
+            assert.ok(message.includes('recochez « Mode Odyssée » pour retrouver ce choix.'), message);
+            // Ordinateur : deux lignes courtes, le nom puis le geste
+            const narrow = odysseyDroppedMessage(before, { ...before, ...change }, STATUS_ROOM_NARROW);
+            assert.ok(narrow.startsWith(`${name} : `) && narrow.endsWith('recochez « Mode Odyssée ».'), narrow);
+            assert.ok(narrow.length <= STATUS_ROOM_NARROW, `${narrow.length} caractères : ${narrow}`);
+        }
+        assert.equal(odysseyDroppedMessage(sheet({ ...OFF, char_species: 'Centaure' }), sheet({ ...OFF, char_species: 'Humain' }), STATUS_ROOM_NARROW),
+            'Centaure : pour ce choix, recochez « Mode Odyssée ».');
+    });
+});
+
 describe('Mode Odyssée : sauvegarde et synchronisation', () => {
     /** Stockage simulé (sauvegardes de secours) */
     const fakeStorage = () => {
@@ -609,8 +685,10 @@ describe('Mode Odyssée : écran, impression et notice', () => {
         assert.match(read('css/print.css'), /\.odyssey\[data-odyssey-unused\] \{\s*display: none;\s*\}/);
     });
 
-    test('Messages de la barre : place choisie selon l\u2019écran', () => {
+    test('Messages de la barre : place choisie selon l\u2019écran, choix abandonné signalé hors remplacement de fiche', () => {
         assert.match(ui, /odysseyModeMessage\(store\.get\(\), compact\.matches \? STATUS_ROOM_OPEN : STATUS_ROOM_NARROW\)/);
+        assert.match(ui, /odysseyDroppedMessage\(before, character, compact\.matches \? STATUS_ROOM : STATUS_ROOM_NARROW\)/);
+        assert.match(ui, /if \(changedKeys === null\) return;/);
         assert.match(ui, /matchMedia\(COMPACT_QUERY\)/);
         assert.match(read('js/ui/toolbar.js'), /export const COMPACT_QUERY = /);
         // Menu ouvert sur tablette : deux lignes, place réservée (rien ne bouge sous le doigt)
@@ -641,6 +719,11 @@ describe('Mode Odyssée : écran, impression et notice', () => {
         const kept = section('start').find((entry) => entry.title === '« Mode Odyssée » décoché : ce qui reste');
         assert.match(kept.text, new RegExp(`« ${inspirationWording({}).label} »`));
         assert.match(kept.text, new RegExp(`« ${inspirationWording({ [ODYSSEY_MODE_KEY]: 'off' }).label} »`));
+        // Choix abandonné mode coupé, encadré disparu : la notice dit de recocher la case
+        const back = section('start').find((entry) => entry.title === '« Mode Odyssée » décoché : retrouver un choix');
+        assert.match(back.text, /il sort aussitôt de sa liste/);
+        assert.match(back.text, /Recochez la case « Mode Odyssée » pour le retrouver\./);
+        assert.match(section('role').find((entry) => entry.title === '« Odyssée des Seigneurs Dragons »').text, /recochez la case\./);
         assert.ok(section('lock').some((entry) => entry.text.includes(`« ${ODYSSEY_MODE_LABEL} »`)));
         assert.ok(section('role').find((entry) => entry.title === '« Odyssée des Seigneurs Dragons »').text.includes(`« ${ODYSSEY_MODE_LABEL} »`));
     });

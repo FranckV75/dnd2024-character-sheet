@@ -47,6 +47,10 @@ export const HELP_SECTIONS = Object.freeze([
                 text: "Rien n'est retiré de votre fiche. Un Centaure reste un Centaure, avec ses traits et ses calculs, et la fiche vous dit ce qu'elle garde. L'encadré « Odyssée des Seigneurs Dragons » reste affiché s'il contient un destin ou des points de renommée ; vide, il disparaît. La case « Inspiration héroïque ou points de Foi » s'appelle alors « Inspiration héroïque »."
             },
             {
+                title: "« Mode Odyssée » décoché : retrouver un choix",
+                text: "Si vous quittez un choix de l'Odyssée (une autre espèce, par exemple), il sort aussitôt de sa liste, et la barre du haut vous le dit. Recochez la case « Mode Odyssée » pour le retrouver. Faites de même pour revoir et remplir l'encadré « Odyssée des Seigneurs Dragons » quand il a disparu."
+            },
+            {
                 title: "Les phrases d'aide",
                 text: "En haut à droite, une ligne vous dit ce que la fiche vient de faire. Plusieurs boutons y écrivent aussi une courte explication quand vous les touchez. À la souris, laissez le pointeur sur un bouton pour lire à quoi il sert."
             },
@@ -286,7 +290,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "« Odyssée des Seigneurs Dragons »",
-                text: "Cet encadré sert à la campagne du même nom : il contient notamment le « Destin héroïque » et les « Points de renommée ». Si vous décochez la case « Mode Odyssée » du menu « Gestion », il disparaît quand il est vide ; rempli, il reste affiché et imprimé."
+                text: "Cet encadré sert à la campagne du même nom : il contient notamment le « Destin héroïque » et les « Points de renommée ». Si vous décochez la case « Mode Odyssée » du menu « Gestion », il disparaît quand il est vide ; rempli, il reste affiché et imprimé. Pour le revoir et le remplir, recochez la case."
             }
         ]
     },

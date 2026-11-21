@@ -237,3 +237,53 @@ export function odysseyModeMessage(record, room = STATUS_ROOM_OPEN) {
         `${ODYSSEY_MODE_LABEL} coupé. Votre fiche garde ce qu'elle utilise déjà.`
     ], room);
 }
+
+/**
+ * Choix de l'Odyssée (espèce, sous-classe, don) que la fiche vient d'abandonner alors que le mode
+ * est coupé : ils sortent aussitôt de leur liste (proposedSpecies, proposedSubclasses,
+ * hiddenFeatIds). Mode actif, rien ne sort des listes. L'encadré de l'onglet 3 n'est pas un choix
+ * de liste : il n'est jamais cité ici.
+ * @param {Object} before - fiche avant la modification
+ * @param {Object} after - fiche après
+ * @returns {string[]} noms, comme dans odysseyKept (« Centaure », « L'Hoplite », « style Hoplite »)
+ */
+export function odysseyDropped(before, after) {
+    if (odysseyActive(before) || odysseyActive(after)) return [];
+    const was = odysseyUse(before);
+    const is = odysseyUse(after);
+    return [
+        was.species && was.species !== is.species ? DD_RULES.species[was.species].nameFr : '',
+        was.subclass && was.subclass !== is.subclass ? DD_RULES.subclasses[was.subclass].nameFr : '',
+        ...was.feats.filter((id) => !is.feats.includes(id)).map(featLabel)
+    ].filter(Boolean);
+}
+
+/**
+ * Message de la barre du haut quand un choix de l'Odyssée vient de sortir de sa liste (mauvais
+ * toucher dans une liste, mode coupé) : il dit comment le retrouver. Phrases sans accord (les noms
+ * sont masculins ou féminins).
+ * @param {Object} before - fiche avant la modification
+ * @param {Object} after - fiche après
+ * @param {number} [room] - nombre de caractères disponibles (STATUS_ROOM : une ligne sur tablette)
+ * @returns {string} '' si rien n'est sorti des listes
+ */
+export function odysseyDroppedMessage(before, after, room = STATUS_ROOM) {
+    const dropped = odysseyDropped(before, after);
+    if (!dropped.length) return '';
+    const names = dropped.join(', ');
+    const subject = names.charAt(0).toUpperCase() + names.slice(1);
+    const box = `« ${ODYSSEY_MODE_LABEL} »`;
+    return fitting(dropped.length === 1
+        ? [
+            `${subject} n'est plus dans la liste : recochez ${box} pour retrouver ce choix.`,
+            `${subject} : recochez ${box} pour retrouver ce choix.`,
+            `${subject} : pour ce choix, recochez ${box}.`,
+            `${subject} : recochez ${box}.`
+        ]
+        : [
+            `${subject} ne sont plus dans les listes : recochez ${box} pour retrouver ces choix.`,
+            `${subject} : recochez ${box} pour retrouver ces choix.`,
+            `${subject} : pour ces choix, recochez ${box}.`,
+            `${subject} : recochez ${box}.`
+        ], room);
+}
