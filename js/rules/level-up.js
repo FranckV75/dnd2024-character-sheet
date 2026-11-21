@@ -4,7 +4,8 @@
 // planLevelUp(character) compare la fiche au niveau actuel et au niveau suivant (deriveCharacter
 // des deux) et liste ce qui change : points de vie, bonus de maîtrise, dons à choisir, emplacements
 // de sorts, ressource et dés de classe, capacités et choix de sous-classe. Rien n'est recopié des
-// règles : tout vient des fonctions déjà utilisées par la fiche.
+// règles : tout vient des fonctions déjà utilisées par la fiche. Les sous-classes proposées au
+// niveau 3 suivent le mode Odyssée de la fiche (js/rules/odyssey.js).
 // levelUpPatch(plan, options) ne touche qu'aux clés existantes char_level, hp_max et (sur demande)
 // hp_current, toujours en texte comme la v3. Les dons, caractéristiques, sorts et sous-classe se
 // choisissent ensuite dans la fiche, comme d'habitude (la fiche n'ajoute jamais une augmentation
@@ -21,6 +22,7 @@ import { featSlotCounts, featSlotLevelFor, featSlotName, featName, classFeatSlot
 import { featuresAtLevel, classSpellCounts } from './class-progression.js';
 import { subclassFeatures, subclassSpells, automationKind } from './subclass-features.js';
 import { subclassChoiceFields } from './subclass-choices.js';
+import { proposedSubclasses, fromOdyssey } from './odyssey.js';
 import { FEAT_SLOT_ORDER } from '../state/schema.js';
 import { DD_RULES } from '../data/dd-rules.js';
 import { FEATS_DATA } from '../data/feats.js';
@@ -182,14 +184,16 @@ function classLines(dFrom, dTo) {
     return lines;
 }
 
-/** Sous-classe : choix au niveau 3, nouvelles capacités, nouveaux menus de choix */
-function subclassLines(dFrom, dTo, to) {
+/**
+ * Sous-classe : choix au niveau 3, nouvelles capacités, nouveaux menus de choix. Les sous-classes
+ * citées sont celles que la liste du haut de la fiche propose (mode Odyssée, js/rules/odyssey.js).
+ */
+function subclassLines(record, dFrom, dTo, to) {
     const lines = [];
     if (!dTo.subclass) {
         if (to >= SUBCLASS_LEVEL && dFrom.classSlug) {
-            const names = Object.values(DD_RULES.subclasses)
-                .filter((info) => info.class === dFrom.classSlug)
-                .map((info) => (info.source === 'Odyssée' ? `${info.nameFr} (Odyssée)` : info.nameFr));
+            const names = proposedSubclasses(record, dFrom.classSlug)
+                .map((info) => (fromOdyssey(info) ? `${info.nameFr} (Odyssée)` : info.nameFr));
             lines.push(`Choisissez votre sous-classe (en haut de la fiche) : ${names.join(', ')}.`);
         }
         return lines;
@@ -256,7 +260,7 @@ export function planLevelUp(character) {
     add('Dons', featLines(next, to));
     if (classKnown) {
         add('Classe', [...classLines(dFrom, dTo), ...baseFeatureLines(dTo.classSlug, to)]);
-        add('Sous-classe', subclassLines(dFrom, dTo, to));
+        add('Sous-classe', subclassLines(next, dFrom, dTo, to));
         add('Sorts', [...spellCountLines(dTo.classSlug, dFrom.level, to), ...spellSlotLines(dFrom, dTo), ...subclassSpellLines(dTo, to)]);
     } else {
         add('Classe', ['Classe non reconnue (ou multiclasse) : seuls le niveau et les points de vie sont calculés ; vérifiez le reste dans le manuel.']);

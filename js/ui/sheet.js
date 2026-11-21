@@ -7,6 +7,8 @@
 //    valeurs calculées (data-out="..."), à partir de deriveCharacter().
 // Les tableaux (armes, armures, sorts), le repos, la barre de gestion... sont
 // gérés par leurs propres modules (js/ui/weapons.js, armors.js, spells.js...).
+// Listes d'espèces, de sous-classes et de dons : elles suivent le mode Odyssée de la fiche
+// (js/rules/odyssey.js) et sont refaites quand le mode ou la fiche change (renderDynamicSelects).
 // =============================================================================
 
 import { ABILITIES, SKILLS, SKILLS_BY_STAT } from '../data/constants.js';
@@ -23,6 +25,7 @@ import { FEAT_CHOICE_RULES, slotChoice, setFeatChoicePatch, fieldOptions, fieldA
 import {
     featName, featSlotName, isHuman, classFeatSlot, featSlotCounts, featSlotLevelFor, STYLE_ALTERNATIVES
 } from '../rules/feats.js';
+import { proposedSpecies, proposedSubclasses, hiddenFeatIds, fromOdyssey } from '../rules/odyssey.js';
 import { sanitizeRich, sanitizeRulesText, richTextAvailable } from './sanitize.js';
 import { el, fillSelect, icon, signed, sheetElements, RICH_FIELD } from './dom.js';
 import { applyLock, isLocked } from './lock.js';
@@ -91,9 +94,12 @@ function buildSkills(root) {
     }
 }
 
-/** @param {string[]} types - familles de dons proposées (toutes, ou « Origine » pour l'Humain) */
-function featOptions(types = FEAT_TYPE_ORDER) {
-    const feats = Object.entries(FEATS_DATA).map(([id, f]) => ({ id, ...f }));
+/**
+ * @param {string[]} types - familles de dons proposées (toutes, ou « Origine » pour l'Humain)
+ * @param {string[]} [hidden] - dons retirés de la liste (mode Odyssée coupé : hiddenFeatIds)
+ */
+function featOptions(types = FEAT_TYPE_ORDER, hidden = []) {
+    const feats = Object.entries(FEATS_DATA).filter(([id]) => !hidden.includes(id)).map(([id, f]) => ({ id, ...f }));
     return types.map(type => {
         const group = el('optgroup', { label: type === 'Épique' ? 'Faveurs épiques' : `Dons : ${type}` });
         feats.filter(f => f.type === type)
@@ -186,28 +192,43 @@ function bindFeatFolding(root) {
     });
 }
 
+/**
+ * Contenu de la liste d'un emplacement de don. Second don de l'Humain (trait Polyvalent) : un don
+ * d'origine seulement ; style de combat : un don de cette catégorie (ou, au niveau 2, Combattant
+ * béni / druidique à la place).
+ * @param {number} level - numéro de l'emplacement
+ * @param {string[]} [hidden] - dons retirés de la liste (mode Odyssée coupé)
+ * @returns {HTMLElement[]}
+ */
+function featSelectChoices(level, hidden = []) {
+    const human = level === HUMAN_FEAT_SLOT;
+    const style = Boolean(classFeatSlot(level)?.style);
+    return [
+        el('option', {
+            value: '',
+            text: human ? "— Choisir un don d'origine —" : style ? '— Choisir un style de combat —' : '— Choisir un don —'
+        }),
+        ...featOptions(human ? ['Origine'] : style ? ['Style de combat'] : FEAT_TYPE_ORDER, hidden),
+        level === STYLE_FEAT_SLOT
+            ? el('optgroup', { label: 'À la place du style' }, Object.entries(STYLE_ALTERNATIVES).map(([id, alt]) =>
+                el('option', { value: id, text: `${alt.name} (${alt.className})` })))
+            : null
+    ].filter(Boolean);
+}
+
 function buildFeats(root) {
     root.querySelector('#feats').replaceChildren(...FEAT_SLOT_ORDER.map(level => {
         const human = level === HUMAN_FEAT_SLOT;
         const reserved = classFeatSlot(level);
         const style = Boolean(reserved?.style);
-        // Second don de l'Humain (trait Polyvalent) : un don d'origine seulement ; style de combat :
-        // un don de cette catégorie (ou, au niveau 2, Combattant béni / druidique à la place)
+        // data-hidden-feats : dons retirés de la liste affichée (renderDynamicSelects)
         const select = el('select', {
-            id: `f-feat_${level}`, class: 'input', 'data-field': `feat_${level}`,
+            id: `f-feat_${level}`, class: 'input', 'data-field': `feat_${level}`, 'data-hidden-feats': '',
             'aria-label': human ? "Second don d'origine (Humain, trait Polyvalent)"
                 : style ? `${reserved.caption} (${featSlotName(level)})`
                 : reserved ? `Don en plus du niveau ${level} (${reserved.caption})` : `Don du niveau ${level}`,
             'aria-describedby': `feat-when-${level}`
-        }, el('option', {
-            value: '',
-            text: human ? "— Choisir un don d'origine —" : style ? '— Choisir un style de combat —' : '— Choisir un don —'
-        }),
-        featOptions(human ? ['Origine'] : style ? ['Style de combat'] : FEAT_TYPE_ORDER),
-        level === STYLE_FEAT_SLOT
-            ? el('optgroup', { label: 'À la place du style' }, Object.entries(STYLE_ALTERNATIVES).map(([id, alt]) =>
-                el('option', { value: id, text: `${alt.name} (${alt.className})` })))
-            : null);
+        }, featSelectChoices(level));
         // data-feat-state (posé au rendu, voir featSlotState) : actif, à choisir, prévu ou à venir ;
         // la légende (« À venir », « Actif au niveau 12 ») ne s'affiche que pour les niveaux pas encore atteints ;
         // celle de l'emplacement de l'Humain dit d'où il vient (« Humain : Polyvalent »)
@@ -227,16 +248,16 @@ function buildFeats(root) {
     }));
 }
 
+/** Ordre alphabétique français des noms, comme le manuel */
+const byNameFr = (a, b) => a.nameFr.localeCompare(b.nameFr, 'fr');
+
 function buildStaticOptions(root) {
     fillSelect(root.querySelector('#f-char_class'),
         Object.values(DD_RULES.classes).map(c => [c.nameFr, c.nameFr]));
     markAliases(root.querySelector('#f-char_class'), Object.values(DD_RULES.classes));
-    // Espèces et historiques dans l'ordre alphabétique français, comme le manuel
-    const byName = (a, b) => a.nameFr.localeCompare(b.nameFr, 'fr');
-    fillSelect(root.querySelector('#f-char_species'),
-        Object.values(DD_RULES.species).sort(byName).map(s => [s.nameFr, s.nameFr]));
+    // Historiques dans l'ordre alphabétique français, comme le manuel (espèces : renderDynamicSelects)
     fillSelect(root.querySelector('#f-char_background'),
-        Object.values(DD_RULES.backgrounds).sort(byName).map(b => [b.nameFr, b.nameFr]));
+        Object.values(DD_RULES.backgrounds).sort(byNameFr).map(b => [b.nameFr, b.nameFr]));
     root.querySelector('#f-heroic_destiny').replaceChildren(
         ...DD_RULES.heroicDestinies.map(h => el('option', { value: h.value, text: h.value ? h.name : '— Aucun —' })));
     root.querySelector('#f-spell_ability').replaceChildren(
@@ -277,7 +298,8 @@ function bindFields(root, store) {
         }
 
         // Nouvelle classe : sous-classe remise à zéro si elle n'appartient pas à la classe,
-        // dé de vie mis à jour (comme en v3)
+        // dé de vie mis à jour (comme en v3). Liste COMPLÈTE des sous-classes (subclassesOf), même
+        // mode Odyssée coupé : une sous-classe de l'Odyssée déjà notée n'est jamais vidée à tort.
         if (key === 'char_class') {
             const current = foldName(store.get().char_subclass);
             if (!subclassesOf(patch.char_class).some(s => DD_RULES.namesOf(s).some(name => foldName(name) === current))) {
@@ -314,9 +336,12 @@ function bindFields(root, store) {
 // Affichage
 // ---------------------------------------------------------------------------
 
-/** Sous-classes de la classe nommée (classSlug, js/rules/identity.js, après nettoyage du HTML v3) */
+/** Identifiant de la classe nommée (classSlug, js/rules/identity.js, après nettoyage du HTML v3) */
+const classSlugOf = (className) => classSlug(stripHTML(String(className ?? '')));
+
+/** Toutes les sous-classes de la classe nommée, Odyssée comprise quel que soit le mode de la fiche */
 function subclassesOf(className) {
-    const slug = classSlug(stripHTML(String(className ?? '')));
+    const slug = classSlugOf(className);
     return slug ? Object.values(DD_RULES.subclasses).filter(s => s.class === slug) : [];
 }
 
@@ -392,14 +417,36 @@ function writeField(field, value, force = false) {
 }
 
 function renderDynamicSelects(root, character, d) {
+    // Espèces, sous-classes et dons PROPOSÉS : tous quand le mode Odyssée est actif ; mode coupé,
+    // ceux du manuel et ce que la fiche utilise déjà (js/rules/odyssey.js). Chaque liste n'est
+    // refaite que si son contenu change (mode, classe, ou choix de l'Odyssée abandonné) ; la valeur
+    // de la fiche y est remise juste après (writeField).
+    const speciesSelect = root.querySelector('#f-char_species');
+    const species = proposedSpecies(character);
+    const wantedSpecies = species.map(s => s.nameFr).join('|');
+    if (speciesSelect.dataset.forList !== wantedSpecies) {
+        fillSelect(speciesSelect, species.sort(byNameFr).map(s => [s.nameFr, s.nameFr]));
+        speciesSelect.dataset.forList = wantedSpecies;
+    }
+
     // Sous-classes de la classe choisie
     const subSelect = root.querySelector('#f-char_subclass');
-    const subs = subclassesOf(character.char_class);
+    const subs = proposedSubclasses(character, classSlugOf(character.char_class));
     const wanted = subs.map(s => s.nameFr).join('|');
     if (subSelect.dataset.forClass !== wanted) {
-        fillSelect(subSelect, subs.map(s => [s.nameFr, s.source === 'Odyssée' ? `${s.nameFr} (Odyssée)` : s.nameFr]));
+        fillSelect(subSelect, subs.map(s => [s.nameFr, fromOdyssey(s) ? `${s.nameFr} (Odyssée)` : s.nameFr]));
         markAliases(subSelect, subs);
         subSelect.dataset.forClass = wanted;
+    }
+
+    // Dons : le style Hoplite (Odyssée) n'est retiré que des emplacements qui ne le contiennent pas
+    for (const level of FEAT_SLOT_ORDER) {
+        const featSelect = root.querySelector(`#f-feat_${level}`);
+        const hidden = hiddenFeatIds(character, level);
+        if (featSelect.dataset.hiddenFeats !== hidden.join('|')) {
+            featSelect.replaceChildren(...featSelectChoices(level, hidden));
+            featSelect.dataset.hiddenFeats = hidden.join('|');
+        }
     }
 
     // Dés de vie utilisés : de 0 au niveau

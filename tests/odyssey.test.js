@@ -16,6 +16,7 @@ import { FEATS_DATA } from '../js/data/feats.js';
 import { createDefaultCharacter, FEAT_SLOT_ORDER } from '../js/state/schema.js';
 import { deriveCharacter } from '../js/rules/character.js';
 import { featEffects } from '../js/rules/feat-effects.js';
+import { planLevelUp } from '../js/rules/level-up.js';
 import { V4_ONLY_KEYS, withoutV4State, comparableWithV3, fingerprint } from '../js/cloud/sync.js';
 import { isBlankCharacter, sheetFingerprint } from '../js/cloud/controller.js';
 import { migrateCharacter, normalizeCharacter } from '../js/state/migrate.js';
@@ -237,6 +238,70 @@ describe('Mode Odyssée : choix proposés', () => {
         assert.equal(proposedSpecies(on).length, 16);
         assert.equal(proposedSubclasses(on, 'fighter').length, 5);
         assert.deepEqual(hiddenFeatIds(on, 2), []);
+    });
+});
+
+describe('Mode Odyssée : listes de la fiche (js/ui/sheet.js)', () => {
+    const code = readFileSync(new URL('../js/ui/sheet.js', import.meta.url), 'utf8');
+    const body = (start, end) => {
+        const from = code.indexOf(start);
+        assert.ok(from > 0, start);
+        return code.slice(from, code.indexOf(end, from));
+    };
+
+    test('Les trois listes sont refaites à chaque affichage si leur contenu change (mode ou fiche)', () => {
+        const render = body('function renderDynamicSelects(', '\n}');
+        assert.match(render, /proposedSpecies\(character\)/);
+        assert.match(render, /proposedSubclasses\(character, /);
+        assert.match(render, /hiddenFeatIds\(character, level\)/);
+        // La liste des espèces n'est plus remplie une seule fois à la construction de la fiche
+        assert.doesNotMatch(body('function buildStaticOptions(', '\n}'), /char_species/);
+    });
+
+    test('Changement de classe : le contrôle qui vide la sous-classe lit la liste complète', () => {
+        const check = body("if (key === 'char_class') {", 'const die');
+        assert.match(check, /subclassesOf\(patch\.char_class\)/);
+        assert.doesNotMatch(check, /proposedSubclasses/);
+        const complete = body('function subclassesOf(', '\n}');
+        assert.match(complete, /Object\.values\(DD_RULES\.subclasses\)/);
+        assert.doesNotMatch(complete, /proposed|odyssey/i);
+    });
+});
+
+describe('Mode Odyssée : fenêtre « Passer au niveau »', () => {
+    /** Phrase « Choisissez votre sous-classe… » du passage au niveau 3 */
+    const choiceLine = (record) => planLevelUp(record).sections.find((section) => section.title === 'Sous-classe')?.lines[0] ?? '';
+    const level2 = (extra = {}) => sheet({ char_class: 'Paladin', char_level: '2', hd_type: 'd10', ...extra });
+
+    test('Mode actif : les 5 sous-classes sont citées, celle de l\u2019Odyssée avec sa mention', () => {
+        const line = choiceLine(level2());
+        assert.match(line, /^Choisissez votre sous-classe \(en haut de la fiche\) : /);
+        assert.match(line, /Serment du Seigneur Dragon \(Odyssée\)/);
+        assert.equal(line.split(' : ')[1].split(', ').length, 5);
+        assert.equal(choiceLine(level2({ [ODYSSEY_MODE_KEY]: 'on' })), line);
+    });
+
+    test('Mode coupé : seules les 4 sous-classes du manuel sont citées', () => {
+        const line = choiceLine(level2(OFF));
+        assert.doesNotMatch(line, /Odyssée|Seigneur Dragon/);
+        assert.equal(line.split(' : ')[1].split(', ').length, 4);
+        assert.match(line, /Serment de Dévotion/);
+    });
+
+    test('Chaque classe : la phrase cite exactement les sous-classes proposées par la liste du haut', () => {
+        for (const [slug, cls] of Object.entries(DD_RULES.classes)) {
+            for (const mode of [{}, OFF]) {
+                const record = sheet({ ...mode, char_class: cls.nameFr, char_level: '2' });
+                const expected = proposedSubclasses(record, slug).map((sub) => (fromOdyssey(sub) ? `${sub.nameFr} (Odyssée)` : sub.nameFr));
+                assert.equal(choiceLine(record), `Choisissez votre sous-classe (en haut de la fiche) : ${expected.join(', ')}.`, `${slug} ${JSON.stringify(mode)}`);
+            }
+        }
+    });
+
+    test('Le reste de la fenêtre ne dépend pas du mode (une fiche de l\u2019Odyssée garde ses capacités)', () => {
+        const hero = { char_species: 'Centaure', char_class: 'Guerrier', char_subclass: "L'Hoplite", char_level: '6', hd_type: 'd10', hp_max: '50', hp_current: '50' };
+        assert.deepEqual(planLevelUp(sheet({ ...hero, ...OFF })), planLevelUp(sheet(hero)));
+        assert.ok(planLevelUp(sheet({ ...hero, ...OFF })).sections.some((section) => section.title === 'Sous-classe'));
     });
 });
 
