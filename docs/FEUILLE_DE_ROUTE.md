@@ -50,8 +50,9 @@ Questions de l'étude du mode Odyssée (réponses de Franck attendues) :
   est coupé ? (conseil : non pour l'instant)
 - Où placer la case : dans l'encadré « Odyssée » de l'onglet 3 ou dans le menu « Gestion » ?
   (conseil : dans l'encadré)
-- Les « points de Foi » (libellé « Inspiration héroïque ou points de Foi », onglet Combat)
-  viennent-ils de l'Odyssée ? Si oui, le libellé devient « Inspiration héroïque » mode coupé.
+- ~~Les « points de Foi » viennent-ils de l'Odyssée ?~~ Réponse trouvée le 21/11/2026 : oui,
+  règle « Sacrifices et prières » du guide du MJ de l'Odyssée (page photographiée dans
+  `..\Ressources\Manuels\`). Le libellé deviendra « Inspiration héroïque » mode coupé.
 - « Nouvelle fiche » : proposer tout de suite le choix de la campagne ? (conseil : plus tard)
 - Les deux personnages d'exemple : mode coupé d'office ? (conseil : oui, plus tard)
 

@@ -54,8 +54,8 @@ Suite : Franck répond aux questions du point 5, puis le chantier se lance sur s
 **Rien d'Odyssée (vérifié une seconde fois)** : les 16 historiques, les sorts (`data/spells.json`),
 les armes, les armures, les outils, les deux exemples, la fenêtre « Nouveautés ».
 
-**Le libellé « Inspiration héroïque ou points de Foi »** (onglet Combat) : son origine reste
-inconnue. Voir la question 5.
+**Le libellé « Inspiration héroïque ou points de Foi »** (onglet Combat) : il vient de l'Odyssée
+(règle « Sacrifices et prières » du guide du MJ de l'Odyssée, vérifié le 21/11/2026).
 
 **Quatre pièges techniques trouvés (ajouté)** :
 
@@ -162,8 +162,8 @@ cases de sous-classe, les tests existants, `data/spells.json`, le README. Les lo
    place n'est jamais retiré.
 4. **Où placer la case : dans l'encadré de l'onglet 3 ou dans le menu « Gestion » ?** Conseil :
    dans l'encadré.
-5. **Les « points de Foi » viennent-ils de l'Odyssée ?** Si oui, le libellé devient « Inspiration
-   héroïque » seul quand le mode est coupé. Sinon on n'y touche pas.
+5. ~~**Les « points de Foi » viennent-ils de l'Odyssée ?**~~ Oui (réponse trouvée le 21/11/2026) :
+   le libellé devient « Inspiration héroïque » seul quand le mode est coupé.
 6. **« Nouvelle fiche » : proposer tout de suite le choix de la campagne ?** Conseil : plus tard.
 7. **(ajouté) Les deux personnages d'exemple : mode coupé d'office ?** Conseil : oui, ils sont
    faits avec le seul manuel. À faire avec le lot 6.
