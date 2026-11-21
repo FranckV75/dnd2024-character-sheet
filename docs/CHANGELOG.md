@@ -2,6 +2,23 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.44.0] - 2026-11-21 (Mode Odyssée désactivable)
+### Added
+- Menu « Gestion » : case « Mode Odyssée », cochée par défaut. Réglage par fiche, enregistré dans
+  une clé facultative `odyssey_mode` (`"off"` quand le mode est coupé), déclarée dans
+  `V4_ONLY_KEYS`. La clé n'est écrite que quand le joueur touche la case, et retirée quand il
+  recoche : une fiche décochée puis recochée est strictement identique (même empreinte).
+- Mode coupé : les 6 espèces, les 12 sous-classes et le style Hoplite de l'Odyssée ne sont plus
+  proposés (liste du haut, emplacements de dons, phrase de « Passer au niveau ») ; ce que la fiche
+  utilise déjà reste en place et aucun calcul ne change. La barre du haut dit ce que la fiche
+  garde et comment tout retrouver ; un choix de l'Odyssée abandonné est signalé.
+- Mode coupé : l'encadré « Odyssée des Seigneurs Dragons » est caché (et pas imprimé) s'il est
+  vide ; « Inspiration héroïque ou points de Foi » devient « Inspiration héroïque ».
+- Règle pure `js/rules/odyssey.js` et 87 tests (`tests/odyssey.test.js`) ; notice et
+  « Nouveautés » à jour.
+### Changed
+- Menu « Gestion » ouvert sur tablette : la barre du haut réserve deux lignes de message.
+
 ## [4.43.1] - 2026-11-21 (XP et palier du niveau suivant)
 ### Changed
 - « PX » devient « XP » dans tout ce qui s'affiche (case, bouton +, pavé « XP gagnés », messages,

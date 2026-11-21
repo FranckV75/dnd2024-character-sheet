@@ -6,6 +6,9 @@ contre-vérifiée par une seconde ; ce que la seconde a changé est signalé par
 **(ajouté)**. Les vraies sauvegardes des joueurs n'ont pas été lues. Les numéros de lignes sont
 ceux de la version 4.42.0.
 
+**Construit en 4.44.0 (21/11/2026)** d'après les réponses de Franck (section 6) ; ce qui a
+changé en route et les décisions encore en attente sont au point 3 de `docs/FEUILLE_DE_ROUTE.md`.
+
 Suite : Franck répond aux questions du point 5, puis le chantier se lance sur sa demande
 (voir `docs/FEUILLE_DE_ROUTE.md`, point 3).
 

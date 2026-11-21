@@ -37,18 +37,33 @@ Faits en 4.41.0 (18/11/2026) : ~~liste des outils~~, ~~notice « Mode d'emploi �
 ~~finitions du grimoire~~. Faits en 4.43.0 (19/11/2026, publiée) : ~~dégâts en plus sur les
 armes~~, ~~étude du mode Odyssée désactivable~~ (`docs/etudes/MODE_ODYSSEE.md`). Fait en 4.43.1
 (21/11/2026, publiée) : ~~« XP » au lieu de « PX » et palier du niveau suivant sous la case
-XP~~. Reste :
+XP~~. Fait en 4.44.0 (21/11/2026, **pas encore publiée**) : ~~mode Odyssée désactivable~~ (case
+« Mode Odyssée » du menu « Gestion », d'après les réponses de Franck du 21/11/2026, section 6 de
+l'étude). Faite le 21/11/2026 : ~~étude du multiclassage~~ (`docs/etudes/MULTICLASSAGE.md`).
+Reste :
 
-1. **Mode Odyssée désactivable** : l'étude est faite, rien n'est construit. Elle conseille un
-   réglage par fiche, actif par défaut (les fiches actuelles ne changent pas), où ce que la fiche
-   utilise déjà reste toujours en place. Chantier petit à moyen, en 4 lots. Franck a répondu aux
-   questions (21/11/2026, ci-dessous) ; il attend son accord pour être construit.
+1. **Multiclassage** : l'étude est faite et contre-vérifiée, rien n'est construit. Elle conseille
+   de garder « Classe » (classe de départ) et « Niveau » (niveau total) et d'ajouter une seule clé
+   facultative pour les classes en plus (aucune fiche actuelle ne change). Gros chantier, 5 lots
+   publiés en 3 versions, en commençant par un socle invisible. Avant de construire : les
+   14 questions de l'étude (section 8) et les photos du chapitre 2 du manuel français
+   (section 9, sans doute p. 41-45).
 
-Réponses de Franck aux questions de l'étude (21/11/2026, détail dans l'étude, section 6) :
-réglage par fiche, actif par défaut ; encadré gardé s'il n'est pas vide ; les 8 fonds restent
-dans la galerie ; la case va dans le **menu « Gestion »** ; les « points de Foi » viennent de
-l'Odyssée (libellé « Inspiration héroïque » mode coupé) ; choix de la campagne dans « Nouvelle
-fiche » plus tard ; personnages d'exemple mode coupé d'office, plus tard.
+Décisions de Franck en attente sur la 4.44.0 (mode Odyssée) :
+- Toucher la case coupe le mode tout de suite et la barre du haut explique aussitôt (pas de
+  fenêtre de confirmation avant) ; recocher remet la fiche strictement comme avant.
+- Menu « Gestion » ouvert sur tablette : la barre du haut garde la place d'une deuxième ligne de
+  message (17 px de plus, une ligne vide quand le message est court).
+- Encadré « Odyssée » vidé à la main, mode coupé : il reste à l'écran jusqu'au verrou, au
+  rechargement ou à l'impression (pour corriger une renommée mise à 0 par erreur).
+- Encadré caché : pour y écrire un destin, il faut d'abord recocher la case (dit dans la notice).
+
+Petits restes de la 4.44.0 (pas urgents) : une fiche vierge dont on a seulement décoché le mode
+perd ce réglage à la reconnexion (taper un nom suffit ; à revoir avec le choix de la campagne dans
+« Nouvelle fiche ») ; l'ancien site efface le réglage s'il réenregistre la fiche (comme toutes les
+clés propres à la v4) ; sur ordinateur, le message de la case est court, le détail est dans
+l'infobulle. Suites voulues par Franck, plus tard : choix de la campagne dans « Nouvelle fiche » ;
+personnages d'exemple mode coupé d'office.
 
 Décisions de Franck en attente sur la 4.43.0 (dégâts en plus) :
 - Repos court : il n'éteint pas les pastilles (comme la Rage) ; seul le repos long les éteint.
@@ -100,7 +115,7 @@ Décisions de Franck en attente sur la 4.42.0 :
   confirmer.
 - Personnage multiclassé (Clerc / Magicien noté « Clerc ») : un sort présent sur les deux listes
   est proposé au retrait. Réponse de Franck (18/11/2026) : à traiter dans le chantier
-  « Multiclassage » (voir « Plus tard »), pas avant.
+  « Multiclassage », pas avant (l'étude prévoit une protection dès sa première version visible).
 
 Petits restes de la 4.42.0 (pas urgents) : sous-classe écrite autrement (« Vie » pour « Domaine
 de la Vie ») : ses sorts de domaine non cochés sont proposés au retrait ; Rôdeur : « Lancer
@@ -116,20 +131,11 @@ outils (Façonneur…) pas reliés à la fenêtre ; champ « Chercher… » de 3
 « Préparer mes sorts ») ; textes de « Revenir à… » sans espaces insécables ; impression de la
 notice non essayée sur une vraie tablette.
 
-Plus tard (bonnes idées, pas maintenant) : **multiclassage** (chantier à venir, voulu par Franck
-le 18/11/2026), aide « Mon tour » (ce que le personnage peut faire à
+Plus tard (bonnes idées, pas maintenant) : aide « Mon tour » (ce que le personnage peut faire à
 son tour), création guidée d'un personnage de niveau 1, vue du groupe, journal de campagne, outil
 du MJ. Pas prioritaires : lanceur de dés, fiche sans wifi.
 
 Détail des idées :
-
-- Multiclassage (demande de Franck, 18/11/2026) : faire évoluer la fiche pour un personnage à
-  plusieurs classes. Aujourd'hui la fiche ne connaît qu'une classe (les emplacements d'une
-  deuxième classe s'ajoutent à la main). Chantier à venir, à étudier d'abord : plusieurs classes
-  et leurs niveaux, emplacements de sorts combinés, listes de sorts et préparation par classe,
-  dés de vie, maîtrises, capacités par classe, et un format de sauvegarde qui reste lisible par
-  les fiches déjà enregistrées. Il réglera aussi le cas du bouton « Retirer les sorts non
-  préparés » pour un personnage multiclassé.
 
 - Lanceur de dés (demande de janvier 2026) : toucher un bonus d'attaque ou une compétence lance le
   dé et affiche le total. Pas prioritaire pour l'instant.
@@ -142,11 +148,6 @@ Détail des idées :
   Franck), rappel de Mémorisation de sort au repos court, Aptitude érudite au niveau 3 (2 ou
   3 sorts) ; Barde du Savoir : enregistrer ses deux Découvertes magiques.
 - Grimoire : comme les objets magiques, un aspect qui monte en puissance avec le niveau du sort.
-- Mode « Odyssée des Seigneurs Dragons » désactivable (demande de Franck, 18/11/2026) : ne plus
-  proposer ce qui est propre à cette campagne (6 espèces, 12 sous-classes, style Hoplite, encadré
-  de l'onglet 3) pour jouer une autre campagne. Étude faite le 19/11/2026
-  (`docs/etudes/MODE_ODYSSEE.md`) : inventaire, options, pièges techniques, découpage en lots.
-  Voir « Reste » et les questions en tête de ce point 3.
 - Explications des options (demande de Franck, 18/11/2026) : chaque bouton ou option dit en une
   phrase à quoi il sert, lisible aussi sur tablette (fait pour le grimoire en 4.40.0 et pour les
   nouveautés de la 4.41.0 ; le « Mode d'emploi » explique le reste, onglet par onglet ; une revue

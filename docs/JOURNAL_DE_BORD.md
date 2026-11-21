@@ -15,10 +15,12 @@ en fin de session :
 - **En ligne** : version **4.43.1** (« XP » au lieu de « PX », palier du niveau suivant sous la
   case XP), publiée le 21/11/2026 avec l'accord de Franck (`master` = `v4`). La 4.43.0 (dégâts
   en plus sur les armes) a été publiée le 19/11/2026.
-- **Mode Odyssée désactivable** : étude faite (`docs/etudes/MODE_ODYSSEE.md`), Franck a répondu
-  à toutes les questions le 21/11/2026 (réglage par fiche, actif par défaut, case dans le menu
-  « Gestion »). Rien de construit : attend son accord pour lancer le chantier.
-- **Multiclassage** : chantier à venir, voulu par Franck (18/11/2026), à étudier d'abord.
+- **Prête, pas encore publiée** : version **4.44.0** sur `v4` (mode Odyssée désactivable : case
+  « Mode Odyssée » du menu « Gestion »). 1667 tests, essais à l'écran faits ; attend le
+  « Publie » de Franck. Ses décisions en attente sont au point 3 de `docs/FEUILLE_DE_ROUTE.md`.
+- **Multiclassage** : étude faite et contre-vérifiée (`docs/etudes/MULTICLASSAGE.md`). Rien de
+  construit : attend les réponses de Franck (14 questions, section 8) et les photos du chapitre 2
+  du manuel français (section 9).
 - **Vérifications sur tablette** : faites par Franck le 21/11/2026 sur Android et PC, tout est
   bon ; reste l'iPad de Patricia (liste ci-dessous, elle fait foi et s'allonge à chaque version).
 - **À chaque version** : entrée en tête de `js/data/whats-new.js` et notice `js/data/help.js`
@@ -43,6 +45,14 @@ d'espèce au repos, espèce et historique, outils, saisie fluide, grimoire : « 
 « Lancer », « Lancer gratuit », sorts d'espèce, « Préparer mes sorts », « Retirer les sorts non
 préparés », losanges fixes, personnages d'exemple et « Revenir à… »).
 
+À voir après la publication de la 4.44.0 (Android, PC, et iPad si possible) :
+- Menu « Gestion » : la case « Mode Odyssée » se touche bien, la phrase de la barre du haut tient
+  sur deux lignes, la case n'a pas l'air « allumée » après le toucher.
+- Décocher puis recocher sur une fiche : la barre n'annonce aucune modification à envoyer au
+  compte ; l'autre tablette retrouve le réglage.
+- Mode coupé : listes Espèce, Sous-classe et style de combat réduites ; « Inspiration héroïque »
+  sans « points de Foi » ; encadré Odyssée vide caché, et pas imprimé.
+
 Reste à voir sur l'iPad (Franck n'en a pas : c'est celui de Patricia, pas de retour pour
 l'instant) :
 - Safari zoome-t-il quand on touche les petits champs (notes des armes, listes des dons,
@@ -59,13 +69,14 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
    `docs/FEUILLE_DE_ROUTE.md` ;
 3. ~~discussion pour trier les idées~~ : faite le 18/11/2026. Ordre validé par Franck : liste des
    outils et notice (faits, 4.41.0), finitions du grimoire (faites, 4.42.0), dégâts en plus sur
-   les armes et étude du mode Odyssée désactivable (faits, 4.43.0). Reste le mode Odyssée à
-   construire, après les réponses de Franck. Détail et décisions en attente au point 3 de
+   les armes et étude du mode Odyssée désactivable (faits, 4.43.0), mode Odyssée (fait, 4.44.0,
+   pas encore publié), étude du multiclassage (faite). Reste le multiclassage à construire, après
+   les réponses de Franck. Détail et décisions en attente au point 3 de
    `docs/FEUILLE_DE_ROUTE.md`.
 
 ## Sessions
 
-### 21/11/2026 — Vérifications sur tablette et « XP » au lieu de « PX » (4.43.1)
+### 21/11/2026 — Tablette, « XP » (4.43.1), mode Odyssée désactivable (4.44.0), étude du multiclassage
 
 - Franck a fait toutes les vérifications en attente sur sa tablette Android (Lenovo P12) et son
   PC : tout est bon. Il n'a pas d'iPad (celui du groupe est à Patricia) : les points iPad restent.
@@ -78,6 +89,13 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
   vérifiée.
 - Réponses de Franck aux questions du mode Odyssée : tout comme conseillé, sauf la case, qu'il
   veut dans le menu « Gestion » plutôt que dans l'encadré (noté dans l'étude, section 6).
+- Mode Odyssée construit en 4.44.0 (Fable 5.2, une réalisation, deux relectures, une correction) :
+  clé facultative `odyssey_mode` = "off" écrite seulement quand on touche la case, retirée quand
+  on recoche (fiche strictement identique). Revérifié par Claude : `npm run check` vert, 35
+  contrôles sur 35 à 820 px clair et 768 px sombre, 0 erreur console. Pas encore publié.
+- Étude du multiclassage faite puis contre-vérifiée : option « cases actuelles + une clé
+  facultative pour les classes en plus », 5 lots en 3 versions. 14 questions et des photos du
+  chapitre 2 du manuel français à demander à Franck.
 
 ### 19/11/2026 — Dégâts en plus sur les armes (4.43.0) et étude du mode Odyssée
 
