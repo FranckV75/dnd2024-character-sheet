@@ -124,6 +124,9 @@ js/
 │   ├── subclass-forms.js  Formes du Cercle de la Lune et du Cercle des Étoiles
 │   ├── subclass-companions.js  Cartes des compagnons (clé facultative « subclass_companions »)
 │   ├── epic-poem.js    Collège de poésie épique (Odyssée) : strophes, rang du poème
+│   ├── odyssey.js      Mode Odyssée réglé fiche par fiche (clé facultative « odyssey_mode ») : ce qui
+│   │                   est proposé dans les listes, ce que la fiche garde, encadré de l'onglet 3,
+│   │                   libellé d'Inspiration, phrases pour le joueur
 │   ├── wild-magic.js   Sorcellerie sauvage : Bouffée (d20) et table (d100)
 │   └── gallery.js      Réglages d'apparence (validation des fonds, _visual_prefs)
 ├── cloud/              Sauvegarde en ligne (Supabase, même table que la v3)
@@ -177,6 +180,8 @@ js/
     ├── examples.js     Fenêtre « Essayer un personnage d'exemple » : fiche remplacée gardée dans
     │                   « Revenir à… », exemple non lié au compte (cloud/controller.js, source « example »)
     ├── concentration.js  Ligne « Concentration » de l'encadré États (css/conditions.css)
+    ├── odyssey.js      Case « Mode Odyssée » du menu « Gestion » (css/toolbar.css), encadré Odyssée
+    │                   de l'onglet 3 caché quand il est inutile, libellé d'Inspiration
     ├── stepper.js · number-pad.js   Boutons − / + à appui long et pavé de chiffres (partagés)
     ├── modal.js · autocomplete.js · cell-text.js · dom.js   (briques partagées)
     ├── boot-notices.js Avis du démarrage (mise en forme indisponible, sauvegarde illisible)
@@ -310,6 +315,16 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   des clés `"idDuDon@niveau:partie"` (0 ou 1 ; `js/rules/feat-spells.js`) ; la fiche n'écrit jamais ces sorts
   dans `dynamic_spells`. En v3, cet état était gardé à part dans le navigateur (`combat_buffs`, `spell_slots`) :
   la v4 le reprend une fois, dans la fiche v3 du navigateur (`importV3DeviceState`).
+- `odyssey_mode` : mode « Odyssée des Seigneurs Dragons » de la fiche (`js/rules/odyssey.js`). Facultative :
+  absente, ou toute autre valeur que `"off"`, = mode actif. Elle n'est jamais dans la fiche vierge
+  (`migrate.js` y ajoute les valeurs par défaut) et n'est écrite que quand le joueur touche la case « Mode
+  Odyssée » du menu « Gestion » (`"off"` décochée, `"on"` recochée) : une fiche sans la clé garde la même
+  empreinte. Elle fait partie de `V4_ONLY_KEYS`. Mode coupé, les espèces, les sous-classes et le style de
+  combat marqués `source: "Odyssée"` (`js/data/dd-rules.js`, `js/data/feats.js`) ne sont plus proposés
+  (`proposedSpecies`, `proposedSubclasses`, `hiddenFeatIds`, listes refaites par `renderDynamicSelects` de
+  `js/ui/sheet.js`, phrase de `js/rules/level-up.js`) ; ce que la fiche utilise déjà reste dans ses listes
+  et aucun calcul ne change. Une fiche vierge au mode coupé reste une fiche vierge (`isBlankCharacter`,
+  `js/state/snapshots.js`).
 - `feat_0` : second don d'origine de l'Humain (trait Polyvalent), acquis au niveau 1, en plus de `feat_1`
   (historique). Absente d'une fiche vierge, ajoutée quand on la remplit ; elle ne compte que si l'espèce
   est Humain (`isHuman`, `js/rules/feats.js`) et n'est jamais effacée si l'espèce change. Son numéro 0
