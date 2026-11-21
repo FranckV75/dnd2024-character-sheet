@@ -26,6 +26,7 @@ import { createStore } from '../js/state/store.js';
 import { ALL_FIXTURES, readFixture } from './helpers/fixtures.js';
 import { HELP_SECTIONS } from '../js/data/help.js';
 import { DEFAULT_BGS } from '../js/data/constants.js';
+import { WHATS_NEW } from '../js/data/whats-new.js';
 
 const sheet = (extra = {}) => ({ ...createDefaultCharacter(), char_name: 'Test', ...extra });
 const OFF = { [ODYSSEY_MODE_KEY]: 'off' };
@@ -569,5 +570,17 @@ describe('Mode Odyssée : écran, impression et notice', () => {
         assert.match(kept.text, new RegExp(`« ${inspirationWording({ [ODYSSEY_MODE_KEY]: 'off' }).label} »`));
         assert.ok(section('lock').some((entry) => entry.text.includes(`« ${ODYSSEY_MODE_LABEL} »`)));
         assert.ok(section('role').find((entry) => entry.title === '« Odyssée des Seigneurs Dragons »').text.includes(`« ${ODYSSEY_MODE_LABEL} »`));
+    });
+
+    test('Nouveautés 4.44.0 : la case, ce qui reste en place, et les deux libellés d\u2019Inspiration', () => {
+        const entry = WHATS_NEW.find((item) => item.version === '4.44.0');
+        assert.ok(entry, 'entrée 4.44.0');
+        const text = entry.items.join(' ');
+        assert.match(text, /« Gestion »/);
+        assert.ok(text.includes(`« ${ODYSSEY_MODE_LABEL} »`));
+        assert.match(text, /cochée au départ/);
+        assert.match(text, /reste en place/);
+        assert.ok(text.includes(`« ${inspirationWording({}).label} »`));
+        assert.ok(text.includes(`« ${inspirationWording({ [ODYSSEY_MODE_KEY]: 'off' }).label} »`));
     });
 });
