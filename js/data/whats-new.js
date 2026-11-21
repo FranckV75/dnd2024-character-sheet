@@ -13,6 +13,14 @@
 /** @type {ReadonlyArray<{ version: string, items: ReadonlyArray<string> }>} */
 export const WHATS_NEW = Object.freeze([
     {
+        version: '4.43.1',
+        items: [
+            'Les points d\'expérience s\'écrivent désormais XP partout dans la fiche.',
+            'Sous la case XP, la fiche donne aussi le palier du niveau suivant, par exemple : Encore 1 200 XP avant le niveau 7 (23 000 XP).',
+            'Rien ne change dans vos fiches enregistrées : seul l\'affichage est modifié.'
+        ]
+    },
+    {
         version: '4.43.0',
         items: [
             'Armes spéciales : dans la roue dentée d\'une arme (« Configuration de l\'arme »), la rubrique « Dégâts en plus » ajoute jusqu\'à 4 dégâts avec leur raison, par exemple +2d6 contre les dragons.',
