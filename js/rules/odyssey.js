@@ -1,0 +1,216 @@
+// =============================================================================
+// ODYSSEY.JS (règles) - Mode « Odyssée des Seigneurs Dragons », réglé fiche par fiche
+//
+// Étude : docs/etudes/MODE_ODYSSEE.md (réponses de Franck du 21/11/2026, section 6).
+// Sauvegarde : clé facultative « odyssey_mode », qui vaut "off" quand le mode est coupé. Clé
+// absente, ou toute autre valeur : mode ACTIF (toutes les fiches d'avant, sans rien y écrire).
+// La clé n'est écrite que lorsque le joueur touche la case du menu « Gestion » (js/ui/odyssey.js) ;
+// elle n'est jamais dans la fiche vierge (js/state/schema.js : migrate.js l'ajouterait à toutes les
+// fiches). L'ancien site (v3) l'ignore (V4_ONLY_KEYS, js/cloud/sync.js).
+//
+// Mode coupé : les 6 espèces, les 12 sous-classes et le style de combat de l'Odyssée ne sont plus
+// PROPOSÉS dans les listes. Ce que la fiche utilise déjà reste proposé, affiché et calculé : aucune
+// règle de calcul ne lit ce mode. L'encadré « Odyssée » de l'onglet 3 n'est caché que s'il est vide.
+// Repère de l'Odyssée dans les données : champ source = "Odyssée" (js/data/dd-rules.js pour les
+// espèces et les sous-classes, js/data/feats.js pour le style Hoplite).
+// Fonctions pures. Testé : tests/odyssey.test.js.
+// =============================================================================
+
+import { DD_RULES } from '../data/dd-rules.js';
+import { FEATS_DATA } from '../data/feats.js';
+import { FEAT_SLOT_ORDER } from '../state/schema.js';
+import { classSlug } from './identity.js';
+import { subclassId } from './class-features.js';
+import { speciesSlug } from './species.js';
+
+export const ODYSSEY_MODE_KEY = 'odyssey_mode';
+/** Valeur du champ « source » des données venues de L'Odyssée des Seigneurs Dragons */
+export const ODYSSEY_SOURCE = 'Odyssée';
+const MODE_OFF = 'off';
+const MODE_ON = 'on';
+
+/** Place de la barre du haut sur tablette (une ligne, une centaine de caractères à 768 px) */
+export const STATUS_ROOM = 95;
+
+/** Nom de la case du menu « Gestion » */
+export const ODYSSEY_MODE_LABEL = 'Mode Odyssée';
+
+/** Texte brut (les anciennes sauvegardes peuvent contenir un peu de HTML) */
+const plain = (value) => String(value ?? '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+
+/** La donnée (espèce, sous-classe, don) vient-elle de l'Odyssée ? */
+export const fromOdyssey = (entry) => entry?.source === ODYSSEY_SOURCE;
+
+/** Dons de l'Odyssée (aujourd'hui : le style de combat Hoplite) */
+const ODYSSEY_FEAT_IDS = Object.freeze(Object.keys(FEATS_DATA).filter((id) => fromOdyssey(FEATS_DATA[id])));
+
+/**
+ * Le mode Odyssée est-il actif pour cette fiche ? Oui, sauf si elle dit "off".
+ * @param {Object} record - fiche au format de sauvegarde
+ * @returns {boolean}
+ */
+export function odysseyActive(record) {
+    return record?.[ODYSSEY_MODE_KEY] !== MODE_OFF;
+}
+
+/**
+ * Modification à enregistrer quand le joueur coche ou décoche la case.
+ * @param {Object} record
+ * @param {boolean} active - mode voulu
+ * @returns {Object} { odyssey_mode } ou {} si rien ne change (une fiche active sans la clé le reste)
+ */
+export function setOdysseyModePatch(record, active) {
+    if (Boolean(active) === odysseyActive(record)) return {};
+    return { [ODYSSEY_MODE_KEY]: active ? MODE_ON : MODE_OFF };
+}
+
+/** Don noté dans un emplacement (valeur nettoyée, comme featSlots de js/rules/feats.js) */
+const slotFeat = (record, slot) => plain(record?.[`feat_${slot}`]);
+
+/**
+ * Ce que la fiche utilise déjà de l'Odyssée, lu avec les outils de la fiche (noms français,
+ * anglais, anciennes écritures) : speciesSlug (js/rules/species.js) et subclassId
+ * (js/rules/class-features.js, la lecture de deriveCharacter).
+ * @param {Object} record
+ * @returns {{ species: string, subclass: string, feats: string[], box: boolean }}
+ *          species, subclass : identifiants de DD_RULES ('' si la fiche n'en utilise pas de l'Odyssée) ;
+ *          feats : dons de l'Odyssée notés dans un emplacement de la fiche ;
+ *          box : l'encadré de l'onglet 3 a un destin héroïque ou des points de renommée
+ */
+export function odysseyUse(record) {
+    const species = speciesSlug(record);
+    const subclass = subclassId(record?.char_subclass, classSlug(plain(record?.char_class)));
+    const renown = plain(record?.glory_score);
+    return {
+        species: fromOdyssey(DD_RULES.species[species]) ? species : '',
+        subclass: fromOdyssey(DD_RULES.subclasses[subclass]) ? subclass : '',
+        feats: ODYSSEY_FEAT_IDS.filter((id) => FEAT_SLOT_ORDER.some((slot) => slotFeat(record, slot) === id)),
+        // Renommée : un nombre autre que 0, ou un texte (jamais effacé par la fiche)
+        box: plain(record?.heroic_destiny) !== '' || (renown !== '' && Number(renown) !== 0)
+    };
+}
+
+/**
+ * Espèces proposées dans la liste du haut de la fiche : toutes quand le mode est actif ; sinon
+ * celles du manuel, plus celle de l'Odyssée que la fiche utilise déjà.
+ * @param {Object} record
+ * @returns {Object[]} entrées de DD_RULES.species, dans l'ordre des données
+ */
+export function proposedSpecies(record) {
+    const all = Object.entries(DD_RULES.species);
+    if (odysseyActive(record)) return all.map(([, entry]) => entry);
+    const used = odysseyUse(record).species;
+    return all.filter(([slug, entry]) => !fromOdyssey(entry) || slug === used).map(([, entry]) => entry);
+}
+
+/**
+ * Sous-classes proposées pour une classe : toutes quand le mode est actif ; sinon celles du
+ * manuel, plus celle de l'Odyssée que la fiche utilise déjà. (Le contrôle qui vide la sous-classe
+ * au changement de classe lit, lui, la liste complète : js/ui/sheet.js.)
+ * @param {Object} record
+ * @param {string} slug - identifiant de la classe (classSlug)
+ * @returns {Object[]} entrées de DD_RULES.subclasses, dans l'ordre des données
+ */
+export function proposedSubclasses(record, slug) {
+    if (!slug) return [];
+    const all = Object.entries(DD_RULES.subclasses).filter(([, entry]) => entry.class === slug);
+    if (odysseyActive(record)) return all.map(([, entry]) => entry);
+    const used = odysseyUse(record).subclass;
+    return all.filter(([id, entry]) => !fromOdyssey(entry) || id === used).map(([, entry]) => entry);
+}
+
+/**
+ * Dons retirés de la liste d'un emplacement : aucun quand le mode est actif ; sinon les dons de
+ * l'Odyssée, sauf celui que cet emplacement contient déjà.
+ * @param {Object} record
+ * @param {number|string} slot - numéro de l'emplacement (feat_<numéro>)
+ * @returns {string[]} identifiants de FEATS_DATA
+ */
+export function hiddenFeatIds(record, slot) {
+    if (odysseyActive(record)) return [];
+    const chosen = slotFeat(record, slot);
+    return ODYSSEY_FEAT_IDS.filter((id) => id !== chosen);
+}
+
+/** Nom d'un don de l'Odyssée dans une phrase : « style Hoplite » */
+function featLabel(id) {
+    const feat = FEATS_DATA[id];
+    const name = feat.name.replace(/\s*\(Odyssée\)\s*$/, '');
+    return feat.type === 'Style de combat' ? `style ${name}` : name;
+}
+
+/**
+ * Ce que la fiche garde de l'Odyssée, en mots : « Centaure », « L'Hoplite », « style Hoplite »,
+ * « encadré Odyssée » (destin héroïque ou points de renommée).
+ * @param {Object} record
+ * @returns {string[]} liste vide si la fiche n'utilise rien de l'Odyssée
+ */
+export function odysseyKept(record) {
+    const use = odysseyUse(record);
+    return [
+        use.species ? DD_RULES.species[use.species].nameFr : '',
+        use.subclass ? DD_RULES.subclasses[use.subclass].nameFr : '',
+        ...use.feats.map(featLabel),
+        use.box ? 'encadré Odyssée' : ''
+    ].filter(Boolean);
+}
+
+/**
+ * L'encadré « Odyssée des Seigneurs Dragons » (onglet 3) a-t-il sa place sur la fiche ? Toujours
+ * quand le mode est actif ; mode coupé, seulement s'il contient quelque chose.
+ * @param {Object} record
+ * @returns {boolean}
+ */
+export function odysseyBoxUseful(record) {
+    return odysseyActive(record) || odysseyUse(record).box;
+}
+
+/**
+ * Libellé de la case d'Inspiration (onglet Combat) et nom d'un de ses points (boutons − / +) :
+ * les points de Foi viennent de l'Odyssée (règle « Sacrifices et prières »).
+ * @param {Object} record
+ * @returns {{ label: string, noun: string }}
+ */
+export function inspirationWording(record) {
+    return odysseyActive(record)
+        ? { label: 'Inspiration héroïque ou points de Foi', noun: "point d'Inspiration ou de Foi" }
+        : { label: 'Inspiration héroïque', noun: "point d'Inspiration" };
+}
+
+/** « Cette fiche garde : Centaure, style Hoplite. » ('' si elle ne garde rien) */
+function keptSentence(record) {
+    const kept = odysseyKept(record);
+    return kept.length ? `Cette fiche garde : ${kept.join(', ')}.` : '';
+}
+
+/**
+ * Phrase d'aide de la case (infobulle à la souris) ; mode coupé, elle dit aussi ce que la fiche garde.
+ * @param {Object} record
+ * @returns {string}
+ */
+export function odysseyModeHint(record) {
+    const hint = "Campagne de L'Odyssée des Seigneurs Dragons. Décochez pour jouer une autre campagne : les espèces, "
+        + "les sous-classes et le style de combat de l'Odyssée ne sont plus proposés. Ce que votre fiche utilise déjà "
+        + 'reste en place. Recochez pour tout retrouver.';
+    const kept = odysseyActive(record) ? '' : keptSentence(record);
+    return kept ? `${hint} ${kept}` : hint;
+}
+
+/**
+ * Message écrit dans la barre du haut après un toucher de la case : ce que le mode fait, et ce
+ * que la fiche garde. La barre tient sur une ligne sur tablette : la phrase la plus complète qui
+ * y tient est choisie.
+ * @param {Object} record - fiche APRÈS le changement
+ * @param {number} [room] - nombre de caractères disponibles
+ * @returns {string}
+ */
+export function odysseyModeMessage(record, room = STATUS_ROOM) {
+    if (odysseyActive(record)) {
+        return `${ODYSSEY_MODE_LABEL} actif : ses espèces, sous-classes et style de combat sont de nouveau proposés.`;
+    }
+    const off = `${ODYSSEY_MODE_LABEL} coupé : ses espèces, sous-classes et style de combat ne sont plus proposés.`;
+    const kept = keptSentence(record);
+    if (!kept) return off;
+    const choices = [`${off} ${kept}`, `${ODYSSEY_MODE_LABEL} coupé : ses choix ne sont plus proposés. ${kept}`, `${ODYSSEY_MODE_LABEL} coupé. ${kept}`, kept];
+    return choices.find((text) => text.length <= room) ?? kept;
+}

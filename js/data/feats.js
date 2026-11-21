@@ -333,6 +333,7 @@ const FEATS_DATA = {
         "type": "Style de combat",
         "prereq": "capacité Style de combat",
         "asi": "Aucune",
+        "source": "Odyssée",
         "desc": "Style de combat de L'Odyssée des Seigneurs Dragons (guide du joueur, présenté avec la sous-classe L'Hoplite du Guerrier). Tant que vous portez un bouclier, lorsqu'une créature attaque au corps à corps un allié situé à 1,50 mètre ou moins de vous, vous pouvez prendre une Réaction pour effectuer contre elle une attaque d'opportunité au corps à corps."
     },
     "incantateur_d_elite": {
