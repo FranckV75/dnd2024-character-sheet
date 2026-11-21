@@ -71,7 +71,11 @@ export const LAST_SAVED_KEY = STORAGE_KEYS.lastSaved;
 export const ACTIVE_NAME_KEY = STORAGE_KEYS.activeName;
 const PUSH_DELAY_MS = 2000;
 
-/** La fiche ne contient rien qui mérite d'être préservé */
+/**
+ * La fiche ne contient rien qui mérite d'être préservé. Seules les clés de la fiche vierge sont
+ * regardées : le réglage « Mode Odyssée » (clé facultative odyssey_mode) coupé sur une fiche vide
+ * la laisse vierge, comme pour les sauvegardes de secours (isBlank, js/state/snapshots.js).
+ */
 export function isBlankCharacter(character) {
     const blank = createDefaultCharacter();
     // États cochés (clé facultative « conditions », absente de la fiche vierge) : la fiche a servi

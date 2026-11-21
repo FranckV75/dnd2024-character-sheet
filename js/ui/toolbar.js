@@ -6,7 +6,8 @@
 //  - Groupe « Fiche » : verrou (lock.js), puis nouvelle fiche, import, export, impression.
 //  - Groupe « Découvrir » (#toolbar-help), sous le groupe Fiche : « Mode d'emploi » (help.js ;
 //    reste disponible fiche verrouillée) et « Essayer un personnage d'exemple » (examples.js ;
-//    masqué fiche verrouillée, il remplace la fiche).
+//    masqué fiche verrouillée, il remplace la fiche). Au bout de la même rangée : la case
+//    « Mode Odyssée » (odyssey.js ; réglage de la fiche, masqué fiche verrouillée).
 //  - Groupe « Affichage » (#view-controls) : thème, mode cinéma et animations, avant « Fonds »
 //    (gallery.js). « Animations » coupe tout ce qui bouge dans la fiche (motion-pref.js) : choix
 //    retenu sur l'appareil, jamais dans la sauvegarde.
@@ -118,9 +119,10 @@ export function initToolbar({ store, setStatus }) {
         lockButton,
         el('div', { class: 'btn-group' }, newButton, importButton, exportButton, printButton));
 
-    // Pour découvrir la fiche : sous les commandes de la fiche (css/toolbar.css)
-    const helpGroup = el('div', { class: 'app-bar-group toolbar-help', id: 'toolbar-help', role: 'group', 'aria-label': 'Découvrir la fiche' },
-        el('div', { class: 'btn-group' }, helpButton, exampleButton));
+    // Pour découvrir la fiche : sous les commandes de la fiche (css/toolbar.css). La case
+    // « Mode Odyssée » s'ajoute au bout de cette rangée (js/ui/odyssey.js).
+    const helpGroup = el('div', { class: 'app-bar-group toolbar-help', id: 'toolbar-help' },
+        el('div', { class: 'btn-group', role: 'group', 'aria-label': 'Découvrir la fiche' }, helpButton, exampleButton));
 
     host.replaceChildren(
         toggleButton,

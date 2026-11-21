@@ -11,7 +11,7 @@
 // Sécurité des données :
 //  - un état dont le contenu est déjà dans la liste n'est pas ajouté (ouvrir dix fois la fiche, ou
 //    revenir à un état, ne vide pas la liste) ; les réglages d'affichage (fond, thème) ne comptent pas ;
-//  - une fiche vierge n'est jamais gardée ;
+//  - une fiche vierge n'est jamais gardée (même si le mode Odyssée y a été coupé) ;
 //  - place limitée (MAX_TOTAL_CHARS) : les plus anciens partent d'abord ; stockage plein : on retire
 //    les plus anciens jusqu'à ce que l'écriture passe, sinon on renonce sans rien casser ;
 //  - la fiche elle-même passe toujours avant : saveFreeingSnapshots libère la place des états quand
@@ -27,6 +27,7 @@
 // =============================================================================
 
 import { canonicalJSON } from '../cloud/sync.js';
+import { ODYSSEY_MODE_KEY } from '../rules/odyssey.js';
 import { createDefaultCharacter } from './schema.js';
 import { characterName, parseCharacterFile } from './persistence.js';
 
@@ -77,6 +78,13 @@ function blank() {
     blankText ??= contentText(createDefaultCharacter());
     return blankText;
 }
+
+/**
+ * Fiche vierge ? Le réglage « Mode Odyssée » posé sur une fiche vide ne fait pas une fiche à
+ * garder : même avis que isBlankCharacter (js/cloud/controller.js), qui ne regarde que les clés
+ * de la fiche vierge. Le mode compte en revanche pour reconnaître un doublon (sameContent).
+ */
+const isBlank = (character) => contentText({ ...character, [ODYSSEY_MODE_KEY]: undefined }) === blank();
 
 /** Un état bien formé (une valeur abîmée dans la liste est ignorée, jamais une erreur) */
 function isEntry(value) {
@@ -172,7 +180,7 @@ export function takeSnapshot(character, reason, {
     if (!character || typeof character !== 'object' || !storage) return { saved: false, why: 'storage' };
     let text;
     try {
-        if (contentText(character) === blank()) return { saved: false, why: 'blank' };
+        if (isBlank(character)) return { saved: false, why: 'blank' };
         text = JSON.stringify(character);
     } catch {
         return { saved: false, why: 'storage' };

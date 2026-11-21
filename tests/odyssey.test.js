@@ -16,6 +16,13 @@ import { FEATS_DATA } from '../js/data/feats.js';
 import { createDefaultCharacter, FEAT_SLOT_ORDER } from '../js/state/schema.js';
 import { deriveCharacter } from '../js/rules/character.js';
 import { featEffects } from '../js/rules/feat-effects.js';
+import { V4_ONLY_KEYS, withoutV4State, comparableWithV3, fingerprint } from '../js/cloud/sync.js';
+import { isBlankCharacter, sheetFingerprint } from '../js/cloud/controller.js';
+import { migrateCharacter, normalizeCharacter } from '../js/state/migrate.js';
+import { parseCharacterFile, serializeCharacter } from '../js/state/persistence.js';
+import { takeSnapshot, readSnapshots } from '../js/state/snapshots.js';
+import { createStore } from '../js/state/store.js';
+import { ALL_FIXTURES, readFixture } from './helpers/fixtures.js';
 
 const sheet = (extra = {}) => ({ ...createDefaultCharacter(), char_name: 'Test', ...extra });
 const OFF = { [ODYSSEY_MODE_KEY]: 'off' };
@@ -348,5 +355,90 @@ describe('Mode Odyssée : phrases pour le joueur', () => {
     test('Le nom de la case est repris dans les messages', () => {
         assert.equal(ODYSSEY_MODE_LABEL, 'Mode Odyssée');
         assert.ok(odysseyModeMessage(sheet(OFF)).startsWith(ODYSSEY_MODE_LABEL));
+    });
+});
+
+describe('Mode Odyssée : sauvegarde et synchronisation', () => {
+    /** Stockage simulé (sauvegardes de secours) */
+    const fakeStorage = () => {
+        const data = new Map();
+        return { getItem: (key) => (data.has(key) ? data.get(key) : null), setItem: (key, value) => data.set(key, String(value)), removeItem: (key) => data.delete(key) };
+    };
+
+    test("Clé propre à la v4 : ignorée de la comparaison avec l'ancien site", () => {
+        assert.ok(V4_ONLY_KEYS.includes(ODYSSEY_MODE_KEY));
+        assert.ok(!(ODYSSEY_MODE_KEY in withoutV4State(sheet(OFF))));
+        assert.deepEqual(comparableWithV3(normalizeCharacter(sheet(OFF))), comparableWithV3(normalizeCharacter(sheet())));
+    });
+
+    test("Lecture d'une fiche : clé absente laissée absente, clé présente gardée telle quelle", () => {
+        assert.ok(!(ODYSSEY_MODE_KEY in migrateCharacter({ char_name: 'Korgul' }).character));
+        assert.ok(!(ODYSSEY_MODE_KEY in migrateCharacter(sheet()).character));
+        assert.equal(migrateCharacter(sheet(OFF)).character[ODYSSEY_MODE_KEY], 'off');
+        assert.equal(migrateCharacter(sheet({ [ODYSSEY_MODE_KEY]: 'on' })).character[ODYSSEY_MODE_KEY], 'on');
+        assert.deepEqual(migrateCharacter(sheet(OFF)).report, []);
+    });
+
+    test('Export puis import : le réglage suit la fiche', () => {
+        const off = migrateCharacter(sheet({ ...OFF, char_species: 'Centaure' })).character;
+        const back = parseCharacterFile(serializeCharacter(off)).character;
+        assert.deepEqual(back, off);
+        assert.equal(odysseyActive(back), false);
+    });
+
+    for (const [name, url] of ALL_FIXTURES) {
+        test(`${name} : sans la clé, la fiche et son empreinte restent strictement les mêmes`, () => {
+            const { character } = migrateCharacter(readFixture(url));
+            assert.ok(!(ODYSSEY_MODE_KEY in character));
+            assert.equal(odysseyActive(character), true);
+            const before = sheetFingerprint(character);
+            // Ouvrir la fiche : l'écran lit le mode et ce que la fiche utilise, sans jamais rien écrire
+            const store = createStore(character);
+            odysseyUse(store.get());
+            proposedSpecies(store.get());
+            odysseyModeHint(store.get());
+            store.update(setOdysseyModePatch(store.get(), odysseyActive(store.get())));
+            assert.deepEqual(store.get(), character);
+            assert.equal(sheetFingerprint(store.get()), before);
+            assert.equal(fingerprint(normalizeCharacter(store.get())), before);
+        });
+    }
+
+    test("Décocher : une seule clé change, l'empreinte aussi ; recocher garde la clé (on)", () => {
+        const store = createStore(sheet({ char_species: 'Centaure' }));
+        const before = store.get();
+        const changes = [];
+        store.subscribe((state, changed) => changes.push(changed));
+        store.update(setOdysseyModePatch(store.get(), false));
+        assert.deepEqual(changes, [[ODYSSEY_MODE_KEY]]);
+        assert.deepEqual({ ...store.get(), [ODYSSEY_MODE_KEY]: undefined }, { ...before, [ODYSSEY_MODE_KEY]: undefined });
+        assert.notEqual(sheetFingerprint(store.get()), sheetFingerprint(before));
+        store.update(setOdysseyModePatch(store.get(), true));
+        assert.equal(store.get()[ODYSSEY_MODE_KEY], 'on');
+        assert.equal(odysseyActive(store.get()), true);
+    });
+
+    test('Fiche vierge dont le mode a été coupé : vierge pour le compte en ligne ET pour les sauvegardes de secours', () => {
+        const blank = { ...createDefaultCharacter(), ...OFF };
+        assert.equal(isBlankCharacter(blank), true);
+        const storage = fakeStorage();
+        assert.deepEqual(takeSnapshot(blank, 'open', { storage }), { saved: false, why: 'blank' });
+        assert.deepEqual(takeSnapshot({ ...createDefaultCharacter(), [ODYSSEY_MODE_KEY]: 'on' }, 'open', { storage }), { saved: false, why: 'blank' });
+        assert.deepEqual(readSnapshots(storage), []);
+    });
+
+    test('Fiche remplie : les deux contrôles la disent non vierge, mode coupé ou non', () => {
+        for (const record of [sheet(), sheet(OFF)]) {
+            assert.equal(isBlankCharacter(record), false);
+            assert.deepEqual(takeSnapshot(record, 'open', { storage: fakeStorage() }), { saved: true });
+        }
+    });
+
+    test('Sauvegardes de secours : la même fiche, mode coupé, est un autre état (y revenir rend le mode)', () => {
+        const storage = fakeStorage();
+        assert.deepEqual(takeSnapshot(sheet(), 'open', { storage, now: new Date(Date.UTC(2026, 10, 21, 10, 0)) }), { saved: true });
+        assert.deepEqual(takeSnapshot(sheet(OFF), 'import', { storage, now: new Date(Date.UTC(2026, 10, 21, 10, 5)) }), { saved: true });
+        assert.deepEqual(takeSnapshot(sheet(OFF), 'open', { storage, now: new Date(Date.UTC(2026, 10, 21, 10, 6)) }), { saved: false, why: 'same' });
+        assert.equal(readSnapshots(storage).length, 2);
     });
 });

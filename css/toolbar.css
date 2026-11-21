@@ -2,7 +2,7 @@
    TOOLBAR.CSS - Barre « Gestion » (index.html, js/ui/toolbar.js)
    - Barre flottante en verre dépoli, double filet doré, posée au-dessus de la fiche.
    - Groupes : Fiche (#toolbar-panel), Découvrir (#toolbar-help : mode d'emploi, personnage
-     d'exemple), Affichage (#view-group), Compte (#account-group),
+     d'exemple, puis la case « Mode Odyssée »), Affichage (#view-group), Compte (#account-group),
      états du compte et de l'enregistrement (.app-bar-statuses). Le contenu des groupes
      vient de toolbar.js, gallery.js et account.js ; leur place est réglée ici.
    - Repli sur tablette (≤ 1100 px, et écrans tactiles ≤ 1400 px : tablettes en paysage) :
@@ -15,7 +15,7 @@
 /* ---------- Barre ----------
    Ordinateur, trois lignes alignées à gauche :
      Gestion   [verrou] [nouvelle | importer | exporter | imprimer]        états
-               [mode d'emploi | personnage d'exemple]
+               [mode d'emploi | personnage d'exemple]  (o) Mode Odyssée
      [thème | cinéma | fonds]  position  zoom  opacité        [compte] [personnages]
    Les deux premières colonnes prennent la taille de leurs boutons ; la dernière prend le
    reste. Les états (texte variable : « enregistrement en ligne… », nom de la fiche…) y sont
@@ -258,6 +258,28 @@
 .app-bar .btn[aria-pressed="true"] .icon,
 .app-bar .btn[aria-pressed="true"]:hover:not(:disabled) {
     color: var(--btn-top);
+}
+
+/* Case « Mode Odyssée » (js/ui/odyssey.js) : une case à cocher de la fiche (.round-check) et son
+   nom, dans un bouton de la barre. Tout le bouton se touche ; le contour de clavier l'entoure. */
+.app-bar .toolbar-check {
+    gap: 6px;
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.app-bar .toolbar-check .round-check {
+    flex: none;
+}
+
+.app-bar .toolbar-check .round-check:focus-visible {
+    outline: none;
+}
+
+.app-bar .toolbar-check:has(.round-check:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
 }
 
 /* Bouton « Gestion » : uniquement sur tablette */

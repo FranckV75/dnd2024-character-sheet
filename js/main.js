@@ -23,6 +23,7 @@ import { initLevelUp } from './ui/level-up.js';
 import { initHitPoints } from './ui/hit-points.js';
 import { initExperience } from './ui/experience.js';
 import { initCounters } from './ui/counters.js';
+import { initOdyssey } from './ui/odyssey.js';
 import { initUpdates } from './ui/update.js';
 import { initSubclassFeatures } from './ui/subclass.js';
 import { initClassProgression } from './ui/class-progression.js';
@@ -196,7 +197,7 @@ for (const [label, step] of [
         console.error(`Échec de ${label} :`, error);
     }
 }
-for (const init of [initToolbar, initSnapshots, initAccount, initGallery, initWeapons, initArmors, initSpells, initRest, initConditions, initConcentration, initLevelUp, initExperience, initHitPoints, initCounters, initSpecies, initBackground, initTools, initClassProgression, initSubclassFeatures, initCompanions, initWildMagic, initBoxFolding, initStyleEditor, initMotion, initFeedback, initUpdates]) {
+for (const init of [initToolbar, initSnapshots, initAccount, initGallery, initWeapons, initArmors, initSpells, initRest, initConditions, initConcentration, initLevelUp, initExperience, initHitPoints, initCounters, initOdyssey, initSpecies, initBackground, initTools, initClassProgression, initSubclassFeatures, initCompanions, initWildMagic, initBoxFolding, initStyleEditor, initMotion, initFeedback, initUpdates]) {
     try {
         init(ctx);
     } catch (error) {
