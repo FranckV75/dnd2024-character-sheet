@@ -15,11 +15,14 @@ en fin de session :
 - **En ligne** : version **4.43.0** (dégâts en plus sur les armes : rubrique dans la roue
   dentée, « Toujours » ou pastille « À allumer »), publiée le 19/11/2026 avec l'accord de Franck
   (`master` = `v4`).
+- **Prête, pas encore publiée** : version **4.43.1** (« XP » au lieu de « PX », palier du niveau
+  suivant sous la case XP). Sur la branche `v4` de cet ordinateur ; attend le « Publie » de Franck.
 - **Étude du mode Odyssée désactivable** : faite (`docs/etudes/MODE_ODYSSEE.md`), rien de
-  construit. Elle attend les réponses de Franck (7 questions, point 3 de la feuille de route).
+  construit. Elle attend les réponses de Franck (6 questions restantes, point 3 de la feuille de
+  route ; celle des « points de Foi » est réglée : ils viennent de l'Odyssée).
 - **Multiclassage** : chantier à venir, voulu par Franck (18/11/2026), à étudier d'abord.
-- **Vérifications sur tablette** : Franck les fera quand il aura le temps (demande du
-  19/11/2026) ; la liste ci-dessous fait foi et s'allonge à chaque version.
+- **Vérifications sur tablette** : faites par Franck le 21/11/2026 sur Android et PC, tout est
+  bon ; reste l'iPad de Patricia (liste ci-dessous, elle fait foi et s'allonge à chaque version).
 - **À chaque version** : entrée en tête de `js/data/whats-new.js` et notice `js/data/help.js`
   à jour.
 - **Petits champs sur iPad** : ne rien changer tant que Franck n'a pas d'info sur le zoom.
@@ -33,44 +36,22 @@ en fin de session :
   Ce dossier est privé et ne va jamais dans le dépôt. Les textes de la fiche sont des résumés,
   jamais le texte du livre (le dépôt est public).
 
-### À vérifier par Franck (tablette Android, iPad de Catherine)
+### À vérifier par Franck (reste : l'iPad de Patricia)
 
-- 4.43.0, onglet Combat, sur une arme de test : roue dentée, rubrique
-  « Dégâts en plus » avec le clavier de la tablette ouvert (les champs et « Appliquer » restent
-  atteignables ; après une saisie fausse, le message rouge et le champ se voient ensemble ;
-  après la corbeille, le clavier ne s'ouvre pas) ; la pastille s'allume d'un seul toucher, fiche
-  verrouillée ou non ; dans le tableau, le dégât en plus est abrégé par « … » sur une ligne
-  (Safari) ; toucher les dégâts ouvre le détail sous l'arme, un second toucher le referme ;
-  impression depuis la tablette : mention « Selon le cas : … » lisible ou trop petite.
-- 4.42.0, onglet Magie : mention « Pas d'emplacement » (la toucher) ;
-  « Lancer » sur un sort de don ou d'espèce (« Lancer gratuit ») ; pour un Clerc ou un Druide,
-  « Retirer les sorts non préparés » sur une fiche de test, puis « Revenir à… » ; pour un
-  Magicien, vue « Au combat », ligne « Rituels du livre ».
-- 4.41.0 : la fenêtre « Nouveautés » s'ouvre une fois ; menu Gestion, « Mode
-  d'emploi » (lecture, puis « Imprimer le mode d'emploi » sur la tablette) ; onglet Compétences &
-  Histoire, « Choisir dans la liste » sous la case Outils ; « Essayer un personnage d'exemple »
-  sur une tablette de test, puis « Revenir à… » pour retrouver sa fiche.
-- 4.40.0, onglet Magie : bouton « Au combat » puis « Lancer » (un emplacement se coche ; le
-  décocher annule) ; losanges fixes d'un Barde ou d'un Occultiste ; pour un Clerc ou un Druide,
-  « Préparer mes sorts » et le rappel après un repos long ; pour un Magicien, la ligne « Livre ».
-  Toucher un losange ou une mention affiche son explication dans la barre du haut.
-- 4.38.0 : saisie plus fluide (taper le nom, les PV) ; en-tête sur trois lignes (nom et PX
-  entiers) ; plus de « null » sous l'historique ; fenêtres pas coupées sur l'iPad.
-- iPad : Safari zoome-t-il quand on touche les petits champs (notes des armes, listes des dons,
+Vérifié par Franck le 21/11/2026 sur sa tablette Android (Lenovo P12) et sur son PC : tout est
+bon (Nouveautés, en-tête, historique, ouverture des fiches, rappels de Korgul, Mode d'emploi et
+son impression, dégâts en plus des armes et leur impression, Fougue, Concentration, traits
+d'espèce au repos, espèce et historique, outils, saisie fluide, grimoire : « Au combat »,
+« Lancer », « Lancer gratuit », sorts d'espèce, « Préparer mes sorts », « Retirer les sorts non
+préparés », losanges fixes, personnages d'exemple et « Revenir à… »).
+
+Reste à voir sur l'iPad (Franck n'en a pas : c'est celui de Patricia, pas de retour pour
+l'instant) :
+- Safari zoome-t-il quand on touche les petits champs (notes des armes, listes des dons,
   Outils et Langues) ? Si oui, décider s'il faut agrandir leur police.
-
-- Onglet Aptitudes & Traits, encadré « Espèce & historique » : choisir l'option de l'espèce (fiche
-  déverrouillée), voir la Vision dans le noir et les Résistances ; bouton « Appliquer à la fiche »
-  de l'historique sur une fiche de test.
-- Onglet Magie : bloc « Sorts d'espèce » (Drow, Tieffelin, Aasimar…) ; les sorts préparés ne
-  changent pas.
-- Onglet Combat : cases des traits d'espèce (Souffle, Poussée d'adrénaline…) vidées au repos ;
-  Fougue et Inflexible pour un Guerrier.
-- Encadré « États » : menu « Concentration », puis « Dégâts / Soins » → jet de Constitution chiffré.
-- Rappels près des valeurs (Korgul : Sens du danger, Instinct sauvage ; Rage allumée : Avantage
-  aux tests de Force, Résistance C/P/T).
-- Une fiche enregistrée avant la mise à jour s'ouvre sans rien perdre ; l'ancien site l'ouvre
-  toujours (nouvelles clés facultatives `species_choices` et `concentration`).
+- Onglet Combat : le dégât en plus est abrégé par « … » sur une ligne dans le tableau des armes.
+- Aucune fenêtre n'est coupée ; la saisie est fluide.
+- Si l'occasion se présente : l'ancien site (v3) ouvre toujours une fiche enregistrée par la v4.
 
 ### Ensuite, sur demande de Franck seulement
 
@@ -85,6 +66,17 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
    `docs/FEUILLE_DE_ROUTE.md`.
 
 ## Sessions
+
+### 21/11/2026 — Vérifications sur tablette et « XP » au lieu de « PX » (4.43.1, pas encore publiée)
+
+- Franck a fait toutes les vérifications en attente sur sa tablette Android (Lenovo P12) et son
+  PC : tout est bon. Il n'a pas d'iPad (celui du groupe est à Patricia) : les points iPad restent.
+- Les « points de Foi » viennent de l'Odyssée : règle « Sacrifices et prières » du guide du MJ,
+  page déjà rangée dans `..\Ressources\Manuels\`. Question 5 de l'étude réglée sans photo.
+- Demande de Franck : « XP » au lieu de « PX » partout dans ce qui s'affiche, et le palier du
+  niveau suivant entre parenthèses sous la case. Fait en 4.43.1 : 1580 tests, essai à 768, 820,
+  1024 et 1366 px (clair et sombre), 0 erreur console. Clés de sauvegarde inchangées.
+- Non publié : attend l'accord de Franck.
 
 ### 19/11/2026 — Dégâts en plus sur les armes (4.43.0) et étude du mode Odyssée
 

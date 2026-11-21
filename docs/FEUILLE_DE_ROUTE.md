@@ -35,11 +35,10 @@ sous-classes). Restent des décisions de Franck :
 Faits en 4.41.0 (18/11/2026) : ~~liste des outils~~, ~~notice « Mode d'emploi », fenêtre
 « Nouveautés », personnages d'exemple~~. Faites en 4.42.0 (18/11/2026, publiée) :
 ~~finitions du grimoire~~. Faits en 4.43.0 (19/11/2026, publiée) : ~~dégâts en plus sur les
-armes~~, ~~étude du mode Odyssée désactivable~~ (`docs/etudes/MODE_ODYSSEE.md`). Reste :
+armes~~, ~~étude du mode Odyssée désactivable~~ (`docs/etudes/MODE_ODYSSEE.md`). Fait en 4.43.1
+(21/11/2026, **pas encore publiée** : attend le « Publie » de Franck) : ~~« XP » au lieu de « PX »
+et palier du niveau suivant sous la case XP~~. Reste :
 
-0. **Petite demande du 21/11/2026** : écrire « XP » au lieu de « PX » partout dans la fiche
-   (textes affichés, notice ; jamais les clés de sauvegarde comme `char_xp`), et sous la case
-   XP ajouter le palier du niveau suivant : « Encore 1 200 XP avant le niveau 7 (23 000 XP) ».
 1. **Mode Odyssée désactivable** : l'étude est faite, rien n'est construit. Elle conseille un
    réglage par fiche, actif par défaut (les fiches actuelles ne changent pas), où ce que la fiche
    utilise déjà reste toujours en place. Chantier petit à moyen, en 4 lots. Il attend les

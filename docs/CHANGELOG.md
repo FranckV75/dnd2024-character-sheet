@@ -2,6 +2,13 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.43.1] - 2026-11-21 (XP et palier du niveau suivant)
+### Changed
+- « PX » devient « XP » dans tout ce qui s'affiche (case, bouton +, pavé « XP gagnés », messages,
+  mode d'emploi), à la demande de Franck. Les clés de sauvegarde (`char_xp`) ne changent pas.
+- Sous la case XP, la phrase donne aussi le palier du niveau suivant : « Encore 1 200 XP avant le
+  niveau 7 (23 000 XP) ». Vérifié à 768, 820, 1024 et 1366 px, thèmes clair et sombre.
+
 ## [4.43.0] - 2026-11-19 (Dégâts en plus sur les armes)
 ### Added
 - Fenêtre « Configuration de l'arme » (roue dentée) : rubrique « Dégâts en plus », jusqu'à
