@@ -12,9 +12,10 @@
 //    liste : la barre du haut dit comment le retrouver (recocher la case).
 //  - Encadré « Odyssée des Seigneurs Dragons » (onglet 3) : caché quand le mode est coupé ET qu'il
 //    est vide (ni destin héroïque ni points de renommée). Il n'est caché qu'à un moment calme :
-//    changement du mode, ouverture ou remplacement de la fiche, verrou. Vidé à la main, mode coupé,
-//    il reste donc sous le doigt (une renommée ramenée à 0 par erreur se corrige) ; il n'est déjà
-//    plus imprimé (attribut data-odyssey-unused, css/print.css).
+//    changement du mode, ouverture ou remplacement de la fiche, verrou, impression. Vidé à la main,
+//    mode coupé, il reste donc sous le doigt (une renommée ramenée à 0 par erreur se corrige).
+//    L'écran et le papier disent la même chose : au moment d'imprimer, l'encadré inutile disparaît
+//    aussi de l'écran (beforeprint ; filet : attribut data-odyssey-unused, css/print.css).
 //  - Libellé « Inspiration héroïque ou points de Foi » (onglet Combat) : « Inspiration héroïque »
 //    quand le mode est coupé, boutons − / + compris.
 // Les listes d'espèces, de sous-classes et de dons suivent le mode dans js/ui/sheet.js.
@@ -109,6 +110,8 @@ function initBox(root, store) {
     };
     store.subscribe((character, changedKeys) => sync(character, changedKeys === null || changedKeys.includes(ODYSSEY_MODE_KEY)));
     document.addEventListener('dd:lockchange', () => sync(store.get(), true));
+    // Impression : l'encadré inutile quitte aussi l'écran, qui montre ainsi ce qui est imprimé
+    window.addEventListener('beforeprint', () => sync(store.get(), true));
     sync(store.get(), true);
 }
 

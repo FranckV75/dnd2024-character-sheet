@@ -639,8 +639,9 @@ h1, h2, h3, h4 {
     gap: 10px;
 }
 
-/* Mode Odyssée coupé et encadré vide : jamais imprimé, même s'il est encore à l'écran (vidé à
-   l'instant, js/ui/odyssey.js). Rempli, ou mode actif : toujours imprimé. */
+/* Mode Odyssée coupé et encadré vide : jamais imprimé. S'il était encore à l'écran (vidé à
+   l'instant), js/ui/odyssey.js l'en retire au moment d'imprimer : écran et papier disent la même
+   chose. Rempli, ou mode actif : toujours imprimé. */
 .odyssey[data-odyssey-unused] {
     display: none;
 }

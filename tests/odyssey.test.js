@@ -683,6 +683,8 @@ describe('Mode Odyssée : écran, impression et notice', () => {
         assert.match(ui, /odysseyBoxUseful\(character\)/);
         assert.match(ui, /toggleAttribute\('data-odyssey-unused', !useful\)/);
         assert.match(read('css/print.css'), /\.odyssey\[data-odyssey-unused\] \{\s*display: none;\s*\}/);
+        // Écran et papier disent la même chose : l'encadré inutile quitte l'écran au moment d'imprimer
+        assert.match(ui, /addEventListener\('beforeprint', \(\) => sync\(store\.get\(\), true\)\)/);
     });
 
     test('Messages de la barre : place choisie selon l\u2019écran, choix abandonné signalé hors remplacement de fiche', () => {
