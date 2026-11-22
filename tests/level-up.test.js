@@ -61,17 +61,17 @@ describe('Montée de niveau : points de vie', () => {
 
     test('Patch : niveau et PV max en texte ; PV actuels seulement sur demande', () => {
         const plan = planLevelUp(fighter);
-        assert.deepEqual(levelUpPatch(plan, { mode: 'fixed' }), { char_level: '4', hp_max: '36' });
-        assert.deepEqual(levelUpPatch(plan, { mode: 'fixed', addToCurrent: true }), { char_level: '4', hp_max: '36', hp_current: '28' });
+        assert.deepEqual(levelUpPatch(plan, { mode: 'fixed' }), { char_level: '4', heroic_inspiration: '2/2', hp_max: '36' });
+        assert.deepEqual(levelUpPatch(plan, { mode: 'fixed', addToCurrent: true }), { char_level: '4', heroic_inspiration: '2/2', hp_max: '36', hp_current: '28' });
     });
 
     test('PV max avec du texte (« 80 (Robuste) ») ou vide : jamais réécrits, seul le niveau change', () => {
-        assert.deepEqual(levelUpPatch(planLevelUp(sheet({ char_class: 'Barbare', char_level: '8', hp_max: '80 (Robuste)' })), { mode: 'fixed' }), { char_level: '9' });
-        assert.deepEqual(levelUpPatch(planLevelUp(sheet({ char_class: 'Barbare', char_level: '8', hp_max: '' })), { mode: 'fixed' }), { char_level: '9' });
+        assert.deepEqual(levelUpPatch(planLevelUp(sheet({ char_class: 'Barbare', char_level: '8', hp_max: '80 (Robuste)', odyssey_mode: 'off' })), { mode: 'fixed' }), { char_level: '9' });
+        assert.deepEqual(levelUpPatch(planLevelUp(sheet({ char_class: 'Barbare', char_level: '8', hp_max: '', odyssey_mode: 'off' })), { mode: 'fixed' }), { char_level: '9' });
     });
 
     test('Jet incomplet : seul le niveau change (la fenêtre l\'empêche avant)', () => {
-        assert.deepEqual(levelUpPatch(planLevelUp(fighter), { mode: 'roll', roll: '' }), { char_level: '4' });
+        assert.deepEqual(levelUpPatch(planLevelUp({ ...fighter, odyssey_mode: 'off' }), { mode: 'roll', roll: '' }), { char_level: '4' });
     });
 
     test('Dé de vie inconnu (pas de classe) : pas de valeur fixe, jet libre', () => {
@@ -79,6 +79,41 @@ describe('Montée de niveau : points de vie', () => {
         assert.equal(hp.fixed, null);
         assert.equal(hitPointGain(hp, { mode: 'fixed' }), null);
         assert.equal(hitPointGain(hp, { mode: 'roll', roll: '5' }), 5);
+    });
+});
+
+describe('Montée de niveau : points de Foi (mode Odyssée)', () => {
+    const faithLine = (plan) => lines(plan, 'Général').find((line) => line.startsWith('Points de Foi')) ?? '';
+
+    test('Mode actif : la case repart de 0 et reçoit maîtrise + Sagesse du nouveau niveau, écrite « N/N »', () => {
+        // Niveau 4 → 5 : bonus de maîtrise +3, Sagesse 14 (+2) → 5
+        const plan = planLevelUp(sheet({ char_class: 'Clerc', char_level: '4', wis_score: '14', heroic_inspiration: '1/4' }));
+        assert.equal(plan.faith, '5/5');
+        assert.equal(levelUpPatch(plan, { mode: 'roll', roll: '' }).heroic_inspiration, '5/5');
+        assert.equal(faithLine(plan), 'Points de Foi : la case repart de 0 et reçoit 5 (maîtrise +3, Sagesse +2) → 5/5.');
+    });
+
+    test('Case vide, nombre seul ou « N/M » : remise ; texte libre : jamais réécrit, la fenêtre le dit', () => {
+        for (const value of ['', '3', '0/2', ' 2 / 3 ']) {
+            assert.equal(levelUpPatch(planLevelUp(sheet({ char_level: '1', heroic_inspiration: value })), {}).heroic_inspiration, '2/2', value);
+        }
+        const plan = planLevelUp(sheet({ char_level: '1', heroic_inspiration: '2 (béni)' }));
+        assert.equal(plan.faith, null);
+        assert.equal('heroic_inspiration' in levelUpPatch(plan, {}), false);
+        assert.match(faithLine(plan), /la case contient du texte, remettez-la à la main/);
+    });
+
+    test('Au moins 1 point par niveau (Sagesse très faible), et le minimum est dit', () => {
+        const plan = planLevelUp(sheet({ char_level: '1', wis_score: '6' }));
+        assert.equal(plan.faith, '1/1');
+        assert.ok(faithLine(plan).includes('reçoit 1 (maîtrise +2, Sagesse -2, minimum 1) → 1/1.'), faithLine(plan));
+    });
+
+    test('Mode coupé : rien sur les points de Foi, la case d\'Inspiration héroïque n\'est pas touchée', () => {
+        const plan = planLevelUp(sheet({ char_level: '4', heroic_inspiration: '1', odyssey_mode: 'off' }));
+        assert.equal(plan.faith, null);
+        assert.equal(faithLine(plan), '');
+        assert.equal('heroic_inspiration' in levelUpPatch(plan, { mode: 'fixed' }), false);
     });
 });
 

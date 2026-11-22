@@ -13,12 +13,21 @@
 /** @type {ReadonlyArray<{ version: string, items: ReadonlyArray<string> }>} */
 export const WHATS_NEW = Object.freeze([
     {
+        version: '4.45.0',
+        items: [
+            'Campagne de l\'Odyssée : la case de l\'onglet Combat s\'appelle maintenant « Points de Foi ».',
+            'Une pastille dorée sous la case donne vos points de Foi par niveau : bonus de maîtrise plus Sagesse, au moins 1. Touchez-la pour l\'explication.',
+            '« Passer au niveau » remet vos points de Foi au total du nouveau niveau, par exemple 5/5.',
+            'Case « Mode Odyssée » décochée, c\'est « Inspiration héroïque » : une seule à la fois, comme dans le manuel.'
+        ]
+    },
+    {
         version: '4.44.0',
         items: [
             'Menu « Gestion » : une nouvelle case « Mode Odyssée », cochée au départ. Vos fiches s\'ouvrent comme avant, rien n\'y est changé.',
             'Pour une autre campagne, décochez-la (fiche modifiable) : les espèces, les sous-classes et le style de combat de l\'Odyssée ne sont plus proposés dans les listes.',
             'Ce que la fiche utilise déjà reste en place : un Centaure reste un Centaure. La fiche vous dit ce qu\'elle garde, et il suffit de recocher la case pour tout retrouver.',
-            'Case décochée, l\'encadré « Odyssée des Seigneurs Dragons » disparaît s\'il est vide, et « Inspiration héroïque ou points de Foi » devient « Inspiration héroïque ».',
+            'Case décochée, l\'encadré « Odyssée des Seigneurs Dragons » disparaît s\'il est vide.',
             'Ce réglage est enregistré avec chaque personnage : il le suit d\'une tablette à l\'autre.'
         ]
     },

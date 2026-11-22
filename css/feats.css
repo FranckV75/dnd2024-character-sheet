@@ -340,6 +340,11 @@
     font-size: 0.74rem;
 }
 
+/* Points de Foi (« +5 par niveau », js/ui/odyssey.js) : la case y est entourée de ses boutons − / + */
+.stat-cell:has(> .feat-mention) > .stepper {
+    grid-row: 3;
+}
+
 /* ---------- Dons : encadré « Dans la fiche » sous la description (renderFeatSheet) ---------- */
 
 /* Même filet que la description, en or : ce que la fiche calcule ou rappelle pour ce don */

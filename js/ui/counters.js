@@ -1,13 +1,13 @@
 // =============================================================================
 // COUNTERS.JS (interface) - Boutons − / + des compteurs et pavé « Bourse »
 //
-//  - Épuisement (0 à 6), Inspiration héroïque ou points de Foi, Points de renommée (Odyssée,
-//    0 à 20) : un bouton − et un bouton + autour de la case (js/ui/stepper.js). Une case qui
+//  - Épuisement (0 à 6), Points de Foi (mode Odyssée) ou Inspiration héroïque (0 ou 1, mode
+//    coupé), Points de renommée (Odyssée, 0 à 20) : un bouton − et un bouton + autour de la case (js/ui/stepper.js). Une case qui
 //    contient du texte (« 2 (Chanceux) ») n'est pas touchée : seule la saisie à la main la change.
 //  - Pièces : bouton « Bourse » sous les cinq cases : choisir la pièce, taper le montant, puis
 //    Gagner ou Dépenser (pas de monnaie rendue automatiquement).
-// Le libellé de l'Inspiration (et le nom de ses boutons) perd « ou points de Foi » quand le mode
-// Odyssée de la fiche est coupé : js/ui/odyssey.js.
+// Le libellé de cette case, le nom de ses boutons et sa pastille « +5 par niveau » suivent le mode
+// Odyssée de la fiche : js/ui/odyssey.js ; son maximum aussi (inspirationWording).
 // Épuisement, Inspiration et pièces sont des champs de jeu (utilisables fiche verrouillée) ;
 // les boutons de la renommée sont masqués fiche verrouillée (edit-only), comme sa case.
 // Règles : js/rules/counters.js. Mise en forme : css/stepper.css.
@@ -17,10 +17,12 @@ import { el, icon } from './dom.js';
 import { wrapWithSteppers } from './stepper.js';
 import { openNumberPad } from './number-pad.js';
 import { steppedValue, changeCoins, readCount, COINS, MAX_COIN_ENTRY } from '../rules/counters.js';
+import { inspirationWording, INSPIRATION_ONLY_ONE } from '../rules/odyssey.js';
 
 const COUNTERS = [
     { key: 'fatigue_level', noun: 'niveau d\'Épuisement', max: 6, asNumber: true },
-    { key: 'heroic_inspiration', noun: 'point d\'Inspiration ou de Foi', max: 99 },
+    // Points de Foi (mode Odyssée) ou Inspiration héroïque, une seule à la fois (mode coupé)
+    { key: 'heroic_inspiration', noun: 'point de Foi', max: (record) => inspirationWording(record).max, onlyOne: INSPIRATION_ONLY_ONE },
     { key: 'glory_score', noun: 'point de renommée', max: 20, className: 'edit-only' }
 ];
 
@@ -36,8 +38,15 @@ export function initCounters({ root, store, setStatus = () => {} }) {
             className: counter.className ?? '',
             rowClass: 'counter-stepper',
             onStep: (delta) => {
-                const value = store.get()[counter.key];
-                const next = steppedValue(value, delta, { max: counter.max });
+                const record = store.get();
+                const value = record[counter.key];
+                const max = typeof counter.max === 'function' ? counter.max(record) : counter.max;
+                // Déjà au maximum (ou au-delà : vieille valeur) : « + » ne fait rien, sans jamais baisser
+                if (delta > 0 && (countOf(value) ?? -1) >= max) {
+                    if (max === 1 && counter.onlyOne) setStatus(counter.onlyOne);
+                    return false;
+                }
+                const next = steppedValue(value, delta, { max });
                 if (next === null) {
                     // Texte libre (« 2 (Chanceux) ») : rien n'est réécrit, on le dit
                     if (readCount(value) === null && !/^\s*\d+\s*\/\s*\d+\s*$/.test(String(value))) {
@@ -58,6 +67,12 @@ export function initCounters({ root, store, setStatus = () => {} }) {
             on: { click: () => openPurse(store) }
         }, icon('bag'), el('span', { text: 'Bourse : gagner / dépenser' })));
     }
+}
+
+/** Nombre d'une case : « 2 » ou « 2/3 » → 2 ; texte libre → null */
+function countOf(value) {
+    const fraction = /^\s*(\d+)\s*\/\s*\d+\s*$/.exec(typeof value === 'string' ? value : '');
+    return fraction ? Number(fraction[1]) : readCount(value);
 }
 
 /** Libellé visible de la case (« Épuisement (0-6) ») */

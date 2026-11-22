@@ -16,13 +16,16 @@
 //    mode coupé, il reste donc sous le doigt (une renommée ramenée à 0 par erreur se corrige).
 //    L'écran et le papier disent la même chose : au moment d'imprimer, l'encadré inutile disparaît
 //    aussi de l'écran (beforeprint ; filet : attribut data-odyssey-unused, css/print.css).
-//  - Libellé « Inspiration héroïque ou points de Foi » (onglet Combat) : « Inspiration héroïque »
-//    quand le mode est coupé, boutons − / + compris.
+//  - Case de l'onglet Combat (clé heroic_inspiration) : « Points de Foi » quand le mode est actif,
+//    avec une pastille « +5 par niveau » (bonus de maîtrise + Sagesse, au moins 1) ; un toucher la
+//    fait expliquer dans la barre du haut, la souris par l'infobulle. Mode coupé : « Inspiration
+//    héroïque », sans pastille ; ses boutons − / + vont de 0 à 1 (js/ui/counters.js).
 // Les listes d'espèces, de sous-classes et de dons suivent le mode dans js/ui/sheet.js.
 // Mise en forme : css/toolbar.css (.toolbar-check).
 // =============================================================================
 
-import { el } from './dom.js';
+import { el, icon } from './dom.js';
+import { derivedOf } from './derived.js';
 import { isLocked } from './lock.js';
 import { frenchSpaces } from './help.js';
 import { renameSteppers } from './stepper.js';
@@ -30,7 +33,7 @@ import { COMPACT_QUERY } from './toolbar.js';
 import {
     ODYSSEY_MODE_KEY, ODYSSEY_MODE_LABEL, STATUS_ROOM, STATUS_ROOM_OPEN, STATUS_ROOM_NARROW,
     odysseyActive, setOdysseyModePatch, odysseyModeHint, odysseyModeMessage, odysseyDroppedMessage,
-    odysseyBoxUseful, inspirationWording
+    odysseyBoxUseful, inspirationWording, faithPerLevel, faithMention, faithSentence, faithHint
 } from '../rules/odyssey.js';
 
 /**
@@ -38,7 +41,7 @@ import {
  */
 export function initOdyssey({ root, store, setStatus }) {
     initBox(root, store);
-    initInspiration(root, store);
+    initInspiration(root, store, setStatus);
     // Tablette (barre repliable, message sur toute la largeur) ou ordinateur (colonne étroite)
     const compact = window.matchMedia(COMPACT_QUERY);
     initDroppedNotice(store, setStatus, compact);
@@ -116,18 +119,39 @@ function initBox(root, store) {
 }
 
 /**
- * Libellé de la case d'Inspiration (onglet Combat) et nom de ses boutons − / +.
+ * Case « Points de Foi » / « Inspiration héroïque » (onglet Combat) : libellé, nom de ses boutons
+ * − / + et pastille des points de Foi gagnés par niveau (mode actif seulement).
  * @param {HTMLElement} root
  * @param {Object} store
+ * @param {(message: string) => void} setStatus
  */
-function initInspiration(root, store) {
+function initInspiration(root, store, setStatus) {
     const input = root.querySelector('#f-heroic_inspiration');
     const label = root.querySelector('label[for="f-heroic_inspiration"]');
     if (!input || !label) return;
+    const cell = input.closest('.stat-cell');
+    // Même pastille dorée que « Vitesse 12 m (Centaure) », sans fenêtre : une phrase suffit
+    const text = el('span');
+    const mention = el('button', { type: 'button', class: 'feat-mention faith-mention', hidden: true },
+        el('span', { class: 'feat-mention-line' }, icon('star'), text));
+    cell?.append(mention);
+    let sentence = '';
+    mention.addEventListener('click', () => setStatus(frenchSpaces(sentence)));
+    let signature = '';
     const render = (character) => {
         const wording = inspirationWording(character);
         if (label.textContent !== wording.label) label.textContent = wording.label;
         renameSteppers(input, wording.noun);
+        const faith = odysseyActive(character) ? faithPerLevel(derivedOf(character)) : null;
+        const next = faith ? faithHint(faith) : '';
+        if (next === signature) return;
+        signature = next;
+        mention.hidden = !faith;
+        if (!faith) return;
+        sentence = faithSentence(faith);
+        text.textContent = faithMention(faith);
+        mention.title = frenchSpaces(next);
+        mention.setAttribute('aria-label', `${faithMention(faith)} : ${next}`);
     };
     store.subscribe((character) => render(character));
     render(store.get());

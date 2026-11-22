@@ -7,7 +7,8 @@
 // règles : tout vient des fonctions déjà utilisées par la fiche. Les sous-classes proposées au
 // niveau 3 suivent le mode Odyssée de la fiche (js/rules/odyssey.js).
 // levelUpPatch(plan, options) ne touche qu'aux clés existantes char_level, hp_max et (sur demande)
-// hp_current, toujours en texte comme la v3. Les dons, caractéristiques, sorts et sous-classe se
+// hp_current, toujours en texte comme la v3 ; mode Odyssée actif, aussi heroic_inspiration : les
+// points de Foi repartent de 0 et reçoivent ceux du nouveau niveau (« 5/5 »), sauf texte libre. Les dons, caractéristiques, sorts et sous-classe se
 // choisissent ensuite dans la fiche, comme d'habitude (la fiche n'ajoute jamais une augmentation
 // elle-même). Multiclasse non gérée (une seule classe) : seuls le niveau et les PV sont calculés.
 // Testé : tests/level-up.test.js.
@@ -22,7 +23,7 @@ import { featSlotCounts, featSlotLevelFor, featSlotName, featName, classFeatSlot
 import { featuresAtLevel, classSpellCounts } from './class-progression.js';
 import { subclassFeatures, subclassSpells, automationKind } from './subclass-features.js';
 import { subclassChoiceFields } from './subclass-choices.js';
-import { proposedSubclasses, fromOdyssey } from './odyssey.js';
+import { proposedSubclasses, fromOdyssey, odysseyActive, faithPerLevel, faithDetail, faithReset } from './odyssey.js';
 import { FEAT_SLOT_ORDER } from '../state/schema.js';
 import { DD_RULES } from '../data/dd-rules.js';
 import { FEATS_DATA } from '../data/feats.js';
@@ -256,6 +257,8 @@ export function planLevelUp(character) {
     const add = (title, lines) => { if (lines.length) sections.push({ title, lines }); };
     const general = [`Dés de vie : ${to} au total (un de plus ; les dés déjà utilisés ne changent pas).`];
     if (dTo.pb !== dFrom.pb) general.push(`Bonus de maîtrise : ${signed(dFrom.pb)} → ${signed(calculateProficiencyBonus(to))} (calculé par la fiche).`);
+    const faith = faithPlan(record, dTo);
+    if (faith) general.push(faith.line);
     add('Général', general);
     add('Dons', featLines(next, to));
     if (classKnown) {
@@ -265,18 +268,37 @@ export function planLevelUp(character) {
     } else {
         add('Classe', ['Classe non reconnue (ou multiclasse) : seuls le niveau et les points de vie sont calculés ; vérifiez le reste dans le manuel.']);
     }
-    return { canLevel: true, from: dFrom.level, to, classKnown, hp, sections };
+    return { canLevel: true, from: dFrom.level, to, classKnown, hp, sections, faith: faith?.value ?? null };
+}
+
+/**
+ * Points de Foi au nouveau niveau (mode Odyssée actif seulement ; mode coupé : null).
+ * @returns {{ value: string|null, line: string }|null} value : nouvelle valeur de la case, ou null
+ *   si elle contient du texte libre (à remettre à la main)
+ */
+function faithPlan(record, dTo) {
+    if (!odysseyActive(record)) return null;
+    const faith = faithPerLevel(dTo);
+    const value = faithReset(record.heroic_inspiration, faith.total);
+    return {
+        value,
+        line: value
+            ? `Points de Foi : la case repart de 0 et reçoit ${faithDetail(faith)} → ${value}.`
+            : `Points de Foi : ${faithDetail(faith)} au nouveau niveau ; la case contient du texte, remettez-la à la main.`
+    };
 }
 
 /**
  * Modifications à enregistrer.
  * @param {ReturnType<typeof planLevelUp>} plan
  * @param {{ mode: 'fixed'|'roll', roll?: number|string, addToCurrent?: boolean }} choice
- * @returns {Object} patch (char_level ; hp_max si c'est un nombre seul et le gain connu ; hp_current sur demande)
+ * @returns {Object} patch (char_level ; hp_max si c'est un nombre seul et le gain connu ; hp_current sur demande ;
+ *   heroic_inspiration : points de Foi du nouveau niveau, mode Odyssée actif)
  */
 export function levelUpPatch(plan, choice = {}) {
     if (!plan?.canLevel) return {};
     const patch = { char_level: String(plan.to) };
+    if (plan.faith) patch.heroic_inspiration = plan.faith;
     const gain = hitPointGain(plan.hp, choice);
     if (gain === null) return patch;
     if (plan.hp.maxIsNumber) patch.hp_max = String(plan.hp.oldMax + gain);

@@ -44,7 +44,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "« Mode Odyssée » décoché : ce qui reste",
-                text: "Rien n'est retiré de votre fiche. Un Centaure reste un Centaure, avec ses traits et ses calculs, et la fiche vous dit ce qu'elle garde. L'encadré « Odyssée des Seigneurs Dragons » reste affiché s'il contient un destin ou des points de renommée ; vide, il disparaît. La case « Inspiration héroïque ou points de Foi » s'appelle alors « Inspiration héroïque »."
+                text: "Rien n'est retiré de votre fiche. Un Centaure reste un Centaure, avec ses traits et ses calculs, et la fiche vous dit ce qu'elle garde. L'encadré « Odyssée des Seigneurs Dragons » reste affiché s'il contient un destin ou des points de renommée ; vide, il disparaît. La case « Points de Foi » de l'onglet Combat devient « Inspiration héroïque » : une seule à la fois, comme le veut le manuel."
             },
             {
                 title: "« Mode Odyssée » décoché : retrouver un choix",
@@ -191,6 +191,10 @@ export const HELP_SECTIONS = Object.freeze([
             {
                 title: "Les cases calculées",
                 text: "La classe d'armure, l'initiative, la perception passive et le bonus de maîtrise sont calculés par la fiche, d'après vos caractéristiques, votre niveau, votre armure et vos dons."
+            },
+            {
+                title: "Points de Foi ou Inspiration héroïque",
+                text: "Campagne de l'Odyssée (case « Mode Odyssée » cochée), la case s'appelle « Points de Foi » : à chaque niveau, elle repart de 0 et reçoit votre bonus de maîtrise plus votre modificateur de Sagesse (au moins 1). La pastille dorée dessous donne ce nombre ; « Passer au niveau » remet la case pour vous. Mode décoché, c'est « Inspiration héroïque » : les boutons − et + vont seulement de 0 à 1."
             },
             {
                 title: "Les points de vie",
@@ -392,7 +396,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Passer au niveau suivant",
-                text: "Fiche modifiable, le bouton + à côté de la case Niveau ouvre la fenêtre « Passer au niveau », suivie du numéro du nouveau niveau. Elle liste ce qui change : points de vie, bonus de maîtrise, dons, capacités de classe, sorts."
+                text: "Fiche modifiable, le bouton + à côté de la case Niveau ouvre la fenêtre « Passer au niveau », suivie du numéro du nouveau niveau. Elle liste ce qui change : points de vie, bonus de maîtrise, dons, capacités de classe, sorts. Avec le mode Odyssée, elle remet aussi vos points de Foi."
             },
             {
                 title: "Les points de vie gagnés",

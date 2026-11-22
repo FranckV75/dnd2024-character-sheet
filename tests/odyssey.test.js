@@ -10,7 +10,8 @@ import {
     ODYSSEY_MODE_KEY, ODYSSEY_SOURCE, ODYSSEY_MODE_LABEL, STATUS_ROOM, STATUS_ROOM_OPEN, STATUS_ROOM_NARROW, fromOdyssey,
     odysseyActive, setOdysseyModePatch, odysseyUse, odysseyKept, proposedSpecies, proposedSubclasses,
     hiddenFeatIds, odysseyBoxUseful, inspirationWording, odysseyModeHint, odysseyModeMessage,
-    odysseyDropped, odysseyDroppedMessage
+    odysseyDropped, odysseyDroppedMessage, faithPerLevel, faithMention, faithSentence, faithHint, faithReset,
+    INSPIRATION_ONLY_ONE
 } from '../js/rules/odyssey.js';
 import { DD_RULES } from '../js/data/dd-rules.js';
 import { FEATS_DATA } from '../js/data/feats.js';
@@ -307,7 +308,13 @@ describe('Mode Odyssée : fenêtre « Passer au niveau »', () => {
 
     test('Le reste de la fenêtre ne dépend pas du mode (une fiche de l\u2019Odyssée garde ses capacités)', () => {
         const hero = { char_species: 'Centaure', char_class: 'Guerrier', char_subclass: "L'Hoplite", char_level: '6', hd_type: 'd10', hp_max: '50', hp_current: '50' };
-        assert.deepEqual(planLevelUp(sheet({ ...hero, ...OFF })), planLevelUp(sheet(hero)));
+        // Seule différence : les points de Foi, propres au mode actif (ligne « Points de Foi » et valeur)
+        const withoutFaith = (plan) => ({
+            ...plan, faith: null,
+            sections: plan.sections.map((section) => ({ ...section, lines: section.lines.filter((line) => !line.startsWith('Points de Foi')) }))
+        });
+        assert.deepEqual(planLevelUp(sheet({ ...hero, ...OFF })), withoutFaith(planLevelUp(sheet(hero))));
+        assert.equal(planLevelUp(sheet(hero)).faith, '3/3');
         assert.ok(planLevelUp(sheet({ ...hero, ...OFF })).sections.some((section) => section.title === 'Sous-classe'));
     });
 });
@@ -349,9 +356,34 @@ describe('Mode Odyssée : encadré de l\'onglet 3 et libellé d\'Inspiration', (
         assert.equal(odysseyBoxUseful(sheet({ ...OFF, char_species: 'Centaure' })), false);
     });
 
-    test('Libellé : « ou points de Foi » seulement quand le mode est actif', () => {
-        assert.deepEqual(inspirationWording(sheet()), { label: 'Inspiration héroïque ou points de Foi', noun: "point d'Inspiration ou de Foi" });
-        assert.deepEqual(inspirationWording(sheet(OFF)), { label: 'Inspiration héroïque', noun: "point d'Inspiration" });
+    test('Libellé : « Points de Foi » quand le mode est actif, « Inspiration héroïque » (une seule) sinon', () => {
+        assert.deepEqual(inspirationWording(sheet()), { label: 'Points de Foi', noun: 'point de Foi', max: 99 });
+        assert.deepEqual(inspirationWording(sheet(OFF)), { label: 'Inspiration héroïque', noun: 'Inspiration héroïque', max: 1 });
+    });
+
+    test('Points de Foi par niveau : maîtrise + Sagesse, au moins 1', () => {
+        assert.deepEqual(faithPerLevel({ pb: 3, mods: { wis: 2 } }), { total: 5, pb: 3, wis: 2, raised: false });
+        assert.deepEqual(faithPerLevel({ pb: 2, mods: { wis: -3 } }), { total: 1, pb: 2, wis: -3, raised: true });
+        assert.equal(faithPerLevel(deriveCharacter(sheet({ char_level: '5', wis_score: '14' }))).total, 5);
+        assert.equal(faithMention(faithPerLevel({ pb: 3, mods: { wis: 2 } })), '+5 par niveau');
+        assert.equal(faithSentence(faithPerLevel({ pb: 3, mods: { wis: 2 } })),
+            'Points de Foi : à chaque niveau, la case repart à 5 (maîtrise +3, Sagesse +2).');
+        assert.match(faithHint(faithPerLevel({ pb: 3, mods: { wis: 2 } })), /« Passer au niveau » le fait pour vous\.$/);
+        // Pire cas (bonus +6, Sagesse -5, minimum) : la phrase tient dans la barre du haut
+        const worst = faithSentence(faithPerLevel({ pb: 6, mods: { wis: -5 } }));
+        assert.ok(worst.length <= STATUS_ROOM, worst);
+    });
+
+    test('Remise au passage de niveau : « N/N », sauf texte libre', () => {
+        assert.equal(faithReset('', 4), '4/4');
+        assert.equal(faithReset('1/3', 4), '4/4');
+        assert.equal(faithReset(' 7 ', 4), '4/4');
+        assert.equal(faithReset('2 (béni)', 4), null);
+    });
+
+    test('Inspiration héroïque (mode coupé) : la phrase dite quand « + » est refusé', () => {
+        assert.match(INSPIRATION_ONLY_ONE, /^Inspiration héroïque : une seule à la fois ;/);
+        assert.ok(INSPIRATION_ONLY_ONE.length <= STATUS_ROOM, INSPIRATION_ONLY_ONE.length);
     });
 
     test('Le libellé du mode actif est celui écrit dans index.html', () => {
@@ -732,7 +764,7 @@ describe('Mode Odyssée : écran, impression et notice', () => {
         assert.ok(section('role').find((entry) => entry.title === '« Odyssée des Seigneurs Dragons »').text.includes(`« ${ODYSSEY_MODE_LABEL} »`));
     });
 
-    test('Nouveautés 4.44.0 : la case, ce qui reste en place, et les deux libellés d\u2019Inspiration', () => {
+    test('Nouveautés 4.44.0 et 4.45.0 : la case, ce qui reste en place, et les deux libellés de la case Foi / Inspiration', () => {
         const entry = WHATS_NEW.find((item) => item.version === '4.44.0');
         assert.ok(entry, 'entrée 4.44.0');
         const text = entry.items.join(' ');
@@ -740,7 +772,9 @@ describe('Mode Odyssée : écran, impression et notice', () => {
         assert.ok(text.includes(`« ${ODYSSEY_MODE_LABEL} »`));
         assert.match(text, /cochée au départ/);
         assert.match(text, /reste en place/);
-        assert.ok(text.includes(`« ${inspirationWording({}).label} »`));
-        assert.ok(text.includes(`« ${inspirationWording({ [ODYSSEY_MODE_KEY]: 'off' }).label} »`));
+        const next = WHATS_NEW.find((item) => item.version === '4.45.0').items.join(' ');
+        assert.ok(next.includes(`« ${inspirationWording({}).label} »`));
+        assert.ok(next.includes(`« ${inspirationWording({ [ODYSSEY_MODE_KEY]: 'off' }).label} »`));
+        assert.match(next, /une seule à la fois/);
     });
 });

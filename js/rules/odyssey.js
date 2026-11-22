@@ -12,6 +12,8 @@
 // Mode coupé : les 6 espèces, les 12 sous-classes et le style de combat de l'Odyssée ne sont plus
 // PROPOSÉS dans les listes. Ce que la fiche utilise déjà reste proposé, affiché et calculé : aucune
 // règle de calcul ne lit ce mode. L'encadré « Odyssée » de l'onglet 3 n'est caché que s'il est vide.
+// Case heroic_inspiration (onglet Combat) : « Points de Foi » mode actif (maîtrise + Sagesse à chaque
+// niveau, remis par « Passer au niveau »), « Inspiration héroïque » mode coupé (une seule à la fois).
 // Repère de l'Odyssée dans les données : champ source = "Odyssée" (js/data/dd-rules.js pour les
 // espèces et les sous-classes, js/data/feats.js pour le style Hoplite).
 // Fonctions pures. Testé : tests/odyssey.test.js.
@@ -23,6 +25,7 @@ import { FEAT_SLOT_ORDER } from '../state/schema.js';
 import { classSlug } from './identity.js';
 import { subclassId } from './class-features.js';
 import { speciesSlug } from './species.js';
+import { signed } from './numbers.js';
 
 export const ODYSSEY_MODE_KEY = 'odyssey_mode';
 /** Valeur du champ « source » des données venues de L'Odyssée des Seigneurs Dragons */
@@ -176,15 +179,73 @@ export function odysseyBoxUseful(record) {
 }
 
 /**
- * Libellé de la case d'Inspiration (onglet Combat) et nom d'un de ses points (boutons − / +) :
- * les points de Foi viennent de l'Odyssée (règle « Sacrifices et prières »).
+ * Case de l'onglet Combat (clé heroic_inspiration, inchangée) : son libellé, le nom d'un de ses
+ * points (boutons − / +) et son maximum.
+ *  - Mode actif : « Points de Foi » (guide du MJ de l'Odyssée, « Sacrifices et prières » : ils
+ *    remplacent l'Inspiration héroïque de la campagne). Pas de maximum fixe : voir faithPerLevel.
+ *  - Mode coupé : « Inspiration héroïque » (manuel 2024) : on l'a ou on ne l'a pas, jamais plus
+ *    d'une à la fois (une deuxième se donne à un autre personnage joueur).
  * @param {Object} record
- * @returns {{ label: string, noun: string }}
+ * @returns {{ label: string, noun: string, max: number }}
  */
 export function inspirationWording(record) {
     return odysseyActive(record)
-        ? { label: 'Inspiration héroïque ou points de Foi', noun: "point d'Inspiration ou de Foi" }
-        : { label: 'Inspiration héroïque', noun: "point d'Inspiration" };
+        ? { label: 'Points de Foi', noun: 'point de Foi', max: FAITH_MAX }
+        : { label: 'Inspiration héroïque', noun: 'Inspiration héroïque', max: 1 };
+}
+
+/** Plafond des boutons − / + des points de Foi (le même qu'avant pour la case) */
+export const FAITH_MAX = 99;
+/** Points de Foi gagnés au moins à chaque niveau (le guide ne dit rien : choix de Franck, 22/11/2026) */
+export const FAITH_MIN = 1;
+
+/** Phrase dite quand « + » est refusé : Inspiration héroïque déjà là (mode coupé) */
+export const INSPIRATION_ONLY_ONE = "Inspiration héroïque : une seule à la fois ; une autre se donne à un joueur qui n'en a pas.";
+
+/**
+ * Points de Foi de l'Odyssée : à chaque niveau, la réserve repart de 0 et reçoit bonus de maîtrise
+ * + modificateur de Sagesse (au moins FAITH_MIN).
+ * @param {{ pb: number, mods: { wis: number } }} derived - issu de deriveCharacter
+ * @returns {{ total: number, pb: number, wis: number, raised: boolean }} raised : le minimum a joué
+ */
+export function faithPerLevel(derived) {
+    const pb = Number(derived?.pb) || 0;
+    const wis = Number(derived?.mods?.wis) || 0;
+    const sum = pb + wis;
+    return { total: Math.max(FAITH_MIN, sum), pb, wis, raised: sum < FAITH_MIN };
+}
+
+/** « 5 (maîtrise +3, Sagesse +2) » ; « 1 (maîtrise +2, Sagesse -2, minimum 1) » */
+export function faithDetail(faith) {
+    return `${faith.total} (maîtrise ${signed(faith.pb)}, Sagesse ${signed(faith.wis)}${faith.raised ? `, minimum ${FAITH_MIN}` : ''})`;
+}
+
+/** Pastille sous la case (mode actif) */
+export function faithMention(faith) {
+    return `+${faith.total} par niveau`;
+}
+
+/** Phrase de la pastille au toucher (barre du haut, au plus STATUS_ROOM caractères) */
+export function faithSentence(faith) {
+    return `Points de Foi : à chaque niveau, la case repart à ${faithDetail(faith)}.`;
+}
+
+/** Infobulle de la pastille (souris) : la phrase, et qui s'en charge */
+export function faithHint(faith) {
+    return `${faithSentence(faith)} « Passer au niveau » le fait pour vous.`;
+}
+
+/**
+ * Nouvelle valeur de la case au passage de niveau (mode actif) : « N/N », ou null si la case
+ * contient du texte libre (« 2 (béni) »), qui n'est jamais réécrit.
+ * @param {unknown} value - valeur actuelle de heroic_inspiration
+ * @param {number} total - points du nouveau niveau
+ * @returns {string|null}
+ */
+export function faithReset(value, total) {
+    const text = String(value ?? '').trim();
+    if (text === '' || /^\d+$/.test(text) || /^\d+\s*\/\s*\d+$/.test(text)) return `${total}/${total}`;
+    return null;
 }
 
 /** « Cette fiche garde : Centaure, style Hoplite. » ('' si elle ne garde rien) */
