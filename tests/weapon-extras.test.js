@@ -6,7 +6,7 @@
  */
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import {
     EXTRA_DAMAGE_KEY, EXTRA_DAMAGE_MAX, EXTRA_REASON_MAX, EXTRA_DAMAGE_MODES, DAMAGE_DIE_SIZES,
     normalizeExtraDamage, validateExtraLine, validateExtraDamageList, readExtraDamage,
@@ -393,8 +393,17 @@ describe('Dégâts en plus : remise à zéro au repos', () => {
     });
 });
 
-describe('Dégâts en plus : interface (js/ui/weapons.js)', () => {
-    const ui = readFileSync(new URL('../js/ui/weapons.js', import.meta.url), 'utf8');
+describe('Dégâts en plus : interface (js/ui/weapons.js et ses morceaux, js/ui/weapons/)', () => {
+    // Le tableau des armes est découpé en morceaux : chaque test lit celui qui porte ce
+    // qu'il vérifie ; `ui` (tous les fichiers, ceux à venir compris) sert aux « jamais nulle part »
+    const read = (path) => readFileSync(new URL(`../js/ui/${path}`, import.meta.url), 'utf8');
+    const pieces = readdirSync(new URL('../js/ui/weapons/', import.meta.url)).filter(name => name.endsWith('.js'));
+    const ui = [read('weapons.js'), ...pieces.map(name => read(`weapons/${name}`))].join('\n');
+    const shared = read('weapons/shared.js');
+    const rows = read('weapons/rows.js');
+    const damage = read('weapons/damage.js');
+    const config = read('weapons/config.js');
+    const extras = read('weapons/config-extras.js');
     const css = readFileSync(new URL('../css/weapons.css', import.meta.url), 'utf8');
 
     test('le texte du joueur n\'est jamais posé comme du HTML', () => {
@@ -402,37 +411,39 @@ describe('Dégâts en plus : interface (js/ui/weapons.js)', () => {
     });
 
     test('pastille : même classe que le bouton Rage, utilisable fiche verrouillée (comme lui)', () => {
-        assert.match(ui, /class: 'btn-chip weapons-buff weapons-extra-pill'/);
-        const toggle = ui.slice(ui.indexOf('function toggleExtra('), ui.indexOf('function writeExtraPills('));
+        assert.match(damage, /class: 'btn-chip weapons-buff weapons-extra-pill'/);
+        const toggle = damage.slice(damage.indexOf('function toggleExtra('), damage.indexOf('function writeExtraPills('));
         assert.ok(toggle.length > 100);
         assert.doesNotMatch(toggle, /isLocked\(/, 'contrôle de jeu : pas de verrou, comme les bonus de combat');
         assert.match(toggle, /setStatus\(frenchSpaces\(/, 'une phrase dans la barre du haut à chaque toucher');
     });
 
     test('réglage « Quand » : un libellé pour chaque mode des règles, et rien d\'autre', () => {
-        const labels = ui.match(/const EXTRA_MODE_LABELS = \{([^}]*)\};/)[1];
+        const labels = extras.match(/const EXTRA_MODE_LABELS = \{([^}]*)\};/)[1];
         const keys = [...labels.matchAll(/(\w+): '/g)].map(match => match[1]);
         assert.deepEqual(keys, EXTRA_DAMAGE_MODES);
-        assert.match(ui, /const EXTRA_MODE_OPTIONS = EXTRA_DAMAGE_MODES\.map\(/);
+        assert.match(extras, /const EXTRA_MODE_OPTIONS = EXTRA_DAMAGE_MODES\.map\(/);
     });
 
     test('libellés de la fenêtre : ceux que cite le mode d\'emploi', () => {
-        for (const label of ['Dégâts en plus', 'Ajouter un dégât en plus', 'Toujours', 'À allumer']) assert.ok(ui.includes(`'${label}'`), label);
-        assert.match(ui, /text: frenchSpaces\(EXTRA_HELP\)/, 'aide affichée dans la fenêtre, avec les espaces insécables');
+        for (const label of ['Dégâts en plus', 'Ajouter un dégât en plus', 'Toujours', 'À allumer']) assert.ok(extras.includes(`'${label}'`), label);
+        assert.match(extras, /text: frenchSpaces\(EXTRA_HELP\)/, 'aide affichée dans la fenêtre, avec les espaces insécables');
+        assert.match(config, /extras\.box\);/, 'la rubrique est posée dans la fenêtre de configuration');
     });
 
     test('saisie refusée : le message est posé au-dessus de la ligne fautive, jamais en bas de la rubrique', () => {
-        const box = ui.slice(ui.indexOf('const extraBox = el('), ui.indexOf('renderExtras();', ui.indexOf('const extraBox = el(')));
+        const box = extras.slice(extras.indexOf('const extraBox = el('), extras.indexOf('renderExtras();', extras.indexOf('const extraBox = el(')));
         assert.ok(box.length > 100);
         assert.doesNotMatch(box, /extraError/, 'plus de place fixe sous le bouton « Ajouter » (hors de vue quand la fenêtre défile)');
-        const show = ui.slice(ui.indexOf('function showExtraError('), ui.indexOf('const body = el('));
+        const show = extras.slice(extras.indexOf('function showExtraError('), extras.indexOf('return {', extras.indexOf('function showExtraError(')));
+        assert.ok(show.length > 100);
         assert.match(show, /extraList\.insertBefore\(extraError, bad \? bad\.line : extraList\.firstChild\)/);
         assert.match(show, /focus\(\{ preventScroll: true \}\)/, 'le curseur ne fait pas défiler la fenêtre loin du message');
         assert.match(show, /zone\.scrollTop \+=/, 'la zone défile jusqu\'au message et à sa ligne');
     });
 
     test('corbeille d\'une ligne : le focus va à une corbeille ou au bouton d\'ajout, jamais dans un champ (clavier de tablette)', () => {
-        const remove = ui.slice(ui.indexOf('const removeBtn = el('), ui.indexOf('return {', ui.indexOf('const removeBtn = el(')));
+        const remove = extras.slice(extras.indexOf('const removeBtn = el('), extras.indexOf('return {', extras.indexOf('const removeBtn = el(')));
         assert.ok(remove.length > 100);
         assert.match(remove, /\(extraControls\[Math\.min\(i, extras\.length - 1\)\]\?\.remove \|\| extraAdd\)\.focus\(\)/);
         assert.doesNotMatch(remove, /querySelector\('input'\)/);
@@ -450,8 +461,8 @@ describe('Dégâts en plus : interface (js/ui/weapons.js)', () => {
 
     test('toucher les dégâts : ils s\'écrivent en entier sous l\'arme, la barre du haut ne dit qu\'une phrase courte', () => {
         // Le corps de la fonction seulement (sans le commentaire de la suivante)
-        const start = ui.indexOf('function toggleDamageDetail(');
-        const toggle = ui.slice(start, ui.indexOf('\n    }\n', start));
+        const start = damage.indexOf('function toggleDamageDetail(');
+        const toggle = damage.slice(start, damage.indexOf('\n}\n', start));
         assert.ok(toggle.length > 100);
         assert.doesNotMatch(toggle, /isLocked\(/, 'lecture seule : ouvert fiche verrouillée aussi');
         assert.doesNotMatch(toggle, /textContent/, 'le texte des dégâts ne va plus dans la barre du haut (une ligne, il y était coupé)');
@@ -464,7 +475,7 @@ describe('Dégâts en plus : interface (js/ui/weapons.js)', () => {
             assert.ok(phrase.length <= 60, phrase);
             for (const sentence of phrase.split(/(?<=\.)\s+/)) assert.ok(sentence.length <= 30, sentence);
         }
-        const detail = ui.slice(ui.indexOf('function writeDamageDetail('), ui.indexOf('function toggleExtra('));
+        const detail = damage.slice(damage.indexOf('function writeDamageDetail('), damage.indexOf('function toggleExtra('));
         assert.match(detail, /setAttribute\('role', 'button'\)/, 'case des dégâts : un vrai bouton, au clavier aussi');
         assert.match(detail, /setAttribute\('aria-expanded', String\(open\)\)/);
         assert.match(detail, /text\.textContent = full/, 'texte du joueur : jamais du HTML');
@@ -474,21 +485,27 @@ describe('Dégâts en plus : interface (js/ui/weapons.js)', () => {
     });
 
     test('filtre actif : la ligne où l\'on écrit reste affichée quand le focus passe à l\'une de ses pastilles', () => {
-        const pin = ui.slice(ui.indexOf('const inRow = '), ui.indexOf('return row;', ui.indexOf('const inRow = ')));
+        const pin = rows.slice(rows.indexOf('const inRow = '), rows.indexOf('return row;', rows.indexOf('const inRow = ')));
+        assert.ok(pin.length > 100);
         assert.match(pin, /const inRow = \(node\) => tr\.contains\(node\) \|\| extraTr\.contains\(node\);/);
         assert.match(pin, /for \(const part of \[tr, extraTr\]\)/, 'la ligne des pastilles compte comme la ligne de l\'arme');
         assert.match(pin, /if \(inRow\(event\.relatedTarget\)\) return;/);
     });
 
     test('phrases de la barre du haut : jamais plus longues que la ligne, pastille annoncée seulement si elle est nouvelle', () => {
-        assert.match(ui, /const fitStatus = \(full, short\) => \(full\.length <= STATUS_ROOM \? full : short\);/);
+        assert.match(shared, /const fitStatus = \(full, short\) => \(full\.length <= STATUS_ROOM \? full : short\);/);
         // Une seule largeur de barre pour toute la fiche (js/data/status-bar.js)
-        assert.match(ui, /import \{ STATUS_ROOM \} from '\.\.\/data\/status-bar\.js';/);
+        assert.match(shared, /import \{ STATUS_ROOM \} from '\.\.\/\.\.\/data\/status-bar\.js';/);
         assert.doesNotMatch(ui, /const STATUS_ROOM\b/);
-        const toggle = ui.slice(ui.indexOf('function toggleExtra('), ui.indexOf('function writeExtraPills('));
+        assert.equal(ui.split('const fitStatus = ').length, 2, 'une seule définition pour tous les morceaux');
+        const toggle = damage.slice(damage.indexOf('function toggleExtra('), damage.indexOf('function writeExtraPills('));
         assert.match(toggle, /setStatus\(frenchSpaces\(fitStatus\(/, 'arme citée seulement si la phrase tient sur la ligne');
-        const apply = ui.slice(ui.indexOf("label: 'Appliquer'"));
-        assert.match(apply, /extras\.filter\(line => line\.mode === 'toggle' && !line\.wasPill\)\.length/,
+        // Bouton « Appliquer » de la fenêtre : applyConfig, jusqu'à la fin du fichier
+        assert.match(config, /label: 'Appliquer', primary: true, onClick: \(\) => applyConfig\(ctx, index, form\)/);
+        const apply = config.slice(config.indexOf('function applyConfig('));
+        assert.ok(apply.length > 100);
+        assert.match(apply, /const added = extras\.addedPills\(\);/);
+        assert.match(extras, /addedPills: \(\) => extras\.filter\(line => line\.mode === 'toggle' && !line\.wasPill\)\.length/,
             'une pastille déjà là, dont on corrige la raison, n\'est pas annoncée comme ajoutée');
         assert.match(apply, /setStatus\(frenchSpaces\(fitStatus\(/);
         assert.doesNotMatch(apply, /Pastille \$\{/, 'le libellé de la pastille (jusqu\'à 50 caractères) n\'allonge plus la phrase');
