@@ -59,7 +59,8 @@ js/
 │   ├── whats-new.js    « Nouveautés » : 3 à 6 lignes par version, la plus récente d'abord ; une
 │   │                   entrée par version publiée (testé pour la version de version.js)
 │   ├── faith-favors.js Faveurs divines des points de Foi (1, 3, 5 points), prière et sacrifice
-│   │                   (guide du MJ de l'Odyssée p. 92, résumé avec nos mots)
+│   │                   (guide du MJ de l'Odyssée p. 92) ; dieux de Thyléa, domaine et faveurs
+│   │                   (guide du joueur p. 9-10, fiche de la table) ; résumés avec nos mots
 │   ├── examples.js     Personnages d'exemple fictifs (Guerrier 3, Magicienne 5), au format de la fiche
 │   ├── feats.js        Dons (Origine, Général, Style de combat, Épique)
 │   ├── feat-spells.js  Sorts permis par les dons à sorts (tirés de data/spells.json, testés)
@@ -185,7 +186,8 @@ js/
     ├── concentration.js  Ligne « Concentration » de l'encadré États (css/conditions.css)
     ├── odyssey.js      Case « Mode Odyssée » du menu « Gestion » (css/toolbar.css), encadré Odyssée
     │                   de l'onglet 3 caché quand il est inutile, case « Points de Foi » et sa
-    │                   pastille « +5 par niveau » (qui ouvre la fenêtre des faveurs), ou
+    │                   pastille « +5 par niveau » (qui ouvre la fenêtre des faveurs, puis celle
+    │                   des dieux de Thyléa), ou
     │                   « Inspiration héroïque »
     ├── stepper.js · number-pad.js   Boutons − / + à appui long et pavé de chiffres (partagés)
     ├── modal.js · autocomplete.js · cell-text.js · dom.js   (briques partagées)

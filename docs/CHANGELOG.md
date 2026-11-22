@@ -17,6 +17,10 @@ Toutes les modifications notables du projet sont documentées dans ce fichier. L
   et 5 points, marquées « Possible » ou « Il manque N points » d'après la case, puis comment les
   demander (prière, sacrifice) et le rôle du MJ. Résumé avec nos mots (`js/data/faith-favors.js`) ;
   la fenêtre ne change rien à la fiche.
+- Bouton « Les dieux de Thyléa » dans cette fenêtre (demande de Franck) : titans, Cinq Dieux et
+  Narsus, avec domaine et alignement (guide du joueur de l'Odyssée p. 9-10), une présentation
+  résumée et les faveurs qu'ils accordent (fiche « Exemples d'atouts liés au portfolio » de la
+  table, photo de Franck du 22/11/2026). « Retour » ramène aux faveurs.
 - « Passer au niveau », mode Odyssée actif : la case repart de 0 et reçoit les points du nouveau
   niveau, écrits « N/N » comme les fiches de la table ; une case en texte libre n'est jamais
   réécrite (la fenêtre le dit).

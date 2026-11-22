@@ -41,7 +41,7 @@ XP~~. Fait en 4.44.0 (21/11/2026, publiée le 22/11/2026) : ~~mode Odyssée dés
 « Mode Odyssée » du menu « Gestion », d'après les réponses de Franck du 21/11/2026, section 6 de
 l'étude). Fait en 4.45.0 (22/11/2026, **pas encore publiée**) : ~~« Points de Foi » (maîtrise +
 Sagesse par niveau, remis par « Passer au niveau »), fenêtre des faveurs à 1, 3 et 5 points
-(toucher la pastille) et Inspiration héroïque limitée à 1 mode coupé~~. Faite le 21/11/2026 : ~~étude du multiclassage~~ (`docs/etudes/MULTICLASSAGE.md`).
+(toucher la pastille) avec le rappel des dieux de Thyléa et Inspiration héroïque limitée à 1 mode coupé~~. Faite le 21/11/2026 : ~~étude du multiclassage~~ (`docs/etudes/MULTICLASSAGE.md`).
 Reste :
 
 1. **Multiclassage** : l'étude est faite et contre-vérifiée, rien n'est construit. Elle conseille
