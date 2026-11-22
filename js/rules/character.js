@@ -15,6 +15,7 @@ import {
 } from './logic.js';
 import { reachedFeatIds } from './feats.js';
 import { weaponReach, isUnarmedStrike } from './weapons.js';
+import { rageBlockedByArmor } from './rage.js';
 import { activeExtraDamage } from './weapon-extras.js';
 import { divineFuryDie } from './subclass-features.js';
 import { subclassInitiativeBonuses, subclassSkillBonus, subclassWeaponStat, danceUnarmedDie } from './subclass-calcs.js';
@@ -467,6 +468,9 @@ export function hunterMarkDie({ level, classSlug }) {
  *          null si l'arme n'est pas rattachée au manuel (pas de calcul possible)
  */
 export function computeWeapon(weapon, stats, buffs = {}) {
+    // Rage sans effet avec une armure lourde équipée (PHB 2024 p. 51) : ni ses dégâts, ni la Fureur
+    // divine, ni la Frénésie (le bouton reste allumé, js/rules/rage.js)
+    if (buffs.rage && rageBlockedByArmor(stats)) buffs = { ...buffs, rage: false };
     const name = (weapon?.name || '').toString().replace(/<[^>]*>/g, '').trim();
     if (!weapon?.atkKey || !name) return null;
 

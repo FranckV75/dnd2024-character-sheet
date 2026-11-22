@@ -14,6 +14,7 @@
 import { applyDamage, concentrationDc } from './hit-points.js';
 import { activeConditions } from './conditions.js';
 import { signed } from './numbers.js';
+import { rageInEffect } from './rage.js';
 
 export const CONCENTRATION_KEY = 'concentration';
 const MAX_LENGTH = 80;
@@ -78,7 +79,8 @@ export function concentrationView(record, derived) {
         bonus: Number(derived?.saves?.con?.bonus) || 0,
         advantage: (derived?.feats ?? []).includes('mage_de_guerre'),
         brokenBy: BREAKING.find((id) => conditions.includes(id))
-            ?? (derived?.classSlug === 'barbarian' && record?.combat_buffs?.rage === true ? 'rage' : null),
+            // Rage sans effet en armure lourde (js/rules/rage.js) : elle ne rompt rien
+            ?? (derived?.classSlug === 'barbarian' && rageInEffect(record, derived) ? 'rage' : null),
         safe: derived?.classSlug === 'ranger' && (Number(derived?.level) || 0) >= 13 && HUNTERS_MARK.test(spell)
     };
 }

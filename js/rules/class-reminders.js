@@ -8,7 +8,8 @@
 // autres repères (subclass-calcs.js, subclass-combat.js, class-features.js).
 //
 // Format FeatNote (feat-effects.js) avec classFeature: true ; mention : texte de la pastille.
-//  - buff 'rage' : rappel grisé (inactive) tant que le bouton Rage est éteint ;
+//  - buff 'rage' : rappel grisé (inactive) tant que le bouton Rage est éteint, ou qu'une armure
+//    lourde est équipée (Rage sans effet, js/rules/rage.js) ;
 //  - manual : la valeur saisie n'est jamais modifiée (« dont +4 ») ;
 //  - check : case de maîtrise à cocher (« À vérifier »).
 // Fonctions pures.
@@ -16,6 +17,7 @@
 
 import { ABILITY_IDS, SKILLS } from '../data/constants.js';
 import { signed } from './numbers.js';
+import { rageInEffect } from './rage.js';
 
 const ABILITY_WORDS = Object.freeze({
     str: 'de Force', dex: 'de Dextérité', con: 'de Constitution', int: "d'Intelligence", wis: 'de Sagesse', cha: 'de Charisme'
@@ -119,7 +121,7 @@ export function classReminderNotes(derived, record = {}) {
     const zones = {};
     const level = Number(derived?.level) || 1;
     const ctx = { derived, record, level };
-    const raging = record?.combat_buffs?.rage === true;
+    const raging = rageInEffect(record, derived);
     for (const [classSlug, subclass, minLevel, featId, featName, where, mention, text, options = {}] of REMINDERS) {
         if (derived?.classSlug !== classSlug || level < minLevel) continue;
         if (subclass && derived.subclass !== subclass) continue;

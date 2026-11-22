@@ -13,6 +13,7 @@
 import { parseWeaponConfig } from './logic.js';
 import { reachedFeatIds, subclassOf, characterLevel } from './feats.js';
 import { EXTRA_DAMAGE_KEY, DAMAGE_DIE_SIZES, validateExtraDamageList } from './weapon-extras.js';
+import { rageBlockedByArmor } from './rage.js';
 
 export const WEAPON_FILTERS = ['all', 'simple', 'martial', 'melee', 'ranged', 'magic'];
 
@@ -339,10 +340,12 @@ export function buffsForClass(slug) {
 /**
  * Bonus réellement appliqués aux dégâts : seulement ceux que la classe actuelle (et, si le
  * personnage est fourni, ses dons) propose ; un bonus resté actif après un changement de
- * classe ou de don n'est plus compté.
+ * classe ou de don n'est plus compté. Rage allumée avec une armure lourde équipée (derived.wornArmor) :
+ * pas comptée (PHB 2024 p. 51, js/rules/rage.js), le bouton reste allumé.
  * @param {string} slug
  * @param {Object} buffs - combat_buffs
  * @param {Object} [character] - pour les bonus ouverts par un don (Cogneur lourd, Expert de la charge)
+ * @param {Object} [derived] - deriveCharacter(character) : sous-classe, armure lourde portée
  * @returns {{ rage: boolean, sneakAttack: boolean, hunterMark: boolean, heavyWeaponMaster: boolean, charger: boolean,
  *   dueling: boolean, peerlessAim: boolean, nightSpirit: boolean }}
  */
@@ -350,7 +353,7 @@ export function effectiveBuffs(slug, buffs, character, derived) {
     const allowed = character ? buffsForCharacter(slug, character, derived) : buffsForClass(slug);
     const on = (key) => allowed.includes(key) && buffs?.[key] === true;
     return {
-        rage: on('rage'), sneakAttack: on('sneakAttack'), hunterMark: on('hunterMark'),
+        rage: on('rage') && !rageBlockedByArmor(derived), sneakAttack: on('sneakAttack'), hunterMark: on('hunterMark'),
         heavyWeaponMaster: on('heavyWeaponMaster'), charger: on('charger'), dueling: on('dueling'),
         peerlessAim: on('peerlessAim'), nightSpirit: on('nightSpirit'),
         ...Object.fromEntries(Object.keys(SUBCLASS_BUFFS).map(key => [key, on(key)]))

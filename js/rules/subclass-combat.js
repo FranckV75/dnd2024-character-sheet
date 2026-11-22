@@ -20,6 +20,7 @@
 
 import { isUnarmedStrike, weaponReach } from './weapons.js';
 import { getRageBonus } from './logic.js';
+import { rageInEffect } from './rage.js';
 import { MANEUVERS } from '../data/maneuvers.js';
 import { LAND_TYPES, DAMAGE_TYPES } from '../data/subclass-choices.js';
 import { DRAGONLINGS, YOUNG_DRAGON_SENSES } from '../data/subclass-companions.js';
@@ -381,9 +382,10 @@ export function choiceDefense(subclass, choice = {}) {
     return null;
 }
 
-/** Condition d'une défense remplie : bouton de combat_buffs allumé, ou case de subclass_choices cochée */
+/** Condition d'une défense remplie : bouton de combat_buffs allumé (Rage : sans armure lourde,
+ *  js/rules/rage.js), ou case de subclass_choices cochée */
 const conditionMet = (buff, derived, record) => (typeof buff === 'string'
-    ? record?.combat_buffs?.[buff] === true
+    ? (buff === 'rage' ? rageInEffect(record, derived) : record?.combat_buffs?.[buff] === true)
     : derived?.subclassChoices?.[buff.choice] === 'on');
 
 /**
