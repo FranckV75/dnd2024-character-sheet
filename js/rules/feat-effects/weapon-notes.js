@@ -12,6 +12,7 @@ import { subclassWeaponNotes } from '../subclass-calcs.js';
 import { subclassCombatWeaponNotes } from '../subclass-combat.js';
 import { findMastery } from '../weapon-masteries.js';
 import { note, shieldBashDC, fold, hasProperty, isPolearm, poisonerDC, irresistibleBoost, grappleDC } from './helpers.js';
+import { plainText } from '../plain-text.js';
 
 // -----------------------------------------------------------------------------
 // Rappels sur une ligne d'arme
@@ -136,7 +137,7 @@ const WEAPON_RULES = [
  * @returns {FeatNote[]}
  */
 export function weaponFeatNotes(weapon, character, derived = deriveCharacter(character || {}), buffs = {}) {
-    if (isBlankWeapon(weapon) || !weapon.atkKey || !String(weapon.name ?? '').replace(/<[^>]*>/g, '').trim()) return [];
+    if (isBlankWeapon(weapon) || !weapon.atkKey || !plainText(weapon.name)) return [];
     const feats = new Set(derived.feats ?? reachedFeatIds(character));
     const ctx = { derived, record: character || {}, weapon, buffs: buffs || {}, melee: weaponReach(weapon).melee, type: weaponDamageType(weapon) };
     // L'attaque à mains nues n'est pas une arme : pas les rappels réservés aux armes

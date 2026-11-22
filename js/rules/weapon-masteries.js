@@ -15,6 +15,7 @@ import { parseWeaponConfig, resolveWeaponAttackStat, getRageBonus } from './logi
 import { weaponDamageType } from './weapons.js';
 import { hasFeat } from './feats.js';
 import { signed } from './numbers.js';
+import { plainText } from './plain-text.js';
 
 /** Nom complet de la caractéristique d'attaque (libellés de resolveWeaponAttackStat) */
 const STAT_NAMES = { FOR: 'Force', DEX: 'Dextérité', CON: 'Constitution', INT: 'Intelligence', SAG: 'Sagesse', CHA: 'Charisme' };
@@ -29,11 +30,7 @@ const DAMAGE_TYPE_WORDS = {
 /** Texte brut d'une saisie (les anciennes sauvegardes peuvent contenir du HTML) */
 function plain(value) {
     if (value === null || value === undefined || typeof value === 'object') return '';
-    return String(value)
-        .replace(/<[^>]*>/g, '')
-        .replace(/&nbsp;/g, ' ')
-        .replace(/&amp;/g, '&')
-        .trim();
+    return plainText(value);
 }
 
 /** Clé de comparaison : sans HTML, minuscules, sans accents, sans espaces ni tirets */
@@ -87,7 +84,8 @@ export function findMastery(value) {
 export function masteryParagraphs(mastery) {
     return String(mastery?.desc || '')
         .split(/<br\s*\/?>/i)
-        .map(part => part.replace(/<[^>]*>/g, '').replace(/[ \t\r\n]+/g, ' ').trim())
+        // Espaces ordinaires seulement : l'espace insécable des données (« 3\u00A0mètres ») est gardée
+        .map(part => plainText(part).replace(/[ \t\r\n]+/g, ' '))
         .filter(Boolean);
 }
 

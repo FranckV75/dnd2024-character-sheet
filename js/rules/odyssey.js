@@ -35,6 +35,7 @@ import { subclassFeatures } from './subclass-features.js';
 import { signed } from './numbers.js';
 import { readCounter } from './counters.js';
 import { FAITH_FAVORS } from '../data/faith-favors.js';
+import { plainText } from './plain-text.js';
 
 export const ODYSSEY_MODE_KEY = 'odyssey_mode';
 /** Valeur du champ « source » des données venues de L'Odyssée des Seigneurs Dragons */
@@ -53,9 +54,6 @@ export const STATUS_ROOM_NARROW = 56;
 
 /** Nom de la case du menu « Gestion » */
 export const ODYSSEY_MODE_LABEL = 'Mode Odyssée';
-
-/** Texte brut (les anciennes sauvegardes peuvent contenir un peu de HTML) */
-const plain = (value) => String(value ?? '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
 
 /** La donnée (espèce, sous-classe, don) vient-elle de l'Odyssée ? */
 export const fromOdyssey = (entry) => entry?.source === ODYSSEY_SOURCE;
@@ -87,7 +85,7 @@ export function setOdysseyModePatch(record, active) {
 }
 
 /** Don noté dans un emplacement (valeur nettoyée, comme featSlots de js/rules/feats.js) */
-const slotFeat = (record, slot) => plain(record?.[`feat_${slot}`]);
+const slotFeat = (record, slot) => plainText(record?.[`feat_${slot}`]);
 
 /**
  * Ce que la fiche utilise déjà de l'Odyssée, lu avec les outils de la fiche (noms français,
@@ -101,14 +99,14 @@ const slotFeat = (record, slot) => plain(record?.[`feat_${slot}`]);
  */
 export function odysseyUse(record) {
     const species = speciesSlug(record);
-    const subclass = subclassId(record?.char_subclass, classSlug(plain(record?.char_class)));
-    const renown = plain(record?.glory_score);
+    const subclass = subclassId(record?.char_subclass, classSlug(plainText(record?.char_class)));
+    const renown = plainText(record?.glory_score);
     return {
         species: fromOdyssey(DD_RULES.species[species]) ? species : '',
         subclass: fromOdyssey(DD_RULES.subclasses[subclass]) ? subclass : '',
         feats: ODYSSEY_FEAT_IDS.filter((id) => FEAT_SLOT_ORDER.some((slot) => slotFeat(record, slot) === id)),
         // Renommée : un nombre autre que 0, ou un texte (jamais effacé par la fiche)
-        box: plain(record?.heroic_destiny) !== '' || (renown !== '' && Number(renown) !== 0)
+        box: plainText(record?.heroic_destiny) !== '' || (renown !== '' && Number(renown) !== 0)
     };
 }
 

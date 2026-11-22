@@ -5,8 +5,9 @@
 // =============================================================================
 
 import { hitDieForClass, parseNumber } from '../character.js';
-import { shieldBashDC, toughHitPoints, plainText, armorTrainingNotes, toolNote, hasProperty, isPolearm } from './helpers.js';
+import { shieldBashDC, toughHitPoints, armorTrainingNotes, toolNote, hasProperty, isPolearm } from './helpers.js';
 import { signed } from '../numbers.js';
+import { plainText } from '../plain-text.js';
 
 export const GENERAL_FEAT_RULES = {
     // Vigilant — PHB 2024 « Alert », p. 200
@@ -204,7 +205,7 @@ export const GENERAL_FEAT_RULES = {
         add('deathSaves', 'Trompe-la-mort : Avantage aux jets de sauvegarde contre la mort (deux d20, gardez le meilleur).');
         add('featSlot', 'Trompe-la-mort : Avantage aux jets de sauvegarde contre la mort (repère près des cases).');
         const used = Math.min(level, Math.max(0, parseNumber(record.hd_current, 0)));
-        const die = plainText(record.hd_type).trim() || hitDieForClass(className);
+        const die = plainText(record.hd_type) || hitDieForClass(className);
         const available = level - used;
         add('featSlot', `Récupération rapide (action Bonus) : dépensez un dé de vie${die ? ` (${die})` : ''} et regagnez autant de PV que le résultat, sans le modificateur de Constitution. Dés de vie restants : ${available} sur ${level} (à décompter vous-même).`,
             available > 0 ? { value: available } : { inactive: true });

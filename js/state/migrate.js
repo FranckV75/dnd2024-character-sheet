@@ -20,6 +20,7 @@ import {
     createDefaultCharacter, PLAIN_TEXT_FIELDS, BOOLEAN_FIELDS,
     EMPTY_WEAPON, EMPTY_SPELL, EMPTY_ARMOR
 } from './schema.js';
+import { plainText } from '../rules/plain-text.js';
 
 /**
  * Sauvegarde jamais réenregistrée par la v4 (fiche v3 du navigateur, fichier ou ligne en
@@ -111,15 +112,7 @@ function textFields(record, empty, skip = []) {
  * @returns {*}
  */
 export function stripHTML(value) {
-    if (typeof value !== 'string') return value;
-    return value.replace(/<[^>]*>/g, '')
-        .replace(/&nbsp;/g, ' ')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/&amp;/g, '&')
-        .trim();
+    return typeof value === 'string' ? plainText(value) : value;
 }
 
 /**

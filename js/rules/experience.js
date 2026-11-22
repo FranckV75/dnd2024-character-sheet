@@ -9,6 +9,7 @@
 
 import { readCount } from './counters.js';
 import { parseNumber } from './character.js';
+import { plainText } from './plain-text.js';
 
 /** XP à atteindre pour chaque niveau (index = niveau ; 0 inutilisé) */
 export const XP_THRESHOLDS = [
@@ -25,7 +26,7 @@ export const MAX_XP_ENTRY = 999999;
  */
 export function readXp(value) {
     if (typeof value === 'number') return readCount(value);
-    const text = String(value ?? '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+    const text = plainText(value);
     const main = /^([\d\s.  ]+?)(?:\s*\/\s*[\d\s.  ]+)?$/.exec(text);
     if (!main) return readCount(text);
     return readCount(main[1].replace(/[\s.  ]/g, ''));

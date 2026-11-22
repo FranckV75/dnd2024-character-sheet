@@ -16,6 +16,7 @@ import { subclassChoiceFields, setSubclassChoicePatch, stepSubclassChoicePatch }
 import { companionChoicePatch } from '../rules/subclass-companions.js';
 import { isLocked } from './lock.js';
 import { foldButton, bindFolding, applyFolds } from './fold.js';
+import { plainText } from '../rules/plain-text.js';
 
 /** Étiquette de ce que la fiche fait de la capacité */
 const KIND_LABELS = { calc: 'Calculé', partial: 'En partie', reminder: 'Rappel' };
@@ -157,7 +158,7 @@ function featureItem(feature, { upcoming = false, fields = [], choice = {}, subc
 /** Phrase quand rien n'est à lister */
 function emptyMessage(character, derived) {
     if (!derived.classSlug) return '';
-    const typed = String(character.char_subclass ?? '').replace(/<[^>]*>/g, '').trim();
+    const typed = plainText(character.char_subclass);
     if (typed) return `Sous-classe « ${typed} » non reconnue : choisissez-la dans le menu « Sous-classe » en haut de la fiche pour voir ses capacités.`;
     return derived.level >= SUBCLASS_LEVEL
         ? 'Choisissez une sous-classe dans le menu « Sous-classe » en haut de la fiche : ses capacités s\'afficheront ici.'

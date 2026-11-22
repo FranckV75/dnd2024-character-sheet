@@ -18,17 +18,9 @@ import { FEATS_DATA } from '../data/feats.js';
 import { DD_RULES } from '../data/dd-rules.js';
 import { FEAT_SLOT_ORDER, HUMAN_FEAT_SLOT, STYLE_FEAT_SLOT, CLASS_FEAT_SLOTS, featSlotLevel } from '../state/schema.js';
 import { classSlug } from './identity.js';
+import { plainText } from './plain-text.js';
 
 const FEAT_KEY = /^feat_(\d+)$/;
-
-/** Texte brut (les anciennes sauvegardes peuvent contenir un peu de HTML) */
-function plain(value) {
-    return (value ?? '').toString()
-        .replace(/<[^>]*>/g, '')
-        .replace(/&nbsp;/g, ' ')
-        .replace(/&amp;/g, '&')
-        .trim();
-}
 
 /**
  * Niveau du personnage, lu comme deriveCharacter et featSlotState (character.js) :
@@ -40,7 +32,7 @@ export function characterLevel(value) {
     let level = 1;
     if (typeof value === 'number' && Number.isFinite(value)) level = Math.trunc(value);
     else {
-        const match = plain(value).match(/-?\d+/);
+        const match = plainText(value).match(/-?\d+/);
         if (match) level = Number.parseInt(match[0], 10);
     }
     return Math.min(20, Math.max(1, level));
@@ -53,7 +45,7 @@ export function characterLevel(value) {
  * @returns {boolean}
  */
 export function isHuman(character) {
-    return /^(humain|human)$/i.test(plain(character?.char_species));
+    return /^(humain|human)$/i.test(plainText(character?.char_species));
 }
 
 /** Légendes des emplacements réservés : quand il compte, et quand il garde un don sans compter */
@@ -90,12 +82,12 @@ export const STYLE_ALTERNATIVES = Object.freeze({
  * @returns {string} ex. 'fighter' ; '' si inconnue
  */
 export function classOf(character) {
-    return classSlug(plain(character?.char_class));
+    return classSlug(plainText(character?.char_class));
 }
 
 /** Sous-classe du personnage (identifiant de DD_RULES.subclasses, ex. 'champion') ; '' si inconnue */
 export function subclassOf(character) {
-    const clean = plain(character?.char_subclass).toLowerCase();
+    const clean = plainText(character?.char_subclass).toLowerCase();
     if (!clean) return '';
     for (const [slug, sub] of Object.entries(DD_RULES.subclasses)) {
         if (slug === clean || DD_RULES.namesOf(sub).some((name) => name.toLowerCase() === clean)) return slug;
@@ -183,7 +175,7 @@ export function featSlots(character) {
     const slots = [];
     for (const [key, value] of Object.entries(character)) {
         const match = key.match(FEAT_KEY);
-        const featId = match ? plain(value) : '';
+        const featId = match ? plainText(value) : '';
         if (!featId) continue;
         const slotLevel = Number(match[1]);
         if (!FEAT_SLOT_ORDER.includes(slotLevel)) continue;

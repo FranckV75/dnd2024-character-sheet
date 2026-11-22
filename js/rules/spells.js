@@ -15,6 +15,7 @@
 
 import { DD_RULES } from '../data/dd-rules.js';
 import { ELEMENTS } from './feat-choices.js';
+import { plainText as toPlainText } from './plain-text.js';
 
 /** Classes proposées dans le filtre de classe du grimoire (identifiants de la base de sorts) */
 export const SPELL_CLASS_OPTIONS = [
@@ -37,26 +38,14 @@ export const MAX_SLOTS_PER_LEVEL = 20;
 // Texte
 // ---------------------------------------------------------------------------
 
-const ENTITIES = { nbsp: ' ', lt: '<', gt: '>', quot: '"', apos: "'", amp: '&', rsquo: '’', lsquo: '‘', hellip: '…' };
-
-function decodeEntities(text) {
-    return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (match, code) => {
-        if (code[0] === '#') {
-            const n = code[1].toLowerCase() === 'x' ? parseInt(code.slice(2), 16) : parseInt(code.slice(1), 10);
-            return Number.isFinite(n) && n > 0 && n <= 0x10ffff ? String.fromCodePoint(n) : match;
-        }
-        return ENTITIES[code.toLowerCase()] ?? match;
-    });
-}
-
 /**
- * Texte brut d'une valeur saisie (retire les balises d'anciennes sauvegardes v3).
+ * Texte brut d'une valeur saisie du grimoire (retire les balises d'anciennes sauvegardes v3,
+ * décode les entités, ramène les suites d'espaces à une seule) : js/rules/plain-text.js.
  * @param {*} value
  * @returns {string}
  */
 export function plainText(value) {
-    if (value === null || value === undefined) return '';
-    return decodeEntities(String(value).replace(/<[^>]*>/g, '')).replace(/\s+/g, ' ').trim();
+    return toPlainText(value, { squash: true });
 }
 
 // Balises que l'on trouve dans les cellules contenteditable de la v3 (innerHTML)
@@ -107,9 +96,9 @@ export function descToPlainText(html) {
         .replace(/<\/t[dh]>\s*(?=<t[dh][\s>])/gi, ' · ')
         .replace(/<br\s*\/?>/gi, '\n')
         .replace(/<\/(p|div|li|tr|table|h[1-6])>/gi, '\n')
-        .replace(/<li[^>]*>/gi, '• ')
-        .replace(/<[^>]*>/g, '');
-    return decodeEntities(text)
+        .replace(/<li[^>]*>/gi, '• ');
+    // Autres balises retirées, entités décodées ; les retours à la ligne restent
+    return toPlainText(text)
         .replace(/[ \t ]+/g, ' ')
         .replace(/ *\n */g, '\n')
         .replace(/\n{3,}/g, '\n\n')

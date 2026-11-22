@@ -10,6 +10,7 @@ import { isUnarmedStrike } from '../weapons.js';
 import { DD_RULES } from '../../data/dd-rules.js';
 import { abilityName, slotChoice, ENERGY_TYPES } from '../feat-choices.js';
 import { shieldKeepsMartialArts } from '../class-features.js';
+import { plainText } from '../plain-text.js';
 
 /** Note prête à ranger (featName ajouté, champs facultatifs absents s'ils ne sont pas fournis) */
 export function note(featId, text, extra = {}) {
@@ -26,10 +27,8 @@ export function toughHitPoints(level) {
     return 2 * level;
 }
 
-/** Texte brut d'un champ saisi (les anciennes sauvegardes peuvent contenir du HTML) */
-export const plainText = (value) => String(value ?? '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ');
 /** Sans accents ni majuscules, pour reconnaître un nom saisi (« Bâton » → « baton ») */
-export const fold = (value) => plainText(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+export const fold = (value) => plainText(value, { spaced: true }).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 
 /**
  * Formations d'armure (cases « Maîtrises d'armures » de l'onglet Combat) : [clé, mots, case].

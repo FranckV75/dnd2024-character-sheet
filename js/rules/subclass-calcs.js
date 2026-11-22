@@ -17,6 +17,7 @@
 
 import { isUnarmedStrike, weaponReach } from './weapons.js';
 import { signed } from './numbers.js';
+import { plainText } from './plain-text.js';
 
 /** Signe devant un nombre : « +3 », « -1 » */
 const mod = (stats, id) => Number(stats?.mods?.[id]) || 0;
@@ -128,7 +129,7 @@ export function subclassWeaponStat(weapon, stats) {
         if (mod(stats, 'cha') > usual) return 'cha';
     }
     if (stats?.classSlug === 'barbarian' && has(stats, 'path_of_the_heretic', 6)) {
-        const name = String(weapon?.name ?? '').replace(/<[^>]*>/g, '').toLowerCase();
+        const name = plainText(weapon?.name).toLowerCase();
         if (/\barc long\b|\blongbow\b/.test(name) && mod(stats, 'str') > mod(stats, 'dex')) return 'str';
     }
     return '';

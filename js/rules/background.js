@@ -16,8 +16,9 @@ import { ABILITIES, SKILLS } from '../data/constants.js';
 import { FEATS_DATA } from '../data/feats.js';
 import { featChoicesState, slotChoice, MAGIC_INITIATE_CLASSES } from './feat-choices.js';
 import { backgroundToolExpectation, expectedToolNoted } from './tools.js';
+import { plainText } from './plain-text.js';
 
-const plain = (value) => String(value ?? '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+const plain = (value) => plainText(value, { spaced: true });
 const fold = (value) => plain(value).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[’']/g, "'").toLowerCase();
 
 /** Mots qui montrent qu'un outil est noté dans « Outils » (outils au choix : un mot de la famille).

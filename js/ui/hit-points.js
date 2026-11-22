@@ -18,6 +18,7 @@ import {
 } from '../rules/hit-points.js';
 import { damageWithConcentration } from '../rules/concentration.js';
 import { deriveCharacter } from '../rules/character.js';
+import { plainText } from '../rules/plain-text.js';
 
 /** Dégâts, avec le jet de Concentration chiffré si un sort est noté (js/rules/concentration.js) */
 const applyDamageHere = (record, amount) => damageWithConcentration(record, deriveCharacter(record), amount);
@@ -47,7 +48,7 @@ export function initHitPoints({ root, store }) {
 /** Résumé : « Korgul : 32 / 39 PV · 5 PV temporaires » */
 function summaryText(record) {
     const { current, max, temp } = hitPointState(record);
-    const name = String(record?.char_name ?? '').replace(/<[^>]*>/g, '').trim();
+    const name = plainText(record?.char_name);
     const pv = current === null ? '— PV' : max !== null ? `${current} / ${max} PV` : `${current} PV`;
     const text = temp > 0 ? `${pv} · ${temp} PV temporaire${temp > 1 ? 's' : ''}` : pv;
     return name ? `${name} : ${text}` : text;

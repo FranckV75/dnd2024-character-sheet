@@ -15,6 +15,7 @@ import { applyDamage, concentrationDc } from './hit-points.js';
 import { activeConditions } from './conditions.js';
 import { signed } from './numbers.js';
 import { rageInEffect } from './rage.js';
+import { plainText } from './plain-text.js';
 
 export const CONCENTRATION_KEY = 'concentration';
 const MAX_LENGTH = 80;
@@ -23,7 +24,7 @@ const BREAKING = Object.freeze(['incapacitated', 'unconscious', 'stunned', 'para
 /** Chasseur implacable (Rôdeur niveau 13) : les dégâts ne rompent pas la Concentration sur ce sort */
 const HUNTERS_MARK = /^(marque du chasseur|hunter'?s mark)$/i;
 
-const plain = (value) => String(value ?? '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+const plain = (value) => plainText(value, { spaced: true });
 
 /** Nom du sort de concentration en cours, ou '' */
 export function concentrationSpell(record) {

@@ -27,6 +27,7 @@ import {
 } from './class-features.js';
 import { signed } from './numbers.js';
 import { classSlug } from './identity.js';
+import { plainText } from './plain-text.js';
 
 /**
  * Extrait le premier entier d'une valeur saisie librement ("19", "+3", "<b>19</b>", "3?").
@@ -37,7 +38,7 @@ import { classSlug } from './identity.js';
 export function parseNumber(value, fallback = 0) {
     if (typeof value === 'number' && Number.isFinite(value)) return Math.trunc(value);
     if (typeof value !== 'string') return fallback;
-    const match = value.replace(/<[^>]*>/g, '').match(/-?\d+/);
+    const match = plainText(value).match(/-?\d+/);
     return match ? parseInt(match[0], 10) : fallback;
 }
 
@@ -88,7 +89,7 @@ export function armorCategory(armor) {
     if (declared) return declared;
     // « none » (Standard / Aucun) ou valeur inconnue : aucun effet sur la CA, comme en v3
     if (rawType) return '';
-    const name = (armor?.name || '').toString().replace(/<[^>]*>/g, '').trim().toLowerCase();
+    const name = plainText(armor?.name || '').toLowerCase();
     const known = EQUIPMENT_DATA.armors.find(a => a.name.toLowerCase() === name);
     return known ? ARMOR_TYPE_ALIASES[known.type.toLowerCase()] || '' : '';
 }
@@ -120,7 +121,7 @@ export function armorCanBeMagic(armor) {
 
 /** Entrée du manuel (EQUIPMENT_DATA.armors) dont le nom est exactement celui de la ligne, sinon null */
 export function catalogueArmor(armor) {
-    const name = (armor?.name ?? '').toString().replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().toLowerCase();
+    const name = plainText(armor?.name).toLowerCase();
     if (!name) return null;
     return EQUIPMENT_DATA.armors.find(a => a.name.toLowerCase() === name) || null;
 }
@@ -157,7 +158,7 @@ const MINUS = '−';
 const signedAC = (n) => (n < 0 ? `${MINUS}${-n}` : `+${n}`);
 /** « + 2 » ou « − 1 » (terme d'une addition) */
 const term = (n) => (n < 0 ? `${MINUS} ${-n}` : `+ ${n}`);
-const plainName = (armor) => (armor?.name || '').toString().replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+const plainName = (armor) => plainText(armor?.name || '');
 
 /**
  * Ce qu'une ligne du tableau des armures apporte à la CA, et comment c'est calculé.
@@ -441,7 +442,7 @@ export function sneakAttackDice(level) {
 export function featSlotState(slotLevel, characterLevel, choice) {
     const level = Math.max(1, Math.min(20, parseNumber(characterLevel, 1)));
     const reached = parseNumber(slotLevel, 1) <= level;
-    const chosen = String(choice ?? '').replace(/<[^>]*>/g, '').trim() !== '';
+    const chosen = plainText(choice) !== '';
     if (reached) return chosen ? 'active' : 'pending';
     return chosen ? 'planned' : 'upcoming';
 }
@@ -471,12 +472,12 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     // Rage sans effet avec une armure lourde équipée (PHB 2024 p. 51) : ni ses dégâts, ni la Fureur
     // divine, ni la Frénésie (le bouton reste allumé, js/rules/rage.js)
     if (buffs.rage && rageBlockedByArmor(stats)) buffs = { ...buffs, rage: false };
-    const name = (weapon?.name || '').toString().replace(/<[^>]*>/g, '').trim();
+    const name = plainText(weapon?.name || '');
     if (!weapon?.atkKey || !name) return null;
 
     const { mods, pb, level, classSlug: slug } = stats;
     const config = parseWeaponConfig(weapon.weaponConfig);
-    const prop = (weapon.prop || '').toString().replace(/<[^>]*>/g, '');
+    const prop = plainText(weapon.prop || '');
     const isRanged = prop.toLowerCase().includes('munitions');
     const unarmed = isUnarmedStrike(weapon);
     const monkWeapon = isMonkWeapon(weapon, stats);
@@ -551,7 +552,7 @@ function isMonkWeapon(weapon, stats) {
     const worn = stats.wornArmor ?? {};
     if (worn.light || worn.medium || worn.heavy) return false;
     if (worn.shield && !shieldKeepsMartialArts(stats)) return false;
-    const prop = (weapon?.prop || '').toString().replace(/<[^>]*>/g, '');
+    const prop = plainText(weapon?.prop || '');
     return isUnarmedStrike(weapon) || isMartialArtsWeapon(weapon?.category || '', !weaponReach(weapon).melee, prop);
 }
 

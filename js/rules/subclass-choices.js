@@ -18,6 +18,7 @@
 import { SUBCLASS_CHOICE_FIELDS, PHILOSOPHER_SCHOOLS } from '../data/subclass-choices.js';
 import { SUBCLASS_FEATURES } from '../data/subclass-features.js';
 import { knownManeuvers, maneuverNumbers, superiorityDie } from './subclass-combat.js';
+import { plainText } from './plain-text.js';
 
 export const SUBCLASS_CHOICES_KEY = 'subclass_choices';
 
@@ -318,7 +319,7 @@ export function restSubclassChoices(character, derived = {}, kind = 'short') {
  * @returns {number|null}
  */
 export function speedMeters(text) {
-    const plain = String(text ?? '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').trim();
+    const plain = plainText(text, { spaced: true });
     const match = /^(\d+(?:[.,]\d+)?)\s*(?:m|mètres?|metres?)?$/i.exec(plain);
     if (!match) return null;
     const meters = Number(match[1].replace(',', '.'));

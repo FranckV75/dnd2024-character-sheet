@@ -23,11 +23,12 @@ import { DD_RULES } from '../data/dd-rules.js';
 import { SPECIES_TRAITS } from '../data/species-traits.js';
 import { signed } from './numbers.js';
 import { speedMeters } from './subclass-choices.js';
+import { plainText } from './plain-text.js';
 
 export const SPECIES_CHOICES_KEY = 'species_choices';
 
 const ABILITY_NAMES = Object.freeze({ int: 'Intelligence', wis: 'Sagesse', cha: 'Charisme' });
-const plain = (value) => String(value ?? '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+const plain = (value) => plainText(value, { spaced: true });
 const meters = (n) => `${String(n).replace('.', ',')} m`;
 /** Vitesse la plus courante (9 m) : seule une autre Vitesse d'espèce est signalée */
 const COMMON_SPEED = 9;

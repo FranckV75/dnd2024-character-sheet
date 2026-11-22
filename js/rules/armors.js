@@ -7,6 +7,7 @@
 import { EQUIPMENT_DATA } from '../data/equipment.js';
 import { EMPTY_ARMOR } from '../state/schema.js';
 import { armorCategory, armorMagicBonus, parseNumber } from './character.js';
+import { plainText } from './plain-text.js';
 export { armorMagicBonus, armorCanBeMagic, ARMOR_MAGIC_MAX, armorLine, catalogueArmor } from './character.js';
 
 /** Types proposés dans la liste (valeurs identiques à la v3) */
@@ -52,9 +53,8 @@ export function withArmorMagic(row, magic) {
  */
 export function isBlankArmor(armor) {
     if (!armor || typeof armor !== 'object') return true;
-    const text = (value) => String(value ?? '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
-    const typed = ['name', 'ca', 'str', 'weight', 'price', 'comment'].some(key => text(armor[key]) !== '');
-    const type = text(armor.type);
+    const typed = ['name', 'ca', 'str', 'weight', 'price', 'comment'].some(key => plainText(armor[key]) !== '');
+    const type = plainText(armor.type);
     return !typed && armor.stealth !== true && armor.equipped !== true && armorMagicBonus(armor) === 0
         && (type === '' || type === EMPTY_ARMOR.type);
 }

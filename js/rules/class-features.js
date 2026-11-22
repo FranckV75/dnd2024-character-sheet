@@ -24,12 +24,11 @@ import { wildMagicNotes } from './wild-magic.js';
 import { speciesNotes } from './species.js';
 import { classReminderNotes } from './class-reminders.js';
 import { signed } from './numbers.js';
+import { plainText } from './plain-text.js';
 
 /** Texte brut (les anciennes sauvegardes peuvent contenir du HTML), sans accents ni majuscules */
 function fold(value) {
-    return String(value ?? '')
-        .replace(/<[^>]*>/g, ' ')
-        .replace(/&nbsp;/g, ' ')
+    return plainText(value, { spaced: true })
         .normalize('NFD').replace(/[̀-ͯ]/g, '')
         .replace(/[’']/g, "'")
         .replace(/\s+/g, ' ')

@@ -28,6 +28,7 @@ import { FEAT_SLOT_ORDER } from '../state/schema.js';
 import { DD_RULES } from '../data/dd-rules.js';
 import { FEATS_DATA } from '../data/feats.js';
 import { signed } from './numbers.js';
+import { plainText } from './plain-text.js';
 
 /** Faveur épique (prérequis : niveau 19, emplacement du niveau 19) */
 const isEpicBoon = (featId) => Object.hasOwn(FEATS_DATA, featId) && FEATS_DATA[featId].type === 'Épique';
@@ -36,8 +37,6 @@ export const MAX_LEVEL = 20;
 /** Niveau du choix de la sous-classe (PHB 2024) */
 const SUBCLASS_LEVEL = 3;
 
-/** Texte brut (anciennes sauvegardes avec un peu de HTML) */
-const plain = (value) => String(value ?? '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
 const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
 
 /**
@@ -46,7 +45,7 @@ const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
  */
 function hitPointBonuses(record, dFrom, next, dTo) {
     // Faveur épique notée ailleurs qu'au niveau 19 : prérequis non rempli, aucun PV (feat-effects.js l'avertit)
-    const valid = (note, character) => !isEpicBoon(note.featId) || plain(character.feat_19) === note.featId;
+    const valid = (note, character) => !isEpicBoon(note.featId) || plainText(character.feat_19) === note.featId;
     const byName = (notes, character) => {
         const map = new Map();
         for (const note of notes) {
@@ -63,15 +62,15 @@ function hitPointBonuses(record, dFrom, next, dTo) {
         if (delta > 0) bonuses.push({ name, value: delta });
     }
     // Nain (PHB 2024) : +1 PV max par niveau, que la fiche ne calcule pas ailleurs
-    if (DD_RULES.findSpecies(plain(record.char_species)) === DD_RULES.species.dwarf) bonuses.push({ name: 'Ténacité naine', value: 1 });
+    if (DD_RULES.findSpecies(plainText(record.char_species)) === DD_RULES.species.dwarf) bonuses.push({ name: 'Ténacité naine', value: 1 });
     return bonuses;
 }
 
 /** Points de vie du niveau gagné */
 function hitPointsPlan(record, dFrom, next, dTo) {
     const faces = hitDieFaces(record.hd_type, dFrom.hitDie);
-    const maxText = plain(record.hp_max);
-    const currentText = plain(record.hp_current);
+    const maxText = plainText(record.hp_max);
+    const currentText = plainText(record.hp_current);
     return {
         faces,
         fixed: faces ? faces / 2 + 1 : null,
@@ -108,7 +107,7 @@ function featLines(next, to) {
     const lines = [];
     for (const slot of FEAT_SLOT_ORDER) {
         if (!featSlotCounts(slot, next) || featSlotLevelFor(slot, next) !== to) continue;
-        const chosen = plain(next[`feat_${slot}`]);
+        const chosen = plainText(next[`feat_${slot}`]);
         const reserved = classFeatSlot(slot);
         const where = reserved && !reserved.style ? `${reserved.caption} (${featSlotName(slot)})` : `Don du ${featSlotName(slot)}`;
         if (chosen && isEpicBoon(chosen) && slot !== 19) lines.push(`${where} : ${featName(chosen)} est une faveur épique, qui se prend au niveau 19 : choisissez un autre don ici (encadré Dons).`);

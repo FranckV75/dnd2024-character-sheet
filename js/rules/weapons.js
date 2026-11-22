@@ -14,6 +14,7 @@ import { parseWeaponConfig } from './logic.js';
 import { reachedFeatIds, subclassOf, characterLevel } from './feats.js';
 import { EXTRA_DAMAGE_KEY, DAMAGE_DIE_SIZES, validateExtraDamageList } from './weapon-extras.js';
 import { rageBlockedByArmor } from './rage.js';
+import { plainText } from './plain-text.js';
 
 export const WEAPON_FILTERS = ['all', 'simple', 'martial', 'melee', 'ranged', 'magic'];
 
@@ -89,17 +90,8 @@ const DAMAGE_TYPE_PREFIXES = [
 /** Champs d'une ligne d'arme qui, remplis, en font une vraie ligne (format v3, voir EMPTY_WEAPON) */
 const WEAPON_CONTENT_KEYS = ['name', 'prop', 'prof', 'ammo', 'note', 'atk', 'dmg', 'atkKey', 'baseDmg', 'weaponConfig'];
 
-/** Texte brut (les anciennes sauvegardes peuvent contenir un peu de HTML) */
-function plain(value) {
-    return (value ?? '').toString()
-        .replace(/<[^>]*>/g, '')
-        .replace(/&nbsp;/g, ' ')
-        .replace(/&amp;/g, '&')
-        .trim();
-}
-
 function fold(value) {
-    return plain(value).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    return plainText(value).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
 /**
@@ -169,7 +161,7 @@ export function weaponDamageType(weapon) {
  */
 export function matchesWeaponFilter(weapon, filter) {
     if (!filter || filter === 'all' || !WEAPON_FILTERS.includes(filter)) return true;
-    if (!plain(weapon?.name)) return true;
+    if (!plainText(weapon?.name)) return true;
     const category = fold(weapon?.category);
     switch (filter) {
         case 'simple': return category.includes('courante');
@@ -212,10 +204,10 @@ export function completeRowFromRulebook(row, ref) {
     return {
         ...row,
         atkKey: ref.atk,
-        baseDmg: plain(row.baseDmg) ? row.baseDmg : ref.dmg,
-        category: plain(row.category) ? row.category : (ref.category || ''),
-        prop: plain(row.prop) ? row.prop : ref.prop,
-        prof: plain(row.prof) ? row.prof : ref.prof
+        baseDmg: plainText(row.baseDmg) ? row.baseDmg : ref.dmg,
+        category: plainText(row.category) ? row.category : (ref.category || ''),
+        prop: plainText(row.prop) ? row.prop : ref.prop,
+        prof: plainText(row.prof) ? row.prof : ref.prof
     };
 }
 
@@ -408,7 +400,7 @@ export function buffsForCharacter(slug, character, derived) {
  */
 export function isBlankWeapon(weapon) {
     if (!weapon || typeof weapon !== 'object') return true;
-    return WEAPON_CONTENT_KEYS.every(key => plain(weapon[key]) === '');
+    return WEAPON_CONTENT_KEYS.every(key => plainText(weapon[key]) === '');
 }
 
 /**

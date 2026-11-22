@@ -13,6 +13,7 @@
 import { el, icon } from './dom.js';
 import { openNumberPad } from './number-pad.js';
 import { experienceProgress, addExperience, formatXp, MAX_XP_ENTRY } from '../rules/experience.js';
+import { plainText } from '../rules/plain-text.js';
 
 /** Texte sous la case XP (vide si rien à dire) */
 export function progressText(progress) {
@@ -54,7 +55,7 @@ export function initExperience({ root, store }) {
 /** « Korgul : 21 800 XP · encore 1 200 XP avant le niveau 7 (23 000 XP) » */
 function summaryText(record) {
     const progress = experienceProgress(record);
-    const name = String(record?.char_name ?? '').replace(/<[^>]*>/g, '').trim();
+    const name = plainText(record?.char_name);
     const xp = progress.xp === null ? 'XP à corriger' : `${formatXp(Math.max(0, progress.xp))} XP`;
     const next = progressText(progress);
     const text = next ? `${xp} · ${next.charAt(0).toLowerCase()}${next.slice(1)}` : xp;

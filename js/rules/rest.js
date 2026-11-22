@@ -26,6 +26,7 @@ import { restFeatSpellUses } from './feat-spells.js';
 import { isHuman } from './feats.js';
 import { longRestPreparation } from './spell-preparation.js';
 import { clearExtraDamageOn } from './weapon-extras.js';
+import { plainText } from './plain-text.js';
 
 export const DEATH_SAVE_KEYS = ['ds_s1', 'ds_s2', 'ds_s3', 'ds_f1', 'ds_f2', 'ds_f3'];
 
@@ -39,7 +40,7 @@ const CLASS_RES_KEY = /^class_res_\d+$/;
  */
 export function hitDieFaces(hdType, fallback = '') {
     for (const value of [hdType, fallback]) {
-        const match = String(value ?? '').replace(/<[^>]*>/g, '').match(/d\s*(\d+)/i);
+        const match = plainText(value).match(/d\s*(\d+)/i);
         if (match) return parseInt(match[1], 10);
     }
     return 0;
@@ -166,7 +167,7 @@ function usedSpellSlots(state, includes = () => true) {
 function slotRecoveryFeature(character, d) {
     const maxLevels = Math.ceil(d.level / 2);
     if (d.classSlug === 'wizard') return { name: 'Restauration magique', maxLevels };
-    const subclass = String(character.char_subclass ?? '').replace(/<[^>]*>/g, '').toLowerCase();
+    const subclass = plainText(character.char_subclass).toLowerCase();
     if (d.classSlug === 'druid' && d.level >= 6 && /terre|land/.test(subclass)) {
         return { name: 'Ressourcement', maxLevels };
     }

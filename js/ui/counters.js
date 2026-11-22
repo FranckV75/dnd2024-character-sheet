@@ -19,6 +19,7 @@ import { wrapWithSteppers } from './stepper.js';
 import { openNumberPad } from './number-pad.js';
 import { stepCounter, changeCoins, readCount, COINS, MAX_COIN_ENTRY } from '../rules/counters.js';
 import { inspirationWording, INSPIRATION_ONLY_ONE } from '../rules/odyssey.js';
+import { plainText } from '../rules/plain-text.js';
 
 const COUNTERS = [
     { key: 'fatigue_level', noun: 'niveau d\'Épuisement', max: 6, asNumber: true },
@@ -71,7 +72,7 @@ function label(input) {
 
 /** « Korgul : 12 PO · 30 PA » (pièces non nulles, de la plus grande à la plus petite) */
 function purseText(record) {
-    const name = String(record?.char_name ?? '').replace(/<[^>]*>/g, '').trim();
+    const name = plainText(record?.char_name);
     const parts = [...COINS].reverse()
         .map((coin) => {
             const value = readCount(record?.[coin.key]);
