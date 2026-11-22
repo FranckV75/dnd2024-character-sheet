@@ -80,9 +80,12 @@ const QUESTIONS = {
     conflict: ({ name, cloudUpdatedAt, localSavedAt, legacy }) => choose(legacy ? '⚠️ Modifié par l\'ancienne version de la fiche' : '⚔️ Deux versions différentes', [
         el('p', {
             text: legacy
-                ? `« ${name} » vient d'être enregistré en ligne par l'ancienne version de la fiche (un onglet ou un appareil resté ouvert depuis la mise à jour). Elle ne connaît pas les bonus de combat actifs, les emplacements de sorts utilisés, ni les usages et les choix des dons, et a pu remettre des valeurs plus anciennes.`
+                ? `« ${name} » vient d'être enregistré en ligne par l'ancienne version de la fiche (un onglet ou un appareil resté ouvert depuis la mise à jour). Elle a pu remettre des valeurs plus anciennes.`
                 : `« ${name} » a été modifié sur un autre appareil (ou dans un autre onglet), et aussi dans ce navigateur.`
         }),
+        // Tout ce que la v3 efface en enregistrant (V4_ONLY_KEYS et V3_MISSING_KEYS, js/cloud/sync.js) :
+        // « par exemple » garde la phrase juste quand une nouvelle clé s'y ajoute
+        legacy ? el('p', { text: '« Garder la version en ligne » effacerait aussi tout ce que seule la nouvelle version enregistre, par exemple : états (Empoisonné…), concentration, bonus de combat actifs, emplacements de sorts utilisés, dons propres à la nouvelle version, usages et choix des dons, de l\'espèce et de la sous-classe, compagnons, maîtrises d\'armes, mode Odyssée coupé (il se rallumerait).' }) : null,
         versionsList(cloudUpdatedAt, localSavedAt),
         legacy ? el('p', { text: 'Rechargez ou fermez la fiche sur vos autres appareils et onglets, puis choisissez la version à garder.' }) : null,
         el('p', { class: 'muted', text: 'La version que vous ne gardez pas sera perdue. En cas de doute, choisissez « Décider plus tard » et exportez cette fiche d\'abord.' })
