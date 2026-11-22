@@ -377,7 +377,10 @@ h1, h2, h3, h4 {
 .coins,
 .odyssey,
 .rest,
-.tab-panel .stack > .box:not(:has(.data-table, .rich)) {
+.tab-panel .stack > .box:not(:has(.data-table, .rich)),
+/* Boîte de texte encore vide (« Synergie entre joueurs »…), seule avec son titre : gardée entière,
+   jamais un bord seul en haut de la page suivante (une boîte remplie peut, elle, se couper) */
+.tab-panel .stack > .box:has(> .rich:empty):not(:has(> :not(h3, .rich, [hidden]))) {
     break-inside: avoid;
 }
 
