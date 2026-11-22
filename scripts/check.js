@@ -81,12 +81,17 @@ for (const file of [...jsFiles, ...htmlFiles, ...listFiles(ROOT, '.css')]) {
 /** Adresses qui ne désignent que cet ordinateur */
 const LOOPBACK = /^['"](127\.0\.0\.1|::1|localhost)['"]$/;
 const serveFile = join(ROOT, 'scripts', 'serve.js');
-const serveSource = readFileSync(serveFile, 'utf8').replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
-const listenCalls = [...serveSource.matchAll(/\.listen\(([^,)]*)(?:,([^,)]*))?/g)];
+// Seuls les blocs /* */ et les lignes entièrement en commentaire sont retirés : un « // » dans une
+// chaîne (« http://… ») ne cache pas la suite de la ligne. Un appel en commentaire de fin de ligne
+// est contrôlé lui aussi (refus par prudence, jamais l'inverse).
+const serveSource = readFileSync(serveFile, 'utf8').replace(/\/\*[\s\S]*?\*\/|^\s*\/\/.*$/gm, '');
+// .listen(port, hôte…), espaces permis avant la parenthèse ; forme objet .listen({ port, host: … })
+const listenCalls = [...serveSource.matchAll(/\.listen\s*\(\s*(\{[^}]*\}|[^,)]*)(?:,([^,)]*))?/g)];
 if (!listenCalls.length) errors.push(`Aucun appel listen trouvé dans ${rel(serveFile)} : contrôle à revoir`);
-for (const [call, , host] of listenCalls) {
+for (const [call, first, second] of listenCalls) {
+    const host = first.startsWith('{') ? first.match(/(?<![\w$])host\s*:\s*([^,}]*)/)?.[1] : second;
     if (!LOOPBACK.test((host || '').trim())) {
-        errors.push(`Serveur ouvert au réseau dans ${rel(serveFile)} : « ${call.trim()} » doit recevoir '127.0.0.1', '::1' ou 'localhost' en deuxième argument`);
+        errors.push(`Serveur ouvert au réseau dans ${rel(serveFile)} : « ${call.trim()} » doit recevoir '127.0.0.1', '::1' ou 'localhost' en deuxième argument (ou host: dans la forme objet)`);
     }
 }
 
