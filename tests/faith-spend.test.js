@@ -93,8 +93,8 @@ describe('Points de Foi : la fenêtre (faithWindow, payFavor)', () => {
         assert.equal(view.intro, `Vous avez 4 points de Foi. ${FAITH_SPEND}`);
         assert.deepEqual(view.tiers.map((tier) => [tier.id, tier.status, tier.canSpend]),
             [['mineure', 'Possible', true], ['majeure', 'Possible', true], ['grande', 'Il manque 1 point', false]]);
-        assert.equal(view.tiers[1].title, 'Retire 3 points de la case des points de Foi (4 → 1).');
-        assert.equal(view.tiers[2].title, 'Il manque 1 point de Foi pour cette faveur.');
+        assert.equal(view.tiers[1].hint, 'Retire 3 points de la case des points de Foi (4 → 1).');
+        assert.equal(view.tiers[2].hint, 'Il manque 1 point de Foi pour cette faveur.');
     });
 
     test('Case en texte libre : aucun bouton utilisable, la fenêtre le dit', () => {
@@ -104,8 +104,16 @@ describe('Points de Foi : la fenêtre (faithWindow, payFavor)', () => {
         for (const tier of view.tiers) {
             assert.equal(tier.canSpend, false);
             assert.equal(tier.status, '');
-            assert.match(tier.title, /retirez les points à la main/);
+            assert.match(tier.hint, /retirez les points à la main/);
         }
+    });
+
+    test('Chaque palier garde son nom (titre de la rubrique et message après la dépense)', () => {
+        assert.deepEqual(faithWindow('5/5').tiers.map((tier) => tier.title), FAITH_FAVORS.map((tier) => tier.title));
+        const tier = faithWindow('5/5').tiers[1];
+        const paid = payFavor('5/5', tier.cost);
+        assert.equal(faithSpentMessage(tier, paid.before, paid.after, STATUS_ROOM),
+            "Faveur majeure : 3 points de Foi dépensés (5 → 2). En cas d'erreur, le bouton + les rend.");
     });
 
     test('Bouton utilisable si et seulement si la dépense est acceptée', () => {

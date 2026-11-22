@@ -242,7 +242,7 @@ function openFaithFavors(store, setStatus, compact) {
             status.textContent = tier.status;
             status.hidden = !tier.status;
             spend.disabled = !tier.canSpend;
-            spend.title = frenchSpaces(tier.title);
+            spend.title = frenchSpaces(tier.hint);
         }
     };
     /** Payer une faveur (payFavor) : les points quittent la case ; « + » les rend en cas d'erreur */

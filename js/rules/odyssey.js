@@ -337,7 +337,7 @@ export function spendRefusal(points, cost) {
  * (« Possible », « Il manque 2 points »), si son bouton « Dépenser » est utilisable et son infobulle.
  * @param {unknown} value - valeur de heroic_inspiration
  * @returns {{ points: number|null, intro: string, tiers: Array<Object> }} tiers : ceux de
- *   faithFavors, plus canSpend (spendFaith accepte) et title (refus, ou ce que fait le bouton)
+ *   faithFavors, plus canSpend (spendFaith accepte) et hint (infobulle du bouton : refus, ou ce qu'il fait)
  */
 export function faithWindow(value) {
     const points = faithPoints(value);
@@ -347,7 +347,7 @@ export function faithWindow(value) {
         tiers: faithFavors(points).map((tier) => ({
             ...tier,
             canSpend: spendFaith(value, tier.cost) !== null,
-            title: spendRefusal(points, tier.cost)
+            hint: spendRefusal(points, tier.cost)
                 || `Retire ${pointsWord(tier.cost)} de la case des points de Foi (${points} → ${points - tier.cost}).`
         }))
     };
