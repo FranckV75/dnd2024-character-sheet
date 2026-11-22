@@ -13,6 +13,17 @@
 /** @type {ReadonlyArray<{ version: string, items: ReadonlyArray<string> }>} */
 export const WHATS_NEW = Object.freeze([
     {
+        version: '4.46.0',
+        items: [
+            'Mode Odyssée : un Humain, ou un Champion à partir du niveau 10, a un bouton « Inspiration héroïque » sous la case « Points de Foi ». Touchez-le quand vous l\'obtenez, retouchez-le une fois dépensée.',
+            'Dans la fenêtre des points de Foi, chaque faveur a son bouton « Dépenser » : il retire 1, 3 ou 5 points de la case. Il est grisé quand il vous manque des points.',
+            'Un message de la barre du haut coupé par « … » se lit en entier : touchez-le, puis touchez-le encore pour le replier.',
+            'Barbare : en armure lourde, la Rage est sans effet, comme le veut le manuel. Une pastille rouge le dit à côté du bouton, et rien n\'est ajouté aux dégâts.',
+            'Impression : le titre de votre classe et le nom de chaque aptitude ne restent plus seuls en bas d\'une page.',
+            'Thème sombre : la pastille des armes et armures magiques (+1, +2, +3) prend des couleurs de nuit.'
+        ]
+    },
+    {
         version: '4.45.0',
         items: [
             'Campagne de l\'Odyssée : la case de l\'onglet Combat s\'appelle maintenant « Points de Foi ».',

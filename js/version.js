@@ -4,4 +4,4 @@
 // js/ui/update.js compare cette valeur à celle du site en ligne pour installer une mise à jour.
 // =============================================================================
 
-export const APP_VERSION = '4.45.0';
+export const APP_VERSION = '4.46.0';
