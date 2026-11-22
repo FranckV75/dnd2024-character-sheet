@@ -6,6 +6,8 @@
 //     aucun !important dans les feuilles de style (seule exception : la règle « Animations
 //     coupées » de css/motion.css, qui doit l'emporter sur toutes les animations)
 //  4. Aucun caractère mal encodé (mojibake : un « é » devenu deux caractères)
+//  5. Le serveur de développement (scripts/serve.js) n'écoute que cet ordinateur
+//     (127.0.0.1, ::1 ou localhost) : jamais le Wi-Fi, qui verrait les vraies sauvegardes
 // =============================================================================
 
 import { execFileSync } from 'node:child_process';
@@ -70,6 +72,18 @@ for (const file of listFiles(ROOT, '.css')) {
 for (const file of [...jsFiles, ...htmlFiles, ...listFiles(ROOT, '.css')]) {
     if (/\u00C3[\u0080-\u00BF]|\u00E2\u20AC/.test(readFileSync(file, 'utf8'))) {
         errors.push(`Texte mal encodé (mojibake) dans ${rel(file)}`);
+    }
+}
+
+/** Adresses qui ne désignent que cet ordinateur */
+const LOOPBACK = /^['"](127\.0\.0\.1|::1|localhost)['"]$/;
+const serveFile = join(ROOT, 'scripts', 'serve.js');
+const serveSource = readFileSync(serveFile, 'utf8').replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
+const listenCalls = [...serveSource.matchAll(/\.listen\(([^,)]*)(?:,([^,)]*))?/g)];
+if (!listenCalls.length) errors.push(`Aucun appel listen trouvé dans ${rel(serveFile)} : contrôle à revoir`);
+for (const [call, , host] of listenCalls) {
+    if (!LOOPBACK.test((host || '').trim())) {
+        errors.push(`Serveur ouvert au réseau dans ${rel(serveFile)} : « ${call.trim()} » doit recevoir '127.0.0.1', '::1' ou 'localhost' en deuxième argument`);
     }
 }
 
