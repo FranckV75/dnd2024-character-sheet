@@ -111,7 +111,7 @@ js/
 │   ├── hit-points.js   PV en jeu : dégâts, soins, PV temporaires, boutons − / + (écran : ui/hit-points.js)
 │   ├── class-progression.js  Aptitudes atteintes / à venir, sorts mineurs et préparés permis
 │   ├── experience.js   XP : seuils de niveau, XP restants, XP gagnés
-│   ├── counters.js     Compteurs − / + (Épuisement, Inspiration, renommée) et pièces (Bourse)
+│   ├── counters.js     Compteurs − / + (Épuisement, Foi ou Inspiration, renommée) et pièces (Bourse)
 │   ├── level-up.js     Assistant « Passer au niveau N » : ce qui change, PV gagnés, modification
 │   │                   appliquée (niveau, PV max, PV actuels sur demande ; écran : ui/level-up.js)
 │   ├── subclass-features.js  Capacités de sous-classe atteintes ou à venir, ce que la fiche en
@@ -126,7 +126,8 @@ js/
 │   ├── epic-poem.js    Collège de poésie épique (Odyssée) : strophes, rang du poème
 │   ├── odyssey.js      Mode Odyssée réglé fiche par fiche (clé facultative « odyssey_mode ») : ce qui
 │   │                   est proposé dans les listes, ce que la fiche garde, encadré de l'onglet 3,
-│   │                   libellé d'Inspiration, phrases pour le joueur
+│   │                   « Points de Foi » (maîtrise + Sagesse par niveau) ou « Inspiration héroïque »
+│   │                   (une seule), phrases pour le joueur
 │   ├── wild-magic.js   Sorcellerie sauvage : Bouffée (d20) et table (d100)
 │   └── gallery.js      Réglages d'apparence (validation des fonds, _visual_prefs)
 ├── cloud/              Sauvegarde en ligne (Supabase, même table que la v3)
@@ -181,7 +182,8 @@ js/
     │                   « Revenir à… », exemple non lié au compte (cloud/controller.js, source « example »)
     ├── concentration.js  Ligne « Concentration » de l'encadré États (css/conditions.css)
     ├── odyssey.js      Case « Mode Odyssée » du menu « Gestion » (css/toolbar.css), encadré Odyssée
-    │                   de l'onglet 3 caché quand il est inutile, libellé d'Inspiration
+    │                   de l'onglet 3 caché quand il est inutile, case « Points de Foi » et sa
+    │                   pastille « +5 par niveau », ou « Inspiration héroïque »
     ├── stepper.js · number-pad.js   Boutons − / + à appui long et pavé de chiffres (partagés)
     ├── modal.js · autocomplete.js · cell-text.js · dom.js   (briques partagées)
     ├── boot-notices.js Avis du démarrage (mise en forme indisponible, sauvegarde illisible)

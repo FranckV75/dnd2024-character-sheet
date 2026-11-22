@@ -16,11 +16,14 @@ en fin de session :
   « Gestion »), publiée le 22/11/2026 avec l'accord de Franck (`master` = `v4`). La 4.43.1
   (« XP ») a été publiée le 21/11/2026. Décisions en attente sur la 4.44.0 : point 3 de
   `docs/FEUILLE_DE_ROUTE.md`.
+- **Prête, pas encore publiée** : version **4.45.0** sur `v4` (« Points de Foi » en mode Odyssée,
+  avec leur nombre par niveau et la remise par « Passer au niveau » ; « Inspiration héroïque »,
+  une seule à la fois, mode coupé). Attend le « Publie » de Franck.
 - **Multiclassage** : étude faite et contre-vérifiée (`docs/etudes/MULTICLASSAGE.md`). Rien de
   construit : attend les réponses de Franck (14 questions, section 8) et les photos du chapitre 2
   du manuel français (section 9).
-- **Vérifications sur tablette** : faites par Franck le 21/11/2026 sur Android et PC, tout est
-  bon ; reste l'iPad de Patricia (liste ci-dessous, elle fait foi et s'allonge à chaque version).
+- **Vérifications sur tablette** : faites par Franck le 21/11/2026 sur Android et PC, et la
+  4.44.0 sur tablette le 22/11/2026 : tout est bon ; reste l'iPad de Patricia (liste ci-dessous, elle fait foi et s'allonge à chaque version).
 - **À chaque version** : entrée en tête de `js/data/whats-new.js` et notice `js/data/help.js`
   à jour.
 - **Petits champs sur iPad** : ne rien changer tant que Franck n'a pas d'info sur le zoom.
@@ -43,13 +46,15 @@ d'espèce au repos, espèce et historique, outils, saisie fluide, grimoire : « 
 « Lancer », « Lancer gratuit », sorts d'espèce, « Préparer mes sorts », « Retirer les sorts non
 préparés », losanges fixes, personnages d'exemple et « Revenir à… »).
 
-À voir après la publication de la 4.44.0 (Android, PC, et iPad si possible) :
-- Menu « Gestion » : la case « Mode Odyssée » se touche bien, la phrase de la barre du haut tient
-  sur deux lignes, la case n'a pas l'air « allumée » après le toucher.
-- Décocher puis recocher sur une fiche : la barre n'annonce aucune modification à envoyer au
-  compte ; l'autre tablette retrouve le réglage.
-- Mode coupé : listes Espèce, Sous-classe et style de combat réduites ; « Inspiration héroïque »
-  sans « points de Foi » ; encadré Odyssée vide caché, et pas imprimé.
+4.44.0 vérifiée par Franck sur sa tablette le 22/11/2026 : la case « Mode Odyssée » fonctionne,
+le reste est bon. Seul défaut vu : mode coché, la case disait encore « Inspiration héroïque ou
+points de Foi » (corrigé en 4.45.0).
+
+À voir après la publication de la 4.45.0 (Android, PC, et iPad si possible) :
+- Mode Odyssée coché : la case s'appelle « Points de Foi » ; la pastille dorée dessous (« +5 par
+  niveau ») donne le bon nombre (bonus de maîtrise + Sagesse) ; la toucher l'explique en haut.
+- « Passer au niveau » : la fenêtre a une ligne « Points de Foi » et la case devient « N/N ».
+- Mode décoché : « Inspiration héroïque », les boutons vont de 0 à 1 ; « + » à 1 le dit en haut.
 
 Reste à voir sur l'iPad (Franck n'en a pas : c'est celui de Patricia, pas de retour pour
 l'instant) :
@@ -73,6 +78,17 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
    `docs/FEUILLE_DE_ROUTE.md`.
 
 ## Sessions
+
+### 22/11/2026 — 4.44.0 publiée, « Points de Foi » et Inspiration héroïque (4.45.0)
+
+- 4.44.0 publiée après le « Publie » de Franck, version en ligne vérifiée. Franck l'a regardée
+  sur sa tablette : la case fonctionne ; mode coché, le libellé devait être « Points de Foi » seul.
+- Règles relues : guide du MJ de l'Odyssée p. 92 (à chaque niveau, points de Foi remis à 0 puis
+  bonus de maîtrise + Sagesse) ; manuel 2024 (Inspiration héroïque : une seule à la fois).
+- Choix de Franck : pastille du nombre par niveau et remise par « Passer au niveau » (« N/N ») ;
+  Inspiration limitée à 1 mode coupé ; au moins 1 point de Foi par niveau.
+- Fait en 4.45.0 : tests verts, essai à l'écran à 820 px clair et 768 px sombre (21 contrôles sur
+  21, 0 erreur console). Pas encore publiée.
 
 ### 21/11/2026 — Tablette, « XP » (4.43.1), mode Odyssée désactivable (4.44.0), étude du multiclassage
 

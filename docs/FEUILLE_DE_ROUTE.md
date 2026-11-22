@@ -39,7 +39,9 @@ armes~~, ~~étude du mode Odyssée désactivable~~ (`docs/etudes/MODE_ODYSSEE.md
 (21/11/2026, publiée) : ~~« XP » au lieu de « PX » et palier du niveau suivant sous la case
 XP~~. Fait en 4.44.0 (21/11/2026, publiée le 22/11/2026) : ~~mode Odyssée désactivable~~ (case
 « Mode Odyssée » du menu « Gestion », d'après les réponses de Franck du 21/11/2026, section 6 de
-l'étude). Faite le 21/11/2026 : ~~étude du multiclassage~~ (`docs/etudes/MULTICLASSAGE.md`).
+l'étude). Fait en 4.45.0 (22/11/2026, **pas encore publiée**) : ~~« Points de Foi » (maîtrise +
+Sagesse par niveau, remis par « Passer au niveau ») et Inspiration héroïque limitée à 1 mode
+coupé~~. Faite le 21/11/2026 : ~~étude du multiclassage~~ (`docs/etudes/MULTICLASSAGE.md`).
 Reste :
 
 1. **Multiclassage** : l'étude est faite et contre-vérifiée, rien n'est construit. Elle conseille
@@ -57,6 +59,11 @@ Décisions de Franck en attente sur la 4.44.0 (mode Odyssée) :
 - Encadré « Odyssée » vidé à la main, mode coupé : il reste à l'écran jusqu'au verrou, au
   rechargement ou à l'impression (pour corriger une renommée mise à 0 par erreur).
 - Encadré caché : pour y écrire un destin, il faut d'abord recocher la case (dit dans la notice).
+
+Petits restes de la 4.45.0 (pas urgents) : mode coupé, une vieille valeur au-delà de 1 (« 3 »,
+« 2/3 ») n'est pas corrigée d'elle-même ; « − » la ramène à 1 d'un coup. La pastille des points de
+Foi suit la Sagesse de la fiche, objets magiques compris seulement s'ils sont saisis dans la case
+Sagesse.
 
 Petits restes de la 4.44.0 (pas urgents) : une fiche vierge dont on a seulement décoché le mode
 perd ce réglage à la reconnexion (taper un nom suffit ; à revoir avec le choix de la campagne dans
