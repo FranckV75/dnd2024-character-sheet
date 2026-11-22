@@ -5,12 +5,13 @@
  */
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { deriveCharacter, computeWeapon } from '../js/rules/character.js';
 import { classReminderNotes } from '../js/rules/class-reminders.js';
 import { subclassDefenseNotes } from '../js/rules/subclass-combat.js';
 import { concentrationView } from '../js/rules/concentration.js';
 import { masteryDetails } from '../js/rules/weapon-masteries.js';
-import { effectiveBuffs, buffsForCharacter } from '../js/rules/weapons.js';
+import { effectiveBuffs, buffsForCharacter, rageLit } from '../js/rules/weapons.js';
 import {
     rageBlockedByArmor, rageInEffect, rageArmorWarning, RAGE_ARMOR_WARNING, RAGE_ARMOR_STATUS
 } from '../js/rules/rage.js';
@@ -124,5 +125,30 @@ describe('Effets de la Rage non comptés en armure lourde', () => {
         assert.equal(concentrationView(record, deriveCharacter(record)).brokenBy, 'rage');
         const plate = { ...record, dynamic_armors: [PLATE] };
         assert.equal(concentrationView(plate, deriveCharacter(plate)).brokenBy, null);
+    });
+});
+
+describe('Halo et embrasement de la Rage (js/ui/feedback.js)', () => {
+    const lit = (record) => rageLit(record, deriveCharacter(record));
+
+    test('allumés en Rage, éteints en armure lourde (le bouton reste allumé)', () => {
+        assert.equal(lit(barbarian()), true);
+        assert.equal(lit(barbarian({ dynamic_armors: [BREASTPLATE] })), true);
+        const plate = barbarian({ dynamic_armors: [PLATE] });
+        assert.equal(lit(plate), false);
+        assert.equal(plate.combat_buffs.rage, true);
+        assert.equal(lit(barbarian({ dynamic_armors: [{ ...PLATE, equipped: false }] })), true);
+    });
+
+    test('éteints sans le bouton, ou pour une autre classe', () => {
+        assert.equal(lit(barbarian({ combat_buffs: {} })), false);
+        assert.equal(lit(barbarian({ char_class: 'Guerrier' })), false);
+        assert.equal(rageLit({}, deriveCharacter({})), false);
+    });
+
+    test('feedback.js lit la Rage par rageLit, avec le dérivé de la fiche', () => {
+        const source = readFileSync(new URL('../js/ui/feedback.js', import.meta.url), 'utf8');
+        assert.match(source, /rageLit\(character, derivedOf\(character\)\)/);
+        assert.doesNotMatch(source, /effectiveBuffs\(/);
     });
 });

@@ -1,6 +1,6 @@
 // =============================================================================
 // FEEDBACK.JS - Réactions de la fiche au jeu (styles : css/feedback.css)
-//  1. Rage active : <html data-rage="on">. Les cadres des armes, des points de vie et de
+//  1. Rage active (sans armure lourde, js/rules/rage.js) : <html data-rage="on">. Les cadres des armes, des points de vie et de
 //     la ressource de classe s'embrasent (halo de braise dessiné par un calque .rage-aura
 //     ajouté ici) et la pastille « Rage » devient incandescente. Au moment même où la Rage
 //     s'allume (et seulement alors), <html data-rage-lit> déclenche l'embrasement puis
@@ -12,8 +12,9 @@
 // joueur les a coupées (motionOff() de motion-pref.js, relu à chaque usage).
 // =============================================================================
 
-import { classSlug, parseNumber } from '../rules/character.js';
-import { effectiveBuffs } from '../rules/weapons.js';
+import { parseNumber } from '../rules/character.js';
+import { rageLit } from '../rules/weapons.js';
+import { derivedOf } from './derived.js';
 import { el, sheetElements } from './dom.js';
 import { motionOff } from './motion-pref.js';
 
@@ -49,13 +50,14 @@ export function initFeedback(ctx) {
 // ---------------------------------------------------------------------------
 
 /**
- * Rage réellement active : bonus allumé ET proposé par la classe actuelle
- * (un bonus resté allumé après un changement de classe ne compte plus).
+ * Rage réellement active : bonus allumé ET proposé par la classe actuelle (un bonus resté allumé
+ * après un changement de classe ne compte plus), sans armure lourde équipée : la Rage est alors
+ * sans effet (js/rules/rage.js), ni halo ni embrasement, même si le bouton reste allumé.
  * @param {Object} character
  * @returns {boolean}
  */
 function rageActive(character) {
-    return effectiveBuffs(classSlug(character.char_class), character.combat_buffs).rage;
+    return rageLit(character, derivedOf(character));
 }
 
 function initRage(root, store) {

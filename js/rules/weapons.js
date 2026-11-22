@@ -353,6 +353,18 @@ export function effectiveBuffs(slug, buffs, character, derived) {
 }
 
 /**
+ * Rage réellement active, pour le halo et l'embrasement de la fiche (js/ui/feedback.js) : bouton
+ * allumé ET proposé par la classe actuelle (un bonus resté allumé après un changement de classe ne
+ * compte plus), sans armure lourde équipée (js/rules/rage.js : la Rage est alors sans effet).
+ * @param {Object} character
+ * @param {Object} derived - deriveCharacter(character)
+ * @returns {boolean}
+ */
+export function rageLit(character, derived) {
+    return effectiveBuffs(derived?.classSlug, character?.combat_buffs, character, derived).rage;
+}
+
+/**
  * Bonus de combat ouverts par la sous-classe du personnage, une fois son niveau atteint.
  * @param {Object} character
  * @param {{ subclass: string, level: number }} [derived] - deriveCharacter(character) : sous-classe
