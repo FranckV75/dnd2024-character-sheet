@@ -8,7 +8,7 @@
 // elle contient des modifications non envoyées.
 // =============================================================================
 
-import { HUMAN_FEAT_SLOT, CLASS_FEAT_SLOTS } from '../state/schema.js';
+import { HUMAN_FEAT_SLOT, CLASS_FEAT_SLOTS, EMPTY_WEAPON } from '../state/schema.js';
 
 const time = (iso) => {
     const t = Date.parse(iso || '');
@@ -155,13 +155,26 @@ export function withoutV4State(character) {
  */
 export const V3_MISSING_KEYS = Object.freeze(['profs_weapons', 'hd_total', 'hd_spent', 'profs_other']);
 
+/** Champs d'une arme que la v3 enregistre (getFormData de v3-final, identiques à EMPTY_WEAPON) */
+export const V3_WEAPON_FIELDS = Object.freeze(Object.keys(EMPTY_WEAPON));
+
+/** Arme réduite aux champs que la v3 enregistre (une valeur qui n'est pas un objet est gardée telle quelle) */
+function v3Weapon(weapon) {
+    if (!weapon || typeof weapon !== 'object' || Array.isArray(weapon)) return weapon;
+    return Object.fromEntries(V3_WEAPON_FIELDS.filter((field) => field in weapon).map((field) => [field, weapon[field]]));
+}
+
 /**
  * Fiche réduite à ce que la v3 enregistre, pour reconnaître une version réécrite par un onglet v3
  * sans autre changement. En plus de l'état de jeu v4 et des clés absentes de la v3 :
  * - Perception passive saisie à la main : la v3 n'écrit passive_perc_manual que s'il vaut 'true'
  *   (la v4 écrit '' quand on l'enlève) ;
  * - cases de ressource de classe (class_res_N) : la v3 n'écrit que ses propres cases, une case
- *   vide vaut une case absente. Une case cochée d'un côté et pas de l'autre reste une différence.
+ *   vide vaut une case absente. Une case cochée d'un côté et pas de l'autre reste une différence ;
+ * - réglages d'affichage (_visual_prefs : fond, thème, transparence) : la v3 les écrit toujours,
+ *   ce ne sont pas des données du personnage (déjà ignorés par js/state/snapshots.js) ;
+ * - armes : la v3 ne garde que ses 9 champs par arme (V3_WEAPON_FIELDS) ; les anciens champs atk
+ *   et dmg des fiches d'avant 2026 disparaissent. Les 9 champs gardés restent comparés.
  * La fiche doit déjà être normalisée (normalizeCharacter). Elle n'est pas modifiée.
  * @param {Object} character
  * @returns {Object}
@@ -169,6 +182,8 @@ export const V3_MISSING_KEYS = Object.freeze(['profs_weapons', 'hd_total', 'hd_s
 export function comparableWithV3(character) {
     const copy = withoutV4State(character);
     for (const key of V3_MISSING_KEYS) delete copy[key];
+    delete copy._visual_prefs;
+    if (Array.isArray(copy.dynamic_weapons)) copy.dynamic_weapons = copy.dynamic_weapons.map(v3Weapon);
     if (String(copy.passive_perc_manual) !== 'true') delete copy.passive_perc_manual;
     for (const key of Object.keys(copy)) {
         if (/^class_res_\d+$/.test(key) && copy[key] !== true) delete copy[key];
