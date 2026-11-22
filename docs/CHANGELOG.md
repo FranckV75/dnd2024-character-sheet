@@ -4,7 +4,7 @@ Toutes les modifications notables du projet sont documentées dans ce fichier. L
 
 ## [4.46.0] - 2026-11-22 (audit du 22/11/2026, Inspiration héroïque en mode Odyssée, Dépenser les points de Foi)
 Corrections de l'audit de santé du 22/11/2026 (lots A, B, C, D et F ; lot E clos par la décision
-de Franck : les textes AideDD restent). Non publiée.
+de Franck : les textes AideDD restent). Publiée le 23/11/2026.
 ### Added
 - Mode Odyssée : bouton « Inspiration héroïque » sous la pastille des points de Foi, quand il sert
   (Humain, Champion niveau 10 ou plus, ou bouton déjà allumé ; règle `odysseyInspirationUseful`,

@@ -18,7 +18,7 @@ grimoire a été refait en 4.46.0 (`js/ui/spells.js` de 1 334 à 452 lignes) et 
 (`js/ui/weapons.js` de 1 233 à 247 lignes ; voir `docs/ARCHITECTURE.md`). Le prochain audit se
 fera à la demande de Franck.
 
-Fait en 4.46.0 (22/11/2026, non publiée : attend le « Publie » de Franck), d'après l'audit du
+Fait en 4.46.0 (22/11/2026, publiée le 23/11/2026), d'après l'audit du
 22/11/2026 :
 - ~~Lot A, petites corrections~~ : serveur de travail réservé à l'ordinateur (et contrôle dans
   `npm run check`) ; question « Modifié par l'ancienne version » qui n'est plus posée pour rien,
@@ -99,7 +99,7 @@ l'étude). Fait en 4.45.0 (22/11/2026, publiée le 22/11/2026) : ~~« Points de 
 Sagesse par niveau, remis par « Passer au niveau »), fenêtre des faveurs à 1, 3 et 5 points
 (toucher la pastille) avec le rappel des dieux de Thyléa et Inspiration héroïque limitée à 1 mode
 coupé~~. Faite le 21/11/2026 : ~~étude du multiclassage~~ (`docs/etudes/MULTICLASSAGE.md`). Faits en
-4.46.0 (22/11/2026, non publiée) : ~~bouton « Dépenser » des points de Foi~~ et ~~Inspiration
+4.46.0 (22/11/2026, publiée le 23/11/2026) : ~~bouton « Dépenser » des points de Foi~~ et ~~Inspiration
 héroïque en mode Odyssée~~ (point 1, audit du 22/11/2026).
 Reste :
 

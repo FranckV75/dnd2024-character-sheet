@@ -12,19 +12,15 @@ en fin de session :
 
 ## En ce moment
 
-- **En ligne** : version **4.45.0** (« Points de Foi » en mode Odyssée, avec leur nombre par
-  niveau, la fenêtre des faveurs à 1, 3 et 5 points, le rappel des dieux de Thyléa et la remise
-  par « Passer au niveau » ; « Inspiration héroïque », une seule à la fois, mode coupé), publiée
-  le 22/11/2026 avec l'accord de Franck. Décisions en attente sur la 4.44.0 et la 4.45.0 : point 3
-  de `docs/FEUILLE_DE_ROUTE.md`.
-- **Prête sur la branche `v4`, NON publiée** : version **4.46.0**, corrections de l'audit de santé
-  du 22/11/2026 (lots A, B, C, D, F ; lot E clos par la décision de Franck sur les textes AideDD).
-  Pour le joueur : bouton « Inspiration héroïque » en mode Odyssée, boutons « Dépenser » de la
-  fenêtre « Points de Foi », message coupé de la barre du haut lisible au toucher, Rage sans
-  effet en armure lourde, titres gardés avec leur texte à l'impression, pastille magique en thème
-  sombre. Le reste est du ménage invisible (découpage du grimoire et des armes). En attente du
-  « Publie » de Franck ; ses décisions en attente sur la 4.46.0 sont au point 1 de
-  `docs/FEUILLE_DE_ROUTE.md` (la principale : colonne Dégâts coupée sur tablette).
+- **En ligne** : version **4.46.0**, publiée le 23/11/2026 avec l'accord de Franck (« Publie ») :
+  corrections de l'audit de santé du 22/11/2026 (lots A, B, C, D, F ; lot E clos par la décision
+  de Franck sur les textes AideDD). Pour le joueur : bouton « Inspiration héroïque » en mode
+  Odyssée, boutons « Dépenser » de la fenêtre « Points de Foi », message coupé de la barre du haut
+  lisible au toucher, Rage sans effet en armure lourde, titres gardés avec leur texte à
+  l'impression, pastille magique en thème sombre, groupe « Bonus de maîtrise / Points de Foi /
+  Vitesse » aligné. Le reste est du ménage invisible (découpage du grimoire et des armes).
+  Décisions de Franck en attente sur la 4.46.0 : point 1 de `docs/FEUILLE_DE_ROUTE.md` (la
+  principale : colonne Dégâts coupée sur tablette) ; sur la 4.44.0 et la 4.45.0 : point 3.
 - **Serveur de travail** : `npm run dev` n'écoute plus que l'ordinateur (127.0.0.1 et ::1) et ne
   sert jamais `.git` ; relancé le 22/11/2026 avec cette protection (vérifié avec netstat).
 - **Multiclassage** : étude faite et contre-vérifiée (`docs/etudes/MULTICLASSAGE.md`). Rien de
@@ -47,7 +43,7 @@ en fin de session :
 
 ### À vérifier par Franck (reste : l'iPad de Patricia)
 
-À voir sur tablette quand la 4.46.0 sera en ligne (Android, PC, et iPad de Patricia) :
+À voir sur tablette maintenant que la 4.46.0 est en ligne (Android, PC, et iPad de Patricia) :
 - Mode Odyssée, Humain ou Champion niveau 10 : le bouton « Inspiration héroïque » sous la pastille
   des Points de Foi s'allume (doré) et s'éteint au toucher, aussi fiche verrouillée ; il est absent
   pour un Elfe et en mode coupé.
@@ -98,7 +94,7 @@ l'instant) :
 
 Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 1. ~~audit et découpage~~ : faits (4.38.0) ; second audit le 22/11/2026, corrections et
-   découpage du grimoire et des armes en 4.46.0 (non publiée), point 1 de `docs/FEUILLE_DE_ROUTE.md` ;
+   découpage du grimoire et des armes en 4.46.0 (publiée le 23/11/2026), point 1 de `docs/FEUILLE_DE_ROUTE.md` ;
 2. ~~restes et points relevés~~ : faits (4.39.0) ; restent les décisions listées au point 2 de
    `docs/FEUILLE_DE_ROUTE.md` ;
 3. ~~discussion pour trier les idées~~ : faite le 18/11/2026. Ordre validé par Franck : liste des
@@ -110,7 +106,7 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 
 ## Sessions
 
-### 22/11/2026 — Audit de santé, puis lots A à F : petites corrections, Inspiration héroïque en mode Odyssée, ménage, découpage du grimoire et des armes, « Dépenser » (4.46.0, non publiée)
+### 22/11/2026 — Audit de santé, puis lots A à F : petites corrections, Inspiration héroïque en mode Odyssée, ménage, découpage du grimoire et des armes, « Dépenser » (4.46.0, publiée le 23/11/2026)
 
 - Audit `/audit-fiche` de la 4.45.0 : fiche en bonne santé, aucun défaut grave ; un point de
   sécurité sur le PC (serveur de travail ouvert au Wi-Fi), de petites corrections, du ménage.
@@ -124,7 +120,7 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
   0 erreur console.
 - Laissé à Franck : colonne Dégâts et noms d'armes magiques coupés sur tablette (élargir ou
   accepter le trait d'union) et les autres questions du point 1 de la feuille de route.
-- 4.46.0 prête localement, rien de poussé : attend le « Publie » de Franck.
+- 4.46.0 publiée le 23/11/2026 sur le « Publie » de Franck (v4 et master = même commit).
 
 ### 22/11/2026 — 4.44.0 et 4.45.0 publiées : « Points de Foi », faveurs, dieux de Thyléa, Inspiration héroïque
 
