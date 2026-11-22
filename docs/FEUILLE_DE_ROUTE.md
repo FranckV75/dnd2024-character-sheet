@@ -39,7 +39,7 @@ armes~~, ~~étude du mode Odyssée désactivable~~ (`docs/etudes/MODE_ODYSSEE.md
 (21/11/2026, publiée) : ~~« XP » au lieu de « PX » et palier du niveau suivant sous la case
 XP~~. Fait en 4.44.0 (21/11/2026, publiée le 22/11/2026) : ~~mode Odyssée désactivable~~ (case
 « Mode Odyssée » du menu « Gestion », d'après les réponses de Franck du 21/11/2026, section 6 de
-l'étude). Fait en 4.45.0 (22/11/2026, **pas encore publiée**) : ~~« Points de Foi » (maîtrise +
+l'étude). Fait en 4.45.0 (22/11/2026, publiée le 22/11/2026) : ~~« Points de Foi » (maîtrise +
 Sagesse par niveau, remis par « Passer au niveau »), fenêtre des faveurs à 1, 3 et 5 points
 (toucher la pastille) avec le rappel des dieux de Thyléa et Inspiration héroïque limitée à 1 mode coupé~~. Faite le 21/11/2026 : ~~étude du multiclassage~~ (`docs/etudes/MULTICLASSAGE.md`).
 Reste :
