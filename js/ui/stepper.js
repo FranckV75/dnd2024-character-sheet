@@ -92,7 +92,7 @@ export function wrapWithSteppers(input, { noun, onStep, className = '', rowClass
 
 /**
  * Renomme les boutons − et + qui entourent une case (ce qu'elle compte a changé de nom : « point
- * d'Inspiration ou de Foi » ou « point d'Inspiration », mode Odyssée, js/ui/odyssey.js).
+ * de Foi » ou « Inspiration héroïque » selon le mode Odyssée, js/ui/odyssey.js).
  * @param {HTMLElement} input - case entourée par wrapWithSteppers
  * @param {string} noun
  */

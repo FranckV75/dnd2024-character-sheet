@@ -139,8 +139,12 @@
 }
 
 /* Libellé et valeur groupés au centre de la case ; dans un même groupe, les libellés de
-   longueurs différentes (« Inspiration héroïque ou points de Foi » sur 3 lignes, « Vitesse »
-   sur 1) se calent en bas d'une même hauteur, pour que les valeurs restent alignées */
+   longueurs différentes (« Bonus de maîtrise » ou « Inspiration héroïque » sur 2 lignes,
+   « Points de Foi » ou « Vitesse » sur 1) se calent en bas d'une même hauteur, pour que les
+   valeurs restent alignées. Mesuré en 4.46 : 2 lignes au plus de 768 à 1920 px et en A4 ; la
+   3e ligne réservée n'est qu'une marge (libellé plus long, police plus grande). Sans réserve,
+   les valeurs se décalent (8 px à 768 px). Les pastilles sous « Points de Foi » (« +N par
+   niveau », « Inspiration héroïque ») allongent cette case : sa valeur remonte, réserve ou non. */
 .stat-group .stat-cell .label {
     display: flex;
     align-items: flex-end;
