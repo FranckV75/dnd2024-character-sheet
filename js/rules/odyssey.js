@@ -392,9 +392,13 @@ export const ODYSSEY_INSPIRATION_KEY = 'odyssey_inspiration';
 /** Nom du bouton */
 export const ODYSSEY_INSPIRATION_LABEL = 'Inspiration héroïque';
 
-/** L'Inspiration héroïque notée à part (mode actif) est-elle allumée ? ("1" ; absente ou "" : non) */
+/**
+ * L'Inspiration héroïque notée à part (mode actif) est-elle allumée ? ("1" ; absente ou "" : non).
+ * Seuls un texte ou un nombre sont lus : une valeur d'un autre type (fiche fabriquée) vaut « éteinte ».
+ */
 export function odysseyInspirationLit(record) {
-    return String(record?.[ODYSSEY_INSPIRATION_KEY] ?? OPTIONAL_KEY_DEFAULTS[ODYSSEY_INSPIRATION_KEY]).trim() === '1';
+    const value = record?.[ODYSSEY_INSPIRATION_KEY] ?? OPTIONAL_KEY_DEFAULTS[ODYSSEY_INSPIRATION_KEY];
+    return (typeof value === 'string' || typeof value === 'number') && String(value).trim() === '1';
 }
 
 /**

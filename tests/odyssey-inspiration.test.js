@@ -79,6 +79,20 @@ describe('Inspiration héroïque (mode Odyssée) : valeur enregistrée', () => {
         assert.equal(odysseyInspirationLit(sheet({ [ODYSSEY_INSPIRATION_KEY]: '0' })), false);
         assert.equal(odysseyInspirationLit({}), false);
         assert.equal(odysseyInspirationLit(null), false);
+        assert.equal(odysseyInspirationLit(sheet({ [ODYSSEY_INSPIRATION_KEY]: 1 })), true);
+    });
+
+    test('Fiche fabriquée (valeur d\'un type inattendu) : lue sans erreur, bouton éteint, valeur gardée', () => {
+        const WEIRD = [true, {}, [], ['1'], { toString: 1 }, { toString: 1, valueOf: 1 }, [{ toString: 1 }], -3.5];
+        for (const value of WEIRD) {
+            const label = JSON.stringify(value);
+            const { character } = migrateCharacter(sheet({ char_species: 'Humain', [ODYSSEY_INSPIRATION_KEY]: value }));
+            const derived = deriveCharacter(character);
+            assert.equal(odysseyInspirationLit(character), false, label);
+            assert.doesNotThrow(() => odysseyInspirationUseful(character, derived), label);
+            assert.doesNotThrow(() => odysseyInspirationHint(character, derived), label);
+            assert.doesNotThrow(() => sheetFingerprint(character), label);
+        }
     });
 
     test('Valeur par défaut déclarée dans schema.js, mais jamais dans la fiche vierge', () => {
