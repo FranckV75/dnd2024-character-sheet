@@ -168,8 +168,8 @@ describe('Inspiration héroïque (mode Odyssée) : interface', () => {
 
     test('Bouton bascule (aria-pressed) qui explique ce qu\'il fait (barre du haut et infobulle)', () => {
         assert.match(ui, /'aria-pressed': 'false'/);
-        // Tablette : une ligne ; ordinateur : la colonne étroite des messages
-        assert.match(ui, /setStatus\(frenchSpaces\(odysseyInspirationMessage\(lit, compact\.matches \? STATUS_ROOM : STATUS_ROOM_NARROW\)\)\)/);
+        // Tablette : une ligne ; ordinateur : la colonne étroite des messages (statusRoom, tests/odyssey.test.js)
+        assert.match(ui, /odysseyInspirationMessage\(lit, statusRoom\(compact\.matches\)\)/);
         assert.match(ui, /toggle\.title = hint/);
     });
 

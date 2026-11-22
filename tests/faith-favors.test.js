@@ -7,7 +7,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { FAITH_FAVORS, FAITH_WAYS, FAITH_FOOTNOTE, FAITH_GODS, FAITH_GODS_INTRO, FAITH_SPELL_NOTE } from '../js/data/faith-favors.js';
-import { faithPoints, faithFavors, faithPointsSentence, pointsWord, FAITH_SPEND } from '../js/rules/odyssey.js';
+import { faithPoints, faithFavors, faithPointsSentence, pointsWord, payFavor, FAITH_SPEND } from '../js/rules/odyssey.js';
 
 describe('Points de Foi : les faveurs du guide', () => {
     test('trois paliers, à 1, 3 et 5 points, du moins cher au plus cher', () => {
@@ -80,14 +80,15 @@ describe('Points de Foi : la fenêtre (js/ui/odyssey.js)', () => {
 
     test('la pastille ouvre la fenêtre, seulement en mode Odyssée', () => {
         assert.match(source, /'aria-haspopup': 'dialog'/);
-        assert.match(source, /if \(odysseyActive\(character\)\) openFaithFavors\(store, setStatus, compact\)/);
+        assert.match(source, /if \(odysseyActive\([^)]*\)\) openFaithFavors\(/);
     });
 
-    test('la fenêtre se ferme par un seul bouton ; elle n\'écrit que les points dépensés (règle spendFaith)', () => {
+    test('la fenêtre se ferme par un seul bouton ; elle n\'écrit que les points dépensés (règle payFavor)', () => {
         const body = source.slice(source.indexOf('function openFaithFavors'), source.indexOf('function openFaithGods'));
-        assert.match(body, /actions: \[\{ label: 'Fermer', primary: true \}\]/);
-        assert.deepEqual(body.match(/store\.(update|set|replace)\([^;]*;/g), ['store.update({ heroic_inspiration: next });']);
-        assert.match(body, /const next = spendFaith\(value, tier\.cost\);/);
+        assert.match(body, /label: 'Fermer'/);
+        // Une seule écriture : le résultat de la règle (son comportement : tests/faith-spend.test.js)
+        assert.deepEqual(body.match(/store\.(update|set|replace)\([^;]*;/g), ['store.update(paid.patch);']);
+        assert.deepEqual(Object.keys(payFavor('3/5', 1).patch), ['heroic_inspiration']);
     });
 
     test('la fenêtre des dieux ne modifie pas la fiche', () => {

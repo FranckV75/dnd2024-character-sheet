@@ -9,11 +9,12 @@ import { readFileSync } from 'node:fs';
 import {
     ODYSSEY_MODE_KEY, ODYSSEY_SOURCE, ODYSSEY_MODE_LABEL, fromOdyssey,
     odysseyActive, setOdysseyModePatch, odysseyUse, odysseyKept, proposedSpecies, proposedSubclasses,
-    hiddenFeatIds, odysseyBoxUseful, inspirationWording, odysseyModeHint, odysseyModeMessage,
+    hiddenFeatIds, odysseyBoxUseful, odysseyBoxDisplay, inspirationWording, odysseyModeHint, odysseyModeMessage,
     odysseyDropped, odysseyDroppedMessage, faithPerLevel, faithMention, faithSentence, faithHint, faithReset,
     INSPIRATION_ONLY_ONE
 } from '../js/rules/odyssey.js';
-import { STATUS_ROOM, STATUS_ROOM_OPEN, STATUS_ROOM_NARROW } from '../js/data/status-bar.js';
+import { STATUS_ROOM, STATUS_ROOM_OPEN, STATUS_ROOM_NARROW, statusRoom } from '../js/data/status-bar.js';
+import { stepperLabels } from '../js/ui/stepper.js';
 import { DD_RULES } from '../js/data/dd-rules.js';
 import { FEATS_DATA } from '../js/data/feats.js';
 import { createDefaultCharacter, FEAT_SLOT_ORDER } from '../js/state/schema.js';
@@ -689,56 +690,77 @@ describe('Mode Odyssée : écran, impression et notice', () => {
     const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
     const ui = read('js/ui/odyssey.js');
 
-    test('La case est dans le menu « Gestion », masquée fiche verrouillée, et porte le nom de la règle', () => {
-        assert.match(ui, /getElementById\('toolbar-help'\)/);
-        assert.match(ui, /class: 'btn toolbar-check edit-only'/);
-        assert.match(ui, /type: 'checkbox', class: 'round-check'/);
-        assert.match(ui, /text: ODYSSEY_MODE_LABEL/);
-        assert.match(read('js/ui/toolbar.js'), /id: 'toolbar-help'/);
+    test('La case est dans le menu « Gestion », masquée fiche verrouillée, branchée après la barre et les compteurs', () => {
+        // L'endroit que l'interface cherche est bien celui que la barre crée
+        const host = read('js/ui/toolbar.js').match(/id: '(toolbar-help)'/)?.[1];
+        assert.ok(host, 'rangée « Mode d\'emploi » de la barre');
+        assert.ok(ui.includes(`getElementById('${host}')`));
+        assert.match(ui, /class: '[^']*\btoolbar-check\b[^']*\bedit-only\b/);
         // Branchée après la barre (la rangée existe) et après les compteurs (boutons de l'Inspiration)
         const inits = read('js/main.js').match(/for \(const init of \[([^\]]+)\]/)[1].split(',').map((name) => name.trim());
         assert.ok(inits.indexOf('initOdyssey') > inits.indexOf('initToolbar'));
         assert.ok(inits.indexOf('initOdyssey') > inits.indexOf('initCounters'));
     });
 
-    test('La case n\u2019écrit dans la fiche que par la règle, et seulement au toucher', () => {
-        // Chaque écriture passe par une règle : le mode (case du menu), l'Inspiration héroïque à part
-        // (bouton), les points de Foi dépensés (fenêtre des faveurs, spendFaith)
-        assert.deepEqual(ui.match(/store\.update\([^;]*;/g),
-            ['store.update(patch);', 'store.update(odysseyInspirationPatch(lit));', 'store.update({ heroic_inspiration: next });']);
+    test('La case n\u2019écrit dans la fiche que ce que donnent les règles', () => {
+        // Chaque écriture enregistre un résultat de règle : le mode (setOdysseyModePatch), l'Inspiration
+        // héroïque à part (odysseyInspirationPatch), une faveur payée (payFavor) ; jamais une clé écrite à la main
+        for (const call of ui.match(/store\.update\([^;]*;/g)) {
+            assert.doesNotMatch(call, /[{'"]/, call);
+        }
         assert.match(ui, /setOdysseyModePatch\(store\.get\(\), box\.checked\)/);
-        assert.match(ui, /box\.addEventListener\('change'/);
         // Aucun autre module de l'interface n'écrit la clé
         for (const file of ['js/ui/sheet.js', 'js/ui/toolbar.js', 'js/ui/counters.js', 'js/main.js', 'js/state/migrate.js', 'js/state/schema.js']) {
             assert.doesNotMatch(read(file), /odyssey_mode|ODYSSEY_MODE_KEY/, file);
         }
     });
 
-    test('Encadré de l\u2019onglet 3 : caché par la règle, jamais imprimé quand il est inutile', () => {
+    test('Encadré de l\u2019onglet 3 : montré s\u2019il sert, caché seulement à un moment calme, jamais imprimé inutile', () => {
+        const filled = { ...OFF, heroic_destiny: 'Vaincre le titan' };
+        assert.deepEqual(odysseyBoxDisplay(sheet(), true, true), { unused: false, hidden: false });
+        assert.deepEqual(odysseyBoxDisplay(filled, false, true), { unused: false, hidden: false });
+        // Inutile (mode coupé, encadré vide) : marqué pour l'impression aussitôt…
+        assert.deepEqual(odysseyBoxDisplay(sheet(OFF), true, false), { unused: true, hidden: true });
+        // …mais vidé à la main, il reste sous le doigt jusqu'au prochain moment calme
+        assert.deepEqual(odysseyBoxDisplay(sheet(OFF), false, false), { unused: true, hidden: false });
+        assert.deepEqual(odysseyBoxDisplay(sheet(OFF), false, true), { unused: true, hidden: true });
+        // Branchement : l'attribut posé par l'écran est celui que l'impression cache ; l'impression est un moment calme
         assert.match(read('index.html'), /<section class="box odyssey" data-fold-box="odyssey">/);
-        assert.match(ui, /odysseyBoxUseful\(character\)/);
-        assert.match(ui, /toggleAttribute\('data-odyssey-unused', !useful\)/);
+        assert.match(ui, /odysseyBoxDisplay\(/);
+        assert.match(ui, /'data-odyssey-unused'/);
         assert.match(read('css/print.css'), /\.odyssey\[data-odyssey-unused\] \{\s*display: none;\s*\}/);
-        // Écran et papier disent la même chose : l'encadré inutile quitte l'écran au moment d'imprimer
-        assert.match(ui, /addEventListener\('beforeprint', \(\) => sync\(store\.get\(\), true\)\)/);
+        assert.match(ui, /'beforeprint'/);
     });
 
-    test('Messages de la barre : place choisie selon l\u2019écran, choix abandonné signalé hors remplacement de fiche', () => {
-        assert.match(ui, /odysseyModeMessage\(store\.get\(\), compact\.matches \? STATUS_ROOM_OPEN : STATUS_ROOM_NARROW\)/);
-        assert.match(ui, /odysseyDroppedMessage\(before, character, compact\.matches \? STATUS_ROOM : STATUS_ROOM_NARROW\)/);
-        assert.match(ui, /if \(changedKeys === null\) return;/);
+    test('Messages de la barre : place choisie selon l\u2019écran (statusRoom)', () => {
+        assert.equal(statusRoom(true, true), STATUS_ROOM_OPEN, 'tablette, menu « Gestion » ouvert : deux lignes');
+        assert.equal(statusRoom(true), STATUS_ROOM, 'tablette : une ligne');
+        assert.equal(statusRoom(false), STATUS_ROOM_NARROW, 'ordinateur : colonne étroite');
+        assert.equal(statusRoom(false, true), STATUS_ROOM_NARROW);
+        // La case du mode est dans le menu ouvert ; les autres messages arrivent menu replié
+        assert.match(ui, /odysseyModeMessage\([^;]*statusRoom\(compact\.matches, true\)/);
+        for (const message of ['odysseyDroppedMessage', 'odysseyInspirationMessage', 'faithSpentMessage']) {
+            assert.match(ui, new RegExp(String.raw`${message}\([^;]*statusRoom\(compact\.matches\)`), message);
+        }
+        assert.doesNotMatch(ui, /STATUS_ROOM_OPEN|compact\.matches \?/, 'aucun choix de place écrit à la main');
         assert.match(ui, /matchMedia\(COMPACT_QUERY\)/);
         assert.match(read('js/ui/toolbar.js'), /export const COMPACT_QUERY = /);
+        // Abandon d'un choix : rien à l'ouverture ni au remplacement de la fiche
+        assert.match(ui, /if \(changedKeys === null\) return;/);
         // Menu ouvert sur tablette : deux lignes, place réservée (rien ne bouge sous le doigt)
         assert.match(read('css/toolbar.css'), /#app-bar:not\(\.app-bar--collapsed\) #save-status \{[^}]*min-height: 2\.5em;[^}]*white-space: normal;/);
         // Au doigt, la case qu'on vient de toucher ne reste pas « allumée »
         assert.match(read('css/toolbar.css'), /@media \(hover: none\) \{\s*\.app-bar \.toolbar-check:hover:not\(:disabled\) \{/);
     });
 
-    test('Libellé d\u2019Inspiration : posé par la règle, boutons − / + renommés', () => {
+    test('Libellé d\u2019Inspiration : boutons − / + nommés d\u2019après ce que compte la case', () => {
+        assert.deepEqual(stepperLabels(inspirationWording({}).noun),
+            { minus: 'Retirer 1 point de Foi', plus: 'Ajouter 1 point de Foi' });
+        assert.deepEqual(stepperLabels(inspirationWording(OFF).noun),
+            { minus: 'Retirer 1 Inspiration héroïque', plus: 'Ajouter 1 Inspiration héroïque' });
+        // Branchement : la case est renommée avec le nom que donne la règle
+        assert.match(ui, /renameSteppers\(input, [^)]*\.noun\)/);
         assert.match(ui, /inspirationWording\(character\)/);
-        assert.match(ui, /renameSteppers\(input, wording\.noun\)/);
-        assert.match(read('js/ui/stepper.js'), /export function renameSteppers\(/);
     });
 
     test('Les 8 fonds fournis restent dans la galerie (liste inchangée)', () => {

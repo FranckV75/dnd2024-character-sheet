@@ -13,3 +13,14 @@ export const STATUS_ROOM = 95;
 export const STATUS_ROOM_OPEN = 180;
 /** Ordinateur : colonne étroite à côté des boutons, deux lignes courtes */
 export const STATUS_ROOM_NARROW = 56;
+
+/**
+ * Place d'un message selon l'écran (simple choix entre les trois mesures ci-dessus).
+ * @param {boolean} compact - tablette (matchMedia(COMPACT_QUERY), js/ui/toolbar.js) ; sinon ordinateur
+ * @param {boolean} [menuOpen] - le message répond à une case du menu « Gestion », ouvert
+ * @returns {number} caractères
+ */
+export function statusRoom(compact, menuOpen = false) {
+    if (!compact) return STATUS_ROOM_NARROW;
+    return menuOpen ? STATUS_ROOM_OPEN : STATUS_ROOM;
+}

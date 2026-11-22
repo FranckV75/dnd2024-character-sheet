@@ -21,7 +21,7 @@
 //    ouvre la fenêtre « Points de Foi » : les faveurs à 1, 3 et 5 points, celles que les points de
 //    la case permettent, et comment les demander (js/data/faith-favors.js). Chaque faveur a son
 //    bouton « Dépenser N points » (grisé s'il en manque ou si la case contient du texte) : il retire
-//    les points de la case (spendFaith), met la fenêtre à jour sur place et le dit dans la barre du
+//    les points de la case (payFavor), met la fenêtre à jour sur place et le dit dans la barre du
 //    haut (le bouton + de la case les rend en cas d'erreur ; utilisable fiche verrouillée). Son
 //    bouton « Les dieux de Thyléa » ouvre par-dessus la liste des dieux, leur domaine et leurs
 //    faveurs. Mode coupé :
@@ -46,14 +46,13 @@ import { COMPACT_QUERY } from './toolbar.js';
 import {
     ODYSSEY_MODE_KEY, ODYSSEY_MODE_LABEL,
     odysseyActive, setOdysseyModePatch, odysseyModeHint, odysseyModeMessage, odysseyDroppedMessage,
-    odysseyBoxUseful, inspirationWording, faithPerLevel, faithMention, faithSentence, faithHint,
-    faithPoints, faithFavors, faithPointsSentence, pointsWord, FAITH_SPEND,
-    spendFaith, spendLabel, spendRefusal, faithSpentMessage,
+    odysseyBoxDisplay, inspirationWording, faithPerLevel, faithMention, faithSentence, faithHint,
+    faithWindow, payFavor, pointsWord, spendLabel, faithSpentMessage,
     ODYSSEY_INSPIRATION_LABEL, odysseyInspirationLit, odysseyInspirationUseful, odysseyInspirationPatch,
     odysseyInspirationMessage, odysseyInspirationHint
 } from '../rules/odyssey.js';
 import { FAITH_WAYS, FAITH_FOOTNOTE, FAITH_GODS, FAITH_GODS_INTRO, FAITH_SPELL_NOTE } from '../data/faith-favors.js';
-import { STATUS_ROOM, STATUS_ROOM_OPEN, STATUS_ROOM_NARROW } from '../data/status-bar.js';
+import { STATUS_ROOM_NARROW, statusRoom } from '../data/status-bar.js';
 
 /**
  * @param {{ root: HTMLElement, store: Object, setStatus: (message: string) => void }} ctx
@@ -89,7 +88,7 @@ export function initOdyssey({ root, store, setStatus }) {
         }
         store.update(patch);
         // La case est dans le menu ouvert : sur tablette, le message y dispose de deux lignes
-        setStatus(frenchSpaces(odysseyModeMessage(store.get(), compact.matches ? STATUS_ROOM_OPEN : STATUS_ROOM_NARROW)));
+        setStatus(frenchSpaces(odysseyModeMessage(store.get(), statusRoom(compact.matches, true))));
     });
 
     store.subscribe((character) => render(character));
@@ -110,7 +109,7 @@ function initDroppedNotice(store, setStatus, compact) {
         const before = previous;
         previous = character;
         if (changedKeys === null) return;
-        const message = odysseyDroppedMessage(before, character, compact.matches ? STATUS_ROOM : STATUS_ROOM_NARROW);
+        const message = odysseyDroppedMessage(before, character, statusRoom(compact.matches));
         if (message) setStatus(frenchSpaces(message));
     });
 }
@@ -125,10 +124,9 @@ function initBox(root, store) {
     if (!box) return;
     /** @param {boolean} settle - moment calme : l'encadré inutile peut disparaître de l'écran */
     const sync = (character, settle) => {
-        const useful = odysseyBoxUseful(character);
-        box.toggleAttribute('data-odyssey-unused', !useful);
-        if (useful) box.hidden = false;
-        else if (settle) box.hidden = true;
+        const display = odysseyBoxDisplay(character, settle, box.hidden);
+        box.toggleAttribute('data-odyssey-unused', display.unused);
+        if (box.hidden !== display.hidden) box.hidden = display.hidden;
     };
     store.subscribe((character, changedKeys) => sync(character, changedKeys === null || changedKeys.includes(ODYSSEY_MODE_KEY)));
     document.addEventListener('dd:lockchange', () => sync(store.get(), true));
@@ -169,7 +167,7 @@ function initInspiration(root, store, setStatus, compact) {
         if (!odysseyActive(character)) return;
         const lit = !odysseyInspirationLit(character);
         store.update(odysseyInspirationPatch(lit));
-        setStatus(frenchSpaces(odysseyInspirationMessage(lit, compact.matches ? STATUS_ROOM : STATUS_ROOM_NARROW)));
+        setStatus(frenchSpaces(odysseyInspirationMessage(lit, statusRoom(compact.matches))));
     });
     let shown = false;
     /** @param {Array<string>|null} changedKeys - null : fiche ouverte ou remplacée */
@@ -218,7 +216,7 @@ function openFaithFavors(store, setStatus, compact) {
     const character = store.get();
     const faith = faithPerLevel(derivedOf(character));
     const intro = el('p', { class: 'faith-intro', 'aria-live': 'polite' });
-    const tiers = faithFavors(faithPoints(character.heroic_inspiration)).map((tier) => {
+    const tiers = faithWindow(character.heroic_inspiration).tiers.map((tier) => {
         const status = el('span', { class: 'faith-tier-status' });
         const spend = el('button', {
             type: 'button',
@@ -234,36 +232,30 @@ function openFaithFavors(store, setStatus, compact) {
             el('p', { class: 'faith-spend-row' }, done, spend));
         return { tier, section, status, spend, done };
     });
-    /** Points, statuts « Possible » / « Il manque… » et boutons, d'après la case actuelle */
+    /** Points, statuts « Possible » / « Il manque… » et boutons, d'après la case actuelle (faithWindow) */
     const update = () => {
-        const value = store.get().heroic_inspiration;
-        const points = faithPoints(value);
-        intro.textContent = frenchSpaces(`${faithPointsSentence(points)} ${FAITH_SPEND}`);
-        for (const [index, state] of faithFavors(points).entries()) {
+        const state = faithWindow(store.get().heroic_inspiration);
+        intro.textContent = frenchSpaces(state.intro);
+        for (const [index, tier] of state.tiers.entries()) {
             const { section, status, spend } = tiers[index];
-            section.toggleAttribute('data-short', Boolean(state.missing));
-            status.textContent = state.status;
-            status.hidden = !state.status;
-            const refusal = spendRefusal(points, state.cost);
-            spend.disabled = spendFaith(value, state.cost) === null;
-            spend.title = frenchSpaces(refusal || `Retire ${pointsWord(state.cost)} de la case des points de Foi (${points} → ${points - state.cost}).`);
+            section.toggleAttribute('data-short', Boolean(tier.missing));
+            status.textContent = tier.status;
+            status.hidden = !tier.status;
+            spend.disabled = !tier.canSpend;
+            spend.title = frenchSpaces(tier.title);
         }
     };
-    /** Payer une faveur : les points quittent la case ; « + » les rend en cas d'erreur */
+    /** Payer une faveur (payFavor) : les points quittent la case ; « + » les rend en cas d'erreur */
     const spendOn = (tier) => {
-        const value = store.get().heroic_inspiration;
-        const next = spendFaith(value, tier.cost);
-        if (next === null) {
-            update();
-            return;
-        }
-        store.update({ heroic_inspiration: next });
+        const paid = payFavor(store.get().heroic_inspiration, tier.cost);
+        if (paid) store.update(paid.patch);
         update();
+        if (!paid) return;
         for (const entry of tiers) {
             entry.done.textContent = entry.tier.id === tier.id
-                ? frenchSpaces(faithSpentMessage(tier, faithPoints(value), faithPoints(next), STATUS_ROOM_NARROW)) : '';
+                ? frenchSpaces(faithSpentMessage(tier, paid.before, paid.after, STATUS_ROOM_NARROW)) : '';
         }
-        setStatus(frenchSpaces(faithSpentMessage(tier, faithPoints(value), faithPoints(next), compact.matches ? STATUS_ROOM : STATUS_ROOM_NARROW)));
+        setStatus(frenchSpaces(faithSpentMessage(tier, paid.before, paid.after, statusRoom(compact.matches))));
     };
     update();
     const ways = el('section', { class: 'level-up-section faith-ways' },

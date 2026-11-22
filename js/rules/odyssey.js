@@ -178,6 +178,21 @@ export function odysseyBoxUseful(record) {
 }
 
 /**
+ * Affichage de cet encadré (js/ui/odyssey.js) : utile, il est montré ; inutile, il est marqué pour
+ * ne pas être imprimé (attribut data-odyssey-unused, css/print.css) mais ne quitte l'écran qu'à un
+ * moment calme (changement du mode, ouverture ou remplacement de la fiche, verrou, impression) :
+ * vidé à la main, il reste sous le doigt.
+ * @param {Object} record
+ * @param {boolean} settle - moment calme
+ * @param {boolean} hidden - encadré caché en ce moment
+ * @returns {{ unused: boolean, hidden: boolean }}
+ */
+export function odysseyBoxDisplay(record, settle, hidden) {
+    const useful = odysseyBoxUseful(record);
+    return { unused: !useful, hidden: !useful && (settle || Boolean(hidden)) };
+}
+
+/**
  * Case de l'onglet Combat (clé heroic_inspiration, inchangée) : son libellé, le nom d'un de ses
  * points (boutons − / +) et son maximum.
  *  - Mode actif : « Points de Foi » (guide du MJ de l'Odyssée, p. 92, « Sacrifices et prières » : ils
@@ -314,6 +329,41 @@ export function spendRefusal(points, cost) {
     if (points === null) return 'La case des points de Foi contient du texte : retirez les points à la main.';
     if (points < cost) return `Il manque ${pointsWord(cost - points)} de Foi pour cette faveur.`;
     return '';
+}
+
+/**
+ * Contenu de la fenêtre « Points de Foi » d'après la case (js/ui/odyssey.js la redessine sur place
+ * après chaque dépense) : la phrase des points et, pour chaque palier de faveurs, son statut
+ * (« Possible », « Il manque 2 points »), si son bouton « Dépenser » est utilisable et son infobulle.
+ * @param {unknown} value - valeur de heroic_inspiration
+ * @returns {{ points: number|null, intro: string, tiers: Array<Object> }} tiers : ceux de
+ *   faithFavors, plus canSpend (spendFaith accepte) et title (refus, ou ce que fait le bouton)
+ */
+export function faithWindow(value) {
+    const points = faithPoints(value);
+    return {
+        points,
+        intro: `${faithPointsSentence(points)} ${FAITH_SPEND}`,
+        tiers: faithFavors(points).map((tier) => ({
+            ...tier,
+            canSpend: spendFaith(value, tier.cost) !== null,
+            title: spendRefusal(points, tier.cost)
+                || `Retire ${pointsWord(tier.cost)} de la case des points de Foi (${points} → ${points - tier.cost}).`
+        }))
+    };
+}
+
+/**
+ * Bouton « Dépenser » d'une faveur : ce qu'il enregistre et les points avant / après (pour le
+ * message, faithSpentMessage), ou null si la règle refuse (rien n'est écrit).
+ * @param {unknown} value - valeur de heroic_inspiration
+ * @param {number} cost - points de la faveur
+ * @returns {{ patch: { heroic_inspiration: string }, before: number, after: number }|null}
+ */
+export function payFavor(value, cost) {
+    const next = spendFaith(value, cost);
+    if (next === null) return null;
+    return { patch: { heroic_inspiration: next }, before: faithPoints(value), after: faithPoints(next) };
 }
 
 /**

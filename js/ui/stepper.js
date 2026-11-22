@@ -76,6 +76,15 @@ export function stepButton({ label, iconName, onStep, className = '' }) {
 }
 
 /**
+ * Noms des boutons − et + d'une case (« Retirer 1 point de Foi », « Ajouter 1 point de Foi »).
+ * @param {string} noun - ce que compte la case, au singulier
+ * @returns {{ minus: string, plus: string }}
+ */
+export function stepperLabels(noun) {
+    return { minus: `Retirer 1 ${noun}`, plus: `Ajouter 1 ${noun}` };
+}
+
+/**
  * Entoure une case de boutons − et + (rangée .stepper).
  * @param {HTMLElement} input
  * @param {{ noun: string, onStep: (delta: number) => boolean, className?: string, rowClass?: string }} options
@@ -84,8 +93,9 @@ export function stepButton({ label, iconName, onStep, className = '' }) {
 export function wrapWithSteppers(input, { noun, onStep, className = '', rowClass = '' }) {
     const row = el('div', { class: `stepper ${rowClass}`.trim() });
     input.before(row);
-    const minus = stepButton({ label: `Retirer 1 ${noun}`, iconName: 'minus', onStep: () => onStep(-1), className });
-    const plus = stepButton({ label: `Ajouter 1 ${noun}`, iconName: 'plus', onStep: () => onStep(1), className });
+    const labels = stepperLabels(noun);
+    const minus = stepButton({ label: labels.minus, iconName: 'minus', onStep: () => onStep(-1), className });
+    const plus = stepButton({ label: labels.plus, iconName: 'plus', onStep: () => onStep(1), className });
     row.append(minus, input, plus);
     return { row, minus, plus };
 }
@@ -98,7 +108,8 @@ export function wrapWithSteppers(input, { noun, onStep, className = '', rowClass
  */
 export function renameSteppers(input, noun) {
     const buttons = input.closest('.stepper')?.querySelectorAll(':scope > .step-btn') ?? [];
-    for (const [button, label] of [[buttons[0], `Retirer 1 ${noun}`], [buttons[1], `Ajouter 1 ${noun}`]]) {
+    const labels = stepperLabels(noun);
+    for (const [button, label] of [[buttons[0], labels.minus], [buttons[1], labels.plus]]) {
         if (!button || button.getAttribute('aria-label') === label) continue;
         button.setAttribute('aria-label', label);
         button.title = `${label} (appui long : plusieurs)`;

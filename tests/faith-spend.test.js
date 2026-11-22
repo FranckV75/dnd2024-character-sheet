@@ -1,13 +1,13 @@
 /**
  * TESTS — BOUTON « DÉPENSER » DE LA FENÊTRE « POINTS DE FOI » (mode Odyssée)
- * Règles : js/rules/odyssey.js (spendFaith, spendLabel, spendRefusal, faithSpentMessage).
+ * Règles : js/rules/odyssey.js (spendFaith, spendLabel, spendRefusal, faithSpentMessage, faithWindow, payFavor).
  * Fenêtre : js/ui/odyssey.js (openFaithFavors). Paliers : js/data/faith-favors.js (1, 3, 5 points).
  */
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-    spendFaith, spendLabel, spendRefusal, faithSpentMessage, faithPoints, faithFavors, FAITH_SPEND
+    spendFaith, spendLabel, spendRefusal, faithSpentMessage, faithPoints, faithFavors, faithWindow, payFavor, FAITH_SPEND
 } from '../js/rules/odyssey.js';
 import { STATUS_ROOM, STATUS_ROOM_NARROW } from '../js/data/status-bar.js';
 import { FAITH_FAVORS } from '../js/data/faith-favors.js';
@@ -86,21 +86,53 @@ describe('Points de Foi : libellés et phrases', () => {
     });
 });
 
-describe('Points de Foi : la fenêtre', () => {
-    const source = readFileSync(new URL('../js/ui/odyssey.js', import.meta.url), 'utf8');
-    const body = source.slice(source.indexOf('function openFaithFavors'), source.indexOf('function openFaithGods'));
-
-    test('Un bouton par palier, grisé quand la règle refuse, avec une infobulle', () => {
-        assert.match(body, /text: spendLabel\(tier\.cost\)/);
-        assert.match(body, /spend\.disabled = spendFaith\(value, state\.cost\) === null;/);
-        assert.match(body, /spend\.title = frenchSpaces\(refusal \|\|/);
+describe('Points de Foi : la fenêtre (faithWindow, payFavor)', () => {
+    test('Un bouton par palier, utilisable quand la règle accepte, avec une infobulle', () => {
+        const view = faithWindow('4/5');
+        assert.equal(view.points, 4);
+        assert.equal(view.intro, `Vous avez 4 points de Foi. ${FAITH_SPEND}`);
+        assert.deepEqual(view.tiers.map((tier) => [tier.id, tier.status, tier.canSpend]),
+            [['mineure', 'Possible', true], ['majeure', 'Possible', true], ['grande', 'Il manque 1 point', false]]);
+        assert.equal(view.tiers[1].title, 'Retire 3 points de la case des points de Foi (4 → 1).');
+        assert.equal(view.tiers[2].title, 'Il manque 1 point de Foi pour cette faveur.');
     });
 
-    test('Après la dépense : fenêtre mise à jour sur place, message dans la barre du haut', () => {
-        const spendOn = body.slice(body.indexOf('const spendOn'));
-        assert.match(spendOn, /store\.update\(\{ heroic_inspiration: next \}\);\s*update\(\);/);
+    test('Case en texte libre : aucun bouton utilisable, la fenêtre le dit', () => {
+        const view = faithWindow('2 (béni)');
+        assert.equal(view.points, null);
+        assert.match(view.intro, /contient du texte/);
+        for (const tier of view.tiers) {
+            assert.equal(tier.canSpend, false);
+            assert.equal(tier.status, '');
+            assert.match(tier.title, /retirez les points à la main/);
+        }
+    });
+
+    test('Bouton utilisable si et seulement si la dépense est acceptée', () => {
+        for (const value of ['', '0', '1', '2/4', '3', '4/5', '5/5', '7', '2 (béni)', '-1', '1234567/2']) {
+            for (const tier of faithWindow(value).tiers) {
+                assert.equal(tier.canSpend, payFavor(value, tier.cost) !== null, `${value} / ${tier.cost}`);
+            }
+        }
+    });
+
+    test('Payer : la case perd les points (maximum noté gardé), avant / après pour le message', () => {
+        assert.deepEqual(payFavor('5/5', major.cost), { patch: { heroic_inspiration: '2/5' }, before: 5, after: 2 });
+        assert.deepEqual(payFavor('3', minor.cost), { patch: { heroic_inspiration: '2' }, before: 3, after: 2 });
+        assert.equal(payFavor('4', great.cost), null);
+        assert.equal(payFavor('2 (béni)', minor.cost), null);
+        // Après la dépense, la fenêtre redessinée suit la case
+        const paid = payFavor('5/5', great.cost);
+        assert.deepEqual(faithWindow(paid.patch.heroic_inspiration).tiers.map((tier) => tier.canSpend), [false, false, false]);
+    });
+
+    test('Branchement : la fenêtre se redessine par faithWindow et paie par payFavor', () => {
+        const source = readFileSync(new URL('../js/ui/odyssey.js', import.meta.url), 'utf8');
+        const body = source.slice(source.indexOf('function openFaithFavors'), source.indexOf('function openFaithGods'));
+        assert.match(body, /faithWindow\(store\.get\(\)\.heroic_inspiration\)/);
+        assert.match(body, /payFavor\(store\.get\(\)\.heroic_inspiration, tier\.cost\)/);
+        assert.match(body, /spend\.disabled = !tier\.canSpend;/);
         // Rappel à côté du bouton (la barre du haut est sous la fenêtre sur tablette)
-        assert.match(spendOn, /entry\.done\.textContent = /);
-        assert.match(spendOn, /faithSpentMessage\(tier, faithPoints\(value\), faithPoints\(next\), compact\.matches \? STATUS_ROOM : STATUS_ROOM_NARROW\)/);
+        assert.match(body, /entry\.done\.textContent = /);
     });
 });
