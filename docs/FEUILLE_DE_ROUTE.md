@@ -40,8 +40,8 @@ armes~~, ~~étude du mode Odyssée désactivable~~ (`docs/etudes/MODE_ODYSSEE.md
 XP~~. Fait en 4.44.0 (21/11/2026, publiée le 22/11/2026) : ~~mode Odyssée désactivable~~ (case
 « Mode Odyssée » du menu « Gestion », d'après les réponses de Franck du 21/11/2026, section 6 de
 l'étude). Fait en 4.45.0 (22/11/2026, **pas encore publiée**) : ~~« Points de Foi » (maîtrise +
-Sagesse par niveau, remis par « Passer au niveau ») et Inspiration héroïque limitée à 1 mode
-coupé~~. Faite le 21/11/2026 : ~~étude du multiclassage~~ (`docs/etudes/MULTICLASSAGE.md`).
+Sagesse par niveau, remis par « Passer au niveau »), fenêtre des faveurs à 1, 3 et 5 points
+(toucher la pastille) et Inspiration héroïque limitée à 1 mode coupé~~. Faite le 21/11/2026 : ~~étude du multiclassage~~ (`docs/etudes/MULTICLASSAGE.md`).
 Reste :
 
 1. **Multiclassage** : l'étude est faite et contre-vérifiée, rien n'est construit. Elle conseille
@@ -63,7 +63,8 @@ Décisions de Franck en attente sur la 4.44.0 (mode Odyssée) :
 Petits restes de la 4.45.0 (pas urgents) : mode coupé, une vieille valeur au-delà de 1 (« 3 »,
 « 2/3 ») n'est pas corrigée d'elle-même ; « − » la ramène à 1 d'un coup. La pastille des points de
 Foi suit la Sagesse de la fiche, objets magiques compris seulement s'ils sont saisis dans la case
-Sagesse.
+Sagesse. La fenêtre des faveurs ne retire pas les points elle-même (bouton − de la case) ; un
+bouton « Dépenser » par palier reste possible si Franck le souhaite.
 
 Petits restes de la 4.44.0 (pas urgents) : une fiche vierge dont on a seulement décoché le mode
 perd ce réglage à la reconnexion (taper un nom suffit ; à revoir avec le choix de la campagne dans

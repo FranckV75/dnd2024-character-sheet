@@ -2,7 +2,7 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
-## [4.45.0] - 2026-11-22 (Points de Foi et Inspiration héroïque)
+## [4.45.0] - 2026-11-22 (Points de Foi, leurs faveurs, et Inspiration héroïque)
 ### Changed
 - Mode Odyssée actif : la case de l'onglet Combat s'appelle « Points de Foi » (demande de Franck,
   22/11/2026 ; elle s'appelait « Inspiration héroïque ou points de Foi »). Clé inchangée
@@ -12,7 +12,11 @@ Toutes les modifications notables du projet sont documentées dans ce fichier. L
 ### Added
 - Pastille « +5 par niveau » sous les points de Foi : bonus de maîtrise + modificateur de Sagesse,
   au moins 1 (guide du MJ de l'Odyssée p. 92, « Sacrifices et prières » ; minimum choisi par
-  Franck). Un toucher l'explique dans la barre du haut, la souris dans l'infobulle.
+  Franck). La souris l'explique dans l'infobulle.
+- Fenêtre « Points de Foi » (toucher la pastille, demande de Franck) : les faveurs divines à 1, 3
+  et 5 points, marquées « Possible » ou « Il manque N points » d'après la case, puis comment les
+  demander (prière, sacrifice) et le rôle du MJ. Résumé avec nos mots (`js/data/faith-favors.js`) ;
+  la fenêtre ne change rien à la fiche.
 - « Passer au niveau », mode Odyssée actif : la case repart de 0 et reçoit les points du nouveau
   niveau, écrits « N/N » comme les fiches de la table ; une case en texte libre n'est jamais
   réécrite (la fenêtre le dit).

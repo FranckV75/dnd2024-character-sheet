@@ -17,7 +17,8 @@ en fin de session :
   (« XP ») a été publiée le 21/11/2026. Décisions en attente sur la 4.44.0 : point 3 de
   `docs/FEUILLE_DE_ROUTE.md`.
 - **Prête, pas encore publiée** : version **4.45.0** sur `v4` (« Points de Foi » en mode Odyssée,
-  avec leur nombre par niveau et la remise par « Passer au niveau » ; « Inspiration héroïque »,
+  avec leur nombre par niveau, la fenêtre des faveurs à 1, 3 et 5 points et la remise par
+  « Passer au niveau » ; « Inspiration héroïque »,
   une seule à la fois, mode coupé). Attend le « Publie » de Franck.
 - **Multiclassage** : étude faite et contre-vérifiée (`docs/etudes/MULTICLASSAGE.md`). Rien de
   construit : attend les réponses de Franck (14 questions, section 8) et les photos du chapitre 2
@@ -52,7 +53,9 @@ points de Foi » (corrigé en 4.45.0).
 
 À voir après la publication de la 4.45.0 (Android, PC, et iPad si possible) :
 - Mode Odyssée coché : la case s'appelle « Points de Foi » ; la pastille dorée dessous (« +5 par
-  niveau ») donne le bon nombre (bonus de maîtrise + Sagesse) ; la toucher l'explique en haut.
+  niveau ») donne le bon nombre (bonus de maîtrise + Sagesse) ; la toucher ouvre la fenêtre
+  « Points de Foi » (faveurs à 1, 3 et 5 points, « Possible » ou « Il manque… » selon la case),
+  qui se lit en entier et se ferme par « Fermer ».
 - « Passer au niveau » : la fenêtre a une ligne « Points de Foi » et la case devient « N/N ».
 - Mode décoché : « Inspiration héroïque », les boutons vont de 0 à 1 ; « + » à 1 le dit en haut.
 
@@ -79,7 +82,7 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 
 ## Sessions
 
-### 22/11/2026 — 4.44.0 publiée, « Points de Foi » et Inspiration héroïque (4.45.0)
+### 22/11/2026 — 4.44.0 publiée, « Points de Foi », leurs faveurs et Inspiration héroïque (4.45.0)
 
 - 4.44.0 publiée après le « Publie » de Franck, version en ligne vérifiée. Franck l'a regardée
   sur sa tablette : la case fonctionne ; mode coché, le libellé devait être « Points de Foi » seul.
@@ -88,7 +91,11 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 - Choix de Franck : pastille du nombre par niveau et remise par « Passer au niveau » (« N/N ») ;
   Inspiration limitée à 1 mode coupé ; au moins 1 point de Foi par niveau.
 - Fait en 4.45.0 : tests verts, essai à l'écran à 820 px clair et 768 px sombre (21 contrôles sur
-  21, 0 erreur console). Pas encore publiée.
+  21, 0 erreur console).
+- Demande de Franck avant de publier : une fenêtre des usages des points de Foi. Règle relue sur
+  la page « Sacrifices et prières » (Ressources/Manuels) : faveurs mineure (1), majeure (3),
+  grande (5), par prière ou sacrifice. Faite en 4.45.0 (toucher la pastille), résumée avec nos
+  mots ; 27 contrôles sur 27 à 820 px clair et 768 px sombre, 0 erreur. Pas encore publiée.
 
 ### 21/11/2026 — Tablette, « XP » (4.43.1), mode Odyssée désactivable (4.44.0), étude du multiclassage
 
