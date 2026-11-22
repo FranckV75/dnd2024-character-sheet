@@ -6,7 +6,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { FAITH_FAVORS, FAITH_WAYS, FAITH_FOOTNOTE } from '../js/data/faith-favors.js';
+import { FAITH_FAVORS, FAITH_WAYS, FAITH_FOOTNOTE, FAITH_GODS, FAITH_GODS_INTRO, FAITH_SPELL_NOTE } from '../js/data/faith-favors.js';
 import { faithPoints, faithFavors, faithPointsSentence, pointsWord, FAITH_SPEND } from '../js/rules/odyssey.js';
 
 describe('Points de Foi : les faveurs du guide', () => {
@@ -88,4 +88,57 @@ describe('Points de Foi : la fenêtre (js/ui/odyssey.js)', () => {
         assert.match(body, /actions: \[\{ label: 'Fermer', primary: true \}\]/);
         assert.doesNotMatch(body, /store\.update|store\.set/);
     });
+});
+
+describe('Points de Foi : les dieux de Thyléa', () => {
+    const gods = FAITH_GODS.flatMap((group) => group.gods);
+
+    test('titans, Cinq Dieux, puis Narsus (fiche de la table)', () => {
+        assert.deepEqual(FAITH_GODS.map((group) => group.gods.map((god) => god.name)), [
+            ['Thyléa', 'Kentimane', 'Sydon', 'Luthéria'],
+            ['Mytros', 'Volkan', 'Pythor', 'Kyrah', 'Vallus'],
+            ['Narsus']
+        ]);
+    });
+
+    test('domaines et alignements du tableau du guide du joueur', () => {
+        const byName = Object.fromEntries(gods.map((god) => [god.name, [god.domains, god.alignment]]));
+        assert.deepEqual(byName.Mytros, ['Lumière, Vie', 'Loyal bon']);
+        assert.deepEqual(byName.Sydon, ['Tempête', 'Loyal mauvais']);
+        assert.deepEqual(byName.Luthéria, ['Mort', 'Chaotique mauvais']);
+        assert.deepEqual(byName.Kyrah, ['Ruse', 'Chaotique bon']);
+        assert.deepEqual(byName.Narsus, ['', '']);
+    });
+
+    test('chaque dieu a une présentation et des faveurs en phrase complète', () => {
+        for (const god of gods) {
+            assert.match(god.about, /[.…]$/, god.name);
+            assert.match(god.favors, /^[^a-z].*[.…]$/, god.name);
+            assert.ok(god.about.length <= 170, `${god.name} : ${god.about.length}`);
+        }
+    });
+
+    test('les faveurs marquées * ont leur renvoi', () => {
+        assert.ok(gods.some((god) => god.favors.includes('*')));
+        assert.match(FAITH_SPELL_NOTE, /^\* Même effet que le sort/);
+        assert.match(FAITH_GODS_INTRO, /domaine/);
+    });
+
+    test('données figées', () => {
+        assert.ok(Object.isFrozen(FAITH_GODS) && FAITH_GODS.every((group) => Object.isFrozen(group.gods) && group.gods.every(Object.isFrozen)));
+    });
+
+    test('la fenêtre des points de Foi ouvre celle des dieux, qui revient par « Retour »', () => {
+        const source = readFileSync(new URL('../js/ui/odyssey.js', import.meta.url), 'utf8');
+        assert.match(source, /text: 'Les dieux de Thyléa'/);
+        assert.match(source, /on: \{ click: openFaithGods \}/);
+        assert.match(source, /actions: \[\{ label: 'Retour', primary: true \}\]/);
+    });
+});
+
+test('Dieux : nom complet tel que dans le guide (« Kentimane aux Cent Bras », sans virgule)', () => {
+    const full = FAITH_GODS.flatMap((group) => group.gods).map((god) => god.full);
+    assert.ok(full.includes('Kentimane aux Cent Bras'));
+    assert.ok(full.includes('Sydon, le Seigneur des Tempêtes'));
+    assert.ok(FAITH_GODS.flatMap((group) => group.gods).every((god) => god.full.startsWith(god.name)));
 });

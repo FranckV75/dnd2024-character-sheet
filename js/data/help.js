@@ -201,6 +201,10 @@ export const HELP_SECTIONS = Object.freeze([
                 text: "Touchez la pastille dorée sous « Points de Foi » : une fenêtre liste les faveurs qu'un dieu peut accorder, à 1, 3 ou 5 points, et marque « Possible » celles que vos points permettent. Elle rappelle aussi comment les demander : prière sur le moment, ou sacrifice pour les jours suivants. Le MJ a le dernier mot ; retirez ensuite les points avec le bouton −."
             },
             {
+                title: "Les dieux de Thyléa",
+                text: "Chaque faveur se demande à un dieu et doit entrer dans son domaine. Dans la fenêtre des points de Foi, le bouton « Les dieux de Thyléa » les rappelle : titans et Cinq Dieux, leur domaine, une courte présentation et les faveurs qu'ils accordent volontiers. « Retour » ramène aux faveurs."
+            },
+            {
                 title: "Les points de vie",
                 text: "Les boutons − et + changent les PV actuels ou les PV temporaires d'un point ; gardez le doigt appuyé pour aller plus vite. Le bouton « Dégâts / Soins » ouvre un pavé de chiffres : tapez un nombre, puis « Dégâts », « Soins » ou « PV temp. »."
             },

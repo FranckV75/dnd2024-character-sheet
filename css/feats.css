@@ -389,6 +389,48 @@
     margin-top: 4px;
 }
 
+.modal-body .faith-gods-row {
+    margin: 4px 0 12px;
+}
+
+/* Fenêtre « Les dieux de Thyléa » (bouton de la fenêtre « Points de Foi ») */
+.modal-body .faith-god + .faith-god {
+    margin-top: 10px;
+}
+
+.modal-body .faith-god-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2px 12px;
+    margin: 0 0 2px;
+    font-family: var(--font-title);
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--text);
+}
+
+.modal-body .faith-god-domain {
+    font-family: var(--font-text);
+    font-size: 0.9rem;
+    font-style: italic;
+    font-weight: 600;
+    letter-spacing: normal;
+    color: var(--accent-ink);
+}
+
+.modal-body .faith-god-about,
+.modal-body .faith-god-favors {
+    margin: 0 0 2px;
+    font-family: var(--font-text);
+}
+
+.modal-body .faith-god-about {
+    color: var(--text-muted);
+}
+
 .modal-body .faith-footnote {
     margin-top: 12px;
     font-style: italic;

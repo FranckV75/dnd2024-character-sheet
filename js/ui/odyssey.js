@@ -19,7 +19,8 @@
 //  - Case de l'onglet Combat (clé heroic_inspiration) : « Points de Foi » quand le mode est actif,
 //    avec une pastille « +5 par niveau » (bonus de maîtrise + Sagesse, au moins 1) ; un toucher
 //    ouvre la fenêtre « Points de Foi » : les faveurs à 1, 3 et 5 points, celles que les points de
-//    la case permettent, et comment les demander (js/data/faith-favors.js). Mode coupé :
+//    la case permettent, et comment les demander (js/data/faith-favors.js) ; son bouton « Les dieux
+//    de Thyléa » ouvre par-dessus la liste des dieux, leur domaine et leurs faveurs. Mode coupé :
 //    « Inspiration héroïque », sans pastille ; ses boutons − / + vont de 0 à 1 (js/ui/counters.js).
 // Les listes d'espèces, de sous-classes et de dons suivent le mode dans js/ui/sheet.js.
 // Mise en forme : css/toolbar.css (.toolbar-check).
@@ -38,7 +39,7 @@ import {
     odysseyBoxUseful, inspirationWording, faithPerLevel, faithMention, faithSentence, faithHint,
     faithPoints, faithFavors, faithPointsSentence, pointsWord, FAITH_SPEND
 } from '../rules/odyssey.js';
-import { FAITH_WAYS, FAITH_FOOTNOTE } from '../data/faith-favors.js';
+import { FAITH_WAYS, FAITH_FOOTNOTE, FAITH_GODS, FAITH_GODS_INTRO, FAITH_SPELL_NOTE } from '../data/faith-favors.js';
 
 /**
  * @param {{ root: HTMLElement, store: Object, setStatus: (message: string) => void }} ctx
@@ -193,10 +194,47 @@ function openFaithFavors(character) {
         body: [
             el('p', { class: 'faith-intro', text: frenchSpaces(`${faithPointsSentence(points)} ${FAITH_SPEND}`) }),
             el('p', { class: 'faith-intro', text: frenchSpaces(faithSentence(faith)) }),
+            el('p', { class: 'faith-gods-row' }, el('button', {
+                type: 'button',
+                class: 'btn faith-gods-btn',
+                'aria-haspopup': 'dialog',
+                title: 'Les dieux à qui dédier une faveur, et ce que chacun accorde.',
+                on: { click: openFaithGods }
+            }, icon('star'), el('span', { class: 'btn-label', text: 'Les dieux de Thyléa' }))),
             ...tiers,
             ways,
             el('p', { class: 'faith-footnote', text: frenchSpaces(`${FAITH_FOOTNOTE} Source : guide du MJ de l'Odyssée, p. 92.`) })
         ],
         actions: [{ label: 'Fermer', primary: true }]
+    });
+}
+
+/**
+ * Fenêtre « Les dieux de Thyléa », ouverte par-dessus celle des points de Foi : chaque dieu, son
+ * domaine, une phrase de présentation et les faveurs qu'il accorde volontiers
+ * (js/data/faith-favors.js). « Retour » ramène à la fenêtre des points de Foi.
+ */
+function openFaithGods() {
+    const groups = FAITH_GODS.map((group) => el('section', { class: 'level-up-section faith-gods' },
+        el('h3', { class: 'level-up-title', text: group.title }),
+        ...group.gods.map((god) => el('article', { class: 'faith-god' },
+            el('h4', { class: 'faith-god-name' },
+                el('span', { text: god.full }),
+                ...(god.domains ? [el('span', { class: 'faith-god-domain', text: `${god.domains} · ${god.alignment}` })] : [])),
+            el('p', { class: 'faith-god-about', text: frenchSpaces(god.about) }),
+            el('p', { class: 'faith-god-favors' },
+                el('strong', { text: 'Faveurs : ' }), el('span', { text: frenchSpaces(god.favors) }))))));
+    openModal({
+        title: 'Les dieux de Thyléa',
+        icon: 'star',
+        wide: true,
+        focusField: false,
+        className: 'modal-faith',
+        body: [
+            el('p', { class: 'faith-intro', text: frenchSpaces(FAITH_GODS_INTRO) }),
+            ...groups,
+            el('p', { class: 'faith-footnote', text: frenchSpaces(`${FAITH_SPELL_NOTE} Sources : guide du joueur de l'Odyssée, p. 9 et 10, et fiche des faveurs de la table.`) })
+        ],
+        actions: [{ label: 'Retour', primary: true }]
     });
 }

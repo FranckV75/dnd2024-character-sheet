@@ -61,3 +61,84 @@ export const FAITH_FAVORS = Object.freeze([
         ])
     })
 ]);
+
+/**
+ * Dieux à qui dédier une faveur. Nom, titre, domaines et alignement : guide du joueur de
+ * l'Odyssée, p. 9-10 (« Les puissances de Thyléa », tableau « Divinités thyléennes ») ; phrase de
+ * présentation résumée avec nos mots. Faveurs typiques : fiche de la table, « Exemples d'atouts
+ * liés au portfolio » (photo de Franck, 22/11/2026) ; * = sort, voir FAITH_SPELL_NOTE.
+ * Narsus figure sur la fiche de la table mais pas dans le guide du joueur.
+ */
+export const FAITH_GODS = Object.freeze([
+    Object.freeze({
+        title: 'Les anciens titans',
+        gods: Object.freeze([
+            Object.freeze({
+                name: 'Thyléa', full: 'Thyléa, la Mère de tous', domains: 'Nature', alignment: 'Neutre',
+                about: "Déesse généreuse de la vie, qui a donné son nom au continent. Elle prend la forme d'un arbre géant au cœur du golfe Céruléen et parle par les saisons.",
+                favors: 'Points de vie temporaires, jets de savoir, Charme de vitalité, Amitié avec les animaux*.'
+            }),
+            Object.freeze({
+                name: 'Kentimane', full: 'Kentimane aux Cent Bras', domains: 'Destruction', alignment: 'Neutre',
+                about: 'Le plus puissant des titans, époux et gardien de la Grande Mère, avec cent têtes et cent bras.',
+                favors: 'Attaques ; tests et jets de sauvegarde de Force et de Constitution ; Résistance ; Mains de Kentimane.'
+            }),
+            Object.freeze({
+                name: 'Sydon', full: 'Sydon, le Seigneur des Tempêtes', domains: 'Tempête', alignment: 'Loyal mauvais',
+                about: "Maître des océans, jaloux et vengeur, qui punit par la tempête. Chaque village lui sacrifie ; on prie les Cinq Dieux en silence pour ne pas l'irriter.",
+                favors: "Beau temps, mer calme, tests de Charisme face à l'Ordre de Sydon."
+            }),
+            Object.freeze({
+                name: 'Luthéria', full: 'Luthéria, la Maîtresse des Rêves', domains: 'Mort', alignment: 'Chaotique mauvais',
+                about: 'Sœur et épouse de Sydon, elle accueille les morts aux Enfers et veille sur les races féeriques. Chaque boisson servie lui doit une libation.',
+                favors: 'Sauvegarde en cas de mort, Bénédiction de protection, Moquerie cruelle*.'
+            })
+        ])
+    }),
+    Object.freeze({
+        title: 'Les Cinq Dieux',
+        gods: Object.freeze([
+            Object.freeze({
+                name: 'Mytros', full: "Mytros, déesse de l'aube", domains: 'Lumière, Vie', alignment: 'Loyal bon',
+                about: 'La Reine d\'Argent, protectrice du royaume de Mytros. La plus puissante des Cinq et la source de la magie des prêtres.',
+                favors: 'Tous les jets de sauvegarde, Augure, Héroïsme…'
+            }),
+            Object.freeze({
+                name: 'Volkan', full: 'Volkan, dieu de la forge', domains: 'Forge', alignment: 'Neutre bon',
+                about: 'Époux de Mytros, vénéré par les nains, les artisans et les sorciers.',
+                favors: "Tests et jets de sauvegarde d'Intelligence, points de vie temporaires."
+            }),
+            Object.freeze({
+                name: 'Pythor', full: 'Pythor, dieu des batailles', domains: 'Guerre', alignment: 'Chaotique bon',
+                about: "Fils de Mytros et de Volkan, il marche parmi les mortels et règne sur Estoria.",
+                favors: 'Attaques ; tests et jets de sauvegarde de Force.'
+            }),
+            Object.freeze({
+                name: 'Kyrah', full: 'Kyrah, déesse de la musique', domains: 'Ruse', alignment: 'Chaotique bon',
+                about: 'Déesse rusée de la musique et de la poésie, la plus rapide des dieux ; les bardes en font leur muse.',
+                favors: 'Tests et jets de sauvegarde de Dextérité, Tromperie, Vitesse.'
+            }),
+            Object.freeze({
+                name: 'Vallus', full: 'Vallus, déesse de la sagesse', domains: 'Savoir', alignment: 'Loyal bon',
+                about: "Déesse de la sagesse et de la beauté, qui connaît l'histoire de Thyléa ; on la prie pour un conseil ou un indice.",
+                favors: 'Tests et jets de sauvegarde de Sagesse, Mythes et légendes*, Scarabée de protection.'
+            })
+        ])
+    }),
+    Object.freeze({
+        title: 'Autre dieu de la table',
+        gods: Object.freeze([
+            Object.freeze({
+                name: 'Narsus', full: 'Narsus', domains: '', alignment: '',
+                about: "Absent du guide du joueur : voir avec le MJ.",
+                favors: 'Tests et jets de sauvegarde de Charisme.'
+            })
+        ])
+    })
+]);
+
+/** Renvoi des faveurs marquées * */
+export const FAITH_SPELL_NOTE = '* Même effet que le sort, lancé au niveau du personnage, pendant 1 round.';
+
+/** Phrase d'ouverture de la fenêtre des dieux */
+export const FAITH_GODS_INTRO = "Chaque faveur se demande à un dieu et doit entrer dans son domaine. Voici les dieux de Thyléa et les faveurs qu'ils accordent volontiers ; le MJ a le dernier mot.";
