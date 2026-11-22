@@ -8,6 +8,9 @@
 //  4. Aucun caractère mal encodé (mojibake : un « é » devenu deux caractères)
 //  5. Le serveur de développement (scripts/serve.js) n'écoute que cet ordinateur
 //     (127.0.0.1, ::1 ou localhost) : jamais le Wi-Fi, qui verrait les vraies sauvegardes
+//  6. Aucune couleur écrite en dur dans les feuilles de style (#hex, rgb(), hsl()... avec des
+//     nombres, white, black, red...) hors des lignes qui définissent une variable (--nom: ...) :
+//     toute couleur passe par une variable, redéfinie pour le thème sombre et l'impression
 // =============================================================================
 
 import { execFileSync } from 'node:child_process';
@@ -84,6 +87,46 @@ if (!listenCalls.length) errors.push(`Aucun appel listen trouvé dans ${rel(serv
 for (const [call, , host] of listenCalls) {
     if (!LOOPBACK.test((host || '').trim())) {
         errors.push(`Serveur ouvert au réseau dans ${rel(serveFile)} : « ${call.trim()} » doit recevoir '127.0.0.1', '::1' ou 'localhost' en deuxième argument`);
+    }
+}
+
+/** Couleurs écrites en dur : code hexadécimal, fonction de couleur, mot de couleur courant
+ *  (transparent, currentColor, inherit... restent permis) */
+const HEX_COLOR = /#[0-9a-f]{3,8}(?![\w-])/i;
+const COLOR_FUNCTION = /(?<![\w-])(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\(((?:[^()]|\([^()]*\))*)\)/gi;
+const COLOR_WORD = /(?<![\w-])(white|black|red|green|blue|yellow|orange|purple|pink|gr[ae]y|gold|silver|brown|navy|crimson|maroon|olive|teal|aqua|cyan|magenta|fuchsia|lime|indigo|violet|beige|ivory|khaki|salmon|coral|tomato)(?![\w-])/i;
+/** Propriétés dont la valeur est un nom (animation « gold-glow », zone de grille...), pas une couleur */
+const NAME_PROPERTIES = /^(animation(-name)?|transition(-property)?|will-change|font-family|grid-template-areas|grid-area|counter-(reset|increment|set)|view-transition-name|container(-name)?)$/i;
+/** Seule exception : un masque ne garde que l'opacité de ses couleurs (#000 = visible), le thème
+ *  n'y change rien */
+const COLOR_FREE_PROPERTIES = /^(-webkit-)?mask(-image)?$/i;
+const blankOut = (text) => text.replace(/[^\n]/g, ' ');
+
+for (const file of listFiles(ROOT, '.css')) {
+    // Commentaires, chaînes (content: "...") et url(...) effacés, les numéros de ligne gardés
+    const source = readFileSync(file, 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, blankOut)
+        .replace(/"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'/g, blankOut)
+        .replace(/url\([^)]*\)/gi, blankOut);
+    // Texte avant chaque accolade : déclarations « propriété: valeur » séparées par « ; »
+    // (devant « { », le dernier morceau est un sélecteur)
+    for (const block of source.matchAll(/([^{}]*)([{}])/g)) {
+        const pieces = block[1].split(';');
+        if (block[2] === '{') pieces.pop();
+        let offset = block.index;
+        for (const piece of pieces) {
+            const decl = piece.match(/^\s*([-\w]+)\s*:([\s\S]*)$/);
+            if (decl && !decl[1].startsWith('--') && !NAME_PROPERTIES.test(decl[1]) && !COLOR_FREE_PROPERTIES.test(decl[1])) {
+                const value = decl[2];
+                // Une couleur construite avec des variables (hsl(var(--h) 70% 50%)) est permise
+                const hardFunction = [...value.matchAll(COLOR_FUNCTION)].some((m) => !m[1].includes('var('));
+                if (HEX_COLOR.test(value) || COLOR_WORD.test(value) || hardFunction) {
+                    const line = source.slice(0, offset + piece.search(/\S/)).split('\n').length;
+                    errors.push(`Couleur écrite en dur dans ${rel(file)}, ligne ${line} : « ${decl[1]}:${value.replace(/\s+/g, ' ').trimEnd()} » (passer par une variable --nom définie avec le thème)`);
+                }
+            }
+            offset += piece.length + 1;
+        }
     }
 }
 
