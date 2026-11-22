@@ -122,29 +122,62 @@
     text-align: center;
 }
 
+/* Cases d'un même groupe (« Bonus de maîtrise / Points de Foi / Vitesse », « Dés de vie / Dés
+   utilisés ») : des colonnes égales qui partagent les mêmes rangées (subgrid), pour que les
+   libellés soient sur une même ligne et les valeurs sur une autre, quoi qu'il y ait dessous.
+   Rangées : marge, libellé, valeur (ou case et boutons − / +, calées sur la ligne de base du
+   texte), pastille « +N par niveau », bouton « Inspiration héroïque » (mode Odyssée,
+   js/ui/odyssey.js), marge. La pastille de la Vitesse (« dont +3 m », parfois sur 3 lignes)
+   s'étend sur les deux rangées du dessous : elle ne repousse pas le bouton de la case voisine.
+   Les deux marges égales centrent l'ensemble ; une rangée vide ne prend aucune place (pas
+   d'écart entre rangées : chaque élément sous le libellé porte son propre écart de 6 px). */
 .stat-group {
-    display: flex;
-    align-items: stretch;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-template-rows: 1fr repeat(4, auto) 1fr;
 }
 
 .stat-cell {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
+    grid-row: 1 / -1;
+    display: grid;
+    grid-template-rows: subgrid;
+    justify-items: center;
+    align-content: center;
     padding: 0 6px;
     text-align: center;
 }
 
-/* Libellé et valeur groupés au centre de la case ; dans un même groupe, les libellés de
-   longueurs différentes (« Bonus de maîtrise » ou « Inspiration héroïque » sur 2 lignes,
-   « Points de Foi » ou « Vitesse » sur 1) se calent en bas d'une même hauteur, pour que les
-   valeurs restent alignées. Mesuré en 4.46 : 2 lignes au plus de 768 à 1920 px et en A4 ; la
-   3e ligne réservée n'est qu'une marge (libellé plus long, police plus grande). Sans réserve,
-   les valeurs se décalent (8 px à 768 px). Les pastilles sous « Points de Foi » (« +N par
-   niveau », « Inspiration héroïque ») allongent cette case : sa valeur remonte, réserve ou non. */
+.stat-cell > * {
+    grid-row: 3;
+    align-self: baseline;
+    margin-top: 6px;
+}
+
+.stat-cell > .label {
+    grid-row: 2;
+    align-self: end;
+    margin-top: 0;
+}
+
+.stat-cell > .feat-mention {
+    grid-row: 4 / span 2;
+    align-self: start;
+    margin-top: 6px;
+}
+
+.stat-cell > .faith-mention {
+    grid-row: 4;
+}
+
+.stat-cell > .faith-inspiration {
+    grid-row: 5;
+}
+
+/* Libellés de longueurs différentes (« Bonus de maîtrise » ou « Inspiration héroïque » sur
+   2 lignes, « Points de Foi » ou « Vitesse » sur 1) : calés en bas de leur rangée. Mesuré en
+   4.46 : 2 lignes au plus de 768 à 1920 px et en A4 ; la 3e ligne réservée n'est qu'une marge
+   (libellé plus long, police plus grande). */
 .stat-group .stat-cell .label {
     display: flex;
     align-items: flex-end;

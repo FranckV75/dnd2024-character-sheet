@@ -316,44 +316,12 @@
     font-size: 0.74rem;
 }
 
-/* Sous la Vitesse (« dont +3 m grâce à Mobile ») : libellé et valeur restent à la même hauteur que
-   dans les cases voisines du groupe, le repère se place dans l'espace libre au-dessous */
-.stat-cell:has(> .feat-mention) {
-    display: grid;
-    grid-template-rows: 1fr auto auto 1fr;
-    justify-items: center;
-    row-gap: 6px;
-}
-
-.stat-cell:has(> .feat-mention) > .label {
-    grid-row: 2;
-}
-
-.stat-cell:has(> .feat-mention) > :is(.input, output) {
-    grid-row: 3;
-}
-
+/* Sous la Vitesse (« dont +3 m grâce à Mobile ») et les points de Foi (« +5 par niveau », bouton
+   « Inspiration héroïque », js/ui/odyssey.js) : le repère pend sous la valeur, dans sa propre
+   rangée du groupe ; libellés et valeurs restent alignés sur les cases voisines (css/tab-combat.css) */
 .stat-cell > .feat-mention {
-    grid-row: 4;
-    align-self: start;
     padding-inline: 6px;
     font-size: 0.74rem;
-}
-
-/* Points de Foi (« +5 par niveau », js/ui/odyssey.js) : la case y est entourée de ses boutons − / + */
-.stat-cell:has(> .feat-mention) > .stepper {
-    grid-row: 3;
-}
-
-/* Bouton « Inspiration héroïque » sous la pastille des points de Foi (mode Odyssée, js/ui/odyssey.js) :
-   une rangée de plus ; le bouton occupe l'espace libre du bas, la case grandit le moins possible
-   et son libellé reste presque à la hauteur de ceux des cases voisines */
-.stat-cell:has(> .faith-inspiration:not([hidden])) {
-    grid-template-rows: 1fr auto auto auto 1fr;
-}
-
-.stat-cell > .faith-inspiration {
-    grid-row: 5;
 }
 
 /* Éteint : pastille en pointillés à l'encre adoucie, étoile vide ; allumé : doré comme un bonus
