@@ -9,11 +9,67 @@ changements dans `docs/CHANGELOG.md`. Rien ne se lance sans l'accord de Franck.
 Ordre décidé par Franck le 11/11/2026 : d'abord l'audit et les découpages, puis les restes et
 points relevés, puis une discussion pour trier toutes les idées.
 
-### 1. ~~Audit de santé, puis découpage~~ : fait (4.38.0, 11/11/2026)
+### 1. ~~Audits de santé et découpages~~ : faits (4.38.0, 11/11/2026 ; 4.46.0, 22/11/2026)
 
-Audit `/audit-fiche` et corrections (lots A, C, D, E) ; découpage de `css/sheet.css`,
-`js/rules/feat-effects.js` et `js/ui/spells.js` au lot D (voir `docs/ARCHITECTURE.md`). Le
-prochain audit se fera à la demande de Franck.
+Premier audit `/audit-fiche` et corrections en 4.38.0 (lots A, C, D, E) : découpage de
+`css/sheet.css`, `js/rules/feat-effects.js` et un premier découpage de `js/ui/spells.js`. Le
+grimoire et le tableau des armes avaient regrossi depuis (audit du 22/11/2026) : le découpage du
+grimoire a été refait en 4.46.0 (`js/ui/spells.js` de 1 334 à 452 lignes) et celui des armes fait
+(`js/ui/weapons.js` de 1 233 à 247 lignes ; voir `docs/ARCHITECTURE.md`). Le prochain audit se
+fera à la demande de Franck.
+
+Fait en 4.46.0 (22/11/2026, non publiée : attend le « Publie » de Franck), d'après l'audit du
+22/11/2026 :
+- ~~Lot A, petites corrections~~ : serveur de travail réservé à l'ordinateur (et contrôle dans
+  `npm run check`) ; question « Modifié par l'ancienne version » qui n'est plus posée pour rien,
+  et dont le texte cite tout ce qui serait perdu ; Rage sans effet en armure lourde (avertissement
+  près du bouton, halo éteint) ; titres gardés avec leur contenu à l'impression ; message coupé
+  de la barre du haut lisible au toucher.
+- ~~Lot B~~ : bouton « Inspiration héroïque » sous les Points de Foi en mode Odyssée, quand il sert.
+- ~~Lot C, ménage du code~~ : code mort, une seule lecture des compteurs, un seul `plainText`,
+  largeur de la barre du haut définie une fois, tests du mode Odyssée sur le fonctionnement,
+  commentaires, couleurs en variables (pastille magique en thème sombre) et contrôle des couleurs
+  en dur dans `npm run check` ; `docs/ARCHITECTURE.md` complété.
+- ~~Lot D~~ : découpage du grimoire et du tableau des armes (voir plus haut), sans changement pour
+  le joueur.
+- ~~Lot E, textes AideDD~~ : clos par la décision de Franck du 22/11/2026 (voir « Décisions qui
+  valent pour la suite »).
+- ~~Lot F~~ : boutons « Dépenser » dans la fenêtre « Points de Foi ».
+
+Décisions de Franck en attente sur la 4.46.0 :
+- Tablette, tableau des armes : « Supériorité » se coupe dans la colonne Dégâts à 820 et 768 px
+  (« Supériori/té »), et le nom d'une arme magique se coupe à côté de sa pastille +1/+2/+3
+  (« Hachet/te »). Trois choix : élargir la colonne Dégâts de 15 à 29 px (prise sur Propriétés ou
+  Botte d'arme), poser la pastille sous le nom (lignes plus hautes), ou accepter la coupure avec
+  trait d'union que font normalement l'iPad et Android (« Supé-riorité »).
+- Bouton « Inspiration héroïque » : seulement pour un Humain, un Champion à partir du niveau 10, ou
+  s'il est déjà allumé. L'afficher pour tous en mode Odyssée (don Musicien d'un allié, Inspiration
+  donnée par le MJ) ?
+- La clé de ce bouton n'est jamais dans la fiche vierge (sinon toutes les fiches auraient changé
+  d'empreinte et les tablettes risquaient d'oublier leur lien au compte) : choix à confirmer.
+- Fenêtre « Points de Foi » : une phrase de rappel s'écrit à côté du bouton « Dépenser » qui vient
+  de servir (la fenêtre couvre la barre du haut sur tablette) : à garder ?
+- Thème sombre : couleurs de la pastille des objets magiques (or bruni, chiffre crème) à valider
+  sur tablette.
+- Onglet Combat : la réserve de 3 lignes des libellés pourrait passer à 2 (12 px de gagnés ; 2 lignes
+  suffisent aujourd'hui de 768 à 1920 px et en A4).
+- Fenêtre « Modifié par l'ancienne version » : ce qui serait perdu est dit avant les deux dates ;
+  un autre ordre ?
+- Fenêtre « Configuration de l'arme » : toucher le fond gris la ferme sans enregistrer, comme
+  « Annuler » (toutes les fenêtres font ainsi) : voulu pour une fenêtre de saisie longue ?
+- Deux commits du découpage (ee7c9c8, 0e37b90) sont signés « Claude Fable 5.2 », les autres
+  « Claude Opus 5.5 » : laisser tel quel (le corriger obligerait à réécrire l'historique) ?
+
+Petits restes de la 4.46.0 (pas urgents) : le Déplacement rapide du Barbare (+3 m sans armure
+lourde) n'a pas été revu ; sur ordinateur, la ligne du compte (« Non connecté… ») peut aussi être
+coupée sans toucher pour la lire ; mode coupé, une Inspiration héroïque notée à part reste cachée
+(elle revient si l'on recoche) ; un champ inconnu d'une très vieille fiche fait encore poser la
+question de l'ancienne version (aucune vraie fiche concernée) ; au premier chargement d'un
+navigateur neuf, la ligne Nom / Classe de l'en-tête bouge parfois de 2 px (déjà avant) ; le
+remplacement de la fiche pendant une saisie de sort n'a pas été rejoué à l'écran après le
+découpage ; l'alignement Bonus de maîtrise / Points de Foi / Vitesse demande iPadOS 17 ou plus
+récent (sinon cases lisibles mais décalées) ; le serveur de travail refuse aussi `.gitignore` et
+`.github` (sans gêne pour la fiche).
 
 ### 2. Restes et points relevés : faits (4.39.0), décisions en attente
 
@@ -41,7 +97,10 @@ XP~~. Fait en 4.44.0 (21/11/2026, publiée le 22/11/2026) : ~~mode Odyssée dés
 « Mode Odyssée » du menu « Gestion », d'après les réponses de Franck du 21/11/2026, section 6 de
 l'étude). Fait en 4.45.0 (22/11/2026, publiée le 22/11/2026) : ~~« Points de Foi » (maîtrise +
 Sagesse par niveau, remis par « Passer au niveau »), fenêtre des faveurs à 1, 3 et 5 points
-(toucher la pastille) avec le rappel des dieux de Thyléa et Inspiration héroïque limitée à 1 mode coupé~~. Faite le 21/11/2026 : ~~étude du multiclassage~~ (`docs/etudes/MULTICLASSAGE.md`).
+(toucher la pastille) avec le rappel des dieux de Thyléa et Inspiration héroïque limitée à 1 mode
+coupé~~. Faite le 21/11/2026 : ~~étude du multiclassage~~ (`docs/etudes/MULTICLASSAGE.md`). Faits en
+4.46.0 (22/11/2026, non publiée) : ~~bouton « Dépenser » des points de Foi~~ et ~~Inspiration
+héroïque en mode Odyssée~~ (point 1, audit du 22/11/2026).
 Reste :
 
 1. **Multiclassage** : l'étude est faite et contre-vérifiée, rien n'est construit. Elle conseille
@@ -63,8 +122,8 @@ Décisions de Franck en attente sur la 4.44.0 (mode Odyssée) :
 Petits restes de la 4.45.0 (pas urgents) : mode coupé, une vieille valeur au-delà de 1 (« 3 »,
 « 2/3 ») n'est pas corrigée d'elle-même ; « − » la ramène à 1 d'un coup. La pastille des points de
 Foi suit la Sagesse de la fiche, objets magiques compris seulement s'ils sont saisis dans la case
-Sagesse. La fenêtre des faveurs ne retire pas les points elle-même (bouton − de la case) ; un
-bouton « Dépenser » par palier reste possible si Franck le souhaite.
+Sagesse. ~~La fenêtre des faveurs ne retire pas les points elle-même~~ : boutons « Dépenser »
+en 4.46.0.
 
 Petits restes de la 4.44.0 (pas urgents) : une fiche vierge dont on a seulement décoché le mode
 perd ce réglage à la reconnexion (taper un nom suffit ; à revoir avec le choix de la campagne dans
@@ -201,6 +260,10 @@ Pour une publication qui touche la sauvegarde ou la synchronisation (repris de l
 - Les 10 dons de style de combat sont classés « Style de combat » (et non « Général »).
 - Repos long : tous les dés de vie dépensés sont récupérés, après une fenêtre de confirmation.
 - Bouclier : bonus de CA seulement si formé aux boucliers, un seul à la fois.
+- Rage du Barbare : sans effet en armure lourde (p. 51). La fiche n'éteint jamais le bouton ; elle
+  ne compte pas ses effets et le dit (4.46.0).
+- Mode Odyssée (guide du MJ de l'Odyssée p. 92) : les points de Foi remplacent les points de héros
+  du guide du MJ, pas l'Inspiration héroïque du manuel ; les deux existent ensemble (4.46.0).
 - Historique : un rappel ; « Appliquer » coche les compétences et remplit le don de niveau 1 s'il
   est vide, jamais les caractéristiques. Une valeur saisie n'est jamais modifiée par la fiche
   (seulement des mentions « dont +X »).
@@ -215,6 +278,9 @@ Pour une publication qui touche la sauvegarde ou la synchronisation (repris de l
   enregistrée avec « Sorcier » s'affiche « Occultiste » sans être réécrite.
 - Emplacements de sorts utilisés et bonus de combat (Rage…) font partie de la fiche (en v3 ils
   étaient gardés à part dans le navigateur, repris au premier lancement de la v4).
+- Textes des sorts et des dons repris d'AideDD (391 sorts, 76 dons, déjà en v3) : ils restent tels
+  quels dans le dépôt public. Décision de Franck du 22/11/2026, qui l'assume (lot E de l'audit
+  clos). Les textes écrits pour la fiche restent des résumés, jamais le texte des manuels.
 
 ### Interface
 
