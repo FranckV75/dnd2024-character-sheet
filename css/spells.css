@@ -1,5 +1,5 @@
 /* =============================================================================
-   SPELLS.CSS - Grimoire (js/ui/spells.js) : avis « Pas de magie » et bouton ouvrir /
+   SPELLS.CSS - Grimoire (js/ui/spells.js et js/ui/spells/) : avis « Pas de magie » et bouton ouvrir /
    replier, filtres, emplacements de sorts, tableau des sorts et ligne de saisie,
    infobulles. Couleurs : uniquement les variables de base.css.
    ============================================================================= */
@@ -9,7 +9,7 @@
 /* Grille : le titre, l'avis et le grimoire occupent toute la largeur ; le bouton ouvrir /
    replier se pose à droite du titre, grimoire replié comme ouvert. Il ne bouge donc pas
    sous le doigt quand on l'actionne (les cases d'incantation, montrées avec le grimoire
-   ouvert à la demande, viennent après lui : voir renderGrimoire dans js/ui/spells.js). */
+   ouvert à la demande, viennent après lui : voir placeStats dans js/ui/spells/notice.js). */
 #spells-feature {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -482,7 +482,7 @@
     font-style: italic;
 }
 
-/* ---------- Vue au combat, Magicien : ligne repliable « Rituels du livre (N) » (js/ui/spells.js) ----------
+/* ---------- Vue au combat, Magicien : ligne repliable « Rituels du livre (N) » (js/ui/spells/book.js) ----------
    Rituels du livre non préparés, sortis du tableau : bloc dessiné comme les sorts donnés, replié
    par défaut. Écran et vue au combat seulement : l'impression garde le tableau complet. */
 
@@ -919,7 +919,7 @@
     border-bottom-color: transparent;
 }
 
-/* Repère décoratif : le toucher passe à la case, qui met le curseur dans le nom (spells.js) */
+/* Repère décoratif : le toucher passe à la case, qui met le curseur dans le nom (js/ui/spells/rows.js) */
 .spell-prep.is-entry {
     pointer-events: none;
 }

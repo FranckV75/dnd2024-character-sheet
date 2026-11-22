@@ -12,7 +12,7 @@
 //  - bouton « Monté sur le dragon » (Serment du Seigneur Dragon, niveau 15) : immunité et sens du
 //    jeune dragon rappelés près de la CA et de la Perception ;
 //  - Affinité élémentaire (Sorcellerie draconique, niveau 6) : repère « +Cha » des sorts du type
-//    choisi, dans le grimoire (js/ui/spells.js, js/ui/spells/).
+//    choisi, dans le grimoire (js/ui/spells/rows.js et granted.js).
 // Règles du Player's Handbook 2024 anglais (chapitre des classes) ; Odyssée des Seigneurs Dragons
 // pour la Voie herculéenne, la Guerrière amazone et L'Hoplite.
 // Règle validée par Franck : une valeur saisie à la main n'est jamais modifiée.

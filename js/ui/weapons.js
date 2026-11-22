@@ -17,7 +17,7 @@
 // dans une ligne sous l'arme (même aspect et même règle de verrou que Rage), dont l'état est rangé
 // dans la ligne de l'arme (weaponConfig), jamais à part. Dans la case, chaque dégât en plus tient
 // sur une ligne, abrégé avec « … » ; toucher la case écrit les dégâts en entier sous l'arme
-// (toggleDamageDetail), fiche verrouillée ou non.
+// (toggleDamageDetail, weapons/damage.js), fiche verrouillée ou non.
 // Les règles (filtres, remplissage depuis le manuel, validation) sont dans js/rules/weapons.js.
 //
 // Ce fichier est le chef d'orchestre : il pose la structure fixe (titre, filtres, tableau), lit et

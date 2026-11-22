@@ -1,5 +1,5 @@
 /* =============================================================================
-   WEAPONS.CSS - Tableau des armes (js/ui/weapons.js) : en-tête avec bonus de combat,
+   WEAPONS.CSS - Tableau des armes (js/ui/weapons.js et js/ui/weapons/) : en-tête avec bonus de combat,
    filtres, tableau éditable, annulation de suppression, fenêtre de configuration
    ============================================================================= */
 
@@ -223,7 +223,7 @@
     /* À 820 px, les cases passent à la ligne sans couper les mots : la colonne des
        propriétés loge « Rechargement », celle des bottes « Ralentissement ». Le bonus
        d'attaque (« FOR : +7 », le chiffre le plus demandé en combat) tient sur une ligne
-       (2e colonne du tableau, construit par weapons.js). */
+       (2e colonne du tableau, construit par js/ui/weapons/rows.js). */
     .weapons-col-name { width: 19%; }
     .weapons-col-atk { width: 13%; }
     .weapons-table td:nth-child(2) > .weapons-calc { white-space: nowrap; }
@@ -396,7 +396,7 @@
     }
 }
 
-/* ---------- Botte d'arme : pastille de la règle (js/ui/weapons.js, openMastery) ---------- */
+/* ---------- Botte d'arme : pastille de la règle (js/ui/weapons/mastery.js, openMastery) ---------- */
 
 /* La case garde la mise en page d'origine (le texte seul, centré dans la ligne) : le bouton est
    posé par-dessus, en position absolue. Il n'occupe aucune place : la ligne ne grandit jamais. */
@@ -680,7 +680,7 @@
     overflow-wrap: anywhere;
 }
 
-/* Le toucher (ou Entrée) écrit les dégâts en entier sous l'arme (js/ui/weapons.js, toggleDamageDetail) */
+/* Le toucher (ou Entrée) écrit les dégâts en entier sous l'arme (js/ui/weapons/damage.js, toggleDamageDetail) */
 .weapons-calc.has-extras {
     cursor: pointer;
 }

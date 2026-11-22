@@ -3,7 +3,7 @@
 //
 // Ce que donnent, d'après les choix mémorisés (js/rules/feat-choices.js), les dons à sorts :
 // Initié à la magie, Affinité féerique, Affinité ombreuse, Magie rituelle, Télépathe, Télékinésiste.
-// La fiche les montre dans un bloc « Sorts de dons » du grimoire (js/ui/spells.js) : elle n'écrit
+// La fiche les montre dans un bloc « Sorts de dons » du grimoire (js/ui/spells/granted.js) : elle n'écrit
 // jamais dans la liste des sorts du joueur (dynamic_spells) ni dans ses emplacements de sorts.
 //
 // Règles du Player's Handbook 2024 anglais (pages imprimées), vérifiées le 08/11/2026 :

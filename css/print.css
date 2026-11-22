@@ -585,7 +585,7 @@ h1, h2, h3, h4 {
 /* Bonus de Charge (bouton d'Expert de la charge) : il ne vaut que pour une attaque, juste après
    3 m en ligne droite ; sur le papier, il élargirait la colonne des dégâts de chaque arme de
    corps à corps et ferait déborder la page. Le don reste décrit dans la liste des dons imprimée
-   (js/ui/weapons.js isole ce bonus dans un span). */
+   (js/ui/weapons/damage.js isole ce bonus dans un span). */
 .weapons-calc-charge {
     display: none;
 }
