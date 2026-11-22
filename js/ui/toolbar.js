@@ -11,6 +11,8 @@
 //  - Groupe « Affichage » (#view-controls) : thème, mode cinéma et animations, avant « Fonds »
 //    (gallery.js). « Animations » coupe tout ce qui bouge dans la fiche (motion-pref.js) : choix
 //    retenu sur l'appareil, jamais dans la sauvegarde.
+//  - Dernier message de la barre (#save-status) coupé par « … » : un toucher l'affiche en entier
+//    (status-bar.js).
 //  - Boutons à icônes dessinées (dom.js) plutôt qu'à emojis : même style dans les deux thèmes.
 //  - Verrou (lock.js), mode cinéma (masque la fiche pour voir le fond),
 //    import (fichier ou texte collé), export (fichier ou presse-papiers),
@@ -28,6 +30,7 @@ import { createDefaultCharacter } from '../state/schema.js';
 import { parseCharacterFile, serializeCharacter, exportFileName, STORAGE_KEYS } from '../state/persistence.js';
 import { openExamples, EXAMPLES_TITLE } from './examples.js';
 import { openHelp, HELP_TITLE } from './help.js';
+import { initStatusBar } from './status-bar.js';
 
 /** Écrans où la barre démarre repliée : tablettes (même seuil que sheet-tablet.css), et tablettes tactiles
  *  en paysage (Lenovo 1280 px, iPad 1180 px). Même condition que css/toolbar.css. Ailleurs (ordinateur),
@@ -211,6 +214,10 @@ export function initToolbar({ store, setStatus }) {
     const compact = window.matchMedia(COMPACT_QUERY);
     setCollapsed(compact.matches);
     compact.addEventListener('change', (event) => setCollapsed(event.matches));
+
+    // ---------------------------------------------------------------- Dernier message
+    // Coupé par « … » : un toucher l'affiche en entier (status-bar.js)
+    initStatusBar();
 }
 
 // =============================================================================

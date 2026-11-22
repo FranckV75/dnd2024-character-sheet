@@ -7,6 +7,7 @@
      vient de toolbar.js, gallery.js et account.js ; leur place est réglée ici.
    - Repli sur tablette (≤ 1100 px, et écrans tactiles ≤ 1400 px : tablettes en paysage) :
      classe .app-bar--collapsed posée par toolbar.js (même condition que COMPACT_QUERY).
+   - Dernier message coupé par « … » : chevron et toucher pour le lire en entier (js/ui/status-bar.js).
    - Mode cinéma : classe .cinema sur <body>, la fiche s'efface pour montrer le fond.
    - Fenêtres d'import / export.
    Règles : couleurs par variables (base.css), aucun !important.
@@ -132,10 +133,12 @@
     line-height: 1.25;
 }
 
-/* Une ligne chacun, coupée par « … » si elle est trop longue (texte complet au survol) ;
+/* Une ligne chacun, coupée par « … » si elle est trop longue (texte complet au survol, et au
+   toucher pour le dernier message : js/ui/status-bar.js) ;
    la place des deux lignes reste réservée même vides : la barre garde sa hauteur */
 .app-bar-statuses > *,
-.app-bar-statuses .account-status {
+.app-bar-statuses .account-status,
+.app-bar-status-line > .app-bar-status {
     display: block;
     min-height: 1.25em;
     max-width: 100%;
@@ -159,6 +162,90 @@
     line-clamp: 2;
     white-space: normal;
     overflow-wrap: anywhere;
+}
+
+/* Message coupé : chevron au bout, toucher le message ou le chevron l'affiche en entier
+   (js/ui/status-bar.js). Le message et le chevron partagent la ligne du dernier message. */
+.app-bar-statuses > .app-bar-status-line {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    gap: 4px;
+    width: 100%;
+    overflow: visible;
+    white-space: normal;
+}
+
+.app-bar-status-line > .app-bar-status {
+    flex: 0 1 auto;
+}
+
+.app-bar-status-line.is-clipped > .app-bar-status {
+    cursor: pointer;
+}
+
+.status-more {
+    position: relative;
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25em;
+    height: 1.25em;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: none;
+    color: var(--accent);
+    font-size: 0.82rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.status-more[hidden] {
+    display: none;
+}
+
+.status-more .icon {
+    width: 12px;
+    height: 12px;
+}
+
+.status-more[aria-expanded="true"] .icon {
+    transform: rotate(180deg);
+}
+
+/* Survol à la souris seulement : au doigt, il resterait « collé » après le toucher */
+@media (hover: hover) {
+    .status-more:hover {
+        color: var(--accent-strong);
+    }
+}
+
+.status-more:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+}
+
+/* Au doigt, le chevron se touche plus largement que son dessin (sans rien déplacer) */
+@media (pointer: coarse) {
+    .status-more::after {
+        content: "";
+        position: absolute;
+        inset: -12px -8px;
+    }
+}
+
+/* Déplié : le message entier, sur autant de lignes qu'il faut (la barre s'agrandit d'autant).
+   Plus précis que les règles de repli ci-dessous (une ou deux lignes) : il les remplace. */
+#app-bar .app-bar-status-line.is-expanded #save-status {
+    display: block;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    -webkit-line-clamp: none;
+    line-clamp: none;
 }
 
 /* ---------- Boutons de la barre : bombés, icône dorée, reflet au survol ---------- */
