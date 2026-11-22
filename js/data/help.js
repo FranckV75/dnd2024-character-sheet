@@ -52,7 +52,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Les phrases d'aide",
-                text: "En haut à droite, une ligne vous dit ce que la fiche vient de faire. Plusieurs boutons y écrivent aussi une courte explication quand vous les touchez. À la souris, laissez le pointeur sur un bouton pour lire à quoi il sert."
+                text: "En haut à droite, une ligne vous dit ce que la fiche vient de faire. Plusieurs boutons y écrivent aussi une courte explication quand vous les touchez. Un message trop long finit par « … » et une petite flèche : touchez-le pour le lire en entier, encore une fois pour le replier. À la souris, laissez le pointeur sur un bouton pour lire à quoi il sert."
             },
             {
                 title: "Les encadrés repliables",
@@ -198,7 +198,11 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Dépenser ses points de Foi",
-                text: "Touchez la pastille dorée sous « Points de Foi » : une fenêtre liste les faveurs qu'un dieu peut accorder, à 1, 3 ou 5 points, et marque « Possible » celles que vos points permettent. Elle rappelle aussi comment les demander : prière sur le moment, ou sacrifice pour les jours suivants. Le MJ a le dernier mot ; retirez ensuite les points avec le bouton −."
+                text: "Touchez la pastille dorée sous « Points de Foi » : une fenêtre liste les faveurs divines à 1, 3 ou 5 points et marque « Possible » celles que vos points permettent. Elle rappelle comment les demander : prière sur le moment, ou sacrifice pour les jours suivants. Le MJ a le dernier mot. Chaque faveur a son bouton « Dépenser », qui retire ses points de la case (grisé s'il en manque) ; le bouton + les rend."
+            },
+            {
+                title: "L'Inspiration héroïque en mode Odyssée",
+                text: "Les points de Foi ne remplacent pas l'Inspiration héroïque. Un Humain, ou un Champion à partir du niveau 10, a un bouton « Inspiration héroïque » sous la case « Points de Foi » : touchez-le quand vous l'obtenez (il devient doré), retouchez-le une fois dépensée. Il marche aussi fiche verrouillée."
             },
             {
                 title: "Les dieux de Thyléa",
@@ -222,7 +226,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Les bonus de combat",
-                text: "Selon votre classe et vos dons, des pastilles apparaissent au-dessus des armes (la Rage du Barbare, par exemple). Allumez-en une quand le bonus s'applique : il est ajouté aux dégâts des armes concernées."
+                text: "Selon votre classe et vos dons, des pastilles apparaissent au-dessus des armes (la Rage du Barbare, par exemple). Allumez-en une quand le bonus s'applique : il est ajouté aux dégâts des armes concernées. En armure lourde, la Rage est sans effet : son bouton reste allumé, mais une pastille rouge le dit et rien n'est ajouté. Décochez « Équipée / actif » sur l'armure pour qu'elle compte de nouveau."
             },
             {
                 title: "Les dégâts en plus d'une arme",
