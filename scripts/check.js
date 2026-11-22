@@ -95,16 +95,34 @@ for (const [call, first, second] of listenCalls) {
     }
 }
 
-/** Couleurs écrites en dur : code hexadécimal, fonction de couleur, mot de couleur courant
- *  (transparent, currentColor, inherit... restent permis) */
+/** Couleurs écrites en dur : code hexadécimal, fonction de couleur, mot de couleur (tous les noms
+ *  de couleur de CSS ; transparent, currentColor, inherit... restent permis) */
 const HEX_COLOR = /#[0-9a-f]{3,8}(?![\w-])/i;
-const COLOR_FUNCTION = /(?<![\w-])(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\(((?:[^()]|\([^()]*\))*)\)/gi;
-const COLOR_WORD = /(?<![\w-])(white|black|red|green|blue|yellow|orange|purple|pink|gr[ae]y|gold|silver|brown|navy|crimson|maroon|olive|teal|aqua|cyan|magenta|fuchsia|lime|indigo|violet|beige|ivory|khaki|salmon|coral|tomato)(?![\w-])/i;
+const COLOR_FUNCTION = /(?<![\w-])(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(((?:[^()]|\([^()]*\))*)\)/gi;
+const COLOR_NAMES = ['aliceblue', 'antiquewhite', 'aqua', 'aquamarine', 'azure', 'beige', 'bisque', 'black', 'blanchedalmond',
+    'blue', 'blueviolet', 'brown', 'burlywood', 'cadetblue', 'chartreuse', 'chocolate', 'coral', 'cornflowerblue', 'cornsilk',
+    'crimson', 'cyan', 'darkblue', 'darkcyan', 'darkgoldenrod', 'darkgray', 'darkgreen', 'darkgrey', 'darkkhaki', 'darkmagenta',
+    'darkolivegreen', 'darkorange', 'darkorchid', 'darkred', 'darksalmon', 'darkseagreen', 'darkslateblue', 'darkslategray',
+    'darkslategrey', 'darkturquoise', 'darkviolet', 'deeppink', 'deepskyblue', 'dimgray', 'dimgrey', 'dodgerblue', 'firebrick',
+    'floralwhite', 'forestgreen', 'fuchsia', 'gainsboro', 'ghostwhite', 'gold', 'goldenrod', 'gray', 'green', 'greenyellow',
+    'grey', 'honeydew', 'hotpink', 'indianred', 'indigo', 'ivory', 'khaki', 'lavender', 'lavenderblush', 'lawngreen',
+    'lemonchiffon', 'lightblue', 'lightcoral', 'lightcyan', 'lightgoldenrodyellow', 'lightgray', 'lightgreen', 'lightgrey',
+    'lightpink', 'lightsalmon', 'lightseagreen', 'lightskyblue', 'lightslategray', 'lightslategrey', 'lightsteelblue',
+    'lightyellow', 'lime', 'limegreen', 'linen', 'magenta', 'maroon', 'mediumaquamarine', 'mediumblue', 'mediumorchid',
+    'mediumpurple', 'mediumseagreen', 'mediumslateblue', 'mediumspringgreen', 'mediumturquoise', 'mediumvioletred',
+    'midnightblue', 'mintcream', 'mistyrose', 'moccasin', 'navajowhite', 'navy', 'oldlace', 'olive', 'olivedrab', 'orange',
+    'orangered', 'orchid', 'palegoldenrod', 'palegreen', 'paleturquoise', 'palevioletred', 'papayawhip', 'peachpuff', 'peru',
+    'pink', 'plum', 'powderblue', 'purple', 'rebeccapurple', 'red', 'rosybrown', 'royalblue', 'saddlebrown', 'salmon',
+    'sandybrown', 'seagreen', 'seashell', 'sienna', 'silver', 'skyblue', 'slateblue', 'slategray', 'slategrey', 'snow',
+    'springgreen', 'steelblue', 'tan', 'teal', 'thistle', 'tomato', 'turquoise', 'violet', 'wheat', 'white', 'whitesmoke',
+    'yellow', 'yellowgreen'];
+// « tan( » est une fonction de calcul (trigonométrie), pas une couleur
+const COLOR_WORD = new RegExp(`(?<![\\w-])(${COLOR_NAMES.join('|')})(?![\\w(-])`, 'i');
 /** Propriétés dont la valeur est un nom (animation « gold-glow », zone de grille...), pas une couleur */
 const NAME_PROPERTIES = /^(animation(-name)?|transition(-property)?|will-change|font-family|grid-template-areas|grid-area|counter-(reset|increment|set)|view-transition-name|container(-name)?)$/i;
-/** Seule exception : un masque ne garde que l'opacité de ses couleurs (#000 = visible), le thème
- *  n'y change rien */
-const COLOR_FREE_PROPERTIES = /^(-webkit-)?mask(-image)?$/i;
+/** Exceptions : un masque ne garde que l'opacité de ses couleurs (#000 = visible), le thème n'y
+ *  change rien ; initial-value (bloc @property) définit une variable, comme « --nom: … » */
+const COLOR_FREE_PROPERTIES = /^((-webkit-)?mask(-image)?|initial-value)$/i;
 const blankOut = (text) => text.replace(/[^\n]/g, ' ');
 
 for (const file of listFiles(ROOT, '.css')) {
@@ -123,8 +141,10 @@ for (const file of listFiles(ROOT, '.css')) {
             const decl = piece.match(/^\s*([-\w]+)\s*:([\s\S]*)$/);
             if (decl && !decl[1].startsWith('--') && !NAME_PROPERTIES.test(decl[1]) && !COLOR_FREE_PROPERTIES.test(decl[1])) {
                 const value = decl[2];
-                // Une couleur construite avec des variables (hsl(var(--h) 70% 50%)) est permise
-                const hardFunction = [...value.matchAll(COLOR_FUNCTION)].some((m) => !m[1].includes('var('));
+                // Une couleur construite avec des variables (hsl(var(--h) 70% 50%)) est permise ; pas un
+                // noir ou un blanc fixé avant la première variable (rgba(0, 0, 0, var(--alpha)))
+                const hardFunction = [...value.matchAll(COLOR_FUNCTION)]
+                    .some((m) => !m[1].includes('var(') || /\d/.test(m[1].split('var(')[0]));
                 if (HEX_COLOR.test(value) || COLOR_WORD.test(value) || hardFunction) {
                     const line = source.slice(0, offset + piece.search(/\S/)).split('\n').length;
                     errors.push(`Couleur écrite en dur dans ${rel(file)}, ligne ${line} : « ${decl[1]}:${value.replace(/\s+/g, ' ').trimEnd()} » (passer par une variable --nom définie avec le thème)`);
