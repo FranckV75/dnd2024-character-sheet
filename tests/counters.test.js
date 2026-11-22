@@ -82,6 +82,15 @@ describe('Compteurs : décision des boutons − / + (stepCounter, js/ui/counters
         assert.deepEqual(stepCounter('150', -1, faith(ON)), { value: '99', message: '' });
     });
 
+    test('« N/M » au-delà de M (« 4/3 », « 2/0 ») : « + » refusé sans rien écrire, jamais baissé', () => {
+        assert.deepEqual(stepCounter('4/3', 1, faith(ON)), { value: null, message: '' });
+        assert.deepEqual(stepCounter('2/0', 1, faith(ON)), { value: null, message: '' });
+        assert.deepEqual(stepCounter('3/3', 1, { max: 30 }), { value: null, message: '' });
+        // « − » retire un point comme ailleurs (ramené au maximum noté, comme « 150 » au plafond)
+        assert.deepEqual(stepCounter('4/3', -1, faith(ON)), { value: '3/3', message: '' });
+        assert.deepEqual(stepCounter('2/3', 1, faith(ON)), { value: '3/3', message: '' });
+    });
+
     test('Texte libre : jamais réécrit, la barre du haut le dit (« -1 » et « 1234567/2 » compris)', () => {
         for (const value of ['2 (béni)', '-1', '1234567/2', '<div>3</div>']) {
             for (const delta of [-1, 1]) {

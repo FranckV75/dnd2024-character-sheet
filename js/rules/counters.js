@@ -89,6 +89,8 @@ export function stepCounter(value, delta, { max = Infinity, asNumber = false, la
     const counter = readCounter(value);
     if (!counter) return { value: null, message: `La case « ${label} » contient du texte : modifiez-la à la main.` };
     if (delta > 0 && counter.count >= max) return { value: null, message: max === 1 && onlyOne ? onlyOne : '' };
+    // « N/M » déjà au maximum noté après la barre, ou au-delà (« 4/3 », « 2/0 ») : « + » refusé, jamais baissé
+    if (delta > 0 && counter.max !== null && counter.count >= counter.max) return { value: null, message: '' };
     const next = steppedValue(value, delta, { max });
     if (next === null) return { value: null, message: '' };
     return { value: asNumber && typeof next === 'number' ? next : String(next), message: '' };
