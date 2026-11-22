@@ -4,8 +4,9 @@
 // Les cellules de la v3 étaient des zones modifiables : leur contenu enregistré est du HTML
 // (« <div>Korgul</div> », « 1&nbsp;200 », « Arc&nbsp;long<br> »). La fiche ne réécrit jamais ces
 // valeurs : elle les LIT en texte brut, avec cette seule fonction (plus de copie de l'expression
-// /<[^>]*>/ dans js/rules, js/state et js/data : tests/plain-text.test.js le vérifie ; restent
-// js/ui/spells.js, js/ui/spells/, js/ui/weapons.js et js/cloud/sync.js, à reprendre).
+// /<[^>]*>/ dans js/rules, js/state, js/data, js/ui et js/cloud : tests/plain-text.test.js le
+// vérifie ; le grimoire et le tableau des armes passent par plainText de js/rules/spells.js et
+// stripHTML de js/state/migrate.js, qui l'appellent, et les messages d'erreur en ligne aussi).
 // Règle commune :
 //  - balises retirées, puis entités décodées (&nbsp; devient une espace ordinaire, &amp; « & »,
 //    &lt; « < », &#39; « ' »…), espaces du début et de la fin retirées ;

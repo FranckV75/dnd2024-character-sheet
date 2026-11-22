@@ -9,6 +9,7 @@
 // =============================================================================
 
 import { HUMAN_FEAT_SLOT, CLASS_FEAT_SLOTS, EMPTY_WEAPON } from '../state/schema.js';
+import { plainText } from '../rules/plain-text.js';
 
 const time = (iso) => {
     const t = Date.parse(iso || '');
@@ -275,7 +276,7 @@ export function newerVersion(cloudUpdatedAt, localSavedAt) {
  * @returns {string}
  */
 export function friendlyError(error) {
-    const raw = String(error?.message || error || '').replace(/<[^>]*>/g, '');
+    const raw = plainText(error?.message || error || '');
     if (/failed to fetch|networkerror|load failed|network request failed/i.test(raw)) {
         return 'pas de connexion Internet';
     }

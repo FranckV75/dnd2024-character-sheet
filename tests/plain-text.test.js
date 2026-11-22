@@ -79,10 +79,10 @@ describe('Les anciens noms passent par la même fonction', () => {
     });
 });
 
-test('Aucune autre copie du retrait des balises dans js/rules, js/state et js/data', () => {
+test('Aucune autre copie du retrait des balises dans js/rules, js/state, js/data, js/ui et js/cloud', () => {
     const root = fileURLToPath(new URL('../js/', import.meta.url));
     const copies = [];
-    for (const dir of ['rules', 'state', 'data']) {
+    for (const dir of ['rules', 'state', 'data', 'ui', 'cloud']) {
         for (const file of readdirSync(join(root, dir), { recursive: true }).filter(name => name.endsWith('.js'))) {
             const path = `${dir}/${file.replace(/\\/g, '/')}`;
             if (path === 'rules/plain-text.js') continue;
