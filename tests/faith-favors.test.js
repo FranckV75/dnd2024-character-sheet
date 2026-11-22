@@ -1,0 +1,91 @@
+/**
+ * TESTS — FENÊTRE « POINTS DE FOI » (mode Odyssée)
+ * Données : js/data/faith-favors.js (guide du MJ de l'Odyssée, p. 92, résumé avec nos mots).
+ * Règles : js/rules/odyssey.js (faithPoints, faithFavors, faithPointsSentence, pointsWord).
+ */
+import { test, describe } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { FAITH_FAVORS, FAITH_WAYS, FAITH_FOOTNOTE } from '../js/data/faith-favors.js';
+import { faithPoints, faithFavors, faithPointsSentence, pointsWord, FAITH_SPEND } from '../js/rules/odyssey.js';
+
+describe('Points de Foi : les faveurs du guide', () => {
+    test('trois paliers, à 1, 3 et 5 points, du moins cher au plus cher', () => {
+        assert.deepEqual(FAITH_FAVORS.map((tier) => [tier.id, tier.cost]), [['mineure', 1], ['majeure', 3], ['grande', 5]]);
+        assert.deepEqual(FAITH_FAVORS.map((tier) => tier.uses.length), [6, 6, 4]);
+    });
+
+    test('chaque usage est une phrase complète, sans doublon', () => {
+        const all = FAITH_FAVORS.flatMap((tier) => tier.uses);
+        assert.equal(new Set(all).size, all.length);
+        for (const use of all) {
+            assert.match(use, /^[^a-z].*\.$/, use);
+            assert.ok(use.length <= 160, use);
+        }
+    });
+
+    test('prière et sacrifice, puis le rappel sur le domaine du dieu', () => {
+        assert.deepEqual(FAITH_WAYS.map((way) => way.title), ['Prière', 'Sacrifice']);
+        assert.match(FAITH_WAYS[0].text, /même tour/);
+        assert.match(FAITH_WAYS[1].text, /Un par jour/);
+        assert.match(FAITH_FOOTNOTE, /domaine du dieu/);
+        assert.match(FAITH_SPEND, /1, 3 ou 5 points/);
+    });
+
+    test('données figées', () => {
+        assert.ok(Object.isFrozen(FAITH_FAVORS) && FAITH_FAVORS.every((tier) => Object.isFrozen(tier) && Object.isFrozen(tier.uses)));
+        assert.ok(Object.isFrozen(FAITH_WAYS));
+    });
+});
+
+describe('Points de Foi : ce que la case permet', () => {
+    test('lecture de la case : « 3 », « 3/5 », vide, texte libre', () => {
+        assert.equal(faithPoints('3'), 3);
+        assert.equal(faithPoints(' 3 / 5 '), 3);
+        assert.equal(faithPoints(''), 0);
+        assert.equal(faithPoints(undefined), 0);
+        assert.equal(faithPoints(4), 4);
+        assert.equal(faithPoints('2 (béni)'), null);
+    });
+
+    test('ce qu\'il manque pour chaque palier', () => {
+        assert.deepEqual(faithFavors(3).map((tier) => [tier.missing, tier.status]),
+            [[0, 'Possible'], [0, 'Possible'], [2, 'Il manque 2 points']]);
+        assert.deepEqual(faithFavors(0).map((tier) => tier.status),
+            ['Il manque 1 point', 'Il manque 3 points', 'Il manque 5 points']);
+        assert.deepEqual(faithFavors(7).map((tier) => tier.missing), [0, 0, 0]);
+    });
+
+    test('texte libre : aucun palier n\'est jugé', () => {
+        assert.deepEqual(faithFavors(null).map((tier) => [tier.missing, tier.status]), [[null, ''], [null, ''], [null, '']]);
+    });
+
+    test('les paliers renvoyés gardent leurs usages', () => {
+        const tiers = faithFavors(5);
+        assert.deepEqual(tiers.map((tier) => tier.uses), FAITH_FAVORS.map((tier) => tier.uses));
+    });
+
+    test('phrases : points de la case, singulier et pluriel', () => {
+        assert.equal(pointsWord(1), '1 point');
+        assert.equal(pointsWord(3), '3 points');
+        assert.equal(faithPointsSentence(1), 'Vous avez 1 point de Foi.');
+        assert.equal(faithPointsSentence(4), 'Vous avez 4 points de Foi.');
+        assert.match(faithPointsSentence(0), /aucun point de Foi/);
+        assert.match(faithPointsSentence(null), /contient du texte/);
+    });
+});
+
+describe('Points de Foi : la fenêtre (js/ui/odyssey.js)', () => {
+    const source = readFileSync(new URL('../js/ui/odyssey.js', import.meta.url), 'utf8');
+
+    test('la pastille ouvre la fenêtre, seulement en mode Odyssée', () => {
+        assert.match(source, /'aria-haspopup': 'dialog'/);
+        assert.match(source, /if \(odysseyActive\(character\)\) openFaithFavors\(character\)/);
+    });
+
+    test('la fenêtre se ferme par un seul bouton et ne modifie pas la fiche', () => {
+        const body = source.slice(source.indexOf('function openFaithFavors'));
+        assert.match(body, /actions: \[\{ label: 'Fermer', primary: true \}\]/);
+        assert.doesNotMatch(body, /store\.update|store\.set/);
+    });
+});

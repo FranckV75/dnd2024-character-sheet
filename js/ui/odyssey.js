@@ -17,9 +17,10 @@
 //    L'écran et le papier disent la même chose : au moment d'imprimer, l'encadré inutile disparaît
 //    aussi de l'écran (beforeprint ; filet : attribut data-odyssey-unused, css/print.css).
 //  - Case de l'onglet Combat (clé heroic_inspiration) : « Points de Foi » quand le mode est actif,
-//    avec une pastille « +5 par niveau » (bonus de maîtrise + Sagesse, au moins 1) ; un toucher la
-//    fait expliquer dans la barre du haut, la souris par l'infobulle. Mode coupé : « Inspiration
-//    héroïque », sans pastille ; ses boutons − / + vont de 0 à 1 (js/ui/counters.js).
+//    avec une pastille « +5 par niveau » (bonus de maîtrise + Sagesse, au moins 1) ; un toucher
+//    ouvre la fenêtre « Points de Foi » : les faveurs à 1, 3 et 5 points, celles que les points de
+//    la case permettent, et comment les demander (js/data/faith-favors.js). Mode coupé :
+//    « Inspiration héroïque », sans pastille ; ses boutons − / + vont de 0 à 1 (js/ui/counters.js).
 // Les listes d'espèces, de sous-classes et de dons suivent le mode dans js/ui/sheet.js.
 // Mise en forme : css/toolbar.css (.toolbar-check).
 // =============================================================================
@@ -29,19 +30,22 @@ import { derivedOf } from './derived.js';
 import { isLocked } from './lock.js';
 import { frenchSpaces } from './help.js';
 import { renameSteppers } from './stepper.js';
+import { openModal } from './modal.js';
 import { COMPACT_QUERY } from './toolbar.js';
 import {
     ODYSSEY_MODE_KEY, ODYSSEY_MODE_LABEL, STATUS_ROOM, STATUS_ROOM_OPEN, STATUS_ROOM_NARROW,
     odysseyActive, setOdysseyModePatch, odysseyModeHint, odysseyModeMessage, odysseyDroppedMessage,
-    odysseyBoxUseful, inspirationWording, faithPerLevel, faithMention, faithSentence, faithHint
+    odysseyBoxUseful, inspirationWording, faithPerLevel, faithMention, faithSentence, faithHint,
+    faithPoints, faithFavors, faithPointsSentence, pointsWord, FAITH_SPEND
 } from '../rules/odyssey.js';
+import { FAITH_WAYS, FAITH_FOOTNOTE } from '../data/faith-favors.js';
 
 /**
  * @param {{ root: HTMLElement, store: Object, setStatus: (message: string) => void }} ctx
  */
 export function initOdyssey({ root, store, setStatus }) {
     initBox(root, store);
-    initInspiration(root, store, setStatus);
+    initInspiration(root, store);
     // Tablette (barre repliable, message sur toute la largeur) ou ordinateur (colonne étroite)
     const compact = window.matchMedia(COMPACT_QUERY);
     initDroppedNotice(store, setStatus, compact);
@@ -120,23 +124,25 @@ function initBox(root, store) {
 
 /**
  * Case « Points de Foi » / « Inspiration héroïque » (onglet Combat) : libellé, nom de ses boutons
- * − / + et pastille des points de Foi gagnés par niveau (mode actif seulement).
+ * − / + et pastille des points de Foi gagnés par niveau (mode actif seulement), qui ouvre la
+ * fenêtre des faveurs.
  * @param {HTMLElement} root
  * @param {Object} store
- * @param {(message: string) => void} setStatus
  */
-function initInspiration(root, store, setStatus) {
+function initInspiration(root, store) {
     const input = root.querySelector('#f-heroic_inspiration');
     const label = root.querySelector('label[for="f-heroic_inspiration"]');
     if (!input || !label) return;
     const cell = input.closest('.stat-cell');
-    // Même pastille dorée que « Vitesse 12 m (Centaure) », sans fenêtre : une phrase suffit
+    // Même pastille dorée que « Vitesse 12 m (Centaure) » : un toucher ouvre la fenêtre des faveurs
     const text = el('span');
-    const mention = el('button', { type: 'button', class: 'feat-mention faith-mention', hidden: true },
+    const mention = el('button', { type: 'button', class: 'feat-mention faith-mention', hidden: true, 'aria-haspopup': 'dialog' },
         el('span', { class: 'feat-mention-line' }, icon('star'), text));
     cell?.append(mention);
-    let sentence = '';
-    mention.addEventListener('click', () => setStatus(frenchSpaces(sentence)));
+    mention.addEventListener('click', () => {
+        const character = store.get();
+        if (odysseyActive(character)) openFaithFavors(character);
+    });
     let signature = '';
     const render = (character) => {
         const wording = inspirationWording(character);
@@ -148,11 +154,49 @@ function initInspiration(root, store, setStatus) {
         signature = next;
         mention.hidden = !faith;
         if (!faith) return;
-        sentence = faithSentence(faith);
         text.textContent = faithMention(faith);
-        mention.title = frenchSpaces(next);
-        mention.setAttribute('aria-label', `${faithMention(faith)} : ${next}`);
+        mention.title = frenchSpaces(`${next} Touchez la pastille pour les faveurs qu'ils permettent.`);
+        mention.setAttribute('aria-label', `${faithMention(faith)} : ${next} Ouvre la liste des faveurs.`);
     };
     store.subscribe((character) => render(character));
     render(store.get());
+}
+
+/**
+ * Fenêtre « Points de Foi » : les points de la case, les faveurs à 1, 3 et 5 points (celles que
+ * ces points permettent sont marquées « Possible »), puis comment les demander. Lecture seule :
+ * les points se retirent avec le bouton − de la case.
+ * @param {Object} character
+ */
+function openFaithFavors(character) {
+    const points = faithPoints(character.heroic_inspiration);
+    const faith = faithPerLevel(derivedOf(character));
+    const tiers = faithFavors(points).map((tier) => el('section', {
+        class: 'level-up-section faith-tier',
+        'data-tier': tier.id,
+        'data-short': Boolean(tier.missing)
+    },
+        el('h3', { class: 'level-up-title faith-tier-title' },
+            el('span', { text: `${tier.title} · ${pointsWord(tier.cost)}` }),
+            ...(tier.status ? [el('span', { class: 'faith-tier-status', text: tier.status })] : [])),
+        el('ul', {}, ...tier.uses.map((use) => el('li', { text: use })))));
+    const ways = el('section', { class: 'level-up-section faith-ways' },
+        el('h3', { class: 'level-up-title', text: 'Comment demander une faveur' }),
+        el('ul', {}, ...FAITH_WAYS.map((way) => el('li', {},
+            el('strong', { text: `${way.title} : ` }), el('span', { text: way.text })))));
+    openModal({
+        title: 'Points de Foi',
+        icon: 'star',
+        wide: true,
+        focusField: false,
+        className: 'modal-faith',
+        body: [
+            el('p', { class: 'faith-intro', text: frenchSpaces(`${faithPointsSentence(points)} ${FAITH_SPEND}`) }),
+            el('p', { class: 'faith-intro', text: frenchSpaces(faithSentence(faith)) }),
+            ...tiers,
+            ways,
+            el('p', { class: 'faith-footnote', text: frenchSpaces(`${FAITH_FOOTNOTE} Source : guide du MJ de l'Odyssée, p. 92.`) })
+        ],
+        actions: [{ label: 'Fermer', primary: true }]
+    });
 }

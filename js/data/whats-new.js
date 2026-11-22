@@ -16,7 +16,8 @@ export const WHATS_NEW = Object.freeze([
         version: '4.45.0',
         items: [
             'Campagne de l\'Odyssée : la case de l\'onglet Combat s\'appelle maintenant « Points de Foi ».',
-            'Une pastille dorée sous la case donne vos points de Foi par niveau : bonus de maîtrise plus Sagesse, au moins 1. Touchez-la pour l\'explication.',
+            'Une pastille dorée sous la case donne vos points de Foi par niveau : bonus de maîtrise plus Sagesse, au moins 1.',
+            'Touchez la pastille : une fenêtre liste les faveurs divines à 1, 3 et 5 points, marque celles que vos points permettent et rappelle comment prier ou sacrifier.',
             '« Passer au niveau » remet vos points de Foi au total du nouveau niveau, par exemple 5/5.',
             'Case « Mode Odyssée » décochée, c\'est « Inspiration héroïque » : une seule à la fois, comme dans le manuel.'
         ]

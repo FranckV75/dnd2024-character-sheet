@@ -26,6 +26,7 @@ import { classSlug } from './identity.js';
 import { subclassId } from './class-features.js';
 import { speciesSlug } from './species.js';
 import { signed } from './numbers.js';
+import { FAITH_FAVORS } from '../data/faith-favors.js';
 
 export const ODYSSEY_MODE_KEY = 'odyssey_mode';
 /** Valeur du champ « source » des données venues de L'Odyssée des Seigneurs Dragons */
@@ -247,6 +248,46 @@ export function faithReset(value, total) {
     if (text === '' || /^\d+$/.test(text) || /^\d+\s*\/\s*\d+$/.test(text)) return `${total}/${total}`;
     return null;
 }
+
+/**
+ * Points de Foi disponibles d'après la case : « 3 » ou « 3/5 » → 3 ; vide → 0 ; texte libre → null.
+ * @param {unknown} value - valeur de heroic_inspiration
+ * @returns {number|null}
+ */
+export function faithPoints(value) {
+    const text = String(value ?? '').trim();
+    if (text === '') return 0;
+    const match = /^(\d+)(?:\s*\/\s*\d+)?$/.exec(text);
+    return match ? Number(match[1]) : null;
+}
+
+/** « 1 point », « 3 points » */
+export function pointsWord(count) {
+    return `${count} point${count > 1 ? 's' : ''}`;
+}
+
+/**
+ * Paliers de faveurs (js/data/faith-favors.js) avec ce qu'il manque pour chacun.
+ * @param {number|null} points - faithPoints de la case ; null : inconnu (texte libre)
+ * @returns {Array<Object>} chaque palier, plus missing (0 = possible ; null = inconnu) et status
+ */
+export function faithFavors(points) {
+    return FAITH_FAVORS.map((tier) => {
+        const missing = points === null ? null : Math.max(0, tier.cost - points);
+        const status = missing === null ? '' : missing === 0 ? 'Possible' : `Il manque ${pointsWord(missing)}`;
+        return { ...tier, missing, status };
+    });
+}
+
+/** Première phrase de la fenêtre des faveurs : les points de la case */
+export function faithPointsSentence(points) {
+    if (points === null) return 'La case des points de Foi contient du texte : comptez vos points vous-même.';
+    if (points === 0) return "Vous n'avez aucun point de Foi pour l'instant.";
+    return `Vous avez ${pointsWord(points)} de Foi.`;
+}
+
+/** Comment payer une faveur, dit dans la fenêtre */
+export const FAITH_SPEND = 'Chaque faveur demandée à un dieu coûte 1, 3 ou 5 points : retirez-les avec le bouton − de la case.';
 
 /** « Cette fiche garde : Centaure, style Hoplite. » ('' si elle ne garde rien) */
 function keptSentence(record) {

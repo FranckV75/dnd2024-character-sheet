@@ -345,6 +345,56 @@
     grid-row: 3;
 }
 
+/* Fenêtre « Points de Foi » (toucher la pastille) : paliers de faveurs à 1, 3 et 5 points.
+   Sections et titres : css/level-up.css. Palier hors de portée : liste en encre adoucie. */
+.modal-body .faith-intro,
+.modal-body .faith-footnote {
+    margin: 0 0 8px;
+    font-family: var(--font-text);
+}
+
+.modal-body .faith-intro + .level-up-section {
+    margin-top: 12px;
+}
+
+.modal-body .faith-tier-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2px 12px;
+}
+
+.modal-body .faith-tier-status {
+    padding: 0 8px;
+    border: 1px solid var(--gold-soft);
+    border-radius: 10px;
+    font-family: var(--font-text);
+    font-size: 0.85rem;
+    font-style: italic;
+    letter-spacing: normal;
+    color: var(--accent-ink);
+}
+
+.modal-body .faith-tier[data-short] .faith-tier-status {
+    border-color: transparent;
+    color: var(--text-muted);
+}
+
+.modal-body .faith-tier[data-short] ul {
+    color: var(--text-muted);
+}
+
+.modal-body .faith-ways li + li {
+    margin-top: 4px;
+}
+
+.modal-body .faith-footnote {
+    margin-top: 12px;
+    font-style: italic;
+    color: var(--text-muted);
+}
+
 /* ---------- Dons : encadré « Dans la fiche » sous la description (renderFeatSheet) ---------- */
 
 /* Même filet que la description, en or : ce que la fiche calcule ou rappelle pour ce don */

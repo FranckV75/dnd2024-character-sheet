@@ -197,6 +197,10 @@ export const HELP_SECTIONS = Object.freeze([
                 text: "Campagne de l'Odyssée (case « Mode Odyssée » cochée), la case s'appelle « Points de Foi » : à chaque niveau, elle repart de 0 et reçoit votre bonus de maîtrise plus votre modificateur de Sagesse (au moins 1). La pastille dorée dessous donne ce nombre ; « Passer au niveau » remet la case pour vous. Mode décoché, c'est « Inspiration héroïque » : les boutons − et + vont seulement de 0 à 1."
             },
             {
+                title: "Dépenser ses points de Foi",
+                text: "Touchez la pastille dorée sous « Points de Foi » : une fenêtre liste les faveurs qu'un dieu peut accorder, à 1, 3 ou 5 points, et marque « Possible » celles que vos points permettent. Elle rappelle aussi comment les demander : prière sur le moment, ou sacrifice pour les jours suivants. Le MJ a le dernier mot ; retirez ensuite les points avec le bouton −."
+            },
+            {
                 title: "Les points de vie",
                 text: "Les boutons − et + changent les PV actuels ou les PV temporaires d'un point ; gardez le doigt appuyé pour aller plus vite. Le bouton « Dégâts / Soins » ouvre un pavé de chiffres : tapez un nombre, puis « Dégâts », « Soins » ou « PV temp. »."
             },
