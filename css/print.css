@@ -14,6 +14,7 @@
 }
 
 /* ---------- Couleurs : thème « papier » forcé, même si le thème sombre est actif ---------- */
+/* Plus bas, le papier est var(--bg) et l'encre var(--text) : aucune couleur écrite en dur */
 
 :root,
 :root[data-theme] {
@@ -58,6 +59,12 @@
     --check-ring: #000000;
     --veil: transparent;
     --coin-ink: #000000;
+    /* Liseré foncé de chaque pièce imprimée (rubrique Trésor) */
+    --coin-copper-rim: #8a4f1d;
+    --coin-silver-rim: #6d6e72;
+    --coin-electrum-rim: #857424;
+    --coin-gold-rim: #8d7012;
+    --coin-platinum-rim: #57707f;
     /* Effets animés (reflet, Rage, pulsation : écran seulement) : neutres sur le papier */
     --motion-sheen: transparent;
     --motion-sheen-soft: transparent;
@@ -86,7 +93,7 @@ html,
 body {
     margin: 0;
     padding: 0;
-    background: #ffffff;
+    background: var(--bg);
     background-image: none;
     color: var(--text);
 }
@@ -187,7 +194,7 @@ body.cinema .sheet {
     padding: 0;
     border: none;
     border-radius: 0;
-    background: #ffffff;
+    background: var(--bg);
     box-shadow: none;
     opacity: 1;
     visibility: visible;
@@ -299,7 +306,7 @@ h1, h2, h3, h4 {
 
 .box {
     padding: 5px 8px;
-    background: #ffffff;
+    background: var(--bg);
     border-color: var(--border-soft);
 }
 
@@ -418,15 +425,15 @@ h1, h2, h3, h4 {
     width: 16px;
     height: 16px;
     border-color: var(--border);
-    background: #ffffff;
+    background: var(--bg);
 }
 
 .round-check:checked {
-    background: radial-gradient(circle, #000000 45%, transparent 50%);
+    background: radial-gradient(circle, var(--text) 45%, transparent 50%);
 }
 
 .round-check.expertise:checked {
-    background: #000000;
+    background: var(--text);
 }
 
 /* ---------- En-tête ---------- */
@@ -698,16 +705,16 @@ h1, h2, h3, h4 {
     width: 28px;
     height: 28px;
     border: 2px solid var(--border);
-    background: #ffffff;
-    color: #000000;
+    background: var(--bg);
+    color: var(--text);
     font-size: 0.6rem;
 }
 
-.coin-icon.copper { border-color: #8a4f1d; box-shadow: inset 0 0 0 3px var(--coin-copper); }
-.coin-icon.silver { border-color: #6d6e72; box-shadow: inset 0 0 0 3px var(--coin-silver); }
-.coin-icon.electrum { border-color: #857424; box-shadow: inset 0 0 0 3px var(--coin-electrum); }
-.coin-icon.gold { border-color: #8d7012; box-shadow: inset 0 0 0 3px var(--coin-gold); }
-.coin-icon.platinum { border-color: #57707f; box-shadow: inset 0 0 0 3px var(--coin-platinum); }
+.coin-icon.copper { border-color: var(--coin-copper-rim); box-shadow: inset 0 0 0 3px var(--coin-copper); }
+.coin-icon.silver { border-color: var(--coin-silver-rim); box-shadow: inset 0 0 0 3px var(--coin-silver); }
+.coin-icon.electrum { border-color: var(--coin-electrum-rim); box-shadow: inset 0 0 0 3px var(--coin-electrum); }
+.coin-icon.gold { border-color: var(--coin-gold-rim); box-shadow: inset 0 0 0 3px var(--coin-gold); }
+.coin-icon.platinum { border-color: var(--coin-platinum-rim); box-shadow: inset 0 0 0 3px var(--coin-platinum); }
 
 /* Objets magiques (magic.css) : sur le papier, le nom en noir suivi de « +1 » en texte simple ;
    aucun décor, la ligne +3 reprend sa hauteur */
@@ -725,13 +732,13 @@ tr[data-magic] .magic-name > .cell-input,
 tr:is([data-magic="2"], [data-magic="3"]) .magic-name > .cell-input,
 tr[data-magic="3"] .magic-name > .cell-input {
     background: none;
-    color: #000000;
+    color: var(--text);
     font-size: inherit;
 }
 
 .weapons-table tr[data-magic="3"] .weapons-calc,
 .armors-table tr[data-magic="3"] .armor-ca-value {
-    color: #000000;
+    color: var(--text);
     text-shadow: none;
 }
 
@@ -754,7 +761,7 @@ tr[data-magic="3"] .magic-gem-face {
     border: none;
     background: none;
     box-shadow: none;
-    color: #000000;
+    color: var(--text);
     text-shadow: none;
 }
 

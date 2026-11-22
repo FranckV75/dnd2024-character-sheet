@@ -31,6 +31,27 @@
     --magic-rune: rgba(154, 106, 18, 0.16);
     --magic-rune-hi: rgba(150, 95, 5, 0.34);
     --magic-frieze: rgba(130, 88, 12, 0.55);
+    /* Cœur blanc du trait de lumière (+3) et des étincelles */
+    --magic-spark: #ffffff;
+    /* Pastille +1 / +2 : liseré, or du haut, du milieu et du bas, chiffre et sa gravure */
+    --magic-gem-edge: #7a5a0c;
+    --magic-gem-top: #fff2c4;
+    --magic-gem-mid: #e6c05a;
+    --magic-gem-low: #a97d1a;
+    --magic-gem-ink: #2e1d00;
+    --magic-gem-engrave: rgba(255, 255, 255, 0.5);
+    /* Reflet du haut de la pastille (dosé par color-mix : 75 %, 80 % au +2, 85 % au +3) et ombre portée */
+    --magic-gem-gloss: #ffffff;
+    --magic-gem-drop: rgba(0, 0, 0, 0.35);
+    /* Lueur autour de la pastille +2 */
+    --magic-gem-aura: rgba(230, 180, 60, 0.7);
+    /* Pastille +3 : or plus vif, lueur plus forte et rayons */
+    --magic-gem3-top: #fff6d6;
+    --magic-gem3-mid: #f0c84e;
+    --magic-gem3-low: #b8861a;
+    --magic-gem3-tip: #ffeaa0;
+    --magic-gem3-aura: rgba(240, 190, 60, 0.9);
+    --magic-gem3-rays: rgba(245, 200, 90, 0.75);
     /* 24 runes du futhark ancien en traits (tuile 384 × 20) */
     --magic-runes: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 384 20'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath transform='translate(2 0)' d='M3 2V18M3 7L9 3M3 11L9 7'/%3E%3Cpath transform='translate(18 0)' d='M3 18V2L9 7V18'/%3E%3Cpath transform='translate(34 0)' d='M3 2V18M3 6L8 10L3 14'/%3E%3Cpath transform='translate(50 0)' d='M3 2V18M3 2L9 6M3 7L9 11'/%3E%3Cpath transform='translate(66 0)' d='M3 18V2L8 6L3 10L9 18'/%3E%3Cpath transform='translate(82 0)' d='M8 4L3 9L8 14'/%3E%3Cpath transform='translate(98 0)' d='M2 3L10 17M10 3L2 17'/%3E%3Cpath transform='translate(114 0)' d='M3 2V18M3 2L8 6L3 10'/%3E%3Cpath transform='translate(130 0)' d='M2 2V18M10 2V18M2 7L10 12'/%3E%3Cpath transform='translate(146 0)' d='M6 2V18M3 7L9 12'/%3E%3Cpath transform='translate(162 0)' d='M6 2V18'/%3E%3Cpath transform='translate(178 0)' d='M5 4L2 8L5 12M7 8L10 12L7 16'/%3E%3Cpath transform='translate(194 0)' d='M6 2V18M6 2L9 5M6 18L3 15'/%3E%3Cpath transform='translate(210 0)' d='M2 2V6L6 10L2 14V18M10 2V6L6 10L10 14V18'/%3E%3Cpath transform='translate(226 0)' d='M6 18V2M6 9L2 3M6 9L10 3'/%3E%3Cpath transform='translate(242 0)' d='M8 2L3 8L8 12L3 18'/%3E%3Cpath transform='translate(258 0)' d='M6 18V2M2 7L6 2L10 7'/%3E%3Cpath transform='translate(274 0)' d='M3 2V18M3 2L8 6L3 10L8 14L3 18'/%3E%3Cpath transform='translate(290 0)' d='M2 18V2L6 8L10 2V18'/%3E%3Cpath transform='translate(306 0)' d='M2 18V2L10 10M10 18V2L2 10'/%3E%3Cpath transform='translate(322 0)' d='M3 18V2L8 7'/%3E%3Cpath transform='translate(338 0)' d='M6 4L10 10L6 16L2 10Z'/%3E%3Cpath transform='translate(354 0)' d='M2 2V18L10 2V18L2 2'/%3E%3Cpath transform='translate(370 0)' d='M2 18L9 10L6 5L3 10L10 18'/%3E%3C/g%3E%3C/svg%3E");
 }
@@ -50,6 +71,22 @@
     --magic-rune: rgba(243, 207, 143, 0.2);
     --magic-rune-hi: rgba(255, 230, 160, 0.38);
     --magic-frieze: rgba(243, 207, 143, 0.6);
+    /* Pastille : un or bruni posé sur la nuit, chiffre crème (comme la pastille de Rage) */
+    --magic-gem-edge: #f3cf8f;
+    --magic-gem-top: #c9962e;
+    --magic-gem-mid: #8a5f14;
+    --magic-gem-low: #4e3205;
+    --magic-gem-ink: #fff6dc;
+    --magic-gem-engrave: rgba(30, 15, 0, 0.7);
+    --magic-gem-gloss: #ffe7a8;
+    --magic-gem-drop: rgba(0, 0, 0, 0.6);
+    --magic-gem-aura: rgba(243, 207, 143, 0.55);
+    --magic-gem3-top: #e8b86d;
+    --magic-gem3-mid: #a8781e;
+    --magic-gem3-low: #5e3d08;
+    --magic-gem3-tip: #d9a548;
+    --magic-gem3-aura: rgba(255, 200, 90, 0.75);
+    --magic-gem3-rays: rgba(255, 214, 120, 0.7);
 }
 
 /* ---------- Ligne magique : support des calques ---------- */
@@ -181,20 +218,20 @@ tr[data-magic="3"] .magic-name > .cell-input {
     position: relative;
     display: inline-block;
     padding: 4px 6px 3px;
-    border: 1px solid #7a5a0c;
+    border: 1px solid var(--magic-gem-edge);
     border-radius: 10px;
-    background: linear-gradient(180deg, #fff2c4, #e6c05a 50%, #a97d1a);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 1px 3px rgba(0, 0, 0, 0.35);
+    background: linear-gradient(180deg, var(--magic-gem-top), var(--magic-gem-mid) 50%, var(--magic-gem-low));
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--magic-gem-gloss) 75%, transparent), 0 1px 3px var(--magic-gem-drop);
     font-family: var(--font-title);
     font-size: 0.72rem;
     font-weight: 700;
     line-height: 1;
-    color: #2e1d00;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    color: var(--magic-gem-ink);
+    text-shadow: 0 1px 0 var(--magic-gem-engrave);
 }
 
 tr[data-magic="2"] .magic-gem-face {
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 8px rgba(230, 180, 60, 0.7);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--magic-gem-gloss) 80%, transparent), 0 0 8px var(--magic-gem-aura);
 }
 
 /* +2 : petite étoile à quatre branches au coin de la pastille */
@@ -212,8 +249,8 @@ tr[data-magic="2"] .magic-gem-face::after {
 
 tr[data-magic="3"] .magic-gem-face {
     padding: 5px 7px 4px;
-    background: linear-gradient(135deg, #fff6d6, #f0c84e 35%, #b8861a 65%, #ffeaa0);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 0 14px rgba(240, 190, 60, 0.9);
+    background: linear-gradient(135deg, var(--magic-gem3-top), var(--magic-gem3-mid) 35%, var(--magic-gem3-low) 65%, var(--magic-gem3-tip));
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--magic-gem-gloss) 85%, transparent), 0 0 14px var(--magic-gem3-aura);
     font-size: 0.78rem;
 }
 
@@ -228,7 +265,7 @@ tr[data-magic="3"] .magic-gem::before {
     height: 54px;
     margin: -27px 0 0 -27px;
     border-radius: 50%;
-    background: repeating-conic-gradient(rgba(245, 200, 90, 0.75) 0 7deg, transparent 7deg 30deg);
+    background: repeating-conic-gradient(var(--magic-gem3-rays) 0 7deg, transparent 7deg 30deg);
     -webkit-mask: radial-gradient(circle, #000 28%, transparent 70%);
     mask: radial-gradient(circle, #000 28%, transparent 70%);
     pointer-events: none;
@@ -379,7 +416,7 @@ tr[data-magic="3"] .magic-frame {
     width: calc(100% + 24px);
     aspect-ratio: 1;
     translate: -50% -50%;
-    background: conic-gradient(transparent 0deg 230deg, var(--magic-g2) 285deg, #fff 322deg, var(--magic-g3) 335deg, var(--magic-g2) 350deg, transparent 360deg);
+    background: conic-gradient(transparent 0deg 230deg, var(--magic-g2) 285deg, var(--magic-spark) 322deg, var(--magic-g3) 335deg, var(--magic-g2) 350deg, transparent 360deg);
 }
 
 /* +3 : grandes runes en filigrane sur toute la ligne, qu'une vague de lumière allume */
@@ -483,7 +520,7 @@ tr[data-magic="3"] .magic-mote {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: radial-gradient(circle, #fff, var(--magic-g2) 50%, transparent 72%);
+    background: radial-gradient(circle, var(--magic-spark), var(--magic-g2) 50%, transparent 72%);
     box-shadow: 0 0 8px var(--magic-g2);
     opacity: 0;
 }
