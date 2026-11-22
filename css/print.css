@@ -281,6 +281,20 @@ h1, h2, h3, h4 {
     break-after: avoid;
 }
 
+/* Titres en <p> ou <div> qui jouent le rôle d'un titre (« Classe : Barbare, niveau 4 »,
+   sous-classe, espèce, historique, nom d'une aptitude, d'un compagnon, bottes d'arme) :
+   jamais seuls en bas de page, ils passent à la page suivante avec le début de leur contenu
+   (la ligne de la table de classe suit le titre et reste avec la première aptitude) */
+.subclass-title,
+.class-columns,
+.subclass-feature-head,
+.subclass-upcoming > summary,
+.companion-head,
+.weapons-mastery-calc-title,
+.weapons-mastery-access-title {
+    break-after: avoid;
+}
+
 /* ---------- Boîtes ---------- */
 
 .box {
