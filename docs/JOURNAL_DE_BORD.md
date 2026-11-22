@@ -25,8 +25,8 @@ en fin de session :
   sombre. Le reste est du ménage invisible (découpage du grimoire et des armes). En attente du
   « Publie » de Franck ; ses décisions en attente sur la 4.46.0 sont au point 1 de
   `docs/FEUILLE_DE_ROUTE.md` (la principale : colonne Dégâts coupée sur tablette).
-- **Serveur de travail** : la protection « réservé à l'ordinateur » ne s'appliquera qu'au prochain
-  lancement de `npm run dev` ; celui qui tourne encore est l'ancien, visible depuis le Wi-Fi.
+- **Serveur de travail** : `npm run dev` n'écoute plus que l'ordinateur (127.0.0.1 et ::1) et ne
+  sert jamais `.git` ; relancé le 22/11/2026 avec cette protection (vérifié avec netstat).
 - **Multiclassage** : étude faite et contre-vérifiée (`docs/etudes/MULTICLASSAGE.md`). Rien de
   construit : attend les réponses de Franck (14 questions, section 8) et les photos du chapitre 2
   du manuel français (section 9).
