@@ -3,7 +3,8 @@
  */
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { readCount, steppedValue, changeCoins } from '../js/rules/counters.js';
+import { readCount, readCounter, steppedValue, stepCounter, changeCoins, COUNTER_DIGITS } from '../js/rules/counters.js';
+import { inspirationWording, INSPIRATION_ONLY_ONE, faithPoints, faithReset, spendFaith, ODYSSEY_MODE_KEY } from '../js/rules/odyssey.js';
 import { experienceProgress, addExperience, XP_THRESHOLDS, formatXp } from '../js/rules/experience.js';
 
 describe('Compteurs : boutons − / +', () => {
@@ -24,6 +25,91 @@ describe('Compteurs : boutons − / +', () => {
         assert.equal(steppedValue('', -1), 0);
         assert.equal(steppedValue('2 (Chanceux)', 1), null);
         assert.equal(steppedValue('25', 1, { max: 20 }), 20);
+    });
+});
+
+describe('Compteurs : une seule lecture (readCounter)', () => {
+    test('Entier positif ou nul, éventuellement « /M » ; case vide = 0', () => {
+        assert.deepEqual(readCounter('3'), { count: 3, max: null });
+        assert.deepEqual(readCounter(' 3 / 5 '), { count: 3, max: 5 });
+        assert.deepEqual(readCounter('007'), { count: 7, max: null });
+        assert.deepEqual(readCounter(''), { count: 0, max: null });
+        assert.deepEqual(readCounter(undefined), { count: 0, max: null });
+        assert.deepEqual(readCounter(4), { count: 4, max: null });
+        assert.deepEqual(readCounter('999999/999999'), { count: 999999, max: 999999 });
+    });
+
+    test('Tout le reste est du texte libre (null), même limite de chiffres des deux côtés de la barre', () => {
+        assert.equal(COUNTER_DIGITS, 6);
+        for (const value of ['-1', -1, 2.5, '2.5', '2 (Chanceux)', '<div>3</div>', '3/', '/3', '3/5/7',
+            '1234567', '1234567/2', '2/1234567', '9999999999999999999999', 1e7, NaN, 'beaucoup']) {
+            assert.equal(readCounter(value), null, String(value));
+        }
+    });
+
+    test('Boutons, fenêtre des faveurs, dépense et passage de niveau lisent pareil', () => {
+        for (const value of ['', '3', '3/5', ' 4 / 6 ', 0, 5, '-1', '1234567/2', '1234567', '2 (béni)', '<b>2</b>']) {
+            const counter = readCounter(value);
+            assert.equal(faithPoints(value), counter ? counter.count : null, `fenêtre : ${value}`);
+            assert.equal(faithReset(value, 4) !== null, counter !== null, `niveau : ${value}`);
+            const text = /contient du texte/.test(stepCounter(value, 1, { max: 99, label: 'Points de Foi' }).message);
+            assert.equal(text, counter === null, `boutons : ${value}`);
+            if (counter && counter.count >= 1) assert.notEqual(spendFaith(value, 1), null, `dépense : ${value}`);
+            if (!counter) assert.equal(spendFaith(value, 1), null, `dépense : ${value}`);
+        }
+    });
+});
+
+describe('Compteurs : décision des boutons − / + (stepCounter, js/ui/counters.js)', () => {
+    // Même réglage que la case heroic_inspiration de js/ui/counters.js
+    const faith = (record) => ({ max: inspirationWording(record).max, label: inspirationWording(record).label, onlyOne: INSPIRATION_ONLY_ONE });
+    const ON = {};
+    const OFF = { [ODYSSEY_MODE_KEY]: 'off' };
+
+    test('Points de Foi (mode Odyssée) : − / + d\'un point, la forme « N/M » est gardée', () => {
+        assert.deepEqual(stepCounter('3', 1, faith(ON)), { value: '4', message: '' });
+        assert.deepEqual(stepCounter('3', -1, faith(ON)), { value: '2', message: '' });
+        assert.deepEqual(stepCounter('3/5', -1, faith(ON)), { value: '2/5', message: '' });
+        assert.deepEqual(stepCounter('', 1, faith(ON)), { value: '1', message: '' });
+        assert.deepEqual(stepCounter('', -1, faith(ON)), { value: '0', message: '' });
+    });
+
+    test('Points de Foi : bornes atteintes, refus sans phrase ; au-delà du plafond, « + » ne baisse jamais', () => {
+        assert.deepEqual(stepCounter('5/5', 1, faith(ON)), { value: null, message: '' });
+        assert.deepEqual(stepCounter('0', -1, faith(ON)), { value: null, message: '' });
+        assert.deepEqual(stepCounter('99', 1, faith(ON)), { value: null, message: '' });
+        assert.deepEqual(stepCounter('150', 1, faith(ON)), { value: null, message: '' });
+        assert.deepEqual(stepCounter('150', -1, faith(ON)), { value: '99', message: '' });
+    });
+
+    test('Texte libre : jamais réécrit, la barre du haut le dit (« -1 » et « 1234567/2 » compris)', () => {
+        for (const value of ['2 (béni)', '-1', '1234567/2', '<div>3</div>']) {
+            for (const delta of [-1, 1]) {
+                assert.deepEqual(stepCounter(value, delta, faith(ON)),
+                    { value: null, message: 'La case « Points de Foi » contient du texte : modifiez-la à la main.' }, `${value} ${delta}`);
+            }
+        }
+    });
+
+    test('Inspiration héroïque (mode coupé) : 0 ou 1 ; le 2e « + » est refusé avec la phrase', () => {
+        assert.deepEqual(stepCounter('', 1, faith(OFF)), { value: '1', message: '' });
+        assert.deepEqual(stepCounter('0', 1, faith(OFF)), { value: '1', message: '' });
+        assert.deepEqual(stepCounter('1', 1, faith(OFF)), { value: null, message: INSPIRATION_ONLY_ONE });
+        assert.deepEqual(stepCounter('3', 1, faith(OFF)), { value: null, message: INSPIRATION_ONLY_ONE }, 'vieille valeur : jamais baissée par +');
+        assert.deepEqual(stepCounter('1', -1, faith(OFF)), { value: '0', message: '' });
+        assert.deepEqual(stepCounter('0', -1, faith(OFF)), { value: null, message: '' });
+        // Sans phrase prévue (renommée, épuisement), le refus est muet
+        assert.deepEqual(stepCounter('1', 1, { max: 1 }), { value: null, message: '' });
+    });
+
+    test('Épuisement : enregistré en nombre (asNumber), de 0 à 6', () => {
+        const fatigue = { max: 6, asNumber: true, label: 'Épuisement (0-6)' };
+        assert.deepEqual(stepCounter(2, 1, fatigue), { value: 3, message: '' });
+        assert.deepEqual(stepCounter('2', -1, fatigue), { value: 1, message: '' });
+        assert.deepEqual(stepCounter(6, 1, fatigue), { value: null, message: '' });
+        assert.deepEqual(stepCounter('', -1, fatigue), { value: 0, message: '' });
+        // Forme « N/M » : reste du texte
+        assert.deepEqual(stepCounter('2/6', 1, fatigue), { value: '3/6', message: '' });
     });
 });
 

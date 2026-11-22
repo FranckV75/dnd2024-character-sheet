@@ -17,7 +17,7 @@
 import { el, icon } from './dom.js';
 import { wrapWithSteppers } from './stepper.js';
 import { openNumberPad } from './number-pad.js';
-import { steppedValue, changeCoins, readCount, COINS, MAX_COIN_ENTRY } from '../rules/counters.js';
+import { stepCounter, changeCoins, readCount, COINS, MAX_COIN_ENTRY } from '../rules/counters.js';
 import { inspirationWording, INSPIRATION_ONLY_ONE } from '../rules/odyssey.js';
 
 const COUNTERS = [
@@ -40,22 +40,16 @@ export function initCounters({ root, store, setStatus = () => {} }) {
             rowClass: 'counter-stepper',
             onStep: (delta) => {
                 const record = store.get();
-                const value = record[counter.key];
-                const max = typeof counter.max === 'function' ? counter.max(record) : counter.max;
-                // Déjà au maximum (ou au-delà : vieille valeur) : « + » ne fait rien, sans jamais baisser
-                if (delta > 0 && (countOf(value) ?? -1) >= max) {
-                    if (max === 1 && counter.onlyOne) setStatus(counter.onlyOne);
-                    return false;
-                }
-                const next = steppedValue(value, delta, { max });
-                if (next === null) {
-                    // Texte libre (« 2 (Chanceux) ») : rien n'est réécrit, on le dit
-                    if (readCount(value) === null && !/^\s*\d+\s*\/\s*\d+\s*$/.test(String(value))) {
-                        setStatus(`La case « ${input.getAttribute('aria-label') || label(input)} » contient du texte : modifiez-la à la main.`);
-                    }
-                    return false;
-                }
-                store.update({ [counter.key]: counter.asNumber && typeof next === 'number' ? next : String(next) });
+                // Plafond, « + » refusé, texte libre jamais réécrit : stepCounter (js/rules/counters.js)
+                const step = stepCounter(record[counter.key], delta, {
+                    max: typeof counter.max === 'function' ? counter.max(record) : counter.max,
+                    asNumber: counter.asNumber,
+                    label: input.getAttribute('aria-label') || label(input),
+                    onlyOne: counter.onlyOne
+                });
+                if (step.message) setStatus(step.message);
+                if (step.value === null) return false;
+                store.update({ [counter.key]: step.value });
                 return true;
             }
         });
@@ -68,12 +62,6 @@ export function initCounters({ root, store, setStatus = () => {} }) {
             on: { click: () => openPurse(store) }
         }, icon('bag'), el('span', { text: 'Bourse : gagner / dépenser' })));
     }
-}
-
-/** Nombre d'une case : « 2 » ou « 2/3 » → 2 ; texte libre → null */
-function countOf(value) {
-    const fraction = /^\s*(\d+)\s*\/\s*\d+\s*$/.exec(typeof value === 'string' ? value : '');
-    return fraction ? Number(fraction[1]) : readCount(value);
 }
 
 /** Libellé visible de la case (« Épuisement (0-6) ») */

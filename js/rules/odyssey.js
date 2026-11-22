@@ -33,6 +33,7 @@ import { speciesSlug } from './species.js';
 import { isHuman } from './feats.js';
 import { subclassFeatures } from './subclass-features.js';
 import { signed } from './numbers.js';
+import { readCounter } from './counters.js';
 import { FAITH_FAVORS } from '../data/faith-favors.js';
 
 export const ODYSSEY_MODE_KEY = 'odyssey_mode';
@@ -246,15 +247,14 @@ export function faithHint(faith) {
 
 /**
  * Nouvelle valeur de la case au passage de niveau (mode actif) : « N/N », ou null si la case
- * contient du texte libre (« 2 (béni) »), qui n'est jamais réécrit.
+ * contient du texte libre (« 2 (béni) »), qui n'est jamais réécrit. Lecture : readCounter
+ * (js/rules/counters.js), la même que les boutons − / +, la fenêtre des faveurs et spendFaith.
  * @param {unknown} value - valeur actuelle de heroic_inspiration
  * @param {number} total - points du nouveau niveau
  * @returns {string|null}
  */
 export function faithReset(value, total) {
-    const text = String(value ?? '').trim();
-    if (text === '' || /^\d+$/.test(text) || /^\d+\s*\/\s*\d+$/.test(text)) return `${total}/${total}`;
-    return null;
+    return readCounter(value) ? `${total}/${total}` : null;
 }
 
 /**
@@ -263,10 +263,7 @@ export function faithReset(value, total) {
  * @returns {number|null}
  */
 export function faithPoints(value) {
-    const text = String(value ?? '').trim();
-    if (text === '') return 0;
-    const match = /^(\d+)(?:\s*\/\s*\d+)?$/.exec(text);
-    return match ? Number(match[1]) : null;
+    return readCounter(value)?.count ?? null;
 }
 
 /** « 1 point », « 3 points » */
@@ -300,16 +297,16 @@ export const FAITH_SPEND = 'Chaque faveur demandée à un dieu coûte 1, 3 ou 5 
 /**
  * Case après une faveur payée : « 5/5 » − 3 → « 2/5 » ; « 3 » − 1 → « 2 ». Refus (null) : case
  * vide, points insuffisants, texte libre (« 2 (béni) », jamais réécrit) ou coût illisible. Même
- * lecture que la fenêtre (faithPoints) ; le maximum noté après la barre est gardé.
+ * lecture que la fenêtre et les boutons − / + (readCounter) ; le maximum noté après la barre est gardé.
  * @param {unknown} value - valeur de heroic_inspiration
  * @param {number} cost - points de la faveur (1, 3 ou 5)
  * @returns {string|null}
  */
 export function spendFaith(value, cost) {
-    const points = faithPoints(value);
-    if (!Number.isInteger(cost) || cost < 1 || points === null || points < cost) return null;
-    const max = /\/\s*(\d+)$/.exec(String(value ?? '').trim());
-    return max ? `${points - cost}/${max[1]}` : String(points - cost);
+    const counter = readCounter(value);
+    if (!Number.isInteger(cost) || cost < 1 || !counter || counter.count < cost) return null;
+    const left = counter.count - cost;
+    return counter.max === null ? String(left) : `${left}/${counter.max}`;
 }
 
 /** « Dépenser 1 point », « Dépenser 3 points » */
