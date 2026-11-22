@@ -7,7 +7,8 @@
 //  - Pièces : bouton « Bourse » sous les cinq cases : choisir la pièce, taper le montant, puis
 //    Gagner ou Dépenser (pas de monnaie rendue automatiquement).
 // Le libellé de cette case, le nom de ses boutons et sa pastille « +5 par niveau » suivent le mode
-// Odyssée de la fiche : js/ui/odyssey.js ; son maximum aussi (inspirationWording).
+// Odyssée de la fiche : js/ui/odyssey.js ; son maximum aussi (inspirationWording). Mode Odyssée,
+// l'Inspiration héroïque d'un Humain ou d'un Champion a son propre bouton sous la case (js/ui/odyssey.js).
 // Épuisement, Inspiration et pièces sont des champs de jeu (utilisables fiche verrouillée) ;
 // les boutons de la renommée sont masqués fiche verrouillée (edit-only), comme sa case.
 // Règles : js/rules/counters.js. Mise en forme : css/stepper.css.

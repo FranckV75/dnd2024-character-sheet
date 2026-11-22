@@ -14,6 +14,10 @@
 // règle de calcul ne lit ce mode. L'encadré « Odyssée » de l'onglet 3 n'est caché que s'il est vide.
 // Case heroic_inspiration (onglet Combat) : « Points de Foi » mode actif (maîtrise + Sagesse à chaque
 // niveau, remis par « Passer au niveau »), « Inspiration héroïque » mode coupé (une seule à la fois).
+// Les points de Foi remplacent les « points de héros » du guide du MJ, PAS l'Inspiration héroïque du
+// manuel : mode actif, un Humain (Ingénieux) ou un Champion niveau 10+ la note avec un bouton à part
+// sous la case (clé facultative « odyssey_inspiration » : "1" = allumée ; absente = éteinte, jamais
+// dans la fiche vierge, comme odyssey_mode ; V4_ONLY_KEYS). odysseyInspirationUseful dit quand il sert.
 // Repère de l'Odyssée dans les données : champ source = "Odyssée" (js/data/dd-rules.js pour les
 // espèces et les sous-classes, js/data/feats.js pour le style Hoplite).
 // Fonctions pures. Testé : tests/odyssey.test.js.
@@ -21,10 +25,12 @@
 
 import { DD_RULES } from '../data/dd-rules.js';
 import { FEATS_DATA } from '../data/feats.js';
-import { FEAT_SLOT_ORDER } from '../state/schema.js';
+import { FEAT_SLOT_ORDER, OPTIONAL_KEY_DEFAULTS } from '../state/schema.js';
 import { classSlug } from './identity.js';
 import { subclassId } from './class-features.js';
 import { speciesSlug } from './species.js';
+import { isHuman } from './feats.js';
+import { subclassFeatures } from './subclass-features.js';
 import { signed } from './numbers.js';
 import { FAITH_FAVORS } from '../data/faith-favors.js';
 
@@ -182,8 +188,9 @@ export function odysseyBoxUseful(record) {
 /**
  * Case de l'onglet Combat (clé heroic_inspiration, inchangée) : son libellé, le nom d'un de ses
  * points (boutons − / +) et son maximum.
- *  - Mode actif : « Points de Foi » (guide du MJ de l'Odyssée, « Sacrifices et prières » : ils
- *    remplacent l'Inspiration héroïque de la campagne). Pas de maximum fixe : voir faithPerLevel.
+ *  - Mode actif : « Points de Foi » (guide du MJ de l'Odyssée, p. 92, « Sacrifices et prières » : ils
+ *    remplacent les « points de héros » du guide du MJ, pas l'Inspiration héroïque, qui a son propre
+ *    bouton : odysseyInspirationUseful). Pas de maximum fixe : voir faithPerLevel.
  *  - Mode coupé : « Inspiration héroïque » (manuel 2024) : on l'a ou on ne l'a pas, jamais plus
  *    d'une à la fois (une deuxième se donne à un autre personnage joueur).
  * @param {Object} record
@@ -288,6 +295,88 @@ export function faithPointsSentence(points) {
 
 /** Comment payer une faveur, dit dans la fenêtre */
 export const FAITH_SPEND = 'Chaque faveur demandée à un dieu coûte 1, 3 ou 5 points : retirez-les avec le bouton − de la case.';
+
+/** Clé facultative de l'Inspiration héroïque notée à part des points de Foi (mode actif) */
+export const ODYSSEY_INSPIRATION_KEY = 'odyssey_inspiration';
+/** Nom du bouton */
+export const ODYSSEY_INSPIRATION_LABEL = 'Inspiration héroïque';
+
+/** L'Inspiration héroïque notée à part (mode actif) est-elle allumée ? ("1" ; absente ou "" : non) */
+export function odysseyInspirationLit(record) {
+    return String(record?.[ODYSSEY_INSPIRATION_KEY] ?? OPTIONAL_KEY_DEFAULTS[ODYSSEY_INSPIRATION_KEY]).trim() === '1';
+}
+
+/**
+ * Qui donne l'Inspiration héroïque à ce personnage, en mots (vide : personne).
+ *  - Humain, trait Ingénieux : à la fin de chaque repos long (isHuman, js/rules/feats.js) ;
+ *  - Champion niveau 10+, « Héros du champ d'honneur » (subclassFeatures, id guerrier_heroique).
+ * @param {Object} record
+ * @param {Object} derived - deriveCharacter(record)
+ * @returns {string[]}
+ */
+export function odysseyInspirationSources(record, derived) {
+    return [
+        isHuman(record) ? 'Humain (Ingénieux) : vous la gagnez à la fin de chaque repos long.' : '',
+        subclassFeatures(derived ?? {}).reached.some((feature) => feature.id === 'guerrier_heroique')
+            ? "Champion (Héros du champ d'honneur) : en combat, vous vous la donnez quand votre tour commence sans elle." : ''
+    ].filter(Boolean);
+}
+
+/**
+ * Le bouton « Inspiration héroïque » a-t-il sa place sous la case des points de Foi ? Seulement en
+ * mode actif (mode coupé, la case elle-même est l'Inspiration héroïque), et si le personnage la
+ * gagne (Humain, Champion niveau 10+) ou si elle est déjà allumée (jamais cachée allumée).
+ * @param {Object} record
+ * @param {Object} derived - deriveCharacter(record)
+ * @returns {boolean}
+ */
+export function odysseyInspirationUseful(record, derived) {
+    if (!odysseyActive(record)) return false;
+    return odysseyInspirationLit(record) || odysseyInspirationSources(record, derived).length > 0;
+}
+
+/**
+ * Modification à enregistrer quand le joueur touche le bouton : { odyssey_inspiration: "1" } pour
+ * l'allumer ; { odyssey_inspiration: undefined } pour l'éteindre (clé retirée : la fiche redevient
+ * celle d'avant, même empreinte, comme setOdysseyModePatch).
+ * @param {boolean} lit - état voulu
+ * @returns {Object}
+ */
+export function odysseyInspirationPatch(lit) {
+    return { [ODYSSEY_INSPIRATION_KEY]: lit ? '1' : undefined };
+}
+
+/**
+ * Message de la barre du haut après un toucher du bouton : la phrase la plus complète qui tient.
+ * @param {boolean} lit - état après le toucher
+ * @param {number} [room] - nombre de caractères disponibles (STATUS_ROOM_NARROW : ordinateur)
+ * @returns {string}
+ */
+export function odysseyInspirationMessage(lit, room = STATUS_ROOM) {
+    return fitting(lit
+        ? ['Inspiration héroïque notée : dépensez-la pour relancer un dé, puis retouchez le bouton.',
+            'Inspiration héroïque notée. Retouchez une fois dépensée.']
+        : ['Inspiration héroïque dépensée : bouton éteint. Retouchez-le quand vous en regagnez une.',
+            'Inspiration héroïque dépensée : bouton éteint.'], room);
+}
+
+/** Infobulle du bouton (souris) : ce qu'elle fait, qui la donne, comment s'en servir */
+export function odysseyInspirationHint(record, derived) {
+    return ['Inspiration héroïque, à part des points de Foi : dépensez-la pour relancer un dé que vous venez de lancer.',
+        ...odysseyInspirationSources(record, derived),
+        "Touchez pour noter que vous l'avez, retouchez une fois dépensée."].join(' ');
+}
+
+/**
+ * Phrase du repos long pour un Humain (Ingénieux) : mode actif, elle dit où noter l'Inspiration.
+ * @param {Object} record
+ * @returns {string}
+ */
+export function restInspirationSentence(record) {
+    return odysseyActive(record)
+        ? 'Humain (Ingénieux) : vous gagnez l’Inspiration héroïque (bouton sous les Points de Foi).'
+        : 'Humain (Ingénieux) : vous gagnez l’Inspiration héroïque.';
+}
 
 /** « Cette fiche garde : Centaure, style Hoplite. » ('' si elle ne garde rien) */
 function keptSentence(record) {

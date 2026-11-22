@@ -22,6 +22,12 @@
 //    la case permettent, et comment les demander (js/data/faith-favors.js) ; son bouton « Les dieux
 //    de Thyléa » ouvre par-dessus la liste des dieux, leur domaine et leurs faveurs. Mode coupé :
 //    « Inspiration héroïque », sans pastille ; ses boutons − / + vont de 0 à 1 (js/ui/counters.js).
+//  - Bouton « Inspiration héroïque » sous la pastille (mode actif seulement) : les points de Foi ne
+//    remplacent pas l'Inspiration héroïque. Visible pour un Humain (Ingénieux), un Champion niveau
+//    10+, ou quand elle est allumée (odysseyInspirationUseful) ; une fois affiché, il reste sous le
+//    doigt jusqu'au prochain changement de fiche ou de mode (éteint par erreur, il se rallume).
+//    Bascule (aria-pressed) : clé facultative odyssey_inspiration ("1" ; éteint : clé retirée).
+//    Champ de jeu : utilisable fiche verrouillée. Imprimé seulement allumé (css/print.css).
 // Les listes d'espèces, de sous-classes et de dons suivent le mode dans js/ui/sheet.js.
 // Mise en forme : css/toolbar.css (.toolbar-check).
 // =============================================================================
@@ -37,7 +43,9 @@ import {
     ODYSSEY_MODE_KEY, ODYSSEY_MODE_LABEL, STATUS_ROOM, STATUS_ROOM_OPEN, STATUS_ROOM_NARROW,
     odysseyActive, setOdysseyModePatch, odysseyModeHint, odysseyModeMessage, odysseyDroppedMessage,
     odysseyBoxUseful, inspirationWording, faithPerLevel, faithMention, faithSentence, faithHint,
-    faithPoints, faithFavors, faithPointsSentence, pointsWord, FAITH_SPEND
+    faithPoints, faithFavors, faithPointsSentence, pointsWord, FAITH_SPEND,
+    ODYSSEY_INSPIRATION_LABEL, odysseyInspirationLit, odysseyInspirationUseful, odysseyInspirationPatch,
+    odysseyInspirationMessage, odysseyInspirationHint
 } from '../rules/odyssey.js';
 import { FAITH_WAYS, FAITH_FOOTNOTE, FAITH_GODS, FAITH_GODS_INTRO, FAITH_SPELL_NOTE } from '../data/faith-favors.js';
 
@@ -46,9 +54,9 @@ import { FAITH_WAYS, FAITH_FOOTNOTE, FAITH_GODS, FAITH_GODS_INTRO, FAITH_SPELL_N
  */
 export function initOdyssey({ root, store, setStatus }) {
     initBox(root, store);
-    initInspiration(root, store);
     // Tablette (barre repliable, message sur toute la largeur) ou ordinateur (colonne étroite)
     const compact = window.matchMedia(COMPACT_QUERY);
+    initInspiration(root, store, setStatus, compact);
     initDroppedNotice(store, setStatus, compact);
     const host = document.getElementById('toolbar-help');
     if (!host) return;
@@ -126,11 +134,13 @@ function initBox(root, store) {
 /**
  * Case « Points de Foi » / « Inspiration héroïque » (onglet Combat) : libellé, nom de ses boutons
  * − / + et pastille des points de Foi gagnés par niveau (mode actif seulement), qui ouvre la
- * fenêtre des faveurs.
+ * fenêtre des faveurs ; dessous, le bouton « Inspiration héroïque » (mode actif, quand il sert).
  * @param {HTMLElement} root
  * @param {Object} store
+ * @param {(message: string) => void} setStatus
+ * @param {MediaQueryList} compact - tablette (message sur une ligne) ou ordinateur (colonne étroite)
  */
-function initInspiration(root, store) {
+function initInspiration(root, store, setStatus, compact) {
     const input = root.querySelector('#f-heroic_inspiration');
     const label = root.querySelector('label[for="f-heroic_inspiration"]');
     if (!input || !label) return;
@@ -139,13 +149,40 @@ function initInspiration(root, store) {
     const text = el('span');
     const mention = el('button', { type: 'button', class: 'feat-mention faith-mention', hidden: true, 'aria-haspopup': 'dialog' },
         el('span', { class: 'feat-mention-line' }, icon('star'), text));
-    cell?.append(mention);
     mention.addEventListener('click', () => {
         const character = store.get();
         if (odysseyActive(character)) openFaithFavors(character);
     });
+    // Inspiration héroïque à part (mode actif) : étoile pleine quand elle est allumée
+    const toggle = el('button', { type: 'button', class: 'feat-mention faith-inspiration', hidden: true, 'aria-pressed': 'false' },
+        el('span', { class: 'feat-mention-line' }, icon('star'), el('span', { text: ODYSSEY_INSPIRATION_LABEL })));
+    // Les deux pastilles l'une sous l'autre, sous la case (css/feats.css)
+    cell?.append(mention, toggle);
+    toggle.addEventListener('click', () => {
+        const character = store.get();
+        if (!odysseyActive(character)) return;
+        const lit = !odysseyInspirationLit(character);
+        store.update(odysseyInspirationPatch(lit));
+        setStatus(frenchSpaces(odysseyInspirationMessage(lit, compact.matches ? STATUS_ROOM : STATUS_ROOM_NARROW)));
+    });
+    let shown = false;
+    /** @param {Array<string>|null} changedKeys - null : fiche ouverte ou remplacée */
+    const renderToggle = (character, changedKeys) => {
+        const active = odysseyActive(character);
+        const derived = active ? derivedOf(character) : null;
+        // Une fois affiché, le bouton reste jusqu'au prochain changement de fiche ou de mode
+        const calm = changedKeys === null || changedKeys.includes(ODYSSEY_MODE_KEY);
+        shown = active && (odysseyInspirationUseful(character, derived) || (shown && !calm));
+        toggle.hidden = !shown;
+        if (!shown) return;
+        const lit = odysseyInspirationLit(character);
+        toggle.setAttribute('aria-pressed', String(lit));
+        const hint = frenchSpaces(odysseyInspirationHint(character, derived));
+        if (toggle.title !== hint) toggle.title = hint;
+    };
     let signature = '';
-    const render = (character) => {
+    const render = (character, changedKeys = null) => {
+        renderToggle(character, changedKeys);
         const wording = inspirationWording(character);
         if (label.textContent !== wording.label) label.textContent = wording.label;
         renameSteppers(input, wording.noun);
@@ -159,7 +196,7 @@ function initInspiration(root, store) {
         mention.title = frenchSpaces(`${next} Touchez la pastille pour les faveurs qu'ils permettent.`);
         mention.setAttribute('aria-label', `${faithMention(faith)} : ${next} Ouvre la liste des faveurs.`);
     };
-    store.subscribe((character) => render(character));
+    store.subscribe((character, changedKeys) => render(character, changedKeys));
     render(store.get());
 }
 

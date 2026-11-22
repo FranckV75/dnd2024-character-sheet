@@ -2,7 +2,7 @@
 // FAITH-FAVORS.JS - Faveurs divines achetées avec les points de Foi (mode Odyssée)
 //
 // Source : guide du MJ de l'Odyssée, p. 92, « Sacrifices et prières » (règle optionnelle qui
-// remplace l'Inspiration héroïque). Le dépôt est public : résumé avec nos mots, jamais le texte
+// remplace les « points de héros » du guide du MJ, pas l'Inspiration héroïque). Le dépôt est public : résumé avec nos mots, jamais le texte
 // du livre. Fenêtre : js/ui/odyssey.js ; règles de calcul : js/rules/odyssey.js (faithFavors).
 // =============================================================================
 

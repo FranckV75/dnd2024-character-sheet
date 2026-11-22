@@ -5,7 +5,8 @@
 //  - les champs de construction du personnage (caractéristiques, classe, textes...)
 //    deviennent non modifiables ;
 //  - les champs de JEU restent modifiables (PV, jets contre la mort, ressources,
-//    dés de vie, épuisement, inspiration, pièces, emplacements de sorts cochés,
+//    dés de vie, épuisement, inspiration (et son bouton à part en mode Odyssée), pièces,
+//    emplacements de sorts cochés,
 //    losange « préparé » des sorts, armure équipée, bonus de combat, repos) ;
 //  - tout élément portant la classe .edit-only (boutons d'ajout/suppression...) est masqué ;
 //  - le défilement et les infobulles continuent de fonctionner.
@@ -20,6 +21,8 @@ const STORAGE_KEY = 'dd2024_lock_mode';
 
 const PLAY_FIELDS = new Set([
     'hp_current', 'hp_temp', 'hd_current', 'heroic_inspiration', 'fatigue_level',
+    // Bouton « Inspiration héroïque » sous les points de Foi (mode Odyssée, js/ui/odyssey.js)
+    'odyssey_inspiration',
     'ds_s1', 'ds_s2', 'ds_s3', 'ds_f1', 'ds_f2', 'ds_f3',
     'cp', 'sp', 'ep', 'gp', 'pp'
 ]);

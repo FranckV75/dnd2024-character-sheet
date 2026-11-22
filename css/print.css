@@ -784,6 +784,18 @@ tr[data-magic="3"] .magic-gem-face {
     display: block;
 }
 
+/* Inspiration héroïque à part des points de Foi (mode Odyssée) : imprimée seulement allumée,
+   en simple texte comme les autres mentions */
+.faith-inspiration[aria-pressed="false"] {
+    display: none;
+}
+
+.faith-inspiration[aria-pressed="true"] {
+    border: none;
+    background: transparent;
+    color: var(--text);
+}
+
 .feat-mention .icon,
 .weapons-feat-toggle {
     display: none;

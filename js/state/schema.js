@@ -76,6 +76,19 @@ export function featSlotLevel(slot) {
     return n === HUMAN_FEAT_SLOT ? 1 : n;
 }
 
+/**
+ * Clés facultatives propres à la v4 et leur valeur par défaut (clé absente = cette valeur). Elles
+ * ne sont JAMAIS dans la fiche vierge : migrate.js les ajouterait à toutes les fiches, ce qui
+ * changerait l'empreinte de chacune (js/cloud/controller.js : lien au compte oublié, fiche crue
+ * modifiée). Elles ne sont écrites que quand le joueur s'en sert, et retirées quand il revient à
+ * la valeur par défaut (même fiche qu'avant). Ancien site (v3) : V4_ONLY_KEYS, js/cloud/sync.js.
+ *  - odyssey_inspiration : Inspiration héroïque notée à part des points de Foi, mode Odyssée
+ *    actif ("1" = allumée ; js/rules/odyssey.js).
+ */
+export const OPTIONAL_KEY_DEFAULTS = Object.freeze({
+    odyssey_inspiration: ''
+});
+
 /** Valeurs par défaut des lignes des tableaux dynamiques */
 export const EMPTY_WEAPON = {
     name: '', prop: '', prof: '', ammo: '', note: '',

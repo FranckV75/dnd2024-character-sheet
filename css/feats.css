@@ -345,6 +345,47 @@
     grid-row: 3;
 }
 
+/* Bouton « Inspiration héroïque » sous la pastille des points de Foi (mode Odyssée, js/ui/odyssey.js) :
+   une rangée de plus ; le bouton occupe l'espace libre du bas, la case grandit le moins possible
+   et son libellé reste presque à la hauteur de ceux des cases voisines */
+.stat-cell:has(> .faith-inspiration:not([hidden])) {
+    grid-template-rows: 1fr auto auto auto 1fr;
+}
+
+.stat-cell > .faith-inspiration {
+    grid-row: 5;
+}
+
+/* Éteint : pastille en pointillés à l'encre adoucie, étoile vide ; allumé : doré comme un bonus
+   actif (.btn-chip enfoncé, css/components.css), étoile pleine */
+.faith-inspiration[aria-pressed="false"] {
+    border-style: dashed;
+    background: transparent;
+    color: var(--text-muted);
+}
+
+.faith-inspiration[aria-pressed="true"] {
+    border-color: var(--accent-strong);
+    background: linear-gradient(var(--accent), var(--accent-strong));
+    color: var(--btn-top);
+}
+
+.faith-inspiration[aria-pressed="true"] .icon {
+    color: var(--btn-top);
+}
+
+.faith-inspiration[aria-pressed="true"] .icon path {
+    fill: currentColor;
+}
+
+/* Au doigt (css/sheet-tablet.css) : la zone élargie du bouton part vers le bas, pour ne pas
+   empiéter sur la pastille « +5 par niveau » juste au-dessus (toujours 44 px : 1 + 26 + 17) */
+@media screen and (pointer: coarse) {
+    .stat-cell > .faith-inspiration::before {
+        inset: -1px -4px -17px;
+    }
+}
+
 /* Fenêtre « Points de Foi » (toucher la pastille) : paliers de faveurs à 1, 3 et 5 points.
    Sections et titres : css/level-up.css. Palier hors de portée : liste en encre adoucie. */
 .modal-body .faith-intro,

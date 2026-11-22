@@ -6,6 +6,8 @@
 // ce module demande les choix du joueur, lance les dés (Math.random) et
 // envoie le patch au store en une seule fois.
 // Dons : les rappels de fin de repos (Musicien) viennent de summary.featNotes.
+// Humain (Ingénieux) : la confirmation du repos long rappelle l'Inspiration héroïque ; mode Odyssée
+// actif, elle dit où la noter (restInspirationSentence, js/rules/odyssey.js). Rien n'est coché.
 // Sorts préparés (summary.spellPreparation) : Clerc, Druide, Paladin, Rôdeur, rappel à la fin du
 // repos long avec un bouton qui ouvre la fenêtre « Préparer mes sorts » (spells/prepare.js) ;
 // Magicien, rappel dans la confirmation ; liste fixe (Barde, Ensorceleur, Occultiste) : rien.
@@ -20,6 +22,7 @@ import {
 } from '../rules/rest.js';
 import { rollDie } from '../rules/numbers.js';
 import { canPrepareSpells, openPrepareSpells } from './spells/prepare.js';
+import { restInspirationSentence } from '../rules/odyssey.js';
 
 const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
 const agree = (n, word) => `${word}${n > 1 ? 's' : ''}`;
@@ -231,7 +234,7 @@ function showShortRestSummary({ summary, rollText }, conMod) {
 // Repos long
 // ---------------------------------------------------------------------------
 
-function longRestMessage(summary) {
+function longRestMessage(summary, character) {
     const effects = [
         summary.hpMax !== null ? `PV au maximum (${summary.hpMax})` : 'PV maximum non renseignés : PV actuels inchangés',
         'PV temporaires à 0',
@@ -246,7 +249,8 @@ function longRestMessage(summary) {
         'jets contre la mort et bonus de combat remis à zéro'
     ].filter(Boolean);
     let message = `8 heures de repos, dont au moins 6 de sommeil. Effets : ${effects.join(', ')}.`;
-    if (summary.heroicInspiration) message += ' Humain (Ingénieux) : vous gagnez l’Inspiration héroïque.';
+    // Humain : mode Odyssée actif, la phrase dit où la noter (bouton sous les Points de Foi) ; rien n'est coché pour lui
+    if (summary.heroicInspiration) message += ` ${restInspirationSentence(character)}`;
     // Classes de la fenêtre « Préparer mes sorts » : rappel après le repos (afterLongRest)
     if (summary.spellPreparation && !summary.spellPreparation.window) message += ` ${summary.spellPreparation.text}`;
     if (!summary.canStart) message = `Attention, règle 2024 : il faut au moins 1 PV pour commencer un repos long. ${message}`;
@@ -254,13 +258,13 @@ function longRestMessage(summary) {
 }
 
 /** Confirmation du repos long : le message, puis les rappels des dons (comme confirmModal) */
-function confirmLongRest(summary) {
+function confirmLongRest(summary, character) {
     return new Promise((resolve) => {
         let answered = false;
         openModal({
             title: 'Repos long (8 h)',
             icon: 'bed',
-            body: [el('p', { text: longRestMessage(summary) }), featBlock(summary.featNotes)].filter(Boolean),
+            body: [el('p', { text: longRestMessage(summary, character) }), featBlock(summary.featNotes)].filter(Boolean),
             actions: [
                 { label: 'Annuler' },
                 { label: 'Se reposer', icon: 'bed', primary: true, onClick: () => { answered = true; } }
@@ -292,7 +296,7 @@ function afterLongRest(store, setStatus, preparation) {
 }
 
 async function longRest(store, setStatus, keepSnapshot) {
-    const ok = await confirmLongRest(planLongRest(store.get()).summary);
+    const ok = await confirmLongRest(planLongRest(store.get()).summary, store.get());
     if (!ok) return;
     // Sauvegarde de secours : le repos long remet beaucoup de compteurs à zéro
     keepSnapshot?.('long-rest');
