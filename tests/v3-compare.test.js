@@ -4,7 +4,9 @@
 // qu'elle ne garde pas), mais une vraie différence reste détectée. Fiches fictives uniquement.
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { comparableWithV3, fingerprint, V3_WEAPON_FIELDS, V4_ONLY_KEYS } from '../js/cloud/sync.js';
+import {
+    comparableWithV3, fingerprint, V3_WEAPON_FIELDS, V4_ONLY_KEYS, V3_MISSING_KEYS, LEGACY_ERASED, legacyErasedText
+} from '../js/cloud/sync.js';
 import { normalizeCharacter, isV3Save } from '../js/state/migrate.js';
 import { createDefaultCharacter, EMPTY_WEAPON } from '../js/state/schema.js';
 
@@ -65,5 +67,22 @@ describe('Comparaison avec une version écrite par la v3', () => {
         assert.deepEqual(comparableWithV3(base), base, 'pas de clé dynamic_weapons ajoutée');
         assert.deepEqual(comparableWithV3({ ...base, dynamic_weapons: [null, 'texte'] }).dynamic_weapons, [null, 'texte'],
             "valeur illisible gardée telle quelle");
+    });
+});
+
+describe("Fenêtre « Modifié par l'ancienne version » : ce qui serait effacé", () => {
+    test('Chaque clé que la v3 efface a son libellé (hors clés des toutes premières versions)', () => {
+        const named = LEGACY_ERASED.flatMap(([, keys]) => keys);
+        const oldest = ['hd_total', 'hd_spent', 'profs_other'];
+        const missing = [...V4_ONLY_KEYS, ...V3_MISSING_KEYS].filter((key) => !oldest.includes(key) && !named.includes(key));
+        assert.deepEqual(missing, []);
+        assert.ok(named.every((key) => V4_ONLY_KEYS.includes(key) || V3_MISSING_KEYS.includes(key)), 'pas de clé inventée');
+    });
+
+    test("La phrase cite chaque libellé, dont l'Inspiration héroïque de l'Odyssée", () => {
+        const text = legacyErasedText();
+        for (const [label] of LEGACY_ERASED) assert.ok(text.includes(label), label);
+        assert.match(text, /Inspiration héroïque/);
+        assert.match(text, /^« Garder la version en ligne » effacerait aussi .+, par exemple : états \(Empoisonné…\), concentration, .+\.$/);
     });
 });

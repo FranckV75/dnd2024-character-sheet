@@ -158,6 +158,30 @@ export function withoutV4State(character) {
  */
 export const V3_MISSING_KEYS = Object.freeze(['profs_weapons', 'hd_total', 'hd_spent', 'profs_other']);
 
+/**
+ * Ce que la v3 efface en enregistrant, dit au joueur (fenêtre « Modifié par l'ancienne version »,
+ * js/ui/account.js) : [libellé, clés]. Chaque clé de V4_ONLY_KEYS et la maîtrise d'armes de
+ * V3_MISSING_KEYS y ont leur libellé (tests/v3-compare.test.js) ; restent muettes les clés des
+ * toutes premières versions (hd_total, hd_spent, profs_other), que plus aucune fiche ne remplit.
+ */
+export const LEGACY_ERASED = Object.freeze([
+    ['états (Empoisonné…)', ['conditions']],
+    ['concentration', ['concentration']],
+    ['bonus de combat actifs', ['combat_buffs']],
+    ['emplacements de sorts utilisés', ['spell_slots_state']],
+    ['dons propres à la nouvelle version', V4_ONLY_KEYS.filter((key) => /^feat_\d+$/.test(key))],
+    ['usages et choix des dons, de l\'espèce et de la sous-classe', ['feat_uses', 'feat_choices', 'species_choices', 'subclass_uses', 'subclass_choices']],
+    ['compagnons', ['subclass_companions']],
+    ['maîtrises d\'armes', ['profs_weapons']],
+    ['mode Odyssée coupé (il se rallumerait)', ['odyssey_mode']],
+    ['Inspiration héroïque notée à part des points de Foi (mode Odyssée)', ['odyssey_inspiration']]
+].map(([label, keys]) => Object.freeze([label, Object.freeze(keys)])));
+
+/** Phrase de la fenêtre « Modifié par l'ancienne version » : tout ce que « Garder la version en ligne » effacerait */
+export function legacyErasedText() {
+    return `« Garder la version en ligne » effacerait aussi tout ce que seule la nouvelle version enregistre, par exemple : ${LEGACY_ERASED.map(([label]) => label).join(', ')}.`;
+}
+
 /** Champs d'une arme que la v3 enregistre (getFormData de v3-final, identiques à EMPTY_WEAPON) */
 export const V3_WEAPON_FIELDS = Object.freeze(Object.keys(EMPTY_WEAPON));
 
