@@ -701,8 +701,10 @@ describe('Mode Odyssée : écran, impression et notice', () => {
     });
 
     test('La case n\u2019écrit dans la fiche que par la règle, et seulement au toucher', () => {
-        // Chaque écriture passe par une règle : le mode (case du menu), l'Inspiration héroïque à part (bouton)
-        assert.deepEqual(ui.match(/store\.update\([^;]*;/g), ['store.update(patch);', 'store.update(odysseyInspirationPatch(lit));']);
+        // Chaque écriture passe par une règle : le mode (case du menu), l'Inspiration héroïque à part
+        // (bouton), les points de Foi dépensés (fenêtre des faveurs, spendFaith)
+        assert.deepEqual(ui.match(/store\.update\([^;]*;/g),
+            ['store.update(patch);', 'store.update(odysseyInspirationPatch(lit));', 'store.update({ heroic_inspiration: next });']);
         assert.match(ui, /setOdysseyModePatch\(store\.get\(\), box\.checked\)/);
         assert.match(ui, /box\.addEventListener\('change'/);
         // Aucun autre module de l'interface n'écrit la clé

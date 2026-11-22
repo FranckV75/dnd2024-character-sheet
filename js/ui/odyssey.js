@@ -19,8 +19,12 @@
 //  - Case de l'onglet Combat (clé heroic_inspiration) : « Points de Foi » quand le mode est actif,
 //    avec une pastille « +5 par niveau » (bonus de maîtrise + Sagesse, au moins 1) ; un toucher
 //    ouvre la fenêtre « Points de Foi » : les faveurs à 1, 3 et 5 points, celles que les points de
-//    la case permettent, et comment les demander (js/data/faith-favors.js) ; son bouton « Les dieux
-//    de Thyléa » ouvre par-dessus la liste des dieux, leur domaine et leurs faveurs. Mode coupé :
+//    la case permettent, et comment les demander (js/data/faith-favors.js). Chaque faveur a son
+//    bouton « Dépenser N points » (grisé s'il en manque ou si la case contient du texte) : il retire
+//    les points de la case (spendFaith), met la fenêtre à jour sur place et le dit dans la barre du
+//    haut (le bouton + de la case les rend en cas d'erreur ; utilisable fiche verrouillée). Son
+//    bouton « Les dieux de Thyléa » ouvre par-dessus la liste des dieux, leur domaine et leurs
+//    faveurs. Mode coupé :
 //    « Inspiration héroïque », sans pastille ; ses boutons − / + vont de 0 à 1 (js/ui/counters.js).
 //  - Bouton « Inspiration héroïque » sous la pastille (mode actif seulement) : les points de Foi ne
 //    remplacent pas l'Inspiration héroïque. Visible pour un Humain (Ingénieux), un Champion niveau
@@ -44,6 +48,7 @@ import {
     odysseyActive, setOdysseyModePatch, odysseyModeHint, odysseyModeMessage, odysseyDroppedMessage,
     odysseyBoxUseful, inspirationWording, faithPerLevel, faithMention, faithSentence, faithHint,
     faithPoints, faithFavors, faithPointsSentence, pointsWord, FAITH_SPEND,
+    spendFaith, spendLabel, spendRefusal, faithSpentMessage,
     ODYSSEY_INSPIRATION_LABEL, odysseyInspirationLit, odysseyInspirationUseful, odysseyInspirationPatch,
     odysseyInspirationMessage, odysseyInspirationHint
 } from '../rules/odyssey.js';
@@ -151,7 +156,7 @@ function initInspiration(root, store, setStatus, compact) {
         el('span', { class: 'feat-mention-line' }, icon('star'), text));
     mention.addEventListener('click', () => {
         const character = store.get();
-        if (odysseyActive(character)) openFaithFavors(character);
+        if (odysseyActive(character)) openFaithFavors(store, setStatus, compact);
     });
     // Inspiration héroïque à part (mode actif) : étoile pleine quand elle est allumée
     const toggle = el('button', { type: 'button', class: 'feat-mention faith-inspiration', hidden: true, 'aria-pressed': 'false' },
@@ -202,22 +207,64 @@ function initInspiration(root, store, setStatus, compact) {
 
 /**
  * Fenêtre « Points de Foi » : les points de la case, les faveurs à 1, 3 et 5 points (celles que
- * ces points permettent sont marquées « Possible »), puis comment les demander. Lecture seule :
- * les points se retirent avec le bouton − de la case.
- * @param {Object} character
+ * ces points permettent sont marquées « Possible »), chacune avec son bouton « Dépenser », puis
+ * comment les demander. Seule écriture : les points retirés de la case (heroic_inspiration).
+ * @param {Object} store
+ * @param {(message: string) => void} setStatus
+ * @param {MediaQueryList} compact - tablette (message sur une ligne) ou ordinateur (colonne étroite)
  */
-function openFaithFavors(character) {
-    const points = faithPoints(character.heroic_inspiration);
+function openFaithFavors(store, setStatus, compact) {
+    const character = store.get();
     const faith = faithPerLevel(derivedOf(character));
-    const tiers = faithFavors(points).map((tier) => el('section', {
-        class: 'level-up-section faith-tier',
-        'data-tier': tier.id,
-        'data-short': Boolean(tier.missing)
-    },
-        el('h3', { class: 'level-up-title faith-tier-title' },
-            el('span', { text: `${tier.title} · ${pointsWord(tier.cost)}` }),
-            ...(tier.status ? [el('span', { class: 'faith-tier-status', text: tier.status })] : [])),
-        el('ul', {}, ...tier.uses.map((use) => el('li', { text: use })))));
+    const intro = el('p', { class: 'faith-intro', 'aria-live': 'polite' });
+    const tiers = faithFavors(faithPoints(character.heroic_inspiration)).map((tier) => {
+        const status = el('span', { class: 'faith-tier-status' });
+        const spend = el('button', {
+            type: 'button',
+            class: 'btn faith-spend',
+            on: { click: () => spendOn(tier) }
+        }, icon('star'), el('span', { class: 'btn-label', text: spendLabel(tier.cost) }));
+        // Rappel à côté du bouton : la barre du haut est sous la fenêtre sur tablette
+        const done = el('span', { class: 'faith-spent', 'aria-live': 'polite' });
+        const section = el('section', { class: 'level-up-section faith-tier', 'data-tier': tier.id },
+            el('h3', { class: 'level-up-title faith-tier-title' },
+                el('span', { text: `${tier.title} · ${pointsWord(tier.cost)}` }), status),
+            el('ul', {}, ...tier.uses.map((use) => el('li', { text: use }))),
+            el('p', { class: 'faith-spend-row' }, done, spend));
+        return { tier, section, status, spend, done };
+    });
+    /** Points, statuts « Possible » / « Il manque… » et boutons, d'après la case actuelle */
+    const update = () => {
+        const value = store.get().heroic_inspiration;
+        const points = faithPoints(value);
+        intro.textContent = frenchSpaces(`${faithPointsSentence(points)} ${FAITH_SPEND}`);
+        for (const [index, state] of faithFavors(points).entries()) {
+            const { section, status, spend } = tiers[index];
+            section.toggleAttribute('data-short', Boolean(state.missing));
+            status.textContent = state.status;
+            status.hidden = !state.status;
+            const refusal = spendRefusal(points, state.cost);
+            spend.disabled = spendFaith(value, state.cost) === null;
+            spend.title = frenchSpaces(refusal || `Retire ${pointsWord(state.cost)} de la case des points de Foi (${points} → ${points - state.cost}).`);
+        }
+    };
+    /** Payer une faveur : les points quittent la case ; « + » les rend en cas d'erreur */
+    const spendOn = (tier) => {
+        const value = store.get().heroic_inspiration;
+        const next = spendFaith(value, tier.cost);
+        if (next === null) {
+            update();
+            return;
+        }
+        store.update({ heroic_inspiration: next });
+        update();
+        for (const entry of tiers) {
+            entry.done.textContent = entry.tier.id === tier.id
+                ? frenchSpaces(faithSpentMessage(tier, faithPoints(value), faithPoints(next), STATUS_ROOM_NARROW)) : '';
+        }
+        setStatus(frenchSpaces(faithSpentMessage(tier, faithPoints(value), faithPoints(next), compact.matches ? STATUS_ROOM : STATUS_ROOM_NARROW)));
+    };
+    update();
     const ways = el('section', { class: 'level-up-section faith-ways' },
         el('h3', { class: 'level-up-title', text: 'Comment demander une faveur' }),
         el('ul', {}, ...FAITH_WAYS.map((way) => el('li', {},
@@ -229,7 +276,7 @@ function openFaithFavors(character) {
         focusField: false,
         className: 'modal-faith',
         body: [
-            el('p', { class: 'faith-intro', text: frenchSpaces(`${faithPointsSentence(points)} ${FAITH_SPEND}`) }),
+            intro,
             el('p', { class: 'faith-intro', text: frenchSpaces(faithSentence(faith)) }),
             el('p', { class: 'faith-gods-row' }, el('button', {
                 type: 'button',
@@ -238,7 +285,7 @@ function openFaithFavors(character) {
                 title: 'Les dieux à qui dédier une faveur, et ce que chacun accorde.',
                 on: { click: openFaithGods }
             }, icon('star'), el('span', { class: 'btn-label', text: 'Les dieux de Thyléa' }))),
-            ...tiers,
+            ...tiers.map(({ section }) => section),
             ways,
             el('p', { class: 'faith-footnote', text: frenchSpaces(`${FAITH_FOOTNOTE} Source : guide du MJ de l'Odyssée, p. 92.`) })
         ],

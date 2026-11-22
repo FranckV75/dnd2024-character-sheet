@@ -80,13 +80,19 @@ describe('Points de Foi : la fenêtre (js/ui/odyssey.js)', () => {
 
     test('la pastille ouvre la fenêtre, seulement en mode Odyssée', () => {
         assert.match(source, /'aria-haspopup': 'dialog'/);
-        assert.match(source, /if \(odysseyActive\(character\)\) openFaithFavors\(character\)/);
+        assert.match(source, /if \(odysseyActive\(character\)\) openFaithFavors\(store, setStatus, compact\)/);
     });
 
-    test('la fenêtre se ferme par un seul bouton et ne modifie pas la fiche', () => {
-        const body = source.slice(source.indexOf('function openFaithFavors'));
+    test('la fenêtre se ferme par un seul bouton ; elle n\'écrit que les points dépensés (règle spendFaith)', () => {
+        const body = source.slice(source.indexOf('function openFaithFavors'), source.indexOf('function openFaithGods'));
         assert.match(body, /actions: \[\{ label: 'Fermer', primary: true \}\]/);
-        assert.doesNotMatch(body, /store\.update|store\.set/);
+        assert.deepEqual(body.match(/store\.(update|set|replace)\([^;]*;/g), ['store.update({ heroic_inspiration: next });']);
+        assert.match(body, /const next = spendFaith\(value, tier\.cost\);/);
+    });
+
+    test('la fenêtre des dieux ne modifie pas la fiche', () => {
+        const gods = source.slice(source.indexOf('function openFaithGods'));
+        assert.doesNotMatch(gods, /store\./);
     });
 });
 

@@ -13,7 +13,8 @@
 // PROPOSÉS dans les listes. Ce que la fiche utilise déjà reste proposé, affiché et calculé : aucune
 // règle de calcul ne lit ce mode. L'encadré « Odyssée » de l'onglet 3 n'est caché que s'il est vide.
 // Case heroic_inspiration (onglet Combat) : « Points de Foi » mode actif (maîtrise + Sagesse à chaque
-// niveau, remis par « Passer au niveau »), « Inspiration héroïque » mode coupé (une seule à la fois).
+// niveau, remis par « Passer au niveau » ; la fenêtre des faveurs les dépense : spendFaith),
+// « Inspiration héroïque » mode coupé (une seule à la fois).
 // Les points de Foi remplacent les « points de héros » du guide du MJ, PAS l'Inspiration héroïque du
 // manuel : mode actif, un Humain (Ingénieux) ou un Champion niveau 10+ la note avec un bouton à part
 // sous la case (clé facultative « odyssey_inspiration » : "1" = allumée ; absente = éteinte, jamais
@@ -294,7 +295,60 @@ export function faithPointsSentence(points) {
 }
 
 /** Comment payer une faveur, dit dans la fenêtre */
-export const FAITH_SPEND = 'Chaque faveur demandée à un dieu coûte 1, 3 ou 5 points : retirez-les avec le bouton − de la case.';
+export const FAITH_SPEND = 'Chaque faveur demandée à un dieu coûte 1, 3 ou 5 points : le bouton « Dépenser » de la faveur les retire de la case.';
+
+/**
+ * Case après une faveur payée : « 5/5 » − 3 → « 2/5 » ; « 3 » − 1 → « 2 ». Refus (null) : case
+ * vide, points insuffisants, texte libre (« 2 (béni) », jamais réécrit) ou coût illisible. Même
+ * lecture que la fenêtre (faithPoints) ; le maximum noté après la barre est gardé.
+ * @param {unknown} value - valeur de heroic_inspiration
+ * @param {number} cost - points de la faveur (1, 3 ou 5)
+ * @returns {string|null}
+ */
+export function spendFaith(value, cost) {
+    const points = faithPoints(value);
+    if (!Number.isInteger(cost) || cost < 1 || points === null || points < cost) return null;
+    const max = /\/\s*(\d+)$/.exec(String(value ?? '').trim());
+    return max ? `${points - cost}/${max[1]}` : String(points - cost);
+}
+
+/** « Dépenser 1 point », « Dépenser 3 points » */
+export function spendLabel(cost) {
+    return `Dépenser ${pointsWord(cost)}`;
+}
+
+/**
+ * Pourquoi le bouton « Dépenser » d'une faveur est grisé ('' s'il est utilisable).
+ * @param {number|null} points - faithPoints de la case
+ * @param {number} cost
+ * @returns {string}
+ */
+export function spendRefusal(points, cost) {
+    if (points === null) return 'La case des points de Foi contient du texte : retirez les points à la main.';
+    if (points < cost) return `Il manque ${pointsWord(cost - points)} de Foi pour cette faveur.`;
+    return '';
+}
+
+/**
+ * Message de la barre du haut après une faveur payée, la phrase la plus complète qui tient :
+ * « Faveur majeure : 3 points de Foi dépensés (5 → 2). Le bouton + de la case les rend en cas d'erreur. »
+ * @param {{ title: string, cost: number }} tier - palier de FAITH_FAVORS
+ * @param {number} before - points avant
+ * @param {number} after - points après
+ * @param {number} [room] - nombre de caractères disponibles
+ * @returns {string}
+ */
+export function faithSpentMessage(tier, before, after, room = STATUS_ROOM) {
+    const many = tier.cost > 1;
+    const spent = `${tier.title} : ${pointsWord(tier.cost)} de Foi ${many ? 'dépensés' : 'dépensé'} (${before} → ${after}).`;
+    return fitting([
+        `${spent} Le bouton + de la case ${many ? 'les' : 'le'} rend en cas d'erreur.`,
+        `${spent} En cas d'erreur, le bouton + ${many ? 'les' : 'le'} rend.`,
+        spent,
+        `${tier.title} : −${pointsWord(tier.cost)} (${before} → ${after}).`
+    ], room);
+}
+
 
 /** Clé facultative de l'Inspiration héroïque notée à part des points de Foi (mode actif) */
 export const ODYSSEY_INSPIRATION_KEY = 'odyssey_inspiration';

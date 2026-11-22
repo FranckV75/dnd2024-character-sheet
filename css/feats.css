@@ -434,6 +434,27 @@
     margin: 4px 0 12px;
 }
 
+/* Bouton « Dépenser N points » sous chaque faveur : grisé quand les points manquent (.btn:disabled) */
+.modal-body .faith-spend-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px 12px;
+    margin: 6px 0 0;
+}
+
+/* « Faveur majeure : 3 points de Foi dépensés (4 → 1). » à gauche du bouton, après un toucher */
+.modal-body .faith-spent {
+    font-family: var(--font-text);
+    font-style: italic;
+    color: var(--accent-ink);
+}
+
+.modal-body .faith-spent:empty {
+    display: none;
+}
+
 /* Fenêtre « Les dieux de Thyléa » (bouton de la fenêtre « Points de Foi ») */
 .modal-body .faith-god + .faith-god {
     margin-top: 10px;
