@@ -7,9 +7,9 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-    spendFaith, spendLabel, spendRefusal, faithSpentMessage, faithPoints, faithFavors, FAITH_SPEND,
-    STATUS_ROOM, STATUS_ROOM_NARROW
+    spendFaith, spendLabel, spendRefusal, faithSpentMessage, faithPoints, faithFavors, FAITH_SPEND
 } from '../js/rules/odyssey.js';
+import { STATUS_ROOM, STATUS_ROOM_NARROW } from '../js/data/status-bar.js';
 import { FAITH_FAVORS } from '../js/data/faith-favors.js';
 import { isPlayField } from '../js/ui/lock.js';
 

@@ -8,10 +8,11 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-    ODYSSEY_MODE_KEY, ODYSSEY_INSPIRATION_KEY, ODYSSEY_INSPIRATION_LABEL, STATUS_ROOM, STATUS_ROOM_NARROW,
+    ODYSSEY_MODE_KEY, ODYSSEY_INSPIRATION_KEY, ODYSSEY_INSPIRATION_LABEL,
     odysseyInspirationLit, odysseyInspirationSources, odysseyInspirationUseful, odysseyInspirationPatch,
     odysseyInspirationMessage, odysseyInspirationHint, restInspirationSentence
 } from '../js/rules/odyssey.js';
+import { STATUS_ROOM, STATUS_ROOM_NARROW } from '../js/data/status-bar.js';
 import { createDefaultCharacter, OPTIONAL_KEY_DEFAULTS } from '../js/state/schema.js';
 import { deriveCharacter } from '../js/rules/character.js';
 import { planLongRest } from '../js/rules/rest.js';

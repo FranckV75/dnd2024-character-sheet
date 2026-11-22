@@ -35,22 +35,14 @@ import { subclassFeatures } from './subclass-features.js';
 import { signed } from './numbers.js';
 import { readCounter } from './counters.js';
 import { FAITH_FAVORS } from '../data/faith-favors.js';
+// Place des messages dans la barre du haut (paramètre room des fonctions *Message)
+import { STATUS_ROOM, STATUS_ROOM_OPEN } from '../data/status-bar.js';
 import { plainText } from './plain-text.js';
 
 export const ODYSSEY_MODE_KEY = 'odyssey_mode';
 /** Valeur du champ « source » des données venues de L'Odyssée des Seigneurs Dragons */
 export const ODYSSEY_SOURCE = 'Odyssée';
 const MODE_OFF = 'off';
-
-/**
- * Place de la barre du haut (#save-status), en caractères, selon l'écran (css/toolbar.css) :
- *  - tablette, menu « Gestion » replié : une ligne (une centaine de caractères à 768 px) ;
- *  - tablette, menu ouvert (c'est là qu'est la case) : deux lignes ;
- *  - ordinateur : colonne étroite, deux lignes courtes.
- */
-export const STATUS_ROOM = 95;
-export const STATUS_ROOM_OPEN = 180;
-export const STATUS_ROOM_NARROW = 56;
 
 /** Nom de la case du menu « Gestion » */
 export const ODYSSEY_MODE_LABEL = 'Mode Odyssée';

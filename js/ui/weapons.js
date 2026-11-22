@@ -57,6 +57,7 @@ import { attachAutocomplete } from './autocomplete.js';
 import { isLocked } from './lock.js';
 import { createMagicParts, setMagic, enchant, magicLevel, ENCHANT_DELAY_MS } from './magic.js';
 import { foldButton, bindFolding, applyFold } from './fold.js';
+import { STATUS_ROOM } from '../data/status-bar.js';
 
 const FILTERS = [
     ['all', 'Toutes'],
@@ -206,7 +207,6 @@ const EXTRA_HELP = "Pour une arme spéciale, par exemple +2d6 contre les dragons
  * La barre du haut tient sur une ligne (591 px à 768 px, soit une centaine de caractères) : une
  * phrase qui cite l'arme n'y est écrite que si elle y tient, sinon sa version courte la remplace.
  */
-const STATUS_ROOM = 95;
 const fitStatus = (full, short) => (full.length <= STATUS_ROOM ? full : short);
 
 /** Dernier contenu écrit dans une case calculée (texte et découpage) : rien n'est réécrit s'il n'a pas changé */

@@ -7,12 +7,13 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-    ODYSSEY_MODE_KEY, ODYSSEY_SOURCE, ODYSSEY_MODE_LABEL, STATUS_ROOM, STATUS_ROOM_OPEN, STATUS_ROOM_NARROW, fromOdyssey,
+    ODYSSEY_MODE_KEY, ODYSSEY_SOURCE, ODYSSEY_MODE_LABEL, fromOdyssey,
     odysseyActive, setOdysseyModePatch, odysseyUse, odysseyKept, proposedSpecies, proposedSubclasses,
     hiddenFeatIds, odysseyBoxUseful, inspirationWording, odysseyModeHint, odysseyModeMessage,
     odysseyDropped, odysseyDroppedMessage, faithPerLevel, faithMention, faithSentence, faithHint, faithReset,
     INSPIRATION_ONLY_ONE
 } from '../js/rules/odyssey.js';
+import { STATUS_ROOM, STATUS_ROOM_OPEN, STATUS_ROOM_NARROW } from '../js/data/status-bar.js';
 import { DD_RULES } from '../js/data/dd-rules.js';
 import { FEATS_DATA } from '../js/data/feats.js';
 import { createDefaultCharacter, FEAT_SLOT_ORDER } from '../js/state/schema.js';

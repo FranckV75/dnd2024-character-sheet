@@ -44,7 +44,7 @@ import { renameSteppers } from './stepper.js';
 import { openModal } from './modal.js';
 import { COMPACT_QUERY } from './toolbar.js';
 import {
-    ODYSSEY_MODE_KEY, ODYSSEY_MODE_LABEL, STATUS_ROOM, STATUS_ROOM_OPEN, STATUS_ROOM_NARROW,
+    ODYSSEY_MODE_KEY, ODYSSEY_MODE_LABEL,
     odysseyActive, setOdysseyModePatch, odysseyModeHint, odysseyModeMessage, odysseyDroppedMessage,
     odysseyBoxUseful, inspirationWording, faithPerLevel, faithMention, faithSentence, faithHint,
     faithPoints, faithFavors, faithPointsSentence, pointsWord, FAITH_SPEND,
@@ -53,6 +53,7 @@ import {
     odysseyInspirationMessage, odysseyInspirationHint
 } from '../rules/odyssey.js';
 import { FAITH_WAYS, FAITH_FOOTNOTE, FAITH_GODS, FAITH_GODS_INTRO, FAITH_SPELL_NOTE } from '../data/faith-favors.js';
+import { STATUS_ROOM, STATUS_ROOM_OPEN, STATUS_ROOM_NARROW } from '../data/status-bar.js';
 
 /**
  * @param {{ root: HTMLElement, store: Object, setStatus: (message: string) => void }} ctx

@@ -482,6 +482,9 @@ describe('Dégâts en plus : interface (js/ui/weapons.js)', () => {
 
     test('phrases de la barre du haut : jamais plus longues que la ligne, pastille annoncée seulement si elle est nouvelle', () => {
         assert.match(ui, /const fitStatus = \(full, short\) => \(full\.length <= STATUS_ROOM \? full : short\);/);
+        // Une seule largeur de barre pour toute la fiche (js/data/status-bar.js)
+        assert.match(ui, /import \{ STATUS_ROOM \} from '\.\.\/data\/status-bar\.js';/);
+        assert.doesNotMatch(ui, /const STATUS_ROOM\b/);
         const toggle = ui.slice(ui.indexOf('function toggleExtra('), ui.indexOf('function writeExtraPills('));
         assert.match(toggle, /setStatus\(frenchSpaces\(fitStatus\(/, 'arme citée seulement si la phrase tient sur la ligne');
         const apply = ui.slice(ui.indexOf("label: 'Appliquer'"));
