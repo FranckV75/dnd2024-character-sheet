@@ -272,16 +272,6 @@ export function planShortRest(character, { diceSpent = 0, healing = 0, sorcerous
 }
 
 /**
- * Patch d'un repos court (voir planShortRest).
- * @param {Object} character
- * @param {{ diceSpent?: number, healing?: number, sorcerousRestoration?: boolean }} [options]
- * @returns {Object}
- */
-export function shortRestPatch(character, options) {
-    return planShortRest(character, options).patch;
-}
-
-/**
  * Calcule un repos long.
  * @param {Object} character
  * @returns {{ patch: Object, summary: Object }} summary.featNotes : comme pour planShortRest
@@ -368,13 +358,4 @@ export function planLongRest(character) {
             canStart: canStartRest(character)
         }
     };
-}
-
-/**
- * Patch d'un repos long (voir planLongRest).
- * @param {Object} character
- * @returns {Object}
- */
-export function longRestPatch(character) {
-    return planLongRest(character).patch;
 }

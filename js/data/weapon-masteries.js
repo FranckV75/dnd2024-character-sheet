@@ -15,9 +15,6 @@
 // Les noms français (name) sont ceux de la colonne « Botte d'arme » du manuel (dd-rules.js).
 // =============================================================================
 
-/** Phrase d'introduction des bottes (Manuel des joueurs français, p. 214) */
-export const WEAPON_MASTERY_INTRO = "Chaque arme possède une botte, qui n'est utilisable que par un personnage doté d'une capacité, comme Bottes d'arme, qui lui donne accès à cette botte.";
-
 /**
  * Les huit bottes, dans l'ordre alphabétique anglais du manuel.
  * desc : HTML simple (<br> sépare les paragraphes), comme js/data/feats.js.

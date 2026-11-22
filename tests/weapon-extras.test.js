@@ -15,7 +15,7 @@ import {
 } from '../js/rules/weapon-extras.js';
 import { buildWeaponConfig, readWeaponConfig, normalizeDamageDie, rowFromRulebookWeapon, matchesWeaponFilter, isBlankWeapon, removeWeapon, restoreWeapon } from '../js/rules/weapons.js';
 import { computeWeapon, deriveCharacter } from '../js/rules/character.js';
-import { longRestPatch, shortRestPatch } from '../js/rules/rest.js';
+import { planLongRest, planShortRest } from '../js/rules/rest.js';
 import { migrateCharacter } from '../js/state/migrate.js';
 import { createDefaultCharacter, EMPTY_WEAPON } from '../js/state/schema.js';
 import { V4_ONLY_KEYS } from '../js/cloud/sync.js';
@@ -373,7 +373,7 @@ describe('Dégâts en plus : remise à zéro au repos', () => {
 
     test('repos long : les pastilles s\'éteignent avec les bonus de combat ; les « Toujours » restent', () => {
         const sheet = hero({ combat_buffs: { rage: true }, dynamic_weapons: [row('Dague'), { ...row('Épée longue'), weaponConfig: on }] });
-        const patch = longRestPatch(sheet);
+        const patch = planLongRest(sheet).patch;
         assert.deepEqual(patch.combat_buffs, {});
         assert.equal(patch.dynamic_weapons[1].weaponConfig, off);
         assert.equal(damage(patch.dynamic_weapons[1]).text, '1d8 +3 TRAN +2d6 (contre les dragons)');
@@ -381,13 +381,13 @@ describe('Dégâts en plus : remise à zéro au repos', () => {
 
     test('repos long sans pastille allumée : le tableau des armes n\'est pas réécrit', () => {
         const sheet = hero({ dynamic_weapons: [row('Dague'), { ...row('Épée longue'), weaponConfig: off }] });
-        assert.equal('dynamic_weapons' in longRestPatch(sheet), false);
-        assert.equal('dynamic_weapons' in longRestPatch(hero()), false);
+        assert.equal('dynamic_weapons' in planLongRest(sheet).patch, false);
+        assert.equal('dynamic_weapons' in planLongRest(hero()).patch, false);
     });
 
     test('repos court : comme les bonus de combat, rien ne s\'éteint', () => {
         const sheet = hero({ combat_buffs: { rage: true }, dynamic_weapons: [{ ...row('Épée longue'), weaponConfig: on }] });
-        const patch = shortRestPatch(sheet);
+        const patch = planShortRest(sheet).patch;
         assert.equal('dynamic_weapons' in patch, false);
         assert.equal('combat_buffs' in patch, false);
     });

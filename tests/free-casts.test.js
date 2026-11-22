@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import { allFreeCasts, freeCastsFor, useFreeCastPatch, SUBCLASS_FREE_CASTS, FREE_CAST_RESET_TEXT } from '../js/rules/free-casts.js';
 import { SUBCLASS_COUNTERS, restSubclassUses } from '../js/rules/subclass-uses.js';
 import { restFeatSpellUses } from '../js/rules/feat-spells.js';
-import { longRestPatch } from '../js/rules/rest.js';
+import { planLongRest } from '../js/rules/rest.js';
 import { findSpellByName, spellNameKey } from '../js/rules/spells.js';
 import { deriveCharacter } from '../js/rules/character.js';
 import { createDefaultCharacter } from '../js/state/schema.js';
@@ -72,7 +72,7 @@ describe('Lancers gratuits : Ennemi juré du Rôdeur (PHB 2024, « Favored Enemy
         const spent = { ...ranger(5), ...use(ranger(5), 'class.ennemi_jure') };
         assert.equal(forSpell(spent, 'Marque du chasseur')[0].left, 2);
         assert.equal(forSpell({ ...spent, class_res_0: false }, 'Marque du chasseur')[0].left, 3);
-        const rested = { ...spent, ...longRestPatch(spent) };
+        const rested = { ...spent, ...planLongRest(spent).patch };
         assert.equal(forSpell(rested, 'Marque du chasseur')[0].left, 3);
     });
 

@@ -179,6 +179,12 @@ describe('Maître de guerre : manœuvres et Disciple martial', async () => {
         assert.deepEqual(knownManeuvers(deriveCharacter(bm(7, c.subclass_choices.battle_master))).map(m => m.id), ['parry', 'riposte', 'rally']);
     });
 
+    test('ordre des menus (maneuver2 avant maneuver10), pas celui de la sauvegarde (chosenValues)', () => {
+        const d = { subclass: 'battle_master', level: 15, subclassChoices: { maneuver10: 'rally', maneuver2: 'riposte', maneuver1: 'parry' } };
+        assert.deepEqual(knownManeuvers(d).map(m => m.id), ['parry', 'riposte', 'rally']);
+        assert.deepEqual(knownManeuvers({ ...d, subclass: 'champion' }), []);
+    });
+
     test('chiffres : Parade, Regain, DD', () => {
         const parry = MANEUVERS.find(m => m.id === 'parry');
         const rally = MANEUVERS.find(m => m.id === 'rally');

@@ -22,6 +22,9 @@ import { isUnarmedStrike, weaponReach } from './weapons.js';
 import { getRageBonus } from './logic.js';
 import { rageInEffect } from './rage.js';
 import { MANEUVERS } from '../data/maneuvers.js';
+// Import croisé (subclass-choices.js lit aussi ce module) : seulement des fonctions appelées plus
+// tard, jamais au chargement, donc sans risque.
+import { chosenValues } from './subclass-choices.js';
 import { LAND_TYPES, DAMAGE_TYPES } from '../data/subclass-choices.js';
 import { DRAGONLINGS, YOUNG_DRAGON_SENSES } from '../data/subclass-companions.js';
 import { signed } from './numbers.js';
@@ -73,10 +76,8 @@ export function maneuversKnown(level) {
  */
 export function knownManeuvers(derived) {
     if (!has(derived, 'battle_master')) return [];
-    return Object.entries(derived.subclassChoices ?? {})
-        .filter(([key]) => /^maneuver\d+$/.test(key))
-        .sort(([a], [b]) => Number(a.slice(8)) - Number(b.slice(8)))
-        .map(([, id]) => MANEUVERS.find(m => m.id === id))
+    return chosenValues(derived.subclassChoices, 'maneuver')
+        .map(id => MANEUVERS.find(m => m.id === id))
         .filter(Boolean);
 }
 

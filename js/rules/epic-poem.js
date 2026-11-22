@@ -8,10 +8,10 @@
 // rangs) et débloque un effet tous les deux rangs, à donner avec le dé : ces effets profitent à
 // l'allié qui garde le dé, jamais à la fiche du barde (l'Inspiration bardique vise une autre créature).
 // Mémorisé dans subclass_choices.college_of_epic_muse (strophes, party : js/data/subclass-choices.js).
+// Boutons − / + du compteur de strophes : stepSubclassChoicePatch (js/rules/subclass-choices.js).
 // Fonctions pures : aucune valeur saisie n'est modifiée.
 // =============================================================================
 
-import { stepSubclassChoicePatch } from './subclass-choices.js';
 import { bardicInspirationDie } from './subclass-calcs.js';
 
 export const EPIC_MUSE = 'college_of_epic_muse';
@@ -85,18 +85,6 @@ export function epicPoemSummary(poem) {
 function poemOf(derived) {
     if (derived?.subclass !== EPIC_MUSE || (Number(derived.level) || 1) < 3) return null;
     return epicPoem(derived.subclassChoices ?? {});
-}
-
-/**
- * Patch des boutons « − » et « + 1 strophe » : strophes + delta, entre 0 et 999.
- * @param {Object} character
- * @param {Object} derived - deriveCharacter(character)
- * @param {number} delta
- * @returns {Object} { subclass_choices } ou {} hors de la Poésie épique (ou avant le niveau 3)
- */
-export function strophePatch(character, derived, delta) {
-    if (!poemOf(derived)) return {};
-    return stepSubclassChoicePatch(character, derived, 'strophes', delta);
 }
 
 /** « Courage épique, Clairvoyance épique » des effets débloqués, ou « aucun » */

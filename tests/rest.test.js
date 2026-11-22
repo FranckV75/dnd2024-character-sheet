@@ -11,12 +11,14 @@ import {
     parseManualHitDice,
     canStartRest,
     planShortRest,
-    shortRestPatch,
     planLongRest,
-    longRestPatch,
     DEATH_SAVE_KEYS
 } from '../js/rules/rest.js';
 import { createDefaultCharacter } from '../js/state/schema.js';
+
+/** Modifications seules d'un repos (ce que les fenêtres de repos enregistrent) */
+const shortRestPatch = (character, options) => planShortRest(character, options).patch;
+const longRestPatch = (character) => planLongRest(character).patch;
 
 /** Personnage de test : guerrier niveau 5, CON 14 (+2), d10, 2 dés utilisés */
 function makeCharacter(overrides = {}) {

@@ -15,7 +15,7 @@ import {
     MASTERY_NOTES
 } from '../js/rules/weapon-masteries.js';
 import { getMartialArtsDie } from '../js/rules/logic.js';
-import { WEAPON_MASTERIES, WEAPON_MASTERY_CLASSES, WEAPON_MASTERY_INTRO } from '../js/data/weapon-masteries.js';
+import { WEAPON_MASTERIES, WEAPON_MASTERY_CLASSES } from '../js/data/weapon-masteries.js';
 import { DD_RULES } from '../js/data/dd-rules.js';
 import { FEATS_DATA } from '../js/data/feats.js';
 import { deriveCharacter, computeWeapon } from '../js/rules/character.js';
@@ -52,7 +52,6 @@ describe('Données : les huit bottes du manuel', () => {
             assert.equal(mastery.page, 214);
             assert.ok(mastery.desc.length > 80, `${name} : texte trop court`);
         }
-        assert.ok(WEAPON_MASTERY_INTRO.includes("Bottes d'arme"));
     });
 
     test('distances en mètres écrits en toutes lettres (comme feats.js), jamais en pieds', () => {

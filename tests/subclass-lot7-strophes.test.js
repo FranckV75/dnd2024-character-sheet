@@ -12,7 +12,7 @@ import {
     subclassChoiceFields, subclassChoice, setSubclassChoicePatch, stepSubclassChoicePatch, choiceLabel, subclassChoiceNotes,
     restSubclassChoices
 } from '../js/rules/subclass-choices.js';
-import { epicPoem, epicMinResult, epicPoemSummary, epicPoemNotes, strophePatch, EPIC_EFFECTS, DEFAULT_PARTY } from '../js/rules/epic-poem.js';
+import { epicPoem, epicMinResult, epicPoemSummary, epicPoemNotes, EPIC_EFFECTS, DEFAULT_PARTY } from '../js/rules/epic-poem.js';
 import {
     rollDie, surgeRow, surgeTableRoll, surgeCheck, surgeResultText, wildMagicPanel, wildMagicNotes
 } from '../js/rules/wild-magic.js';
@@ -97,7 +97,7 @@ describe('Poésie épique : données et compteur', () => {
     });
 
     test('boutons − et + : plancher 0, plafond 999, valeur absente = 0, personnage intact', () => {
-        const step = (c, delta) => strophePatch(c, deriveCharacter(c), delta).subclass_choices?.[EPIC]?.strophes;
+        const step = (c, delta) => stepSubclassChoicePatch(c, deriveCharacter(c), 'strophes', delta).subclass_choices?.[EPIC]?.strophes;
         assert.equal(step(bard(3), 1), '1');
         assert.equal(step(bard(3, { strophes: '0' }), -1), '0');
         assert.equal(step(bard(3, { strophes: '999' }), 1), '999');
@@ -105,10 +105,10 @@ describe('Poésie épique : données et compteur', () => {
         assert.equal(step(bard(3, { strophes: 'abc' }), 1), '1');
         const c = bard(3, { strophes: '14' });
         const frozen = JSON.stringify(c);
-        strophePatch(c, deriveCharacter(c), 1);
+        stepSubclassChoicePatch(c, deriveCharacter(c), 'strophes', 1);
         assert.equal(JSON.stringify(c), frozen);
         // Pas de compteur hors de la sous-classe ou avant le niveau 3 ; pas de pas sur un menu
-        assert.deepEqual(strophePatch(bard(2), deriveCharacter(bard(2)), 1), {});
+        assert.deepEqual(stepSubclassChoicePatch(bard(2), deriveCharacter(bard(2)), 'strophes', 1), {});
         const c3 = bard(3);
         assert.deepEqual(stepSubclassChoicePatch(c3, deriveCharacter(c3), 'party', 1), {});
         assert.deepEqual(stepSubclassChoicePatch(c3, deriveCharacter(c3), 'strophes', 'x'), {});
