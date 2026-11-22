@@ -8,7 +8,7 @@
 //    serments du Paladin, Cercle de la Terre… ; un sort aussi noté dans la liste porte un repère.
 //  - Sorts d'espèce (js/rules/species.js) : lancers gratuits cochés dans subclass_uses (mêmes
 //    cases que dans l'onglet Combat).
-//  - Vue « au combat » : bouton « Lancer » sur chaque sort de niveau 1+ (fenêtre de spells.js,
+//  - Vue « au combat » : bouton « Lancer » sur chaque sort de niveau 1+ (fenêtre de spells/cast.js,
 //    contrôle de jeu utilisable verrouillé ; affiché seulement au combat, par spells.css).
 // Jamais écrits dans dynamic_spells : on ne peut pas les effacer par erreur. Chaque bloc n'est
 // reconstruit que si son contenu change ; les cases cochées sont remises à jour sur place.

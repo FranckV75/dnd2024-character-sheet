@@ -53,112 +53,271 @@
 //    personnage sans magie de classe, les cases d'incantation passent après le grimoire.
 // Les règles (recherche, conversion, compteurs, emplacements) sont dans js/rules/spells.js.
 //
-// Fichiers du grimoire (js/ui/spells/) : barre de filtres (filters.js), emplacements de sorts
-// (slots.js), sorts de dons, de sous-classe et d'espèce (granted.js), infobulle (tooltip.js),
-// fenêtre « Préparer mes sorts » (prepare.js), bouton « Retirer les sorts non préparés » (cleanup.js),
-// réglages de l'appareil (prefs.js). Ici : le tableau des sorts, le grimoire replié et l'assemblage.
+// Ce fichier est le chef d'orchestre : il crée le contexte partagé, assemble les morceaux,
+// décide quelles lignes afficher (renderRows) et tient les abonnements. Les morceaux sont dans
+// js/ui/spells/ et ceux du tableau reçoivent le même contexte en premier argument (context.js) :
+//  - context.js : l'état partagé (filtre, tri, base de sorts, lignes, saisie en cours) ;
+//  - table.js : en-tête et tri, rangement des lignes, message « aucun sort », bouton Ajouter ;
+//  - rows.js : une ligne du tableau (construction, écriture, verrou, infobulle) ;
+//  - entry.js : modification d'une ligne, ligne de saisie et brouillon (editRow, settleDraft…) ;
+//  - picker.js : liste des sorts d'une ligne (suggestions, bouton ▾) ;
+//  - cast.js : fenêtre « Lancer » ; book.js : livre du Magicien (ligne « Livre », rituels) ;
+//  - notice.js : grimoire replié d'un personnage sans magie ;
+//  - et, comme avant : barre de filtres (filters.js), emplacements de sorts (slots.js), sorts de
+//    dons, de sous-classe et d'espèce (granted.js), infobulle (tooltip.js), fenêtre « Préparer
+//    mes sorts » (prepare.js), bouton « Retirer les sorts non préparés » (cleanup.js), réglages
+//    de l'appareil (prefs.js).
 // =============================================================================
 
-import { EMPTY_SPELL } from '../state/schema.js';
-import { derivedOf } from './derived.js';
-import {
-    plainText, cellText, spellDisplayName, spellNames, effectiveSpellClass, searchSpells, findSpellByName, spellToRow, rowLevel,
-    isSpellRowEmpty, hasSpellContent, spellRowsView, nextSort, spellCounts,
-    formatSpellCount, spellLimitWarnings, cantripLimitNote, spellNameKey, newSpellRow,
-    spellcastingStatus, grimoireView, SPELL_LEVELS
-} from '../rules/spells.js';
-import { adeptElements, elementWord } from '../rules/feat-choices.js';
-import { featSpellGroups } from '../rules/feat-spells.js';
-import { subclassSpells } from '../rules/subclass-features.js';
-import { speciesSpellNames } from '../rules/species.js';
-import { FEAT_SLOT_ORDER } from '../state/schema.js';
+import { EMPTY_SPELL, FEAT_SLOT_ORDER } from '../state/schema.js';
 import { ABILITY_IDS } from '../data/constants.js';
 import { loadSpells } from '../data/spells.js';
-import { classSpellCounts } from '../rules/class-progression.js';
-import { spellPickerGroups, pickerMaxLevel } from '../rules/spell-picker.js';
 import {
-    wholeListSource, fitsWholeList, grantedSpellKeys, spellPrepState, combatPlace, isCastable, castModes, castSlotOptions, useSpellSlot,
-    highestUsableSlot, mysticArcanumLevel, missingSlotLevel, missingSlotText, isArcanumSpellLevel, arcanumCastText
+    plainText, spellNames, findSpellByName, isSpellRowEmpty, hasSpellContent, spellRowsView, spellCounts,
+    formatSpellCount, spellLimitWarnings, cantripLimitNote, spellNameKey, newSpellRow
+} from '../rules/spells.js';
+import { adeptElements } from '../rules/feat-choices.js';
+import { classSpellCounts } from '../rules/class-progression.js';
+import {
+    wholeListSource, fitsWholeList, grantedSpellKeys, spellPrepState, combatPlace,
+    highestUsableSlot, mysticArcanumLevel, missingSlotLevel
 } from '../rules/spell-preparation.js';
-import { hasSpellbook, freeSpellbookSpells, spellbookCount, spellCopyCost, castsRitualsFromBook, isRitualSpell } from '../rules/spellbook.js';
-import { concentrationSpell, setConcentrationPatch } from '../rules/concentration.js';
-import { allFreeCasts, freeCastsFor, useFreeCastPatch, FREE_CAST_RESET_TEXT } from '../rules/free-casts.js';
-import { el, icon, setIconLabel } from './dom.js';
-import { cellText as createCellText } from './cell-text.js';
-import { attachAutocomplete } from './autocomplete.js';
-import { confirmModal, openModal } from './modal.js';
-import { frenchSpaces } from './help.js';
-import { isLocked } from './lock.js';
-import { motionOff } from './motion-pref.js';
-import { readGrimoireOpen, saveGrimoireOpen, readCombatView, readBookRitualsOpen, saveBookRitualsOpen } from './spells/prefs.js';
-import { createSpellTooltip, adeptTypes, adeptRule, affinityApplies } from './spells/tooltip.js';
+import { castsRitualsFromBook, isRitualSpell } from '../rules/spellbook.js';
+import { allFreeCasts } from '../rules/free-casts.js';
 import { elementalAffinity } from '../rules/subclass-combat.js';
+import { derivedOf } from './derived.js';
+import { el, icon } from './dom.js';
+import { confirmModal } from './modal.js';
+import { isLocked } from './lock.js';
+import { createGrimoireContext } from './spells/context.js';
 import { createSpellFilters } from './spells/filters.js';
 import { createSpellSlots, slotStateOf } from './spells/slots.js';
 import { createGrantedSpells } from './spells/granted.js';
 import { createPrepareButton } from './spells/prepare.js';
 import { createCleanupButton } from './spells/cleanup.js';
+import { createSpellTable } from './spells/table.js';
+import { createRow, writeRow } from './spells/rows.js';
+import { syncClearButtons } from './spells/entry.js';
+import { castSpell, castRowAt } from './spells/cast.js';
+import { createSpellbook } from './spells/book.js';
+import { createGrimoireNotice, hasGivenSpells } from './spells/notice.js';
 
 // Dons et leurs choix : repère « Adepte » (Adepte élémentaire) sur les sorts du type choisi
 // Sorts de dons : leurs choix, leurs lancers gratuits (feat_uses) et la caractéristique du DD
 const RELEVANT_KEYS = new Set(['dynamic_spells', 'spell_slots_state', 'spell_class_filter', 'char_class', 'char_subclass', 'char_level',
     'feat_choices', 'feat_uses', 'char_species', 'subclass_choices', 'species_choices', 'subclass_uses', ...FEAT_SLOT_ORDER.map(level => `feat_${level}`), ...ABILITY_IDS.map(id => `${id}_score`)]);
 
-const SORT_COLUMNS = {
-    lvl: { label: 'Niv.', title: 'niveau' },
-    name: { label: 'Nom', title: 'nom' },
-    school: { label: 'École', title: 'école' }
-};
-const TEXT_COLUMNS = [
-    ['school', 'École'],
-    ['time', 'Temps d\'incantation'],
-    ['range', 'Portée']
-];
-/** Losange plein fixe : explication (infobulle, et message au toucher sur tablette). Courte : la
- *  barre du haut (#save-status) tient sur une ligne, ces phrases y tiennent dès 768 px */
-const PREP_HELP = {
-    list: "Toujours préparé : votre classe ne change sa liste qu'en gagnant un niveau (un sort à la fois).",
-    granted: 'Toujours préparé : sort donné (classe, sous-classe, don, espèce), hors du compte des préparés.'
-};
-/** Savoir rituel (Magicien) : sort rituel du livre, non préparé. Infobulle (souris), puis version
- *  courte affichée dans la barre du haut quand on touche le repère (tablette) */
-const BOOK_RITUAL_HELP = 'Savoir rituel : ce sort de votre livre se lance en rituel sans être préparé (10 minutes de plus, sans emplacement), en lisant le livre.';
-const BOOK_RITUAL_TAP = 'Savoir rituel : sort du livre lançable en rituel sans le préparer (+10 min, sans emplacement).';
-/** Ligne « Rituels du livre » (vue au combat) : infobulle (souris), phrase écrite dans le bloc
- *  déplié, et phrase courte dans la barre du haut quand on la touche (tablette) */
-const BOOK_RITUALS_HELP = 'Sorts de votre livre non préparés : ils se lancent seulement en rituel (10 minutes de plus, sans emplacement).';
-const BOOK_RITUALS_TAP = {
-    open: 'Rituels du livre : sorts non préparés, lançables seulement en rituel (+10 min, sans emplacement).',
-    closed: 'Rituels du livre repliés : touchez la ligne pour les revoir.'
-};
 /** Vue « au combat » : ce que fait le bouton, dit dans la barre du haut à chaque bascule (tablette) */
 const COMBAT_VIEW_HELP = {
     on: "Au combat : seulement vos sorts prêts à lancer ; « Lancer » coche l'emplacement dépensé.",
     off: 'Grimoire complet : tous vos sorts, pour en ajouter ou en modifier.'
 };
-/** Fenêtre « Lancer » : ce que fait le bouton « Lancer gratuit », dit dans la fenêtre (tablette) */
-const FREE_CAST_HELP = "« Lancer gratuit » : sans emplacement ; c'est la case de la capacité qui se coche, là où elle est déjà sur la fiche.";
-/** Où se trouve la case d'un lancer gratuit qui n'est pas sur l'onglet Magie (Ennemi juré du Rôdeur) */
-const FREE_CAST_CLASS_PLACE = ' (onglet « Caractéristiques & Combat »)';
-/** Bouton ▾ (liste des sorts sans clavier virtuel) et bouton ✕ de la ligne de saisie : infobulle
- *  (souris), puis phrase courte dans la barre du haut quand on les touche (tablette) */
-const PICK_TITLE = 'Choisir dans la liste des sorts (sans ouvrir le clavier)';
-const PICK_HELP = 'Liste des sorts : touchez-en un pour remplir la ligne (✓ : déjà noté, grisé).';
-const CLEAR_TITLE = "Effacer la ligne : la remettre à zéro (rien d'enregistré n'est supprimé)";
-const CLEAR_HELP = 'Ligne de saisie remise à zéro ; vos autres sorts ne sont pas touchés.';
-const FLAG_COLUMNS = [
-    ['c', 'C', 'Concentration'],
-    ['r', 'R', 'Rituel'],
-    ['m', 'M', 'Composante matérielle']
-];
 
-/** Bref éclat doré (ligne de saisie appelée, grimoire ouvert) ; rien si les animations sont limitées */
-function flash(node, className) {
-    if (!node || motionOff()) return;
-    node.classList.remove(className);
-    void node.offsetWidth; // relance l'animation si elle est déjà en cours
-    node.classList.add(className);
-    node.addEventListener('animationend', () => node.classList.remove(className), { once: true });
+/**
+ * Morceaux assemblés du grimoire, passés aux fonctions d'affichage de ce fichier.
+ * @typedef {Object} GrimoireParts
+ * @property {HTMLElement} container - <section id="spells-feature">
+ * @property {HTMLElement} body - le grimoire lui-même (barre, emplacements, tableau…)
+ * @property {Object} filters - barre de filtres (spells/filters.js) ; countOut : compteur de sorts
+ * @property {HTMLElement} limitNote - dépassement de la table de la classe, en toutes lettres
+ * @property {Object} table - cadre du tableau (spells/table.js)
+ * @property {Object} book - livre du Magicien (spells/book.js)
+ * @property {Object} notice - grimoire replié (spells/notice.js) ; toggleBtn : bouton qui le rouvre
+ * @property {{ onCast: Function, onDelete: Function }} rowActions - boutons « Lancer » et
+ *   Supprimer d'une ligne (spells/rows.js : createRow)
+ */
+
+/**
+ * État « préparé » de chaque ligne de la fiche (losange, bouton « Lancer ») et avertissement
+ * « Pas d'emplacement ».
+ * @param {import('./spells/context.js').Grimoire} g
+ * @param {Object} character
+ * @param {Object} derivedNow - valeurs calculées (derivedOf)
+ * @param {Object[]} rows - dynamic_spells
+ * @returns {{ granted: Set<string>, wholeList: boolean, fits: (row: Object) => boolean, states: string[], noSlots: number[] }}
+ */
+function rowStates(g, character, derivedNow, rows) {
+    // Losange : liste fixe (Barde, Ensorceleur, Occultiste) et sorts donnés, toujours préparés ;
+    // un sort noté hors de la liste fixe (Arcanum mystique, Découvertes magiques…) garde son
+    // losange à cocher
+    const granted = grantedSpellKeys(character, derivedNow);
+    const source = wholeListSource(derivedNow);
+    const wholeList = source !== null;
+    const fits = (row) => fitsWholeList(row, source, findSpellByName(g.spellsDb, row.name));
+    // Magicien (Savoir rituel) : un sort rituel du livre non préparé se lance quand même en rituel
+    const bookRitual = castsRitualsFromBook(derivedNow.classSlug)
+        ? (row) => isRitualSpell(row, findSpellByName(g.spellsDb, row.name))
+        : null;
+    const states = rows.map(row => spellPrepState(row, { wholeList, granted, fits, bookRitual }));
+
+    // Sort préparé au-dessus des emplacements : simple avertissement (jamais pour un sort qui a
+    // son lancer gratuit, ni pour un Arcanum mystique)
+    const topSlot = highestUsableSlot(derivedNow.spellSlots, derivedNow.classSlug, slotStateOf(character));
+    const arcanumLevel = mysticArcanumLevel(derivedNow.classSlug, derivedNow.level);
+    let freeNames = null;
+    const hasFreeCast = (row) => {
+        freeNames ??= new Set(allFreeCasts(character, derivedNow).flatMap(cast => cast.names));
+        if (!freeNames.size) return false;
+        const known = findSpellByName(g.spellsDb, row.name);
+        return [row.name, ...spellNames(known), known?.vo].some(name => name && freeNames.has(spellNameKey(name)));
+    };
+    const noSlots = rows.map((row, i) => (missingSlotLevel(row, states[i], { topSlot, arcanumLevel })
+        ? missingSlotLevel(row, states[i], { topSlot, arcanumLevel, freeCast: hasFreeCast(row) }) : 0));
+    return { granted, wholeList, fits, states, noSlots };
+}
+
+/**
+ * Affiche les lignes du tableau : une par sort de la fiche plus la ligne de saisie, filtre de
+ * niveau, tri et vue « au combat » appliqués, puis le message sous le tableau et les compteurs.
+ * @param {import('./spells/context.js').Grimoire} g
+ * @param {GrimoireParts} ui
+ * @param {Object} character
+ * @param {boolean} force - fiche remplacée : même le champ qui a le focus est réécrit
+ * @param {boolean} structural - les lignes sont rangées (filtre, tri) même si leur nombre n'a pas changé
+ */
+function renderRows(g, ui, character, force, structural) {
+    const { view, rowEls } = g;
+    const { table, book } = ui;
+    const rows = Array.isArray(character.dynamic_spells) ? character.dynamic_spells : [];
+    const locked = isLocked();
+    const countChanged = rows.length + 1 !== rowEls.length;
+
+    while (rowEls.length < rows.length + 1) rowEls.push(createRow(g, ui.rowActions));
+    while (rowEls.length > rows.length + 1) {
+        const r = rowEls.pop();
+        r.detach();
+        r.tr.remove();
+    }
+    const entry = rowEls[rows.length];
+    rowEls.forEach((r, i) => { r.index = i; });
+
+    // Lignes affichées : sorts renseignés qui passent le filtre, et la ligne en cours de
+    // saisie (elle ne disparaît pas sous les doigts de l'utilisateur, même vidée)
+    const active = document.activeElement;
+    const pinned = rowEls.filter(r => r !== entry && r.tr.contains(active)).map(r => r.index);
+    const { order, shown, hasDraft } = spellRowsView(rows, { level: view.level, sort: view.sort, pinned });
+    const lines = new Map(order.filter(i => shown.has(i)).map((i, rank) => [i, rank + 1]));
+    const elements = adeptElements(character);
+    const derivedNow = derivedOf(character);
+    const affinity = elementalAffinity(derivedNow);
+    const { granted, wholeList, fits, states, noSlots } = rowStates(g, character, derivedNow, rows);
+
+    // Vue « au combat » : les sorts de niveau 1+ non préparés se retirent de l'écran (classe
+    // CSS, l'impression garde tout) ; pas la ligne en cours de saisie, qui ne disparaît pas
+    // sous les doigts (son losange vient d'être décoché, par exemple)
+    // Les rituels du livre non préparés (Magicien) vont sous la ligne repliable « Rituels du livre »
+    const outOfCombat = (i) => view.combat && combatPlace(states[i]) !== 'table' && !pinned.includes(i);
+    book.renderRituals(view.combat
+        ? order.filter(i => shown.has(i) && combatPlace(states[i]) === 'rituals' && !pinned.includes(i)).map(i => ({ index: i, row: rows[i] }))
+        : []);
+
+    rowEls.forEach((r, i) => {
+        const isEntry = r === entry;
+        writeRow(g, r, isEntry ? newSpellRow(EMPTY_SPELL, g.entryLevel ?? view.level) : rows[i], {
+            force, locked, entry: isEntry, line: isEntry ? lines.size + 1 : lines.get(i) ?? i + 1, elements, affinity,
+            state: isEntry ? null : states[i], wholeList, noSlot: isEntry ? 0 : noSlots[i]
+        });
+        if (!isEntry) {
+            r.tr.hidden = !shown.has(i);
+            r.tr.classList.toggle('is-out-of-combat', outOfCombat(i));
+        }
+    });
+    // Une seule ligne vide à l'écran : la ligne de saisie s'efface pendant qu'une ligne
+    // vidée est encore en cours de saisie ; aucune saisie possible verrouillé, ni au combat
+    entry.tr.hidden = locked || hasDraft || view.combat;
+    ui.body.classList.toggle('is-combat', view.combat);
+    syncClearButtons(g);
+
+    const trs = [...order.map(i => rowEls[i].tr), entry.tr];
+    if (force || structural || (countChanged && !g.creatingFromEntry)) {
+        table.placeRows(trs);
+    } else if (countChanged) {
+        // Sort créé depuis la ligne de saisie : il reste où il est pendant la frappe (le tri
+        // est réappliqué quand le focus quitte la ligne), la nouvelle ligne de saisie va dessous
+        table.tbody.append(...trs.filter(tr => tr.parentNode !== table.tbody));
+    }
+
+    const counts = spellCounts(rows, view.level, granted, (row) => wholeList && fits(row));
+    const anySpell = rows.some(hasSpellContent);
+    const anyShown = [...shown].some(i => !outOfCombat(i));
+    // Sorts affichés, mais tous retirés par la vue au combat
+    const combatEmpty = !anyShown && shown.size > 0;
+    ui.container.toggleAttribute('data-no-spells', !anySpell);
+    // Vue au combat sans aucun sort à lancer : tableau retiré de l'écran seulement (classe CSS),
+    // l'impression garde tout le grimoire
+    table.tableScroll.hidden = shown.size === 0 && entry.tr.hidden;
+    table.tableScroll.classList.toggle('is-combat-empty', combatEmpty);
+    table.renderEmpty({ anySpell, anyShown, combatEmpty, locked, hasGivenSpells: () => hasGivenSpells(character, derivedNow) });
+    renderCounts(g, ui, counts, derivedNow);
+    book.renderNote(rows, derivedNow, granted);
+}
+
+/**
+ * Table de la classe : « Préparés : 7 / 9 », en rouge au-delà ; sorts mineurs en trop :
+ * simple rappel (une espèce ou un don en donne d'autres). Les sorts donnés par la classe,
+ * la sous-classe ou un don ne comptent pas, même notés au grimoire.
+ * @param {import('./spells/context.js').Grimoire} g
+ * @param {GrimoireParts} ui
+ * @param {Object} counts - compteurs de sorts (js/rules/spells.js : spellCounts)
+ * @param {Object} derivedNow - valeurs calculées (derivedOf)
+ */
+function renderCounts(g, ui, counts, derivedNow) {
+    const { countOut } = ui.filters;
+    const limits = derivedNow.classSlug ? classSpellCounts(derivedNow.classSlug, derivedNow.level) : null;
+    const warnings = spellLimitWarnings(counts, limits);
+    const note = cantripLimitNote(counts, limits);
+    countOut.textContent = formatSpellCount(counts, g.view.level !== '', limits);
+    countOut.classList.toggle('is-over', warnings.length > 0);
+    countOut.title = [...warnings, note].filter(Boolean).join(' ');
+    ui.limitNote.replaceChildren(
+        ...warnings.map((text) => el('span', { text: `${text} ` })),
+        ...(note ? [el('span', { class: 'is-info', text: note })] : [])
+    );
+    ui.limitNote.hidden = !ui.limitNote.textContent;
+}
+
+/**
+ * Bouton Supprimer d'une ligne : confirmation (sauf ligne vide), puis le focus va à la ligne
+ * qui prend sa place.
+ * @param {import('./spells/context.js').Grimoire} g
+ * @param {GrimoireParts} ui
+ * @param {Object} r - éléments de la ligne
+ */
+async function deleteRow(g, ui, r) {
+    const index = r.index;
+    const row = g.spellsOf()[index];
+    if (!row) return;
+    if (!isSpellRowEmpty(row)) {
+        const ok = await confirmModal({
+            title: 'Supprimer le sort',
+            icon: 'trash',
+            message: `Supprimer « ${plainText(row.name) || 'ce sort'} » du grimoire ?`,
+            confirmLabel: 'Supprimer',
+            confirmIcon: 'trash',
+            danger: true
+        });
+        if (!ok) return;
+    }
+    const list = g.spellsOf();
+    if (list[index] !== row) return; // la fiche a changé entre-temps
+    g.tooltip.hide();
+    // Rang de la ligne dans le tableau affiché : le focus ira à celle qui prend sa place
+    const shownRows = () => [...ui.table.tbody.children].filter(tr => !tr.hidden);
+    const rank = Math.max(0, shownRows().indexOf(r.tr));
+    // Le focus quitte d'abord le bouton Supprimer : les éléments des lignes sont réutilisés
+    // par indice, ce bouton va montrer la ligne suivante de la fiche, peut-être une ligne
+    // vide non affichée, qui resterait sinon à l'écran comme « en cours de saisie »
+    r.del.blur();
+    if (g.draft?.index === index) g.draft = null;
+    g.store.update({ dynamic_spells: list.filter((_, i) => i !== index) });
+    // Focus sur la ligne affichée à la même place (bouton Supprimer, ou nom de la ligne de
+    // saisie), sinon sur le bouton qui rouvre le grimoire s'il vient de se replier
+    const shown = shownRows();
+    const tr = shown[Math.min(rank, shown.length - 1)];
+    const next = tr ? g.rowEls.find(item => item.tr === tr) : null;
+    const target = ui.body.hidden ? ui.notice.toggleBtn
+        : next ? (next.tr.classList.contains('spell-entry') ? next.name : next.del) : ui.table.addBtn;
+    target.focus();
 }
 
 /**
@@ -169,1139 +328,68 @@ export function initSpells(ctx) {
     const container = root.querySelector('#spells-feature');
     if (!container) return;
 
-    const view = { level: '', sort: { col: null, dir: 'asc' }, combat: readCombatView() };
-    let grimoireOpen = readGrimoireOpen();
-    let spellsDb = [];
-    // Un élément par ligne de dynamic_spells (même indice), plus la ligne de saisie, toujours
-    // le dernier élément (indice = nombre de lignes enregistrées)
-    const rowEls = [];
-    // Vrai pendant la création d'un sort depuis la ligne de saisie (voir renderRows)
-    let creatingFromEntry = false;
-    // Niveau choisi dans la ligne de saisie avant d'y écrire (null : celui du filtre actif)
-    let entryLevel = null;
-    // Sort créé depuis la ligne de saisie, tant que le focus ne l'a pas quittée :
-    // { index, json, level } (json : sa dernière version écrite ici, voir settleDraft ; level :
-    // niveau choisi sur la ligne, '' si aucun, qui limite la liste des sorts à parcourir)
-    let draft = null;
-    // Infobulle des sorts (spells/tooltip.js), partagée par le tableau et les sorts donnés
-    const tooltip = createSpellTooltip({ store });
-
-    const spellsOf = () => {
-        const list = store.get().dynamic_spells;
-        return Array.isArray(list) ? list : [];
-    };
-
-    function editRow(index, patch) {
-        const list = spellsOf();
-        if (index === list.length) {
-            // Ligne de saisie : le sort est créé à la première saisie qui a du contenu, au niveau
-            // choisi dans la ligne ou à celui du filtre actif. Un niveau seul (liste, flèches du
-            // clavier) est gardé pour la ligne, sans rien écrire dans la fiche.
-            const chosenLevel = entryLevel ?? view.level;
-            const row = { ...newSpellRow(EMPTY_SPELL, chosenLevel), ...patch };
-            if (!hasSpellContent(row)) {
-                if ('lvl' in patch) entryLevel = String(patch.lvl);
-                syncClearButtons();
-                return;
-            }
-            entryLevel = null;
-            creatingFromEntry = true;
-            try {
-                store.update({ dynamic_spells: [...list, row] });
-            } finally {
-                creatingFromEntry = false;
-            }
-            draft = { index, json: JSON.stringify(spellsOf()[index]), level: 'lvl' in patch ? String(patch.lvl) : chosenLevel };
-            syncClearButtons();
-            return;
-        }
-        if (!list[index]) return;
-        const next = list.slice();
-        next[index] = { ...list[index], ...patch };
-        store.update({ dynamic_spells: next });
-        if (draft?.index === index) {
-            draft.json = JSON.stringify(spellsOf()[index]);
-            if ('lvl' in patch) draft.level = String(patch.lvl);
-        }
-    }
-
-    /**
-     * Bouton ✕ « Effacer la ligne » : la ligne de saisie revient à zéro (niveau « — », nom vide,
-     * cases décochées). Si la saisie a déjà créé un sort dans la fiche, il est retiré seulement
-     * s'il est encore le brouillon de cette saisie (le focus n'a pas quitté la ligne), le dernier
-     * de la liste et tel que cette saisie l'a laissé : un sort validé n'est jamais supprimé.
-     * @param {Object} r - éléments de la ligne
-     */
-    function clearEntry(r) {
-        const list = spellsOf();
-        const hadFocus = r.tr.contains(document.activeElement);
-        r.detach.hide();
-        tooltip.hide();
-        if (r.index === list.length) {
-            entryLevel = null;
-            r.name.value = '';
-            render(store.get(), ['dynamic_spells'], { structural: true });
-        } else if (draft?.index === r.index) {
-            const untouched = r.index === list.length - 1 && JSON.stringify(list[r.index]) === draft.json;
-            draft = null;
-            if (!untouched) {
-                // La fiche a changé entre-temps (synchronisation) : rien n'est supprimé
-                render(store.get(), ['dynamic_spells'], { structural: true });
-                return;
-            }
-            entryLevel = null;
-            store.update({ dynamic_spells: list.slice(0, r.index) });
-            // La ligne redevient la ligne de saisie : le nom (qui garde peut-être le focus) est vidé
-            r.name.value = '';
-        } else {
-            return;
-        }
-        setStatus(CLEAR_HELP);
-        if (hadFocus && document.activeElement !== r.name && !r.tr.hidden) r.name.focus();
-    }
-
-    /** Bouton ✕ : ligne de saisie dont le niveau a été changé, ou sort tout juste créé par la saisie */
-    function syncClearButtons() {
-        const count = spellsOf().length;
-        for (const r of rowEls) {
-            const show = !isLocked() && (r.index === count ? (entryLevel ?? view.level) !== view.level : draft?.index === r.index);
-            r.clear.hidden = !show;
-            r.del.hidden = show;
-            r.tr.classList.toggle('is-touched', show);
-        }
-    }
-
-    /**
-     * Niveau qui limite la liste des sorts à parcourir : celui choisi sur la ligne (ligne de saisie,
-     * sort tout juste créé), sinon le niveau noté (« 0 » des lignes vierges : non choisi), sinon la
-     * pastille de niveau active ; '' : tous les niveaux permis.
-     */
-    function pickerLevelOf(r) {
-        const list = spellsOf();
-        if (r.index === list.length) return entryLevel ?? view.level;
-        if (draft?.index === r.index) return draft.level;
-        const level = rowLevel(list[r.index]);
-        return level !== '0' ? level : view.level;
-    }
-
-    /**
-     * Le focus quitte la ligne d'un sort créé depuis la ligne de saisie. Vidé entre-temps
-     * (texte effacé, case décochée), ce sort est retiré : la fiche revient à son état d'avant
-     * la saisie, sans ligne vide invisible. Seul ce sort-là est concerné, et seulement s'il
-     * est resté tel que cette saisie l'a laissé (sinon la fiche a changé : rien n'est touché).
-     * @param {number} index
-     * @returns {boolean} vrai si le sort a été retiré (la fiche est alors déjà réaffichée)
-     */
-    function settleDraft(index) {
-        if (!draft || draft.index !== index) return false;
-        const list = spellsOf();
-        const row = list[index];
-        const untouched = index === list.length - 1 && JSON.stringify(row) === draft.json;
-        draft = null;
-        if (!untouched || hasSpellContent(row)) return false;
-        store.update({ dynamic_spells: list.slice(0, index) });
-        return true;
-    }
-
-    // -----------------------------------------------------------------------
-    // Barre de filtres (spells/filters.js)
-    // -----------------------------------------------------------------------
+    // Contexte partagé par les morceaux du grimoire (spells/context.js)
+    const g = createGrimoireContext({ store, setStatus });
+    const { view, tooltip } = g;
 
     // Bouton « Préparer mes sorts » (spells/prepare.js), affiché pour les classes concernées
     const prepare = createPrepareButton({ store, setStatus });
 
+    // Barre de filtres (spells/filters.js)
     const filters = createSpellFilters({
         store, view, tooltip, actions: [prepare.button],
         onLevel: () => {
-            entryLevel = null; // la ligne de saisie reprend le niveau du filtre
+            g.entryLevel = null; // la ligne de saisie reprend le niveau du filtre
             tooltip.hide();
-            render(store.get(), null, { structural: true });
+            g.redraw();
         },
         onCombat: () => {
-            render(store.get(), null, { structural: true });
+            g.redraw();
             setStatus(view.combat ? COMBAT_VIEW_HELP.on : COMBAT_VIEW_HELP.off);
         }
     });
-    const { countOut } = filters;
 
     // Dépassement de la table de la classe (sorts préparés, sorts mineurs) : dit en toutes lettres
     const limitNote = el('p', { class: 'spell-limit-note', role: 'status', hidden: true });
-
-    // Magicien : sorts du livre notés, sorts obtenus sans dépense, coût de copie (simple repère)
-    const bookCount = el('span', { class: 'spellbook-count' });
-    const bookHelp = el('span', { class: 'spellbook-help' });
-    const bookNote = el('p', { class: 'spellbook-note', hidden: true }, bookCount, bookHelp);
-
+    // Magicien : ligne « Livre : N sorts » et ligne repliable « Rituels du livre » (spells/book.js)
+    const book = createSpellbook(g);
     // Emplacements de sorts (spells/slots.js)
     const slots = createSpellSlots({ store, view });
-
-    // -----------------------------------------------------------------------
-    // Tableau
-    // -----------------------------------------------------------------------
-
-    const sortButtons = {};
-    const headCells = {};
-    function sortHeader(col) {
-        const button = el('button', {
-            type: 'button', class: 'sort-btn',
-            on: {
-                click: () => {
-                    view.sort = nextSort(view.sort, col);
-                    tooltip.hide();
-                    render(store.get(), null, { structural: true });
-                }
-            }
-        }, SORT_COLUMNS[col].label, el('span', { class: 'sort-icon', 'aria-hidden': 'true' }));
-        sortButtons[col] = button;
-        headCells[col] = el('th', { scope: 'col', class: `col-${col}`, 'aria-sort': 'none' }, button);
-        return headCells[col];
-    }
-
-    const tbody = el('tbody');
-    const table = el('table', { class: 'data-table spells-table', 'aria-label': 'Liste des sorts' },
-        el('thead', {}, el('tr', {},
-            el('th', { scope: 'col', class: 'col-prep' }, el('abbr', { title: 'Préparé', text: 'P' })),
-            sortHeader('lvl'),
-            sortHeader('name'),
-            sortHeader('school'),
-            el('th', { scope: 'col', class: 'col-time', text: 'Temps d\'incant.' }),
-            el('th', { scope: 'col', class: 'col-range', text: 'Portée' }),
-            el('th', { scope: 'col', class: 'col-crm' },
-                el('abbr', { title: 'Concentration', text: 'C' }), ' / ',
-                el('abbr', { title: 'Rituel', text: 'R' }), ' / ',
-                el('abbr', { title: 'Composante matérielle', text: 'M' })),
-            el('th', { scope: 'col', class: 'col-note', text: 'Notes' }),
-            el('th', { scope: 'col', class: 'col-cast', 'aria-label': 'Lancer' }),
-            el('th', { scope: 'col', class: 'col-del edit-only', 'aria-label': 'Supprimer' }))),
-        tbody);
-    const tableScroll = el('div', { class: 'table-scroll spells-scroll' }, table);
-    // Message sous le tableau ; le conseil de saisie n'est pas imprimé
-    const emptyMain = el('span');
-    const emptyHint = el('span', { class: 'spells-empty-hint' });
-    const emptyText = el('p', { class: 'spells-empty', hidden: true }, emptyMain, emptyHint);
-
-    // Aucune ligne vide n'est ajoutée à la fiche : le bouton amène sur la ligne de saisie,
-    // toujours en bas du tableau (le sort sera créé à la première frappe)
-    const addBtn = el('button', {
-        type: 'button', class: 'add-row edit-only',
-        on: {
-            click: () => {
-                tooltip.hide();
-                render(store.get(), ['dynamic_spells'], { structural: true });
-                const entry = rowEls[spellsOf().length];
-                if (!entry || entry.tr.hidden) return;
-                entry.name.focus();
-                flash(entry.tr, 'is-called');
-            }
-        }
-    });
-    setIconLabel(addBtn, 'plus', 'Ajouter un sort');
+    // Tableau : en-tête, message « aucun sort », bouton « Ajouter un sort » (spells/table.js)
+    const table = createSpellTable(g);
 
     // Bouton « Retirer les sorts non préparés » (spells/cleanup.js) ; les lignes en cours de saisie
     // (sort tout juste créé, ligne qui a le focus) ne sont jamais proposées
     const cleanup = createCleanupButton({
-        store, setStatus, keepSnapshot: ctx.keepSnapshot, getSpellsDb: () => spellsDb,
-        getSkip: () => [draft?.index, ...rowEls.filter(r => r.tr.contains(document.activeElement)).map(r => r.index)]
+        store, setStatus, keepSnapshot: ctx.keepSnapshot, getSpellsDb: () => g.spellsDb,
+        getSkip: () => [g.draft?.index, ...g.rowEls.filter(r => r.tr.contains(document.activeElement)).map(r => r.index)]
             .filter(Number.isInteger)
     });
 
-    function createRow() {
-        const r = { index: 0 };
-
-        r.prep = el('button', {
-            type: 'button', class: 'spell-prep',
-            on: {
-                click: () => {
-                    const row = spellsOf()[r.index];
-                    if (!row || rowLevel(row) === '0') return;
-                    // Toujours préparé : rien à cocher, le toucher (tablette) dit pourquoi
-                    if (r.state === 'list' || r.state === 'granted') {
-                        setStatus(PREP_HELP[r.state]);
-                        return;
-                    }
-                    editRow(r.index, { prep: row.prep !== true });
-                }
-            }
-        });
-
-        r.lvl = el('select', {
-            class: 'cell-input spell-lvl',
-            on: { change: () => editRow(r.index, { lvl: r.lvl.value }) }
-        }, SPELL_LEVELS.map(level => el('option', { value: level, text: level })));
-
-        const textInput = (key) => createCellText({
-            class: `cell-input spell-${key}`, autocomplete: 'off', spellcheck: 'false',
-            on: {
-                input: (event) => {
-                    if (key === 'name') tooltip.hide();
-                    editRow(r.index, { [key]: event.target.value });
-                }
-            }
-        });
-
-        r.name = textInput('name');
-        r.name.placeholder = 'Nom…';
-        // Repère « Adepte (feu) » : sort du type choisi avec Adepte élémentaire (writeRow)
-        r.adept = el('span', { class: 'spell-adept', hidden: true });
-        // Repère « +Cha (+4, feu) » : sort du type choisi avec Affinité élémentaire (writeRow)
-        r.affinity = el('span', { class: 'spell-adept', hidden: true });
-        // Repère « Lançable en rituel » : sort rituel du livre non préparé (Magicien, writeRow)
-        // (bouton : au toucher, l'explication s'affiche dans la barre du haut, comme pour le losange)
-        r.ritual = el('button', {
-            type: 'button', class: 'spell-adept spell-book-ritual', hidden: true, title: BOOK_RITUAL_HELP, text: 'Lançable en rituel',
-            on: { click: () => setStatus(BOOK_RITUAL_TAP) }
-        });
-        // Repère « Pas d'emplacement » : sort préparé d'un niveau plus haut que les emplacements
-        // (bouton : au toucher, la phrase s'affiche dans la barre du haut ; writeRow)
-        r.noSlot = el('button', {
-            type: 'button', class: 'spell-adept spell-book-ritual spell-no-slot', hidden: true, text: "Pas d'emplacement",
-            on: { click: () => setStatus(r.noSlot.title) }
-        });
-        r.texts = {};
-        for (const [key] of TEXT_COLUMNS) r.texts[key] = textInput(key);
-        r.note = textInput('note');
-
-        r.flags = {};
-        const flagLabels = FLAG_COLUMNS.map(([key, letter, title]) => {
-            r.flags[key] = el('input', {
-                type: 'checkbox', class: 'round-check',
-                on: { change: (event) => editRow(r.index, { [key]: event.target.checked }) }
-            });
-            return el('label', { class: 'spell-flag', title }, r.flags[key], el('span', { 'aria-hidden': 'true', text: letter }));
-        });
-
-        // Vue « au combat » : lancer le sort (contrôle de jeu, utilisable verrouillé)
-        r.cast = el('button', {
-            type: 'button', class: 'btn-chip spell-cast', hidden: true, title: "Lancer : choisir l'emplacement à cocher",
-            on: { click: () => castRow(r) }
-        }, icon('sparkle'), el('span', { class: 'btn-label', text: 'Lancer' }));
-
-        r.del = el('button', {
-            type: 'button', class: 'btn-icon is-danger spell-del', title: 'Supprimer le sort', 'aria-label': 'Supprimer le sort',
-            on: { click: () => deleteRow(r) }
-        }, icon('trash'));
-
-        // Ligne de saisie : ✕ la remet à zéro (voir clearEntry). Le focus reste dans le champ
-        // (mousedown) : la saisie en cours n'est pas « quittée » avant l'effacement
-        r.clear = el('button', {
-            type: 'button', class: 'btn-icon spell-clear', title: CLEAR_TITLE, 'aria-label': 'Effacer la ligne', hidden: true,
-            on: { mousedown: (event) => event.preventDefault(), click: () => clearEntry(r) }
-        }, icon('close'));
-
-        // ▾ : liste des sorts à parcourir, sans focus sur le nom (pas de clavier virtuel)
-        r.pick = el('button', {
-            type: 'button', class: 'spell-pick', title: PICK_TITLE, 'aria-label': 'Choisir dans la liste des sorts', hidden: true,
-            on: {
-                mousedown: (event) => event.preventDefault(),
-                click: () => {
-                    tooltip.hide();
-                    r.detach.open();
-                    if (r.pick.getAttribute('aria-expanded') === 'true') setStatus(PICK_HELP);
-                }
-            }
-        }, icon('chevron'));
-
-        r.name.addEventListener('mouseenter', () => scheduleShow(r, 'hover'));
-        r.name.addEventListener('mouseleave', tooltip.scheduleHide);
-        r.name.addEventListener('focus', () => scheduleShow(r, 'focus'));
-        r.name.addEventListener('blur', tooltip.scheduleHide);
-
-        r.detach = attachAutocomplete(r.name, {
-            minChars: 2,
-            maxItems: 12,
-            // Nom vide touché, ou bouton ▾ : toute la liste de sorts, rangée par niveau
-            browse: { enabled: () => !isLocked() && spellsDb.length > 0, trigger: r.pick },
-            getItems: (query, { browse = false } = {}) => {
-                const character = store.get();
-                const derivedNow = derivedOf(character);
-                const classSlug = effectiveSpellClass(character.spell_class_filter, derivedNow.classSlug, derivedNow.subclass);
-                if (browse) {
-                    const groups = spellPickerGroups(spellsDb, {
-                        classSlug, query,
-                        level: pickerLevelOf(r),
-                        maxLevel: pickerMaxLevel(derivedNow.classSlug, derivedNow.spellSlots),
-                        // Le sort de cette ligne elle-même ne compte pas comme « déjà noté »
-                        rows: spellsOf().filter((_, i) => i !== r.index)
-                    });
-                    return groups.flatMap(group => [
-                        { header: group.title },
-                        ...group.items.map(item => ({
-                            label: item.name,
-                            detail: item.noted ? 'déjà noté' : item.spell.school,
-                            mark: item.noted ? '✓' : '',
-                            disabled: item.noted,
-                            value: item.spell
-                        }))
-                    ]);
-                }
-                return searchSpells(spellsDb, query, { classSlug, limit: 12 }).map(spell => ({
-                    label: spellDisplayName(spell),
-                    detail: `niv. ${spell.level} · ${spell.school}`,
-                    value: spell
-                }));
-            },
-            onSelect: (item, { fromTrigger = false } = {}) => {
-                const list = spellsOf();
-                // Bouton ▾ utilisé au clavier : il garde le focus (il disparaît une fois le nom rempli)
-                const pickFocused = document.activeElement === r.pick;
-                // Ligne de saisie (sort pas encore créé) : le choix crée le sort
-                const isEntry = r.index === list.length;
-                const row = isEntry ? {} : list[r.index];
-                if (!row) return;
-                const filled = spellToRow(item.value, row);
-                editRow(r.index, filled);
-                r.name.value = filled.name;
-                // Choisi avec le bouton ▾, sans être entré dans la ligne : le choix est validé
-                // (le sort se range à sa place, une nouvelle ligne de saisie apparaît dessous)
-                if (fromTrigger && (pickFocused || !r.tr.contains(document.activeElement))) {
-                    if (draft?.index === r.index) draft = null;
-                    if (pickFocused) r.pick.blur();
-                    render(store.get(), ['dynamic_spells'], { structural: true });
-                    if (isEntry) setStatus(`${filled.name} : ajouté au grimoire.`);
-                    // Au clavier : le focus passe au bouton ▾ de la nouvelle ligne de saisie
-                    const next = rowEls[spellsOf().length];
-                    if (pickFocused && next && !next.tr.hidden && !next.pick.hidden) next.pick.focus();
-                }
-            }
-        });
-
-        r.tr = el('tr', {},
-            el('td', { class: 'col-prep' }, r.prep),
-            el('td', { class: 'col-lvl' }, r.lvl),
-            el('td', { class: 'col-name' }, el('div', { class: 'spell-name-wrap' }, r.name, r.pick), r.adept, r.affinity, r.ritual, r.noSlot),
-            el('td', { class: 'col-school' }, r.texts.school),
-            el('td', { class: 'col-time' }, r.texts.time),
-            el('td', { class: 'col-range' }, r.texts.range),
-            el('td', { class: 'col-crm' }, el('span', { class: 'spell-flags' }, flagLabels)),
-            el('td', { class: 'col-note' }, r.note),
-            el('td', { class: 'col-cast' }, r.cast),
-            el('td', { class: 'col-del edit-only' }, r.del, r.clear));
-
-        // La ligne reste affichée (et à sa place) tant que le focus y est ; le filtre de niveau
-        // et le tri sont réappliqués quand le focus la quitte (niveau ou nom modifié, ligne
-        // vidée, sort tout juste créé depuis la ligne de saisie)
-        r.tr.addEventListener('focusout', (event) => {
-            if (r.tr.contains(event.relatedTarget)) return;
-            setTimeout(() => {
-                if (!r.tr.isConnected || r.tr.contains(document.activeElement)) return;
-                if (settleDraft(r.index)) return;
-                render(store.get(), ['dynamic_spells'], { structural: true });
-            }, 0);
-        });
-
-        // Toucher une case à côté de son texte (sur tablette, la zone de saisie est moins haute
-        // que la ligne) : le curseur va dans la case ; dans la ligne de saisie, sur le nom
-        r.tr.addEventListener('click', (event) => {
-            const cell = event.target;
-            if (cell.tagName !== 'TD') return;
-            const field = cell.querySelector('textarea') ?? (r.tr.classList.contains('spell-entry') ? r.name : null);
-            field?.focus();
-        });
-        return r;
-    }
-
-    async function deleteRow(r) {
-        const index = r.index;
-        const row = spellsOf()[index];
-        if (!row) return;
-        if (!isSpellRowEmpty(row)) {
-            const ok = await confirmModal({
-                title: 'Supprimer le sort',
-                icon: 'trash',
-                message: `Supprimer « ${plainText(row.name) || 'ce sort'} » du grimoire ?`,
-                confirmLabel: 'Supprimer',
-                confirmIcon: 'trash',
-                danger: true
-            });
-            if (!ok) return;
-        }
-        const list = spellsOf();
-        if (list[index] !== row) return; // la fiche a changé entre-temps
-        tooltip.hide();
-        // Rang de la ligne dans le tableau affiché : le focus ira à celle qui prend sa place
-        const shownRows = () => [...tbody.children].filter(tr => !tr.hidden);
-        const rank = Math.max(0, shownRows().indexOf(r.tr));
-        // Le focus quitte d'abord le bouton Supprimer : les éléments des lignes sont réutilisés
-        // par indice, ce bouton va montrer la ligne suivante de la fiche, peut-être une ligne
-        // vide non affichée, qui resterait sinon à l'écran comme « en cours de saisie »
-        r.del.blur();
-        if (draft?.index === index) draft = null;
-        store.update({ dynamic_spells: list.filter((_, i) => i !== index) });
-        // Focus sur la ligne affichée à la même place (bouton Supprimer, ou nom de la ligne de
-        // saisie), sinon sur le bouton qui rouvre le grimoire s'il vient de se replier
-        const shown = shownRows();
-        const tr = shown[Math.min(rank, shown.length - 1)];
-        const next = tr ? rowEls.find(item => item.tr === tr) : null;
-        const target = body.hidden ? toggleBtn
-            : next ? (next.tr.classList.contains('spell-entry') ? next.name : next.del) : addBtn;
-        target.focus();
-    }
-
-    /**
-     * Bouton « Lancer » (vue au combat) : niveaux d'emplacement possibles (niveau du sort et
-     * au-dessus, emplacements de pacte compris), lancer en rituel (sans emplacement) pour un sort
-     * marqué R, Concentration proposée pour un sort marqué C. Choisir un niveau coche un emplacement
-     * de ce niveau : le décocher suffit à annuler.
-     */
-    function castRow(r) {
-        castRowAt(r.index, r.state);
-    }
-
-    /** Lancer la ligne d'indice donné (bouton du tableau, ou de la ligne « Rituels du livre ») */
-    function castRowAt(index, state) {
-        const row = spellsOf()[index];
-        if (!row || !isCastable(state)) return;
-        // Rituel : case R cochée ou base de sorts, préparé ou non (même règle que le losange)
-        const known = findSpellByName(spellsDb, row.name);
-        const { ritual, ritualOnly } = castModes(state, isRitualSpell(row, known));
-        castSpell({
-            name: plainText(row.name), level: Number(rowLevel(row)), concentration: row.c === true,
-            names: [plainText(row.name), ...spellNames(known), known?.vo],
-            ritual, ritualOnly,
-            ritualOnlyText: ritualOnly ? 'Sort non préparé : depuis votre livre, il se lance seulement en rituel (Savoir rituel).' : ''
-        });
-    }
-
-    /**
-     * Fenêtre « Lancer » d'un sort préparé (ligne du tableau, ou sort donné par un don, la
-     * sous-classe ou l'espèce : spells/granted.js).
-     * @param {{ name: string, level: number, concentration?: boolean, ritual?: boolean, ritualOnly?: boolean, ritualOnlyText?: string, names?: string[] }} spell
-     *        names : tous les noms du sort (noté, français, anglais), pour retrouver ses lancers gratuits
-     *        ritualOnly : sort qui ne se lance qu'en rituel (sort donné par la Voie du Cœur sauvage,
-     *        rituel du livre non préparé du Magicien) ; ritualOnlyText : la raison, dite dans la fenêtre
-     */
-    function castSpell({ name: spellName, level, concentration: needsConcentration = false, ritual = false, ritualOnly = false, ritualOnlyText = '', names = [] }) {
-        const character = store.get();
-        const d = derivedOf(character);
-        const name = spellName || 'ce sort';
-        const options = ritualOnly ? [] : castSlotOptions(level, d.spellSlots, d.classSlug, slotStateOf(character));
-        // Lancers gratuits suivis par la fiche (don, espèce, Ennemi juré…), proposés en premier
-        const free = ritualOnly ? [] : freeCastsFor(character, d, [spellName, ...names]);
-        const freeLeft = free.some(cast => cast.left > 0);
-        const current = concentrationSpell(character);
-        // Arcanum mystique (Occultiste) : sort de niveau 6+ sans emplacement de son niveau, lancé une
-        // fois par repos long sans emplacement. La fiche n'a pas de case pour lui : la fenêtre le dit
-        // (au lieu de « Aucun emplacement »), et le bouton ne change que la concentration
-        const arcanum = !ritualOnly && options.length === 0 && isArcanumSpellLevel(level, mysticArcanumLevel(d.classSlug, d.level));
-        // Sort impossible à lancer (plus aucun emplacement, pas de rituel) : pas de case Concentration
-        const castable = ritual || freeLeft || arcanum || options.some(option => option.left > 0);
-        const concentration = castable && needsConcentration && current !== name.slice(0, 80)
-            ? el('input', { type: 'checkbox', class: 'round-check', checked: true })
-            : null;
-        let close = () => {};
-
-        const finish = (patch, message) => {
-            const now = store.get();
-            if (concentration?.checked) Object.assign(patch, setConcentrationPatch(now, name));
-            if (Object.keys(patch).length) store.update(patch);
-            setStatus(message);
-            close();
-        };
-        const castAt = (slotLevel) => {
-            const now = store.get();
-            const next = useSpellSlot(slotStateOf(now), slotLevel, derivedOf(now).spellSlots[slotLevel] ?? 0);
-            if (!next) {
-                setStatus(`Plus aucun emplacement de niveau ${slotLevel}.`);
-                close();
-                return;
-            }
-            finish({ spell_slots_state: next },
-                `${name} : emplacement de niveau ${slotLevel} coché. Pour annuler, décochez-le.`);
-        };
-
-        const castFree = (cast) => {
-            const now = store.get();
-            const patch = useFreeCastPatch(now, derivedOf(now), cast.id);
-            if (!patch) {
-                setStatus(`${cast.label} : plus aucun lancer gratuit, il ${FREE_CAST_RESET_TEXT[cast.reset]}.`);
-                close();
-                return;
-            }
-            finish(patch, cast.kind === 'class'
-                ? `${name} : lancer gratuit (${cast.label}). Pour annuler, décochez sa case (onglet Combat).`
-                : `${name} : lancer gratuit (${cast.label}), sa case est cochée. Pour annuler, décochez-la.`);
-        };
-
-        const anyLeft = options.some(option => option.left > 0);
-        // « Lancer gratuit (Ennemi juré) — reste 2 » ; épuisé : grisé, avec le repos qui le rend
-        const freeButtons = free.map(cast => el('button', {
-            type: 'button', class: 'btn spell-cast-level spell-cast-free', disabled: cast.left === 0,
-            on: { click: () => castFree(cast) }
-        }, el('span', { class: 'btn-label', text: `Lancer gratuit (${cast.label})` }),
-        el('small', { class: 'spell-cast-left', text: cast.left === 0 ? `déjà utilisé, ${FREE_CAST_RESET_TEXT[cast.reset]}` : `reste ${cast.left}` })));
-        const levelButtons = options.map(option => el('button', {
-            type: 'button', class: 'btn spell-cast-level', disabled: option.left === 0,
-            on: { click: () => castAt(option.level) }
-        }, el('span', { class: 'btn-label', text: `${option.pact ? 'Pacte · ' : ''}Niveau ${option.level}` }),
-        el('small', { class: 'spell-cast-left', text: option.left === 0 ? 'plus aucun' : `reste ${option.left}` })));
-        const ritualButton = ritual ? el('button', {
-            type: 'button', class: 'btn spell-cast-level',
-            on: { click: () => finish({}, `${name} lancé en rituel : 10 minutes de plus, aucun emplacement dépensé.`) }
-        }, el('span', { class: 'btn-label', text: 'En rituel' }), el('small', { class: 'spell-cast-left', text: '+10 min, sans emplacement' })) : null;
-
-        const arcanumButton = arcanum ? el('button', {
-            type: 'button', class: 'btn spell-cast-level spell-cast-free',
-            on: { click: () => finish({}, `${name} : Arcanum mystique, sans emplacement. Rien n'est coché, à vous de le retenir.`) }
-        }, el('span', { class: 'btn-label', text: 'Arcanum mystique' }), el('small', { class: 'spell-cast-left', text: 'sans emplacement, 1 fois par repos long' })) : null;
-
-        const facts = [`Sort de niveau ${level}`, needsConcentration ? 'Concentration' : '', ritual ? 'Rituel' : ''].filter(Boolean).join(' · ');
-        // Sort qui se lance seulement en rituel : cas permis, dit en texte normal (pas en rouge)
-        const ritualNote = ritualOnly ? ritualOnlyText || 'Ce sort se lance seulement en rituel.' : '';
-        const missing = ritualOnly || arcanum ? ''
-            : options.length === 0
-            ? `Aucun emplacement de niveau ${level} ou plus.`
-            : anyLeft ? '' : `Plus aucun emplacement de niveau ${level} ou plus : ils reviennent au repos ${options.every(o => o.pact) ? 'court ou long' : 'long'}.`;
-        close = openModal({
-            title: `Lancer ${name}`,
-            icon: 'sparkle',
-            focusField: false,
-            body: [
-                // Ce que fait un bouton de niveau, dit en clair (pas d'infobulle au toucher)
-                el('p', { text: `${facts}. ${anyLeft ? "Touchez le niveau de l'emplacement à dépenser : sa case se coche dans le grimoire." : ''}`.trim() }),
-                free.length ? el('p', { class: 'spell-cast-free-help', text: frenchSpaces(FREE_CAST_HELP) }) : null,
-                ritualNote ? el('p', { text: ritualNote }) : null,
-                arcanum ? el('p', { text: arcanumCastText(level) }) : null,
-                missing ? el('p', { class: 'spell-cast-missing', text: missing }) : null,
-                freeButtons.length || levelButtons.length || ritualButton || arcanumButton
-                    ? el('div', { class: 'spell-cast-levels' }, freeButtons, arcanumButton, levelButtons, ritualButton) : null,
-                concentration ? el('label', { class: 'spell-cast-concentration' }, concentration,
-                    el('span', {
-                        text: current ? `Me concentrer sur ce sort (met fin à la concentration sur ${current})`
-                            : "Me concentrer sur ce sort (noté dans « États », onglet Combat)"
-                    })) : null,
-                anyLeft || freeLeft ? el('p', { class: 'muted', text: freeLeft
-                    ? frenchSpaces(`Pour annuler : décochez l'emplacement dans le grimoire, ou la case du lancer gratuit${free.some(cast => cast.kind === 'class') ? FREE_CAST_CLASS_PLACE : ''}.`)
-                    : 'Pour annuler : décochez l\'emplacement dans le grimoire.' }) : null
-            ].filter(Boolean),
-            actions: [{ label: 'Annuler' }]
-        });
-        [...freeButtons, arcanumButton, ...levelButtons, ritualButton].find(button => button && !button.disabled)?.focus();
-    }
-
-    function setValue(input, value, force) {
-        if (!force && input === document.activeElement) return;
-        if (input.value !== value) input.value = value;
-    }
-
-    function applyRowLock(r, locked) {
-        r.lvl.disabled = locked;
-        r.name.readOnly = locked;
-        for (const [key] of TEXT_COLUMNS) r.texts[key].readOnly = locked;
-        r.note.readOnly = locked;
-        for (const [key] of FLAG_COLUMNS) r.flags[key].disabled = locked;
-        // Contrôle de jeu : reste utilisable verrouillé (seuls les sorts mineurs sont inactifs,
-        // et la ligne de saisie, qui n'est pas encore un sort)
-        r.prep.disabled = r.prep.classList.contains('is-cantrip') || r.prep.classList.contains('is-entry');
-    }
-
-    /**
-     * @param {Object} r - éléments de la ligne
-     * @param {Object} row - ligne de dynamic_spells (ligne vierge pour la ligne de saisie)
-     * @param {{ force: boolean, locked: boolean, entry: boolean, line: number }} options
-     *        entry : ligne de saisie ; line : rang de la ligne dans le tableau affiché
-     */
-    function writeRow(r, row, { force, locked, entry, line, elements = [], affinity = null, state = 'unprepared', wholeList = false, noSlot = 0 }) {
-        const name = plainText(row.name);
-        const known = entry || (!elements.length && !affinity) ? null : findSpellByName(spellsDb, row.name);
-        const types = adeptTypes(known, elements);
-        r.adept.hidden = types.length === 0;
-        const adeptText = types.length ? `Adepte (${types.map(elementWord).join(', ')})` : '';
-        if (r.adept.textContent !== adeptText) r.adept.textContent = adeptText;
-        if (types.length) r.adept.title = adeptRule(types);
-        const affine = affinityApplies(known, affinity);
-        r.affinity.hidden = !affine;
-        const affinityText = affine ? affinity.mention : '';
-        if (r.affinity.textContent !== affinityText) r.affinity.textContent = affinityText;
-        if (affine) r.affinity.title = affinity.rule;
-        const level = rowLevel(row);
-        const what = entry ? 'nouveau sort' : name ? `« ${name} »` : `ligne ${line}`;
-        r.state = entry ? null : state;
-        r.ritual.hidden = entry || state !== 'ritual';
-        r.noSlot.hidden = entry || !noSlot;
-        if (noSlot) {
-            const text = missingSlotText(noSlot);
-            if (r.noSlot.title !== text) r.noSlot.title = text;
-        }
-        const always = state === 'list' || state === 'granted';
-        const prepared = state === 'prepared' || always;
-        const cantrip = level === '0';
-
-        r.tr.classList.toggle('spell-entry', entry);
-        // Ligne de saisie seulement : choix « — » (pas de niveau) en tête du menu
-        const blank = r.lvl.options[0]?.value === '';
-        if (entry && !blank) r.lvl.prepend(el('option', { value: '', text: '—' }));
-        if (!entry && blank) r.lvl.options[0].remove();
-        r.lvl.value = entry ? (entryLevel ?? view.level) : level;
-        // ▾ : ligne de saisie et lignes au nom vide, fiche modifiable
-        r.pick.hidden = locked || !(entry || name === '');
-        // Valeurs affichées telles qu'enregistrées (seul le HTML v3 est nettoyé) : rien n'est perdu
-        setValue(r.name, cellText(row.name), force);
-        for (const [key] of TEXT_COLUMNS) setValue(r.texts[key], cellText(row[key]), force);
-        setValue(r.note, cellText(row.note), force);
-        for (const [key] of FLAG_COLUMNS) r.flags[key].checked = row[key] === true;
-        r.name.placeholder = entry ? 'Nouveau sort…' : 'Nom…';
-
-        r.prep.classList.toggle('is-entry', entry);
-        r.prep.classList.toggle('is-cantrip', !entry && cantrip);
-        r.prep.classList.toggle('is-prepared', !entry && !cantrip && prepared);
-        r.prep.classList.toggle('is-always', !entry && !cantrip && always);
-        if (entry) {
-            // Ligne de saisie : simple repère « + » (décoratif), pas encore de sort à préparer
-            r.prep.textContent = '';
-            r.prep.removeAttribute('aria-pressed');
-            r.prep.removeAttribute('aria-label');
-            r.prep.title = '';
-            r.prep.setAttribute('aria-hidden', 'true');
-            r.prep.tabIndex = -1;
-        } else {
-            r.prep.removeAttribute('aria-hidden');
-            r.prep.removeAttribute('tabindex');
-            if (cantrip) {
-                r.prep.textContent = '∞';
-                r.prep.removeAttribute('aria-pressed');
-                r.prep.title = 'Sort mineur : toujours disponible';
-                r.prep.setAttribute('aria-label', `Sort mineur ${what} : toujours disponible`);
-            } else if (always) {
-                // Repère fixe : pas un interrupteur (le toucher affiche l'explication)
-                r.prep.textContent = '◆';
-                r.prep.removeAttribute('aria-pressed');
-                r.prep.title = PREP_HELP[state];
-                r.prep.setAttribute('aria-label', `Sort ${what} : toujours préparé`);
-            } else {
-                r.prep.textContent = prepared ? '◆' : '◇';
-                r.prep.setAttribute('aria-pressed', String(prepared));
-                // Classe à liste fixe : sort noté hors de cette liste (niveau trop haut, autre liste)
-                r.prep.title = wholeList
-                    ? (prepared ? 'Coché : compté dans vos sorts préparés' : "Hors de votre liste fixe (Arcanum, Découvertes magiques…) : cochez-le seulement s'il compte dans vos sorts préparés")
-                    : prepared ? 'Sort préparé'
-                        : state === 'ritual' ? 'Sort non préparé : lançable en rituel depuis votre livre (Savoir rituel)' : 'Sort non préparé';
-                r.prep.setAttribute('aria-label', `Sort ${what} préparé`);
-            }
-        }
-
-        r.lvl.setAttribute('aria-label', entry ? 'Niveau du nouveau sort' : `Niveau du sort, ligne ${line}`);
-        r.name.setAttribute('aria-label', entry ? 'Nom du nouveau sort' : `Nom du sort, ligne ${line}`);
-        for (const [key, label] of TEXT_COLUMNS) r.texts[key].setAttribute('aria-label', `${label}, ${what}`);
-        r.note.setAttribute('aria-label', `Notes, ${what}`);
-        for (const [key, , title] of FLAG_COLUMNS) r.flags[key].setAttribute('aria-label', `${title}, ${what}`);
-        r.del.setAttribute('aria-label', `Supprimer le sort ${what}`);
-        r.cast.hidden = entry || !isCastable(state);
-        r.cast.setAttribute('aria-label', `Lancer le sort ${what}`);
-        r.del.disabled = entry;
-        applyRowLock(r, locked);
-        // Fiche verrouillée : pas de liste des sorts (on ne peut pas éditer)
-        if (locked) r.detach.hide();
-    }
-
-    /**
-     * Range les lignes dans l'ordre d'affichage. Déplacer un élément lui fait perdre le focus :
-     * la ligne qui a le focus ne bouge donc jamais, les autres se rangent autour d'elle.
-     * @param {HTMLTableRowElement[]} order
-     */
-    function placeRows(order) {
-        const current = [...tbody.children];
-        if (order.length === current.length && order.every((tr, i) => tr === current[i])) return;
-        const anchor = order.find(tr => tr.parentNode === tbody && tr.contains(document.activeElement));
-        if (!anchor) {
-            tbody.append(...order);
-            return;
-        }
-        const at = order.indexOf(anchor);
-        anchor.before(...order.slice(0, at));
-        anchor.after(...order.slice(at + 1));
-    }
-
-    function renderRows(character, force, structural) {
-        const rows = Array.isArray(character.dynamic_spells) ? character.dynamic_spells : [];
-        const locked = isLocked();
-        const countChanged = rows.length + 1 !== rowEls.length;
-
-        while (rowEls.length < rows.length + 1) rowEls.push(createRow());
-        while (rowEls.length > rows.length + 1) {
-            const r = rowEls.pop();
-            r.detach();
-            r.tr.remove();
-        }
-        const entry = rowEls[rows.length];
-        rowEls.forEach((r, i) => { r.index = i; });
-
-        // Lignes affichées : sorts renseignés qui passent le filtre, et la ligne en cours de
-        // saisie (elle ne disparaît pas sous les doigts de l'utilisateur, même vidée)
-        const active = document.activeElement;
-        const pinned = rowEls.filter(r => r !== entry && r.tr.contains(active)).map(r => r.index);
-        const { order, shown, hasDraft } = spellRowsView(rows, { level: view.level, sort: view.sort, pinned });
-        const lines = new Map(order.filter(i => shown.has(i)).map((i, rank) => [i, rank + 1]));
-        const elements = adeptElements(character);
-        const derivedNow = derivedOf(character);
-        const affinity = elementalAffinity(derivedNow);
-        // Losange : liste fixe (Barde, Ensorceleur, Occultiste) et sorts donnés, toujours préparés ;
-        // un sort noté hors de la liste fixe (Arcanum mystique, Découvertes magiques…) garde son
-        // losange à cocher
-        const granted = grantedSpellKeys(character, derivedNow);
-        const source = wholeListSource(derivedNow);
-        const wholeList = source !== null;
-        const fits = (row) => fitsWholeList(row, source, findSpellByName(spellsDb, row.name));
-        // Magicien (Savoir rituel) : un sort rituel du livre non préparé se lance quand même en rituel
-        const bookRitual = castsRitualsFromBook(derivedNow.classSlug)
-            ? (row) => isRitualSpell(row, findSpellByName(spellsDb, row.name))
-            : null;
-        const states = rows.map(row => spellPrepState(row, { wholeList, granted, fits, bookRitual }));
-
-        // Sort préparé au-dessus des emplacements : simple avertissement (jamais pour un sort qui a
-        // son lancer gratuit, ni pour un Arcanum mystique)
-        const topSlot = highestUsableSlot(derivedNow.spellSlots, derivedNow.classSlug, slotStateOf(character));
-        const arcanumLevel = mysticArcanumLevel(derivedNow.classSlug, derivedNow.level);
-        let freeNames = null;
-        const hasFreeCast = (row) => {
-            freeNames ??= new Set(allFreeCasts(character, derivedNow).flatMap(cast => cast.names));
-            if (!freeNames.size) return false;
-            const known = findSpellByName(spellsDb, row.name);
-            return [row.name, ...spellNames(known), known?.vo].some(name => name && freeNames.has(spellNameKey(name)));
-        };
-        const noSlots = rows.map((row, i) => (missingSlotLevel(row, states[i], { topSlot, arcanumLevel })
-            ? missingSlotLevel(row, states[i], { topSlot, arcanumLevel, freeCast: hasFreeCast(row) }) : 0));
-
-        // Vue « au combat » : les sorts de niveau 1+ non préparés se retirent de l'écran (classe
-        // CSS, l'impression garde tout) ; pas la ligne en cours de saisie, qui ne disparaît pas
-        // sous les doigts (son losange vient d'être décoché, par exemple)
-        // Les rituels du livre non préparés (Magicien) vont sous la ligne repliable « Rituels du livre »
-        const outOfCombat = (i) => view.combat && combatPlace(states[i]) !== 'table' && !pinned.includes(i);
-        renderBookRituals(view.combat
-            ? order.filter(i => shown.has(i) && combatPlace(states[i]) === 'rituals' && !pinned.includes(i)).map(i => ({ index: i, row: rows[i] }))
-            : []);
-
-        rowEls.forEach((r, i) => {
-            const isEntry = r === entry;
-            writeRow(r, isEntry ? newSpellRow(EMPTY_SPELL, entryLevel ?? view.level) : rows[i], {
-                force, locked, entry: isEntry, line: isEntry ? lines.size + 1 : lines.get(i) ?? i + 1, elements, affinity,
-                state: isEntry ? null : states[i], wholeList, noSlot: isEntry ? 0 : noSlots[i]
-            });
-            if (!isEntry) {
-                r.tr.hidden = !shown.has(i);
-                r.tr.classList.toggle('is-out-of-combat', outOfCombat(i));
-            }
-        });
-        // Une seule ligne vide à l'écran : la ligne de saisie s'efface pendant qu'une ligne
-        // vidée est encore en cours de saisie ; aucune saisie possible verrouillé, ni au combat
-        entry.tr.hidden = locked || hasDraft || view.combat;
-        body.classList.toggle('is-combat', view.combat);
-        syncClearButtons();
-
-        const trs = [...order.map(i => rowEls[i].tr), entry.tr];
-        if (force || structural || (countChanged && !creatingFromEntry)) {
-            placeRows(trs);
-        } else if (countChanged) {
-            // Sort créé depuis la ligne de saisie : il reste où il est pendant la frappe (le tri
-            // est réappliqué quand le focus quitte la ligne), la nouvelle ligne de saisie va dessous
-            tbody.append(...trs.filter(tr => tr.parentNode !== tbody));
-        }
-
-        const counts = spellCounts(rows, view.level, granted, (row) => wholeList && fits(row));
-        const anySpell = rows.some(hasSpellContent);
-        const anyShown = [...shown].some(i => !outOfCombat(i));
-        // Sorts affichés, mais tous retirés par la vue au combat
-        const combatEmpty = !anyShown && shown.size > 0;
-        container.toggleAttribute('data-no-spells', !anySpell);
-        // Vue au combat sans aucun sort à lancer : tableau retiré de l'écran seulement (classe CSS),
-        // l'impression garde tout le grimoire
-        tableScroll.hidden = shown.size === 0 && entry.tr.hidden;
-        tableScroll.classList.toggle('is-combat-empty', combatEmpty);
-        emptyMain.textContent = '';
-        emptyHint.textContent = '';
-        if (!anySpell) {
-            // Sorts de dons affichés juste au-dessus : le message ne doit pas les contredire
-            const derived = derivedOf(character);
-            const featSpells = featSpellGroups(character, derived).length > 0 || subclassSpells(derived).reached.length > 0
-                || speciesSpellNames(character, derived).length > 0;
-            emptyMain.textContent = featSpells
-                ? 'Aucun autre sort noté.'
-                : locked ? 'Aucun sort dans le grimoire.' : 'Aucun sort pour l\'instant.';
-            // Vue au combat (réglage de l'appareil, retenu d'une fiche à l'autre) : pas de ligne
-            // de saisie ni de bouton Ajouter, le message dit comment les retrouver
-            if (!locked) {
-                emptyHint.textContent = view.combat
-                    ? ' Pour en ajouter, quittez la vue « Au combat » (bouton de la barre ci-dessus).'
-                    : ' Tapez un nom dans la ligne ci-dessus : la saisie propose les sorts du manuel.';
-            }
-        } else if (!anyShown && view.combat) {
-            emptyMain.textContent = view.level === '' ? 'Aucun sort mineur ni sort préparé.'
-                : view.level === '0' ? 'Aucun sort mineur.' : `Aucun sort préparé de niveau ${view.level}.`;
-        } else if (!anyShown) {
-            emptyMain.textContent = view.level === '0' ? 'Aucun sort mineur.' : `Aucun sort de niveau ${view.level}.`;
-        }
-        emptyText.hidden = !emptyMain.textContent;
-        // Message propre à la vue au combat : écran seulement (l'impression montre tous les sorts)
-        emptyText.classList.toggle('is-combat-only', combatEmpty);
-
-        // Table de la classe : « Préparés : 7 / 9 », en rouge au-delà ; sorts mineurs en trop :
-        // simple rappel (une espèce ou un don en donne d'autres). Les sorts donnés par la classe,
-        // la sous-classe ou un don ne comptent pas, même notés au grimoire.
-        const limits = derivedNow.classSlug ? classSpellCounts(derivedNow.classSlug, derivedNow.level) : null;
-        const warnings = spellLimitWarnings(counts, limits);
-        const note = cantripLimitNote(counts, limits);
-        countOut.textContent = formatSpellCount(counts, view.level !== '', limits);
-        countOut.classList.toggle('is-over', warnings.length > 0);
-        countOut.title = [...warnings, note].filter(Boolean).join(' ');
-        limitNote.replaceChildren(
-            ...warnings.map((text) => el('span', { text: `${text} ` })),
-            ...(note ? [el('span', { class: 'is-info', text: note })] : [])
-        );
-        limitNote.hidden = !limitNote.textContent;
-        renderBookNote(rows, derivedNow, granted);
-    }
-
-    /**
-     * Magicien : « Livre : 15 sorts · 17 sans dépense », puis d'où viennent ces sorts et le coût
-     * d'une copie. Jamais en rouge : copier des sorts trouvés ou achetés est permis. Masquée au
-     * combat par spells.css (la vue sert à lancer des sorts), imprimée dans tous les cas.
-     */
-    function renderBookNote(rows, d, granted) {
-        bookNote.hidden = !hasSpellbook(d.classSlug);
-        if (bookNote.hidden) return;
-        const count = spellbookCount(rows, granted);
-        const free = freeSpellbookSpells(d.level, d.subclass);
-        const cost = spellCopyCost(d);
-        const countText = `Livre : ${count} sort${count > 1 ? 's' : ''} · ${free.total} sans dépense`;
-        const sources = [`${free.start} au départ`];
-        if (free.byLevel) sources.push(`+${free.byLevel} des niveaux gagnés`);
-        if (free.savant) sources.push(`+${free.savant} ${free.savantName}`);
-        const helpText = ` (${sources.join(', ')}) ; les sorts copiés (trouvés, achetés) s'y ajoutent. `
-            + `Copier un sort : ${cost.copy.hours} h et ${cost.copy.gold} po par niveau du sort${cost.halved ? ' (Cynisme)' : ''} ; `
-            + `copie de secours : ${cost.backup.hours} h et ${cost.backup.gold} po par niveau.`;
-        if (bookCount.textContent !== countText) bookCount.textContent = countText;
-        if (bookHelp.textContent !== helpText) bookHelp.textContent = helpText;
-    }
+    // Sorts de dons, de sous-classe et d'espèce (spells/granted.js), au-dessus du tableau ;
+    // leur bouton « Lancer » ouvre la même fenêtre que celui du tableau (spells/cast.js)
+    const granted = createGrantedSpells({ store, tooltip, getSpellsDb: () => g.spellsDb, onCast: (spell) => castSpell(g, spell) });
 
     // -----------------------------------------------------------------------
-    // Vue au combat, Magicien : ligne repliable « Rituels du livre (N) » sous le tableau
-    // -----------------------------------------------------------------------
-
-    let bookRitualsOpen = readBookRitualsOpen();
-    let bookRitualsSignature = null;
-    const bookRitualsLabel = el('span', { class: 'btn-label' });
-    const bookRitualsList = el('ul', { class: 'feat-spells-list' });
-    const bookRitualsBody = el('div', { class: 'book-rituals-body', id: 'book-rituals-body' },
-        el('p', { class: 'feat-spells-intro', text: BOOK_RITUALS_HELP }), bookRitualsList);
-    const bookRitualsToggle = el('button', {
-        type: 'button', class: 'book-rituals-toggle', 'aria-controls': 'book-rituals-body', title: BOOK_RITUALS_HELP,
-        on: {
-            click: () => {
-                bookRitualsOpen = !bookRitualsOpen;
-                saveBookRitualsOpen(bookRitualsOpen);
-                tooltip.hide();
-                applyBookRitualsFold();
-                setStatus(bookRitualsOpen ? BOOK_RITUALS_TAP.open : BOOK_RITUALS_TAP.closed);
-            }
-        }
-    }, icon('book'), bookRitualsLabel, icon('chevron'));
-    const bookRituals = el('section', { class: 'feat-spells book-rituals', hidden: true },
-        el('h4', { class: 'feat-spells-title' }, bookRitualsToggle), bookRitualsBody);
-
-    function applyBookRitualsFold() {
-        bookRitualsToggle.setAttribute('aria-expanded', String(bookRitualsOpen));
-        bookRitualsBody.hidden = !bookRitualsOpen;
-        bookRituals.classList.toggle('is-open', bookRitualsOpen);
-    }
-
-    /** Un rituel du livre : nom (infobulle), niveau, temps et portée, bouton « Lancer » en rituel */
-    function bookRitualLine({ index, row }) {
-        const name = el('button', { type: 'button', class: 'feat-spell-name', text: plainText(row.name) || 'Sort sans nom' });
-        const show = () => {
-            const known = findSpellByName(spellsDb, row.name);
-            if (!tooltip.enabled || !known) return;
-            tooltip.cancelHide();
-            tooltip.showFor(name, known);
-        };
-        name.addEventListener('mouseenter', show);
-        name.addEventListener('focus', show);
-        name.addEventListener('click', show);
-        name.addEventListener('mouseleave', tooltip.scheduleHide);
-        name.addEventListener('blur', tooltip.scheduleHide);
-        const facts = [plainText(row.time), plainText(row.range)].filter(Boolean).join(' · ');
-        return el('li', { class: 'feat-spell' },
-            el('div', { class: 'feat-spell-head' },
-                name,
-                el('span', { class: 'feat-spell-level', text: `Niveau ${rowLevel(row)}` }),
-                facts ? el('span', { class: 'book-ritual-facts', text: facts }) : null,
-                el('button', {
-                    type: 'button', class: 'btn-chip spell-cast feat-spell-cast', title: 'Lancer en rituel',
-                    'aria-label': `Lancer en rituel le sort ${plainText(row.name)}`,
-                    on: { click: () => castRowAt(index, 'ritual') }
-                }, icon('sparkle'), el('span', { class: 'btn-label', text: 'Lancer' }))));
-    }
-
-    /**
-     * @param {Array<{ index: number, row: Object }>} items - rituels du livre à ranger sous la
-     *        ligne (vue au combat, filtre de niveau appliqué), dans l'ordre du tableau
-     */
-    function renderBookRituals(items) {
-        bookRituals.hidden = items.length === 0;
-        const signature = JSON.stringify(items.map(({ index, row }) => [index, row.name, rowLevel(row), row.time, row.range]));
-        if (signature !== bookRitualsSignature) {
-            bookRitualsSignature = signature;
-            const label = `Rituels du livre (${items.length})`;
-            if (bookRitualsLabel.textContent !== label) bookRitualsLabel.textContent = label;
-            bookRitualsList.replaceChildren(...items.map(bookRitualLine));
-        }
-        applyBookRitualsFold();
-    }
-
-    function renderHeader() {
-        for (const col of Object.keys(SORT_COLUMNS)) {
-            const active = view.sort.col === col;
-            const asc = view.sort.dir === 'asc';
-            headCells[col].setAttribute('aria-sort', active ? (asc ? 'ascending' : 'descending') : 'none');
-            sortButtons[col].querySelector('.sort-icon').textContent = active ? (asc ? '▲' : '▼') : '';
-            sortButtons[col].title = active && !asc
-                ? 'Revenir à l\'ordre du grimoire'
-                : `Trier par ${SORT_COLUMNS[col].title}${active ? ' (ordre décroissant)' : ''}`;
-        }
-        filters.renderChips();
-    }
-
-
-    // -----------------------------------------------------------------------
-    // Personnage sans magie : court avis, grimoire ouvert à la demande
-    // -----------------------------------------------------------------------
-
-    // Cases « Caractéristique d'incantation / DD / Bonus d'attaque » (index.html), repliées avec le grimoire
-    const stats = root.querySelector('#spell-stats');
-    const noticeMain = el('p', { class: 'grimoire-notice-main' });
-    const notice = el('div', { class: 'grimoire-notice', hidden: true },
-        noticeMain,
-        el('p', {
-            class: 'grimoire-notice-hint',
-            text: 'Un sort accordé par un don ou une espèce ? Ouvrez le grimoire pour le noter.'
-        }));
-
-    const toggleLabel = el('span', { class: 'btn-label' });
-    const toggleBtn = el('button', {
-        type: 'button', class: 'btn-chip grimoire-toggle', hidden: true, 'aria-expanded': 'false',
-        'aria-controls': stats ? 'spells-body spell-stats' : 'spells-body',
-        on: {
-            click: () => {
-                grimoireOpen = toggleBtn.getAttribute('aria-expanded') !== 'true';
-                saveGrimoireOpen(grimoireOpen);
-                tooltip.hide();
-                render(store.get(), ['dynamic_spells'], { structural: true });
-                if (grimoireOpen) {
-                    flash(stats, 'is-revealed');
-                    flash(body, 'is-revealed');
-                }
-            }
-        }
-    }, icon('book'), toggleLabel, el('span', { class: 'grimoire-chevron', 'aria-hidden': 'true' }));
-
-    function renderGrimoire(character, d) {
-        const rows = Array.isArray(character.dynamic_spells) ? character.dynamic_spells : [];
-        const status = spellcastingStatus({
-            classSlug: d.classSlug, subclass: character.char_subclass, level: d.level,
-            spellSlots: d.spellSlots, slotState: slotStateOf(character)
-        });
-        // Saisie en cours dans le grimoire (ligne vidée) : il ne se replie pas sous les doigts
-        const active = document.activeElement;
-        const hadFocus = !body.hidden && body.contains(active);
-        const typing = hadFocus && active.matches('textarea, input, select');
-        const hasFeatSpells = featSpellGroups(character, d).length > 0 || subclassSpells(d).reached.length > 0
-            || speciesSpellNames(character, d).length > 0;
-        const mode = grimoireView(status.casts, typing || hasFeatSpells || rows.some(hasSpellContent), grimoireOpen);
-        const quiet = mode === 'quiet';
-
-        container.dataset.grimoire = mode;
-        notice.hidden = !quiet;
-        body.hidden = quiet;
-        if (stats) {
-            stats.hidden = quiet;
-            placeStats(!status.casts);
-        }
-        toggleBtn.hidden = mode === 'full';
-        // Grimoire replié alors que le focus y était (dernier sort supprimé) : il passe au
-        // bouton qui le rouvre, au lieu de se perdre
-        if (quiet && hadFocus) toggleBtn.focus();
-        toggleBtn.setAttribute('aria-expanded', String(!quiet));
-        const label = quiet ? 'Ouvrir le grimoire' : 'Replier le grimoire';
-        if (toggleLabel.textContent !== label) toggleLabel.textContent = label;
-        const message = status.unlockLevel
-            ? `Pas encore de magie : ${status.subclassName}, premiers sorts au niveau ${status.unlockLevel}.`
-            : plainText(character.char_class)
-                ? 'Pas de magie de classe pour ce personnage.'
-                : 'Aucune classe choisie : pas de magie pour l\'instant.';
-        if (noticeMain.textContent !== message) noticeMain.textContent = message;
-    }
-
-    /**
-     * Cases d'incantation (#spell-stats, index.html) avant le grimoire pour un lanceur de sorts,
-     * après lui sinon (grimoire ouvert à la demande, sorts de don ou d'espèce) : le bouton
-     * ouvrir / replier ne bouge pas sous le doigt, et ce qu'il montre le suit dans l'ordre de
-     * lecture. Seule leur place change (même élément, mêmes champs).
-     * @param {boolean} after
-     */
-    function placeStats(after) {
-        const inPlace = after ? container.nextElementSibling === stats : container.previousElementSibling === stats;
-        if (inPlace) return;
-        const focused = stats.contains(document.activeElement) ? document.activeElement : null;
-        if (after) container.after(stats);
-        else container.before(stats);
-        focused?.focus({ preventScroll: true });
-    }
-
-    // Sorts de dons, de sous-classe et d'espèce (spells/granted.js), au-dessus du tableau
-    const granted = createGrantedSpells({ store, tooltip, getSpellsDb: () => spellsDb, onCast: castSpell });
-
-    function render(character, changedKeys, { structural = false } = {}) {
-        if (changedKeys && !changedKeys.some(key => RELEVANT_KEYS.has(key))) return;
-        const d = derivedOf(character);
-        filters.renderClassFilter(character, d);
-        prepare.render(d);
-        renderHeader();
-        renderRows(character, changedKeys === null && !structural, structural);
-        slots.render(character, d);
-        cleanup.render(character, d);
-        granted.render(character, d);
-        renderGrimoire(character, d);
-    }
-
-    // -----------------------------------------------------------------------
-    // Infobulle d'une ligne du tableau (survol et focus du nom ; fonctionne aussi verrouillé)
-    // -----------------------------------------------------------------------
-
-    function showTooltip(r) {
-        if (!tooltip.enabled) return;
-        const row = spellsOf()[r.index];
-        const spell = row ? findSpellByName(spellsDb, row.name) : null;
-        if (!spell) {
-            tooltip.hide();
-            return;
-        }
-        tooltip.showFor(r.name, spell);
-    }
-
-    function scheduleShow(r, reason) {
-        tooltip.cancelHide();
-        // Pendant la saisie, la liste de suggestions s'affiche sous le champ : pas d'infobulle
-        if (reason === 'hover' && r.name.getAttribute('aria-expanded') === 'true') return;
-        showTooltip(r);
-    }
-
-    tableScroll.addEventListener('scroll', tooltip.hide, { passive: true });
-
-    // -----------------------------------------------------------------------
-    // Assemblage, abonnements
+    // Assemblage
     // -----------------------------------------------------------------------
 
     const body = el('div', { class: 'spells-body', id: 'spells-body' },
         filters.toolbar,
         limitNote,
-        bookNote,
+        book.note,
         slots.element,
         granted.featBox,
         granted.subclassBox,
         granted.speciesBox,
-        tableScroll,
-        emptyText,
-        bookRituals,
-        addBtn,
+        table.tableScroll,
+        table.emptyText,
+        book.rituals,
+        table.addBtn,
         cleanup.button);
+
+    // Personnage sans magie : court avis, grimoire ouvert à la demande (spells/notice.js)
+    const notice = createGrimoireNotice(g, { root, container, body });
 
     // Ordre de lecture : titre, avis (replié), bouton ouvrir / replier, grimoire. Le bouton ne
     // change jamais de place dans la page (il garde donc le focus) : la grille de spells.css
@@ -1309,15 +397,45 @@ export function initSpells(ctx) {
     container.replaceChildren(
         // Icône dorée devant le titre, comme les titres de index.html (data-icon, ornaments.js)
         el('h3', { 'data-icon': 'book' }, icon('book'), 'Sorts mineurs & sorts préparés'),
-        notice,
-        toggleBtn,
+        notice.notice,
+        notice.toggleBtn,
         body);
+
+    /** @type {GrimoireParts} */
+    const ui = {
+        container, body, filters, limitNote, table, book, notice,
+        rowActions: {
+            // Bouton « Lancer » d'une ligne (vue au combat) : fenêtre de spells/cast.js
+            onCast: (r) => castRowAt(g, r.index, r.state),
+            onDelete: (r) => deleteRow(g, ui, r)
+        }
+    };
+
+    function render(character, changedKeys, { structural = false } = {}) {
+        if (changedKeys && !changedKeys.some(key => RELEVANT_KEYS.has(key))) return;
+        const d = derivedOf(character);
+        filters.renderClassFilter(character, d);
+        prepare.render(d);
+        table.renderHeader();
+        filters.renderChips();
+        renderRows(g, ui, character, changedKeys === null && !structural, structural);
+        slots.render(character, d);
+        cleanup.render(character, d);
+        granted.render(character, d);
+        notice.render(character, d);
+    }
+    // Filtre, tri, vue au combat, ligne quittée… : tout est réaffiché, lignes rangées
+    g.redraw = () => render(store.get(), null, { structural: true });
+
+    // -----------------------------------------------------------------------
+    // Abonnements
+    // -----------------------------------------------------------------------
 
     store.subscribe((character, changedKeys) => {
         // Fiche remplacée (chargement, import) : la saisie en cours ne la concerne plus
         if (!changedKeys) {
-            draft = null;
-            entryLevel = null;
+            g.draft = null;
+            g.entryLevel = null;
         }
         render(character, changedKeys);
     });
@@ -1325,8 +443,8 @@ export function initSpells(ctx) {
     render(store.get(), null);
 
     loadSpells().then((list) => {
-        spellsDb = Array.isArray(list) ? list : [];
-        if (spellsDb.length === 0) setStatus('⚠️ Base de sorts indisponible : pas de suggestions ni d\'infobulles');
+        g.spellsDb = Array.isArray(list) ? list : [];
+        if (g.spellsDb.length === 0) setStatus('⚠️ Base de sorts indisponible : pas de suggestions ni d\'infobulles');
         // Base chargée : les repères « Adepte » et « +Cha » (Affinité élémentaire) peuvent maintenant
         // s'afficher, et les sorts hors de la liste fixe d'un Barde, Ensorceleur ou Occultiste se repérer
         else render(store.get(), ['dynamic_spells']);
