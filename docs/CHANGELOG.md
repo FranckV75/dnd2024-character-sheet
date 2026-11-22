@@ -2,6 +2,67 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.46.0] - 2026-11-22 (audit du 22/11/2026, Inspiration héroïque en mode Odyssée, Dépenser les points de Foi)
+Corrections de l'audit de santé du 22/11/2026 (lots A, B, C, D et F ; lot E clos par la décision
+de Franck : les textes AideDD restent). Non publiée.
+### Added
+- Mode Odyssée : bouton « Inspiration héroïque » sous la pastille des points de Foi, quand il sert
+  (Humain, Champion niveau 10 ou plus, ou bouton déjà allumé ; règle `odysseyInspirationUseful`,
+  `js/rules/odyssey.js`). Les points de Foi remplacent les points de héros du guide du MJ, pas
+  l'Inspiration héroïque. Utilisable fiche verrouillée ; caché en mode coupé ; imprimé seulement
+  s'il est allumé. Clé facultative `odyssey_inspiration` (`"1"` allumé, retirée quand on l'éteint :
+  empreinte inchangée), jamais dans la fiche vierge (valeur par défaut déclarée dans
+  `OPTIONAL_KEY_DEFAULTS`, `js/state/schema.js`), ajoutée à `V4_ONLY_KEYS`. Au repos long, un
+  Humain lit où la noter.
+- Fenêtre « Points de Foi » : un bouton « Dépenser 1 point / 3 points / 5 points » par faveur
+  (`spendFaith`, `payFavor`), grisé avec sa raison s'il manque des points ou si la case est en
+  texte libre ; la fenêtre se met à jour sur place et la phrase est aussi écrite à côté du bouton.
+- Barre du haut : un message coupé par « … » se lit en entier d'un toucher sur le message ou sur
+  sa petite flèche, et se replie au toucher suivant ou au message suivant (`js/ui/status-bar.js`,
+  règle `isClipped` ; `role="status"` gardé, bouton accessible au clavier).
+- Barbare en armure lourde (manuel p. 51) : la Rage est sans effet sans que le bouton soit éteint
+  (`js/rules/rage.js`). Ni dégâts de Rage, ni Fureur divine, Frénésie, +Rage de l'Enchaînement,
+  rappels d'Avantage et de Résistance, défenses de sous-classe liées à la Rage ; la Concentration
+  n'est plus marquée « terminée (Rage) ». Libellé barré, pastille rouge « Rage sans effet : armure
+  lourde portée » (toucher : explication dans la barre du haut) ; le halo et l'embrasement de la
+  Rage s'éteignent aussi (`rageLit`, `js/rules/weapons.js`).
+- `npm run check` : contrôle 5, le serveur de développement n'écoute que cet ordinateur ;
+  contrôle 6, aucune couleur écrite en dur dans les feuilles de style (#hex, rgb()/hsl()… à
+  canaux fixés, `color()`, les 148 noms de couleur), hors lignes de définition de variable et
+  masques.
+### Changed
+- Serveur de développement (`npm run dev`) : n'écoute plus que 127.0.0.1 et ::1 (plus le Wi-Fi),
+  ne sert jamais `.git` (404), refuse un dossier voisin au nom proche (`tests/serve.test.js`).
+- Question « Modifié par l'ancienne version » : les réglages d'affichage (`_visual_prefs`) et les
+  anciens champs d'arme (`atk`, `dmg` : seuls les 9 champs de `V3_WEAPON_FIELDS` sont comparés)
+  ne la font plus poser pour rien (9 vraies fiches sur 10 concernées avant, aucune après). Son
+  texte cite tout ce que « Garder la version en ligne » effacerait (`LEGACY_ERASED` et
+  `legacyErasedText`, `js/cloud/sync.js` ; un test exige un libellé par clé de `V4_ONLY_KEYS`).
+- Mode Odyssée, onglet Combat : « Bonus de maîtrise », « Points de Foi » et « Vitesse » ont leurs
+  libellés et leurs valeurs alignés (grille partagée, `subgrid`) ; le groupe est moins haut.
+- Thème sombre : pastille des objets magiques +1/+2/+3 en or bruni, chiffre crème (variables de
+  `css/magic.css`) ; `css/print.css` passe aussi par des variables (papier, encre, liseré des
+  pièces). Rien ne change en thème clair ni à l'impression.
+- Compteurs (Points de Foi, Inspiration, Épuisement…) : une seule lecture, `readCounter`, et une
+  seule décision des boutons − / +, `stepCounter` (`js/rules/counters.js`, testées). « -1 » ou un
+  nombre de plus de 6 chiffres est du texte libre partout (jamais réécrit) ; « + » ne ramène plus
+  « 4/3 » à « 3/3 ».
+- Ménage : code mort retiré (`strophePatch`, `shortRestPatch`, `longRestPatch`,
+  `WEAPON_MASTERY_INTRO`) ; une seule lecture du HTML des anciennes saisies (`plainText`,
+  `js/rules/plain-text.js`, environ 30 copies remplacées) ; largeur de la barre du haut définie une
+  fois (`js/data/status-bar.js`) ; tests du mode Odyssée sur le fonctionnement et non plus sur le
+  texte du code ; commentaires périmés corrigés.
+- Découpage : `js/ui/spells.js` (1 334 → 452 lignes, 8 morceaux de plus dans `js/ui/spells/`) et
+  `js/ui/weapons.js` (1 233 → 247 lignes, 8 morceaux dans `js/ui/weapons/`), sans changement de
+  comportement (comparaison avant / après à l'écran). Format de sauvegarde inchangé.
+### Fixed
+- Impression : le titre « Classe : … », les titres de sous-classe, d'espèce et d'historique, la
+  ligne de la table de classe et le nom d'une aptitude ne restent plus seuls en bas de page ; une
+  boîte de texte vide reste entière avec son titre.
+- Anciennes fiches : « &amp; » s'affiche « & » dans les fenêtres Bourse, XP et Dégâts / Soins.
+- Une valeur inattendue de `odyssey_inspiration` (fiche abîmée ou fabriquée) compte comme
+  éteinte : la case « Mode Odyssée », la pastille et le bouton s'affichent, sans erreur.
+
 ## [4.45.0] - 2026-11-22 (Points de Foi, leurs faveurs, et Inspiration héroïque)
 ### Changed
 - Mode Odyssée actif : la case de l'onglet Combat s'appelle « Points de Foi » (demande de Franck,

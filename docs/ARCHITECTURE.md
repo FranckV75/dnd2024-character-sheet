@@ -7,12 +7,15 @@ HTML/CSS/JavaScript natifs, modules ES chargés directement par le navigateur (a
 ```
 index.html              Page de la fiche : barre « Gestion », en-tête, 4 onglets (point d'entrée : js/main.js)
 css/                    Une feuille par fonctionnalité ; toute couleur passe par une variable CSS
-│                       (thèmes dans base.css, variables locales dans magic, gallery, style-editor, print)
+│                       (thèmes dans base.css, variables locales dans magic, gallery, style-editor, print ;
+│                       contrôle 6 de scripts/check.js : aucune couleur écrite en dur)
 ├── base.css            Jetons de thème clair / sombre (variables CSS), typographie
 ├── sheet.css           Base de la fiche : champs, cases rondes, boîtes, en-tête, onglets
 │                       (suivie, dans cet ordre, des feuilles ci-dessous découpées en lot D :
 │                       l'ordre de chargement d'index.html compte, comme dans l'ancien fichier unique)
 ├── tab-combat.css      Onglet 1 : caractéristiques, sauvegardes, vitaux, épuisement, tableaux
+│                       (groupe Bonus de maîtrise / Points de Foi / Vitesse : rangées partagées,
+│                       subgrid, iPadOS 17 et Chrome 117 ou plus récents pour l'alignement)
 ├── wild-magic.css      Tirages de la Bouffée de Sorcellerie sauvage (onglet 1)
 ├── feats.css           Onglet 2 : dons, mentions près des valeurs, encadré « Dans la fiche »
 ├── tab-skills.css      Onglet 3 : compétences, légende, Odyssée
@@ -58,6 +61,10 @@ js/
 │   │                   cité entre « » doit exister dans l'interface (tests/help.test.js)
 │   ├── whats-new.js    « Nouveautés » : 3 à 6 lignes par version, la plus récente d'abord ; une
 │   │                   entrée par version publiée (testé pour la version de version.js)
+│   ├── status-bar.js   Place de la barre du haut en caractères (STATUS_ROOM, STATUS_ROOM_OPEN,
+│   │                   STATUS_ROOM_NARROW, statusRoom), seule définition : une mesure d'écran
+│   │                   (à ne pas confondre avec ui/status-bar.js)
+│   ├── conditions.js   Les 15 états du manuel (noms français, résumé de leurs effets)
 │   ├── faith-favors.js Faveurs divines des points de Foi (1, 3, 5 points), prière et sacrifice
 │   │                   (guide du MJ de l'Odyssée p. 92) ; dieux de Thyléa, domaine et faveurs
 │   │                   (guide du joueur p. 9-10, fiche de la table) ; résumés avec nos mots
@@ -80,7 +87,10 @@ js/
 │   │                   seules copies de toute la fiche (dom.js et wild-magic.js les réexportent)
 │   ├── logic.js        Calculs élémentaires (modificateurs, maîtrise, armes, ressources)
 │   ├── character.js    Statistiques dérivées d'une fiche complète (deriveCharacter, computeWeapon)
-│   ├── weapons.js      Tableau des armes (filtres, bonus de combat, configuration)
+│   ├── weapons.js      Tableau des armes (filtres, bonus de combat, configuration) ; rageLit :
+│   │                   halo de Rage éteint quand la Rage est sans effet (ui/feedback.js)
+│   ├── rage.js         Rage et armure lourde (manuel p. 51) : rageBlockedByArmor, rageInEffect,
+│   │                   rageArmorWarning ; le bouton n'est jamais éteint, ses effets ne comptent pas
 │   ├── weapon-extras.js  « Dégâts en plus » d'une arme écrits par le joueur (validation, lecture
 │   │                   tolérante, ajout aux dégâts, pastille allumée / éteinte, repos long)
 │   ├── class-features.js  Capacités de classe calculées (Aura de protection, Touche-à-tout,
@@ -89,6 +99,10 @@ js/
 │   │                   character.js (computeArmorClass, armorLine), réexporté ici
 │   ├── weapon-masteries.js  Bottes d'armes : botte d'une arme, effet affiché
 │   ├── spells.js       Grimoire (recherche, tri, filtres, emplacements de sorts)
+│   ├── spell-picker.js Liste des sorts à parcourir depuis la case du nom (par niveau, liste choisie)
+│   ├── spell-preparation.js  Sorts préparés (classes à liste fixe ou à toute la liste) et
+│   │                   lancement d'un sort (fenêtre « Lancer »)
+│   ├── spellbook.js    Livre de sorts du Magicien (sorts sans dépense, coût d'une copie)
 │   ├── feats.js · feat-effects.js · feat-uses.js · feat-choices.js
 │   │                   Dons : emplacements atteints, effets, usages dépensés, choix mémorisés
 │   ├── feat-effects/   Effets des dons, une famille par fichier (feat-effects.js les rassemble
@@ -114,7 +128,11 @@ js/
 │   ├── hit-points.js   PV en jeu : dégâts, soins, PV temporaires, boutons − / + (écran : ui/hit-points.js)
 │   ├── class-progression.js  Aptitudes atteintes / à venir, sorts mineurs et préparés permis
 │   ├── experience.js   XP : seuils de niveau, XP restants, XP gagnés
-│   ├── counters.js     Compteurs − / + (Épuisement, Foi ou Inspiration, renommée) et pièces (Bourse)
+│   ├── counters.js     Compteurs − / + (Épuisement, Foi ou Inspiration, renommée) et pièces (Bourse).
+│   │                   readCounter : seule lecture d'une case « N » ou « N/M » (entier de 6 chiffres
+│   │                   au plus ; vide = 0 ; le reste est du texte libre, jamais réécrit) ;
+│   │                   stepCounter : décision des boutons − / + (ui/counters.js ne décide rien) ;
+│   │                   readCount reste pour les montants (bourse, XP)
 │   ├── level-up.js     Assistant « Passer au niveau N » : ce qui change, PV gagnés, modification
 │   │                   appliquée (niveau, PV max, PV actuels sur demande ; écran : ui/level-up.js)
 │   ├── subclass-features.js  Capacités de sous-classe atteintes ou à venir, ce que la fiche en
@@ -130,16 +148,25 @@ js/
 │   ├── odyssey.js      Mode Odyssée réglé fiche par fiche (clé facultative « odyssey_mode ») : ce qui
 │   │                   est proposé dans les listes, ce que la fiche garde, encadré de l'onglet 3,
 │   │                   « Points de Foi » (maîtrise + Sagesse par niveau) ou « Inspiration héroïque »
-│   │                   (une seule), phrases pour le joueur
+│   │                   (une seule), phrases pour le joueur ; bouton « Inspiration héroïque » à
+│   │                   part en mode actif (odysseyInspiration*, clé facultative « odyssey_inspiration ») ;
+│   │                   fenêtre des faveurs (faithWindow, payFavor, spendFaith)
 │   ├── wild-magic.js   Sorcellerie sauvage : Bouffée (d20) et table (d100)
+│   ├── plain-text.js   plainText(value, { spaced, squash }) et decodeEntities : seule lecture en
+│   │                   texte brut du HTML des anciennes saisies (rules, state/migrate.js, ui, cloud ;
+│   │                   une garde de tests/plain-text.test.js refuse toute copie de l'expression)
 │   └── gallery.js      Réglages d'apparence (validation des fonds, _visual_prefs)
 ├── cloud/              Sauvegarde en ligne (Supabase, même table que la v3)
 │   ├── client.js       Client Supabase (clé publique ; sécurité par RLS)
 │   ├── repository.js   Lecture, création seule, mise à jour / suppression conditionnelles
-│   ├── sync.js         Décisions pures (vérification, empreinte du contenu, bascule v3)
-│   └── controller.js   Synchronisation complète, sans DOM (testée scénario par scénario)
+│   ├── sync.js         Décisions pures (vérification, empreinte du contenu, bascule v3) ; ce que
+│   │                   la v3 efface (V4_ONLY_KEYS, LEGACY_ERASED, legacyErasedText) ; comparaison
+│   │                   avec une sauvegarde v3 (comparableWithV3, V3_WEAPON_FIELDS)
+│   └── controller.js   Synchronisation complète, sans DOM (testée scénario par scénario) ;
+│                       isBlankCharacter (fiche vierge, jamais envoyée ni liée au compte)
 ├── state/              Données du personnage
-│   ├── schema.js       Format de la fiche (champs, valeurs par défaut)
+│   ├── schema.js       Format de la fiche (champs, valeurs par défaut) ; OPTIONAL_KEY_DEFAULTS :
+│   │                   clés facultatives v4 jamais dans la fiche vierge (odyssey_inspiration)
 │   ├── migrate.js      Conversion de toute ancienne sauvegarde vers le format courant,
 │   │                   reprise de l'état de jeu que la v3 gardait à part dans le navigateur
 │   ├── store.js        Source unique de vérité + abonnements
@@ -159,13 +186,48 @@ js/
     ├── sheet.js        Construit la fiche, relie chaque champ data-field au store,
     │                   affiche les valeurs calculées (data-out)
     ├── tabs.js · theme.js · lock.js · toolbar.js · account.js · gallery.js
-    ├── weapons.js · armors.js · spells.js · rest.js · style-editor.js
-    ├── spells/         Morceaux du grimoire (spells.js garde le tableau, le grimoire replié,
-    │                   l'assemblage) : prefs.js (réglages retenus sur l'appareil), tooltip.js
-    │                   (bulle d'un sort), filters.js (barre de recherche et filtres), slots.js
-    │                   (emplacements de sorts), granted.js (sorts donnés par les dons, la
-    │                   sous-classe et l'espèce), prepare.js (fenêtre « Préparer mes sorts »),
-    │                   cleanup.js (bouton « Retirer les sorts non préparés »)
+    ├── status-bar.js   Dernier message de la barre du haut (#save-status) lisible au doigt : petite
+    │                   flèche quand il est coupé, toucher pour le déplier ou le replier (isClipped)
+    ├── armors.js · rest.js · style-editor.js
+    ├── weapons.js      Tableau des armes, chef d'orchestre (247 lignes) : structure fixe, filtres,
+    │                   lecture et écriture de la fiche, verrou, rendu ; seul export : initWeapons
+    ├── weapons/        Morceaux du tableau des armes (4.46.0). Ils ne partagent aucune variable :
+    │   │               l'état commun (rows, filter, pinnedRow) et les gestes communs (updateRow,
+    │   │               refresh, deleteWeapon, setStatus, store) passent par l'objet ctx créé par
+    │   │               initWeapons et donné à chaque fonction
+    │   ├── shared.js   Contexte WeaponsContext, colonnes, petits textes (plain, fitStatus,
+    │   │               weaponInSentence)
+    │   ├── rows.js     Lignes : construction (buildRow, auto-complétion du nom) et réécriture
+    │   │               (refreshRows : valeurs calculées, aspect magique, rappels des dons, botte)
+    │   ├── damage.js   Case des dégâts, détail sous l'arme (toggleDamageDetail), pastilles « À allumer »
+    │   ├── buffs.js    Bonus de combat (Rage…, BUFF_DEFS), avertissement Rage en armure lourde
+    │   ├── edit.js     Ajouter, supprimer (confirmation), « Annuler la suppression » pendant 10 s
+    │   ├── config.js   Fenêtre « Configuration de l'arme » (openConfig) et bouton « Appliquer »
+    │   ├── config-extras.js  Rubrique « Dégâts en plus » de cette fenêtre (createExtrasEditor)
+    │   └── mastery.js  Fenêtre de la règle d'une botte d'arme (openMastery), lecture seule
+    ├── spells.js       Grimoire, chef d'orchestre (452 lignes) : crée le contexte partagé,
+    │                   assemble les morceaux, décide quelles lignes afficher (renderRows), supprime
+    │                   un sort (deleteRow), tient les abonnements ; seul export : initSpells
+    ├── spells/         Morceaux du grimoire. Ceux du tableau (découpage de la 4.46.0) reçoivent le
+    │   │               contexte « g » en premier argument : rien de global, un réaffichage complet
+    │   │               passe par g.redraw()
+    │   ├── context.js  Contexte partagé (createGrimoireContext : filtre, tri, vue, base de sorts,
+    │   │               lignes, saisie en cours) et flash
+    │   ├── table.js    En-tête et tri, rangement des lignes, message « aucun sort », « Ajouter un sort »
+    │   ├── rows.js     Une ligne du tableau (createRow, writeRow, writePrep, verrou, infobulle)
+    │   ├── entry.js    Saisie et brouillon (editRow, clearEntry, settleDraft)
+    │   ├── picker.js   Liste des sorts d'une ligne (suggestions, bouton ▾)
+    │   ├── cast.js     Fenêtre « Lancer » (castSpell, castRowAt)
+    │   ├── book.js     Livre du Magicien (ligne « Livre », « Rituels du livre »)
+    │   ├── notice.js   Grimoire replié d'un personnage sans magie (createGrimoireNotice), place
+    │   │               des cases d'incantation
+    │   ├── prefs.js    Réglages retenus sur l'appareil
+    │   ├── tooltip.js  Bulle d'un sort
+    │   ├── filters.js  Barre de recherche et filtres
+    │   ├── slots.js    Emplacements de sorts
+    │   ├── granted.js  Sorts donnés par les dons, la sous-classe et l'espèce
+    │   ├── prepare.js  Fenêtre « Préparer mes sorts »
+    │   └── cleanup.js  Bouton « Retirer les sorts non préparés »
     ├── derived.js      deriveCharacter calculé une fois par version du personnage, partagé
     ├── fold.js         Blocs repliables (sous-classe, compagnons, sorts de sous-classe), retenus
     │                   sur l'appareil seulement
@@ -183,12 +245,16 @@ js/
     │                   par update.js ; jamais par-dessus une autre fenêtre)
     ├── examples.js     Fenêtre « Essayer un personnage d'exemple » : fiche remplacée gardée dans
     │                   « Revenir à… », exemple non lié au compte (cloud/controller.js, source « example »)
+    ├── conditions.js   Encadré « États » de l'onglet Combat (css/conditions.css)
     ├── concentration.js  Ligne « Concentration » de l'encadré États (css/conditions.css)
+    ├── hit-points.js   PV en jeu : boutons − / + des cases PV et pavé « Dégâts / Soins »
+    ├── level-up.js     Bouton « Passer au niveau N » et sa fenêtre
+    ├── snapshots.js    Bouton « Revenir à… » : sauvegardes de secours datées de l'appareil
     ├── odyssey.js      Case « Mode Odyssée » du menu « Gestion » (css/toolbar.css), encadré Odyssée
     │                   de l'onglet 3 caché quand il est inutile, case « Points de Foi » et sa
     │                   pastille « +5 par niveau » (qui ouvre la fenêtre des faveurs, puis celle
-    │                   des dieux de Thyléa), ou
-    │                   « Inspiration héroïque »
+    │                   des dieux de Thyléa, avec ses boutons « Dépenser »), bouton « Inspiration
+    │                   héroïque » sous la pastille quand il sert ; ou, mode coupé, « Inspiration héroïque »
     ├── stepper.js · number-pad.js   Boutons − / + à appui long et pavé de chiffres (partagés)
     ├── modal.js · autocomplete.js · cell-text.js · dom.js   (briques partagées)
     ├── boot-notices.js Avis du démarrage (mise en forme indisponible, sauvegarde illisible)
@@ -199,8 +265,14 @@ dev/preview.html        Outil de capture : charge une fiche d'exemple (localhost
                         fenêtre « Nouveautés », sauf &news=<dernière version vue> ou &news=none
 dev/validation.html     Ancienne page de validation des étapes 0 à 2 (lecture d'une fiche)
 dev/polices.html        Échantillons de polices pour les textes longs (choix fait : Alegreya)
-scripts/serve.js        Serveur local (npm run dev)
-scripts/check.js        Garde-fous (npm run check)
+scripts/serve.js        Serveur local (npm run dev) : n'écoute que cet ordinateur (127.0.0.1, ::1),
+                        ne sert jamais .git (tests/serve.test.js)
+scripts/check.js        Garde-fous (npm run check) : syntaxe, imports, HTML sans gestionnaire inline,
+                        pas de !important, encodage, serveur réservé à l'ordinateur (contrôle 5,
+                        forme listen(port, hôte) ou listen({ host })), aucune couleur en dur dans
+                        les .css (contrôle 6 : #hex, rgb()/hsl()… à canaux fixés, color(), noms de
+                        couleur ; permis : lignes --nom: …, couleurs construites avec var(),
+                        transparent, currentColor ; exception : les masques), puis les tests
 tests/                  Tests Node (npm test) ; tests/fixtures/local/ = vraies sauvegardes, non publiées
 supabase/policies.sql   Règles de sécurité de la base (inchangées depuis la v3)
 docs/FEUILLE_DE_ROUTE.md Feuille de route : ce qui reste à faire, décisions qui valent pour la suite
@@ -312,8 +384,14 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   ils seront toujours affichés à travers DOMPurify.
 - Les clés inconnues sont conservées par la v4 : une fiche enregistrée par la v4 reste lisible par
   la v3, et inversement. Attention : la v3, elle, reconstruit la fiche à partir de sa page et perd en
-  enregistrant les clés qu'elle ne connaît pas (`combat_buffs`, `spell_slots_state`, `feat_uses`,
-  `feat_choices`, `feat_0`, `feat_2`, `feat_6`, `feat_7`, `feat_10`, `feat_14`) : `V4_ONLY_KEYS`, `js/cloud/sync.js`.
+  enregistrant les clés qu'elle ne connaît pas : `V4_ONLY_KEYS` (`js/cloud/sync.js`), soit `combat_buffs`,
+  `spell_slots_state`, `feat_uses`, `feat_choices`, `subclass_uses`, `subclass_choices`, `subclass_companions`,
+  `conditions`, `species_choices`, `concentration`, `odyssey_mode`, `odyssey_inspiration` et les emplacements
+  de dons propres à la v4 (`feat_0`, `feat_2`, `feat_6`, `feat_7`, `feat_10`, `feat_14`, déduits de
+  `js/state/schema.js`). Chacune a un libellé dans `LEGACY_ERASED` (phrase de la fenêtre « Modifié par
+  l'ancienne version », `legacyErasedText`) : une clé ajoutée à `V4_ONLY_KEYS` sans libellé fait échouer
+  `tests/v3-compare.test.js`. La comparaison avec une sauvegarde v3 (`comparableWithV3`) ignore
+  `_visual_prefs` et ne garde de chaque arme que les 9 champs que la v3 enregistre (`V3_WEAPON_FIELDS`).
 - Clés propres à la v4 : `combat_buffs` (bonus de combat actifs), `spell_slots_state` (emplacements
   de sorts) et `feat_uses` (usages dépensés des dons à cases, `{ idDuDon: nombre }`, facultative :
   absente = rien de dépensé ; `js/rules/feat-uses.js`) et `feat_choices` (choix des dons : caractéristique,
@@ -332,7 +410,13 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   (`proposedSpecies`, `proposedSubclasses`, `hiddenFeatIds`, listes refaites par `renderDynamicSelects` de
   `js/ui/sheet.js`, phrase de `js/rules/level-up.js`) ; ce que la fiche utilise déjà reste dans ses listes
   et aucun calcul ne change. Une fiche vierge au mode coupé reste une fiche vierge (`isBlankCharacter`,
-  `js/state/snapshots.js`).
+  `js/cloud/controller.js`).
+- `odyssey_inspiration` (4.46.0) : Inspiration héroïque notée à part des points de Foi, mode Odyssée actif
+  (`"1"` = allumée ; absente ou toute autre valeur, même un objet piégé, = éteinte :
+  `odysseyInspirationLit`). Même traitement que `odyssey_mode` : jamais dans la fiche vierge (valeur par
+  défaut `''` dans `OPTIONAL_KEY_DEFAULTS`, `js/state/schema.js`), écrite quand le joueur allume le bouton,
+  retirée quand il l'éteint (empreinte inchangée), dans `V4_ONLY_KEYS` et parmi les champs utilisables
+  fiche verrouillée (`js/ui/lock.js`).
 - `feat_0` : second don d'origine de l'Humain (trait Polyvalent), acquis au niveau 1, en plus de `feat_1`
   (historique). Absente d'une fiche vierge, ajoutée quand on la remplit ; elle ne compte que si l'espèce
   est Humain (`isHuman`, `js/rules/feats.js`) et n'est jamais effacée si l'espèce change. Son numéro 0
@@ -399,11 +483,12 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   fin du texte des dégâts (`activeExtraDamage`) ; une arme hors manuel (`computeWeapon` null) les montre
   par `offBookDamage`. Lecture tolérante : une ligne illisible est ignorée, jamais corrigée par
   l'affichage, la bascule d'une pastille ou le repos ; seul « Appliquer » dans la fenêtre de réglage
-  réécrit la liste (lignes lisibles et propriétés connues seulement). À l'écran (`js/ui/weapons.js`),
+  réécrit la liste (lignes lisibles et propriétés connues seulement). À l'écran (`js/ui/weapons/damage.js`),
   chaque dégât en plus tient sur une ligne de la case des dégâts, abrégé par « … » à toutes les
   largeurs ; toucher la case écrit les dégâts en entier dans la ligne placée sous l'arme, sous les
   pastilles (`toggleDamageDetail` : simple affichage, rien n'est enregistré). La barre du haut tient
-  sur une ligne : les phrases des armes n'y citent l'arme que si elles y tiennent (`fitStatus`).
+  sur une ligne : les phrases des armes n'y citent l'arme que si elles y tiennent (`fitStatus`,
+  `js/ui/weapons/shared.js` ; place : `js/data/status-bar.js`).
   La v3 recopie `weaponConfig` tel quel à chaque enregistrement ; seul SON réglage de
   l'arme, s'il est appliqué, réécrit les quatre propriétés d'origine et fait donc perdre `proficiency`
   et `extraDamage` de cette arme.
