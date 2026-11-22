@@ -79,6 +79,54 @@
     }
 }
 
+/* Rage allumée avec une armure lourde équipée (js/rules/rage.js) : libellé barré, avertissement
+   rouge juste après le bouton ; le toucher écrit la phrase complète dans la barre du haut */
+.weapons-buff.is-void .btn-label {
+    text-decoration: line-through;
+    text-decoration-color: currentColor;
+    text-decoration-thickness: 2px;
+}
+
+.weapons-rage-warn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 30px;
+    padding: 0 10px 0 8px;
+    border: 1px solid var(--ko);
+    border-radius: 16px;
+    background: transparent;
+    color: var(--ko);
+    font-family: var(--font-title);
+    font-size: 0.78rem;
+    line-height: 1.2;
+    text-align: left;
+    cursor: help;
+}
+
+.weapons-rage-warn .icon {
+    flex: none;
+    width: 15px;
+    height: 15px;
+}
+
+.weapons-rage-warn[hidden] {
+    display: none;
+}
+
+.weapons-rage-warn:hover,
+.weapons-rage-warn:focus-visible {
+    background: linear-gradient(var(--btn-top), var(--btn-bottom));
+    box-shadow: var(--btn-shadow);
+}
+
+@media (pointer: coarse) {
+    .weapons-rage-warn {
+        min-height: 44px;
+        border-radius: 22px;
+    }
+}
+
 .weapons-buff[aria-pressed="true"] {
     box-shadow: var(--btn-shadow), 0 0 0 3px var(--track), 0 0 14px var(--accent);
 }

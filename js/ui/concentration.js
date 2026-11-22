@@ -19,8 +19,9 @@ import { featSpellGroups } from '../rules/feat-spells.js';
 import { subclassSpells } from '../rules/subclass-features.js';
 import { speciesView } from '../rules/species.js';
 
-// Tout ce qui change le menu ou le jet de Constitution (maîtrise, Aura de protection au Charisme, Rage)
-const WATCHED = new Set([CONCENTRATION_KEY, 'dynamic_spells', 'conditions', 'combat_buffs', 'con_score', 'con_save_prof', 'cha_score',
+// Tout ce qui change le menu ou le jet de Constitution (maîtrise, Aura de protection au Charisme, Rage,
+// armure lourde qui rend la Rage sans effet)
+const WATCHED = new Set([CONCENTRATION_KEY, 'dynamic_spells', 'conditions', 'combat_buffs', 'dynamic_armors', 'con_score', 'con_save_prof', 'cha_score',
     'char_level', 'char_class', 'char_subclass',
     'char_species', 'species_choices', 'feat_choices', 'subclass_choices']);
 

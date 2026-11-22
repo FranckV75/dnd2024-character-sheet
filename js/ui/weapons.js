@@ -32,6 +32,7 @@ import { weaponFeatNotes } from '../rules/feat-effects.js';
 import { weaponProficiency } from '../rules/class-features.js';
 import { divineFuryDie } from '../rules/subclass-features.js';
 import { rageEndPatch } from '../rules/subclass-uses.js';
+import { rageArmorWarning, rageBlockedByArmor, RAGE_ARMOR_STATUS } from '../rules/rage.js';
 import {
     frenzyDice, dreadfulStrikeDice, feyStrikesDie, superiorityDie, maneuverDC, psionicDice, dragonMount
 } from '../rules/subclass-combat.js';
@@ -243,6 +244,13 @@ export function initWeapons(ctx) {
     // ---------------------------------------------------------------------
 
     const buffsBox = el('div', { class: 'weapons-buffs', role: 'group', 'aria-label': 'Bonus de combat' });
+    // Rage allumée avec une armure lourde équipée : avertissement à côté du bouton (js/rules/rage.js) ;
+    // un bouton et non une simple infobulle : sur tablette, le toucher écrit la phrase dans la barre
+    const rageWarn = el('button', {
+        type: 'button', class: 'weapons-rage-warn', hidden: true,
+        title: 'La Rage ne compte pas avec une armure lourde équipée : ses bonus (dégâts, Résistance, Avantage) ne sont pas ajoutés',
+        on: { click: () => setStatus(RAGE_ARMOR_STATUS) }
+    }, icon('warning'), el('span', { class: 'weapons-rage-warn-text' }));
     const filterButtons = FILTERS.map(([value, label]) => el('button', {
         type: 'button', class: 'btn-chip', 'data-filter': value,
         'aria-pressed': String(value === filter), text: label,
@@ -830,17 +838,26 @@ export function initWeapons(ctx) {
                     click: () => {
                         const current = store.get();
                         const combatBuffs = toggleBuff(current.combat_buffs, d.key);
+                        const currentDerived = derivedOf(current);
                         // Rage éteinte : les cases « une fois par Rage » se vident (Détermination fanatique)
-                        store.update({ combat_buffs: combatBuffs, ...rageEndPatch(current, derivedOf(current), combatBuffs) });
+                        store.update({ combat_buffs: combatBuffs, ...rageEndPatch(current, currentDerived, combatBuffs) });
+                        // Rage allumée avec une armure lourde : le bouton reste allumé, la barre prévient
+                        if (d.key === 'rage' && combatBuffs.rage === true && rageBlockedByArmor(currentDerived)) setStatus(RAGE_ARMOR_STATUS);
                     }
                 }
             }, icon(d.icon), el('span', { class: 'btn-label', text: d.text }))));
+            // Avertissement juste après le bouton Rage
+            buffsBox.querySelector('[data-buff="rage"]')?.after(rageWarn);
             buffsBox.hidden = defs.length === 0;
         }
         const active = character.combat_buffs || {};
         for (const button of buffsBox.querySelectorAll('[data-buff]')) {
             button.setAttribute('aria-pressed', String(active[button.dataset.buff] === true));
         }
+        const warning = rageArmorWarning(character, derived, defs.map(d => d.key));
+        rageWarn.hidden = !warning;
+        if (rageWarn.lastElementChild.textContent !== warning) rageWarn.lastElementChild.textContent = warning;
+        buffsBox.querySelector('[data-buff="rage"]')?.classList.toggle('is-void', Boolean(warning));
     }
 
     // ---------------------------------------------------------------------
