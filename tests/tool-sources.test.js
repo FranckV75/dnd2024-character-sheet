@@ -6,7 +6,9 @@ import { TOOLS, TOOL_CATEGORIES, FEAT_TOOLS, FAST_CRAFTING_TOOLS } from '../js/d
 import { FEATS_DATA } from '../js/data/feats.js';
 import { DD_RULES } from '../js/data/dd-rules.js';
 import { toolsInText, addToolToText } from '../js/rules/tools.js';
+import { readFileSync } from 'node:fs';
 import { featEffects } from '../js/rules/feat-effects.js';
+import { FEAT_CHOICE_RULES } from '../js/rules/feat-choices.js';
 import { createDefaultCharacter } from '../js/state/schema.js';
 import {
     toolSources, toolSourceProgress, featuredToolSections, sectionProgress, toolProgressText
@@ -128,7 +130,11 @@ describe('Sources : historique et dons', () => {
     test('Doué pas encore réglé : la source dit où le régler, sans rien compter', () => {
         const [open] = toolSources({ feat_1: 'doue' });
         assert.equal(open.count, 0);
-        assert.match(open.label, /choisissez « Un outil » dans les menus du don \(onglet Aptitudes & Traits\)/);
+        assert.equal(open.label,
+            'trois compétences ou outils ; pour compter un outil ici, choisissez « Un outil » dans les menus du don (onglet Aptitudes & Traits)');
+        // Les mots cités existent dans l'interface : l'option du menu de Doué, le nom de l'onglet
+        assert.ok(FEAT_CHOICE_RULES.doue.fields.every((field) => field.options.some(([, text]) => text === 'Un outil')));
+        assert.match(readFileSync(new URL('../index.html', import.meta.url), 'utf8'), /Aptitudes &amp; Traits/);
         const [partial] = toolSources({ feat_1: 'doue', feat_choices: { 1: { doue: { pick1: 'arcana' } } } });
         assert.equal(partial.count, 0);
     });

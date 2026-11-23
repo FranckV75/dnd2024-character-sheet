@@ -75,7 +75,7 @@ function featSource(record, slot, grants) {
     if (count === 0 && open === 0) return null;
     const label = count > 0
         ? `${ANY_TOOL_LABELS[count - 1] ?? `${count} outils au choix`}, dans toute la liste`
-        : `des compétences ou des outils : pour un outil, choisissez « Un outil » dans les menus du don (${FEAT_MENUS_PLACE})`;
+        : `trois compétences ou outils ; pour compter un outil ici, choisissez « Un outil » dans les menus du don (${FEAT_MENUS_PLACE})`;
     return { ...base, label, toolId: null, toolIds: null, categoryId: null, count };
 }
 
