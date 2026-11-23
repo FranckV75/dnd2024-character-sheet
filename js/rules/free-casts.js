@@ -15,6 +15,9 @@
 //    protecteur (Contact avec les plans) : table CLASS_FREE_CASTS ; Arcanum mystique : une case par
 //    niveau de sort (6 à 9), reliée au sort par son NIVEAU (arcanumFreeCast : la fiche ne sait pas
 //    quel sort d'Arcanum le joueur a choisi) ;
+//  - Magicien, sorts choisis (js/rules/spell-choices.js) : Sorts de prédilection (niveau 20), une
+//    case par sort choisi, lancé au niveau 3, repos court ou long ; Maîtrise des sorts (niveau 18),
+//    lancer à volonté au niveau le plus bas, sans case (kind 'atwill') ;
 //  - Sous-classes (js/rules/subclass-uses.js, clé « subclass_uses ») : seulement les cases qui ne
 //    servent qu'à lancer UN sort nommé (table SUBCLASS_FREE_CASTS). Les cases partagées entre
 //    plusieurs sorts « chacun une fois » (Ancêtre divin, Créatures fantasmagoriques) ou entre deux
@@ -27,6 +30,7 @@ import { spellNameKey } from './spells.js';
 import { featSpellGroups, setFeatSpellUsePatch } from './feat-spells.js';
 import { subclassCounters, setSubclassUsesPatch, subclassUseKey } from './subclass-uses.js';
 import { mysticArcanumLevel, isArcanumSpellLevel } from './spell-preparation.js';
+import { chosenSpells } from './spell-choices.js';
 
 /** Sort d'Ennemi juré (Rôdeur) : nom anglais, nom français */
 const FAVORED_ENEMY_SPELL = Object.freeze(["Hunter's Mark", 'Marque du chasseur']);
@@ -76,10 +80,11 @@ function freeCast(id, kind, label, names, max, used, reset, extra = {}) {
  * mystique, relié au niveau du sort, est à part : arcanumFreeCast).
  * @param {Object} character
  * @param {Object} derived - deriveCharacter(character)
- * @returns {Array<{ id: string, kind: 'feat'|'uses'|'class', label: string, names: string[],
- *   max: number, used: number, left: number, reset: 'long'|'short' }>}
+ * @returns {Array<{ id: string, kind: 'feat'|'uses'|'class'|'atwill', label: string, names: string[],
+ *   max: number, used: number, left: number, reset: 'long'|'short', atLevel?: number }>}
  *   id : identifiant du lancer (clé de la case) ; label : nom de la capacité, du don ou de l'espèce ;
- *   names : noms du sort (comparables : spellNameKey) ; left : lancers gratuits restants
+ *   names : noms du sort (comparables : spellNameKey) ; left : lancers gratuits restants ;
+ *   kind 'atwill' : à volonté, aucune case (Maîtrise des sorts) ; atLevel : niveau imposé du lancer
  */
 export function allFreeCasts(character, derived) {
     const casts = [];
@@ -102,7 +107,8 @@ export function allFreeCasts(character, derived) {
     }
 
     // Classe, espèce (sorts d'espèce) et sous-classe : cases d'un sort nommé
-    for (const counter of subclassCounters(character, derived)) {
+    const counters = subclassCounters(character, derived);
+    for (const counter of counters) {
         if (counter.reset !== 'long' && counter.reset !== 'short') continue;
         if (counter.source === 'species') {
             if (!counter.key.startsWith('species.sort_')) continue;
@@ -112,6 +118,17 @@ export function allFreeCasts(character, derived) {
         const table = counter.source === 'class' ? CLASS_FREE_CASTS : SUBCLASS_FREE_CASTS;
         if (!Object.hasOwn(table, counter.key)) continue;
         add(counter.key, 'uses', counter.label, table[counter.key].spells.flat(), counter.max, counter.used, counter.reset);
+    }
+
+    // Magicien : sorts choisis. Sans la base de sorts ici : le nom enregistré (nom anglais) suffit,
+    // la fenêtre « Lancer » donne tous les noms du sort
+    for (const spell of chosenSpells(character, derived)) {
+        if (spell.cast === 'atwill') {
+            add(`choice.${spell.key}`, 'atwill', spell.featureName, [spell.value], 1, 0, 'long', { atLevel: spell.atLevel });
+        } else if (spell.cast === 'uses' && spell.uses) {
+            const counter = counters.find(entry => entry.key === spell.uses);
+            if (counter) add(counter.key, 'uses', spell.featureName, [spell.value], counter.max, counter.used, counter.reset, { atLevel: spell.atLevel });
+        }
     }
     return casts;
 }
@@ -148,7 +165,8 @@ export function arcanumFreeCast(character, derived, spellLevel) {
 }
 
 /**
- * Utiliser un lancer gratuit : coche la case de la capacité (la décocher annule).
+ * Utiliser un lancer gratuit : coche la case de la capacité (la décocher annule). Lancer à volonté
+ * (Maîtrise des sorts) : rien à cocher, patch vide.
  * @param {Object} character
  * @param {Object} derived
  * @param {string} id - allFreeCasts : id (ou arcanumFreeCast : id)
@@ -158,6 +176,7 @@ export function useFreeCastPatch(character, derived, id) {
     const cast = allFreeCasts(character, derived).find(entry => entry.id === id)
         ?? [6, 7, 8, 9].map(level => arcanumFreeCast(character, derived, level)).find(entry => entry?.id === id);
     if (!cast || cast.left <= 0) return null;
+    if (cast.kind === 'atwill') return {};
     if (cast.kind === 'feat') return setFeatSpellUsePatch(character, cast.id, true);
     if (cast.kind === 'uses') return setSubclassUsesPatch(character, cast.id, cast.used + 1, cast.max);
     // Ressource de classe : première case encore libre

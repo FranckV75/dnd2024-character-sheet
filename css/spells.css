@@ -1604,6 +1604,28 @@ button.spell-no-slot {
     }
 }
 
+/* Sorts choisis d'une capacité (js/ui/spells/choices.js : Maîtrise des sorts et Sorts de
+   prédilection du Magicien, Découvertes magiques du Collège du Savoir). Les menus reprennent ceux
+   des choix de dons (feats.css) ; ce sont des réglages : retirés de la vue au combat et de
+   l'impression, où seuls restent la phrase de la capacité et les sorts choisis */
+.spell-choice-group + .spell-choice-group {
+    margin-top: 8px;
+}
+
+@media screen {
+    .spells-body.is-combat .spell-choices,
+    .spells-body.is-combat .spell-choice-group .feat-spells-warning {
+        display: none;
+    }
+}
+
+@media print {
+    .spell-choices,
+    .spell-choice-group .feat-spells-warning {
+        display: none;
+    }
+}
+
 /* Sorts mineurs en plus de la table : simple rappel, pas une erreur */
 .spell-limit-note .is-info {
     color: var(--text-muted);

@@ -252,7 +252,9 @@ const MANUAL_AUTOMATION = {
         inspiration_martiale: { text: (d) => `Dé d'Inspiration bardique : ${bardicInspirationDie(d.level)}.`, partial: true }
     },
     college_of_lore: {
-        mots_cinglants: { text: (d) => `Dé d'Inspiration bardique : ${bardicInspirationDie(d.level)}.`, partial: true }
+        mots_cinglants: { text: (d) => `Dé d'Inspiration bardique : ${bardicInspirationDie(d.level)}.`, partial: true },
+        // Sorts choisis dans le grimoire (js/rules/spell-choices.js)
+        decouvertes_magiques: { text: 'Deux menus dans le grimoire (onglet Magie, « Sorts de sous-classe ») : les sorts choisis sont toujours préparés et ne comptent pas dans vos sorts préparés.' }
     },
     life_domain: {
         preservation_de_la_vie: { text: (d) => `PV à répartir : ${5 * d.level} (5 × niveau de Clerc).`, partial: true }

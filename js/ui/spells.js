@@ -88,6 +88,7 @@ import {
 } from '../rules/spell-preparation.js';
 import { castsRitualsFromBook, isRitualSpell } from '../rules/spellbook.js';
 import { allFreeCasts } from '../rules/free-casts.js';
+import { chosenSpellKeys } from '../rules/spell-choices.js';
 import { elementalAffinity } from '../rules/subclass-combat.js';
 import { derivedOf } from './derived.js';
 import { el, icon } from './dom.js';
@@ -142,9 +143,10 @@ const COMBAT_VIEW_HELP = {
  */
 function rowStates(g, character, derivedNow, rows) {
     // Losange : liste fixe (Barde, Ensorceleur, Occultiste) et sorts donnés, toujours préparés ;
-    // un sort noté hors de la liste fixe (Arcanum mystique, Découvertes magiques…) garde son
-    // losange à cocher
-    const granted = grantedSpellKeys(character, derivedNow);
+    // un sort noté hors de la liste fixe (Arcanum mystique…) garde son losange à cocher. Les sorts
+    // choisis d'une capacité (Maîtrise des sorts, Sorts de prédilection, Découvertes magiques) sont
+    // des sorts donnés : la base de sorts relie leur nom enregistré (anglais) au nom de la ligne
+    const granted = grantedSpellKeys(character, derivedNow, g.spellsDb);
     const source = wholeListSource(derivedNow);
     const wholeList = source !== null;
     const fits = (row) => fitsWholeList(row, source, findSpellByName(g.spellsDb, row.name));
@@ -253,7 +255,8 @@ function renderRows(g, ui, character, force, structural) {
     table.tableScroll.classList.toggle('is-combat-empty', combatEmpty);
     table.renderEmpty({ anySpell, anyShown, combatEmpty, locked, hasGivenSpells: () => hasGivenSpells(character, derivedNow) });
     renderCounts(g, ui, counts, derivedNow);
-    book.renderNote(rows, derivedNow, granted);
+    // Maîtrise des sorts, Sorts de prédilection : toujours préparés, mais toujours dans le livre
+    book.renderNote(rows, derivedNow, granted, chosenSpellKeys(character, derivedNow, g.spellsDb, { from: 'book' }));
 }
 
 /**

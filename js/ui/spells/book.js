@@ -31,7 +31,7 @@ const BOOK_RITUALS_TAP = {
 /**
  * @param {import('./context.js').Grimoire} g
  * @returns {{ note: HTMLElement, rituals: HTMLElement,
- *   renderNote(rows: Object[], d: Object, granted: Set<string>): void,
+ *   renderNote(rows: Object[], d: Object, granted: Set<string>, inBook?: Set<string>): void,
  *   renderRituals(items: Array<{ index: number, row: Object }>): void }}
  *   note : ligne « Livre : N sorts » ; rituals : ligne repliable « Rituels du livre »
  */
@@ -45,12 +45,13 @@ export function createSpellbook(g) {
 
     /**
      * Magicien : « Livre : 15 sorts · 17 sans dépense », puis d'où viennent ces sorts et le coût
-     * d'une copie.
+     * d'une copie. inBook : sorts toujours préparés qui restent des sorts du livre (Maîtrise des
+     * sorts, Sorts de prédilection).
      */
-    function renderNote(rows, d, granted) {
+    function renderNote(rows, d, granted, inBook = null) {
         bookNote.hidden = !hasSpellbook(d.classSlug);
         if (bookNote.hidden) return;
-        const count = spellbookCount(rows, granted);
+        const count = spellbookCount(rows, granted, inBook);
         const free = freeSpellbookSpells(d.level, d.subclass);
         const cost = spellCopyCost(d);
         const countText = `Livre : ${count} sort${count > 1 ? 's' : ''} · ${free.total} sans dépense`;

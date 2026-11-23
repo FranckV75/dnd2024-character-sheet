@@ -13,6 +13,10 @@
 //    serments du Paladin, Cercle de la Terre… ; un sort aussi noté dans la liste porte un repère.
 //  - Sorts d'espèce (js/rules/species.js) : lancers gratuits cochés dans subclass_uses (mêmes
 //    cases que dans l'onglet Combat).
+//  - Sorts choisis d'une capacité (js/rules/spell-choices.js, menus de spells/choices.js) :
+//    Maîtrise des sorts et Sorts de prédilection du Magicien dans « Sorts de classe », Découvertes
+//    magiques du Barde du Collège du Savoir dans « Sorts de sous-classe ». Seuls contrôles de ces
+//    blocs qui écrivent un choix (clé facultative « subclass_choices »).
 //  - Vue « au combat » : bouton « Lancer » sur chaque sort de niveau 1+ (fenêtre de spells/cast.js,
 //    contrôle de jeu utilisable verrouillé ; affiché seulement au combat, par spells.css).
 // Jamais écrits dans dynamic_spells : on ne peut pas les effacer par erreur. Chaque bloc n'est
@@ -20,6 +24,9 @@
 // =============================================================================
 
 import { spellLevelLabel } from '../../rules/spells.js';
+import { spellChoiceView } from '../../rules/spell-choices.js';
+import { highestSlotLevel } from '../../rules/spell-preparation.js';
+import { spellChoiceGroup, keepChoiceFocus } from './choices.js';
 import { featSpellGroups, setFeatSpellUsePatch } from '../../rules/feat-spells.js';
 import { subclassSpells, subclassFeatures, markListedSpells } from '../../rules/subclass-features.js';
 import { speciesView, speciesCounterDefs } from '../../rules/species.js';
@@ -111,7 +118,9 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb, onCast = null
         return el('li', { class: 'feat-spell' },
             el('div', { class: 'feat-spell-head' },
                 name,
-                el('span', { class: 'feat-spell-level', text: spellLevelLabel(spell.level) }),
+                // Niveau inconnu (sort choisi que la base de sorts ne connaît pas) : pas de repère
+                spell.level === null || spell.level === undefined ? null
+                    : el('span', { class: 'feat-spell-level', text: spellLevelLabel(spell.level) }),
                 // Capacité de classe qui donne le sort (« Fidèle destrier »)
                 spell.source ? el('span', { class: 'feat-spell-tag', 'data-kind': 'source', text: spell.source }) : null,
                 spell.ritual ? el('span', { class: 'feat-spell-tag', text: 'Rituel' }) : null,
@@ -153,20 +162,67 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb, onCast = null
     }
 
     // -----------------------------------------------------------------------
+    // Sorts choisis d'une capacité (js/rules/spell-choices.js) : un groupe par capacité, ajouté au
+    // bloc de classe (Magicien) ou de sous-classe (Barde du Collège du Savoir)
+    // -----------------------------------------------------------------------
+
+    /** Capacités d'un bloc ; le sort d'une Découverte magique aussi noté au tableau porte le repère « Aussi dans votre liste » */
+    function choiceFeatures(choices, owner, rows) {
+        return choices.filter(feature => feature.owner === owner).map(feature => ({
+            ...feature,
+            spells: feature.spells.map(spell => ({
+                ...spell,
+                // Sorts du Magicien : pris au grimoire, donc toujours notés au tableau (pas de repère)
+                listed: spell.from === 'lists'
+                    && markListedSpells([{ name: spell.name, vo: spell.vo, aka: [spell.value] }], rows)[0].listed
+            }))
+        }));
+    }
+
+    /**
+     * Ce qui fait reconstruire un bloc. Les menus des Découvertes magiques proposent quelques
+     * centaines de sorts, toujours les mêmes pour un niveau donné : seuls leur nombre et les
+     * options particulières (grisée, plus proposable) sont comparés.
+     */
+    const choiceSignature = (features) => features.map(feature => [feature.id,
+        feature.fields.map(field => [field.key, field.value, field.warning, field.hint,
+            feature.from === 'lists'
+                ? [field.options.length, field.options.filter(option => option.disabled || option.stale).map(option => option.value)]
+                : field.options.map(option => [option.value, option.label, option.disabled])]),
+        feature.spells.map(spell => [spell.key, spell.name, spell.vo, spell.level, spell.listed])]);
+
+    /** Ligne d'un sort choisi, avec la case de son lancer sans emplacement (Sorts de prédilection) */
+    const chosenLine = (counters) => (spell) => {
+        let note = '';
+        if (spell.cast === 'atwill') note = `Sans emplacement au niveau ${spell.atLevel}, à volonté ; à un niveau plus haut, avec un emplacement.`;
+        else if (spell.cast === 'uses') note = `Sans emplacement, il se lance au niveau ${spell.atLevel} ; à un niveau plus haut, avec un emplacement.`;
+        const item = featSpellLine({ name: spell.name, vo: spell.vo, level: spell.level, listed: spell.listed, note });
+        const counter = spell.uses ? counters.find(entry => entry.key === spell.uses) : null;
+        if (counter) item.append(freeBoxes(counter));
+        return item;
+    };
+
+    const choiceGroups = (features, counters = []) => features.map(feature => spellChoiceGroup(feature, { store, spellLine: chosenLine(counters) }));
+
+    // -----------------------------------------------------------------------
     // Sorts de classe : toujours préparés par la classe elle-même, hors du compte. Le lancer sans
     // emplacement de Châtiment de paladin, Fidèle destrier et Communication avec le protecteur a sa
     // case ; Marque du chasseur garde les cases « Ennemi juré » (ressource de classe, onglet Combat).
     // Arcanum mystique (Occultiste 11+) : les sorts se notent au tableau, une case par niveau de sort.
+    // Magicien : Maîtrise des sorts (niveau 18) et Sorts de prédilection (niveau 20), sorts choisis
+    // dans le grimoire par deux menus chacun.
     // -----------------------------------------------------------------------
 
-    function renderClassSpells(character, d) {
+    function renderClassSpells(character, d, choices) {
         const className = DD_RULES.classes[d.classSlug]?.nameFr ?? '';
         const spells = markListedSpells(classGrantedSpells(d.classSlug, d.level), character.dynamic_spells);
         const counters = subclassCounters(character, d).filter(counter => counter.source === 'class');
         const boxOf = (spell) => counters.find(counter => CLASS_FREE_CASTS[counter.key]?.spells.some(([vo]) => vo === spell.vo));
         const arcana = counters.filter(counter => /^warlock\.arcanum_\d$/.test(counter.key));
-        classBox.hidden = spells.length === 0 && arcana.length === 0;
-        const signature = JSON.stringify([className, spells, counters.map(({ key, max, reset, label }) => [key, max, reset, label]), affinityKey()]);
+        const features = choiceFeatures(choices, 'class', character.dynamic_spells);
+        classBox.hidden = spells.length === 0 && arcana.length === 0 && features.length === 0;
+        const signature = JSON.stringify([className, spells, counters.map(({ key, max, reset, label }) => [key, max, reset, label]),
+            choiceSignature(features), affinityKey()]);
         if (signature !== classSignature) {
             classSignature = signature;
             const line = (spell) => {
@@ -180,14 +236,18 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb, onCast = null
                 el('p', { class: 'feat-spells-extra', text: "Notez vos sorts d'Arcanum dans le tableau des sorts. Chacun se lance une fois sans emplacement, de nouveau après un repos long : son bouton « Lancer » coche la case de son niveau." }),
                 el('ul', { class: 'feat-spells-list' }, arcana.map(counter => el('li', { class: 'feat-spell' },
                     el('span', { class: 'feat-spell-level', text: `Sort de niveau ${counter.key.at(-1)}` }), freeBoxes(counter))))) : null;
-            classBox.replaceChildren(...(classBox.hidden ? [] : [
-                el('h4', { class: 'feat-spells-title', id: 'class-spells-title' }, icon('star'), el('span', { text: 'Sorts de classe' }),
-                    foldButton('Sorts de classe')),
-                spells.length ? el('p', { class: 'feat-spells-intro', text: `Donnés par votre classe (${className}) : toujours préparés, ils ne comptent pas dans vos sorts préparés.` }) : null,
-                spells.length ? el('ul', { class: 'feat-spells-list' }, spells.map(line)) : null,
-                arcanumGroup
-            ].filter(Boolean)));
-            applyFolds(classBox);
+            // Choisir un sort reconstruit le bloc : le menu utilisé garde le focus
+            keepChoiceFocus(classBox, () => {
+                classBox.replaceChildren(...(classBox.hidden ? [] : [
+                    el('h4', { class: 'feat-spells-title', id: 'class-spells-title' }, icon('star'), el('span', { text: 'Sorts de classe' }),
+                        foldButton('Sorts de classe')),
+                    spells.length ? el('p', { class: 'feat-spells-intro', text: `Donnés par votre classe (${className}) : toujours préparés, ils ne comptent pas dans vos sorts préparés.` }) : null,
+                    spells.length ? el('ul', { class: 'feat-spells-list' }, spells.map(line)) : null,
+                    arcanumGroup,
+                    ...choiceGroups(features, counters)
+                ].filter(Boolean)));
+                applyFolds(classBox);
+            });
         }
         syncFreeBoxes(classBox, character, key => counters.find(counter => counter.key === key)?.max ?? 0);
     }
@@ -238,10 +298,11 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb, onCast = null
 
     // -----------------------------------------------------------------------
     // Sorts de sous-classe (lot 2 des sous-classes : serments du Paladin) : toujours préparés,
-    // hors du nombre de sorts préparés
+    // hors du nombre de sorts préparés. Collège du Savoir : les deux Découvertes magiques (niveau 6)
+    // se choisissent ici par deux menus.
     // -----------------------------------------------------------------------
 
-    function renderSubclassSpells(character, d) {
+    function renderSubclassSpells(character, d, choices) {
         const { reached, upcoming, others = [] } = subclassSpells(d);
         const name = subclassFeatures(d).subclass?.name ?? '';
         const spells = markListedSpells(reached, character.dynamic_spells);
@@ -257,8 +318,9 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb, onCast = null
                 .map(spell => (spell.group ? `${spell.name} (${spell.group})` : spell.name)).join(', ')}`);
         // Sorts rangés par terrain (Cercle de la Terre), sinon une seule liste
         const groups = [...new Set(spells.map(spell => spell.group ?? ''))];
-        const signature = JSON.stringify([name, spells, next, othersListed, affinityKey()]);
-        subclassBox.hidden = spells.length === 0;
+        const features = choiceFeatures(choices, 'subclass', character.dynamic_spells);
+        const signature = JSON.stringify([name, spells, next, othersListed, choiceSignature(features), affinityKey()]);
+        subclassBox.hidden = spells.length === 0 && features.length === 0;
         if (signature === subclassSignature) return;
         subclassSignature = signature;
         const list = (items) => el('ul', { class: 'feat-spells-list' }, items.map(featSpellLine));
@@ -266,7 +328,10 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb, onCast = null
             el('div', { class: 'feat-spells-head' }, el('strong', { class: 'feat-spells-name', text: group })),
             list(items.filter(spell => spell.group === group)));
         let intro;
-        if (spells.every(spell => /^Seulement en rituel/.test(spell.note ?? ''))) {
+        if (spells.length === 0) {
+            // Seulement des sorts choisis (Collège du Savoir) : chaque capacité dit ce qu'elle donne
+            intro = '';
+        } else if (spells.every(spell => /^Seulement en rituel/.test(spell.note ?? ''))) {
             // Voie du Cœur sauvage : rituels seulement
             intro = `Donnés par votre sous-classe (${name}) : lancés seulement en rituel, ils ne comptent pas dans vos sorts préparés.`;
         } else if (spells.every(spell => /^Une fois sans emplacement/.test(spell.note ?? ''))) {
@@ -278,17 +343,21 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb, onCast = null
                     ? ' Terre choisie à votre dernier repos long : seuls ses sorts sont préparés.'
                     : ' Seuls ceux du terrain choisi à votre dernier repos long sont préparés (choix dans l\'onglet Aptitudes & Traits).') : '');
         }
-        subclassBox.replaceChildren(...(spells.length ? [
-            el('h4', { class: 'feat-spells-title', id: 'subclass-spells-title' }, icon('star'), el('span', { text: 'Sorts de sous-classe' }),
-                foldButton('Sorts de sous-classe')),
-            el('p', { class: 'feat-spells-intro', text: intro }),
-            ...(groups[0] ? groups.map(group => groupBlock(group, spells)) : [list(spells)]),
-            otherGroups.length ? el('details', { class: 'subclass-spells-others' },
-                el('summary', { text: `Autres terrains, pas préparés (${otherGroups.join(', ')})` }),
-                ...otherGroups.map(group => groupBlock(group, othersListed))) : null,
-            next.length ? el('p', { class: 'feat-spells-extra' }, el('strong', { text: 'À venir : ' }), `${next.join(' ; ')}.`) : null
-        ].filter(Boolean) : []));
-        applyFolds(subclassBox);
+        // Choisir un sort reconstruit le bloc : le menu utilisé garde le focus
+        keepChoiceFocus(subclassBox, () => {
+            subclassBox.replaceChildren(...(subclassBox.hidden ? [] : [
+                el('h4', { class: 'feat-spells-title', id: 'subclass-spells-title' }, icon('star'), el('span', { text: 'Sorts de sous-classe' }),
+                    foldButton('Sorts de sous-classe')),
+                intro ? el('p', { class: 'feat-spells-intro', text: intro }) : null,
+                ...(spells.length ? (groups[0] ? groups.map(group => groupBlock(group, spells)) : [list(spells)]) : []),
+                otherGroups.length ? el('details', { class: 'subclass-spells-others' },
+                    el('summary', { text: `Autres terrains, pas préparés (${otherGroups.join(', ')})` }),
+                    ...otherGroups.map(group => groupBlock(group, othersListed))) : null,
+                next.length ? el('p', { class: 'feat-spells-extra' }, el('strong', { text: 'À venir : ' }), `${next.join(' ; ')}.`) : null,
+                ...choiceGroups(features)
+            ].filter(Boolean)));
+            applyFolds(subclassBox);
+        });
     }
 
     // -----------------------------------------------------------------------
@@ -336,9 +405,11 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb, onCast = null
         speciesBox,
         render(character, d) {
             affinity = elementalAffinity(d);
-            renderClassSpells(character, d);
+            // Sorts choisis d'une capacité (Magicien 18+, Barde du Collège du Savoir 6+) : [] sinon
+            const choices = spellChoiceView(character, d, { db: getSpellsDb(), maxLevel: highestSlotLevel(d.spellSlots) });
+            renderClassSpells(character, d, choices);
             renderFeatSpells(character, d);
-            renderSubclassSpells(character, d);
+            renderSubclassSpells(character, d, choices);
             renderSpeciesSpells(character, d);
         }
     };

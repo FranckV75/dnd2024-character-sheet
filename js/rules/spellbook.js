@@ -8,7 +8,8 @@
 //    s'y ajoutent sans limite : le nombre attendu est un simple repère, jamais une erreur.
 //  - Livre noté : sorts de niveau 1 et plus du grimoire de la fiche, hors sorts donnés (sorts de
 //    sous-classe toujours préparés, dons, espèce), qui ne sont pas dans le livre. Les sorts mineurs
-//    ne vont jamais dans le livre.
+//    ne vont jamais dans le livre. Les sorts de Maîtrise des sorts et les Sorts de prédilection
+//    (js/rules/spell-choices.js) sont toujours préparés mais restent des sorts du livre.
 //  - Copier un sort trouvé : 2 heures et 50 po par niveau du sort ; copie de secours de son propre
 //    livre : 1 heure et 10 po par niveau. Philosophe de l'Académie (Odyssée), école Cynisme : temps
 //    et argent de la copie divisés par deux.
@@ -79,13 +80,16 @@ export function freeSpellbookSpells(level, subclass = '') {
  * Sorts du livre notés au grimoire : lignes de niveau 1 et plus, hors sorts donnés.
  * @param {Array<Object>} rows - dynamic_spells
  * @param {Set<string>|null} [granted] - grantedSpellKeys()
+ * @param {Set<string>|null} [inBook] - sorts donnés qui sont quand même dans le livre (Maîtrise
+ *        des sorts, Sorts de prédilection : chosenSpellKeys(…, { from: 'book' }))
  * @returns {number}
  */
-export function spellbookCount(rows, granted = null) {
+export function spellbookCount(rows, granted = null, inBook = null) {
     let count = 0;
     for (const row of Array.isArray(rows) ? rows : []) {
         if (isSpellRowEmpty(row) || rowLevel(row) === '0') continue;
-        if (granted?.has(spellNameKey(row.name))) continue;
+        const key = spellNameKey(row.name);
+        if (granted?.has(key) && !inBook?.has(key)) continue;
         count++;
     }
     return count;

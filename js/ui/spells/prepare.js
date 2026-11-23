@@ -90,7 +90,7 @@ export async function openPrepareSpells({ store, setStatus }) {
 
     const viewOf = (character) => {
         const d = derivedOf(character);
-        const granted = grantedSpellKeys(character, d);
+        const granted = grantedSpellKeys(character, d, db);
         return { d, granted, view: preparationView(rowsOf(character), db, { classSlug, maxLevel: highestSlotLevel(d.spellSlots), granted }) };
     };
 

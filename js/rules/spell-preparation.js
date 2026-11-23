@@ -12,7 +12,9 @@
 //    manifestations…) : losange à cocher comme avant, pour ne compter que ceux qui sont préparés.
 //  - État affiché du losange d'une ligne : calcul d'affichage, jamais écrit dans la fiche (la clé
 //    v3 « prep » garde la valeur du joueur, qui reprend son sens s'il change de classe).
-//  - Sorts donnés (classe, sous-classe, dons, espèce) : hors du compte de la table.
+//  - Sorts donnés (classe, sous-classe, dons, espèce, sorts choisis d'une capacité : Maîtrise des
+//    sorts et Sorts de prédilection du Magicien, Découvertes magiques du Collège du Savoir,
+//    js/rules/spell-choices.js) : hors du compte de la table.
 //  - Lancer un sort : niveaux d'emplacement possibles (niveau du sort et au-dessus, emplacements
 //    de pacte compris) et emplacement coché.
 //  - Fenêtre « Préparer mes sorts » (Clerc, Druide, Paladin, Rôdeur : préparation parmi toute la
@@ -39,6 +41,7 @@ import { classAlwaysPreparedSpells } from './class-progression.js';
 import { featSpellGroups } from './feat-spells.js';
 import { subclassSpells } from './subclass-features.js';
 import { speciesSpellNames } from './species.js';
+import { chosenSpellKeys } from './spell-choices.js';
 
 /** Classes dont la liste de sorts préparés ne change qu'au passage de niveau */
 export const WHOLE_LIST_CLASSES = Object.freeze(['bard', 'sorcerer', 'warlock']);
@@ -63,8 +66,9 @@ const MAGICAL_SECRETS_LISTS = Object.freeze(['bard', 'cleric', 'druid', 'wizard'
  * niveau de sort préparable (plus haut emplacement de la table : emplacements de pacte pour
  * l'Occultiste ; ceux ajoutés à la main, Arcanum mystique ou multiclasse, ne comptent pas).
  * Collège du Savoir : ses deux Découvertes magiques viennent des mêmes listes que Secrets
- * magiques et ne comptent pas ; on ne peut pas les distinguer, ses sorts hors de la liste du
- * Barde restent donc à cocher.
+ * magiques et ne comptent pas ; tant qu'elles ne sont pas choisies dans les menus du grimoire
+ * (js/rules/spell-choices.js), on ne peut pas les distinguer : ses sorts hors de la liste du
+ * Barde restent donc à cocher (choisies, elles sont des sorts donnés : grantedSpellKeys).
  * @param {{ classSlug?: string, subclass?: string, level?: number, spellSlots?: Object }} derived - deriveCharacter()
  * @returns {{ lists: string[], maxLevel: number }|null} null : pas une classe à liste fixe
  */
@@ -110,14 +114,18 @@ export function fitsWholeList(row, source, spell = null) {
 
 /**
  * Sorts déjà donnés à la fiche (toujours préparés par la classe, sorts de sous-classe atteints,
- * sorts de dons et d'espèce) : notés aussi au grimoire, ils ne comptent pas dans la table de la
- * classe. Cercle de la Terre sans terrain choisi : aucun terrain n'est préparé, ses sorts restent
- * des sorts de Druide ordinaires.
+ * sorts de dons et d'espèce, sorts choisis d'une capacité : Maîtrise des sorts, Sorts de
+ * prédilection, Découvertes magiques) : notés aussi au grimoire, ils ne comptent pas dans la table
+ * de la classe. Cercle de la Terre sans terrain choisi : aucun terrain n'est préparé, ses sorts
+ * restent des sorts de Druide ordinaires.
  * @param {Object} character
  * @param {Object} derived - deriveCharacter()
+ * @param {Array<Object>|null} [db] - base de sorts : un sort choisi est enregistré sous son nom
+ *        anglais, la base donne son nom français (celui de la ligne du grimoire) ; absente (base
+ *        pas encore chargée) : seul le nom enregistré est reconnu
  * @returns {Set<string>} noms comparables (spellNameKey)
  */
-export function grantedSpellKeys(character, derived) {
+export function grantedSpellKeys(character, derived, db = null) {
     const names = derived.classSlug ? classAlwaysPreparedSpells(derived.classSlug, derived.level) : [];
     const { reached } = subclassSpells(derived);
     const landUnchosen = derived.subclass === 'circle_of_the_land' && new Set(reached.map(spell => spell.group)).size > 1;
@@ -129,7 +137,7 @@ export function grantedSpellKeys(character, derived) {
         for (const spell of group.spells) names.push(spell.name, spell.vo);
     }
     names.push(...speciesSpellNames(character, derived));
-    return new Set(names.filter(Boolean).map(spellNameKey));
+    return new Set([...names.filter(Boolean).map(spellNameKey), ...chosenSpellKeys(character, derived, db)]);
 }
 
 /**

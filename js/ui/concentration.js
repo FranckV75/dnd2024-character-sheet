@@ -2,7 +2,8 @@
 // CONCENTRATION.JS (interface) - Ligne « Concentration » en tête de l'encadré « États »
 //
 // Menu du sort sur lequel le personnage se concentre (sorts « C » du grimoire, et sorts donnés par
-// la classe, les dons, l'espèce ou la sous-classe qui demandent la Concentration), puis le rappel : jet de
+// la classe, les dons, l'espèce ou la sous-classe, Découvertes magiques du Collège du Savoir
+// comprises, qui demandent la Concentration), puis le rappel : jet de
 // sauvegarde de Constitution chiffré après des dégâts, Avantage (Mage de guerre), fin sous l'état
 // Neutralisé avec un bouton « Terminer ». Le pavé « Dégâts / Soins » (js/ui/hit-points.js) donne
 // le DD exact. Champ de jeu : utilisable fiche verrouillée. Règles : js/rules/concentration.js.
@@ -19,6 +20,8 @@ import { featSpellGroups } from '../rules/feat-spells.js';
 import { subclassSpells } from '../rules/subclass-features.js';
 import { speciesView } from '../rules/species.js';
 import { classGrantedSpells } from '../rules/class-progression.js';
+import { chosenSpells } from '../rules/spell-choices.js';
+import { spellDisplayName } from '../rules/spells.js';
 
 // Tout ce qui change le menu ou le jet de Constitution (maîtrise, Aura de protection au Charisme, Rage,
 // armure lourde qui rend la Rage sans effet)
@@ -37,7 +40,11 @@ function grantedConcentration(character, derived, byVo) {
         ...(derived.classSlug ? classGrantedSpells(derived.classSlug, derived.level) : []),
         ...featSpellGroups(character, derived).flatMap((group) => group.spells),
         ...subclassSpells(derived).reached,
-        ...(speciesView(character, derived)?.spells ?? []).filter((spell) => spell.reached)
+        ...(speciesView(character, derived)?.spells ?? []).filter((spell) => spell.reached),
+        // Découvertes magiques (Collège du Savoir) : sorts choisis, enregistrés sous leur nom
+        // anglais. Ceux du Magicien viennent de son grimoire : déjà dans le menu par leur ligne.
+        ...chosenSpells(character, derived).filter((spell) => spell.from === 'lists' && byVo.has(spell.value))
+            .map((spell) => ({ vo: spell.value, name: spellDisplayName(byVo.get(spell.value)) }))
     ];
     return spells.filter((spell) => byVo.get(spell.vo)?.concentration).map((spell) => spell.name);
 }
