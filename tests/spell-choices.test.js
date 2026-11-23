@@ -12,7 +12,7 @@ import {
     spellChoiceFeatures, chosenSpells, chosenSpellKeys, setSpellChoicePatch, isActionCastTime,
     spellChoiceOptions, spellChoiceView
 } from '../js/rules/spell-choices.js';
-import { grantedSpellKeys, spellPrepState, highestSlotLevel, wholeListSource, fitsWholeList } from '../js/rules/spell-preparation.js';
+import { grantedSpellKeys, givenSpellKeys, spellPrepState, highestSlotLevel, wholeListSource, fitsWholeList } from '../js/rules/spell-preparation.js';
 import { spellbookCount } from '../js/rules/spellbook.js';
 import { spellCounts, spellNameKey, findSpellByName } from '../js/rules/spells.js';
 import { allFreeCasts, freeCastsFor, useFreeCastPatch } from '../js/rules/free-casts.js';
@@ -20,7 +20,8 @@ import { CLASS_COUNTERS, subclassCounters, restSubclassUses } from '../js/rules/
 import { classProgression } from '../js/rules/class-progression.js';
 import { subclassFeatures } from '../js/rules/subclass-features.js';
 import { planShortRest, planLongRest } from '../js/rules/rest.js';
-import { V4_ONLY_KEYS } from '../js/cloud/sync.js';
+import { V4_ONLY_KEYS, fingerprint } from '../js/cloud/sync.js';
+import { createStore } from '../js/state/store.js';
 import { deriveCharacter } from '../js/rules/character.js';
 import { createDefaultCharacter } from '../js/state/schema.js';
 
@@ -43,7 +44,7 @@ const row = (name, lvl, time = 'Action', extra = {}) => ({ name, lvl: String(lvl
 const BOOK = [
     row('Bouclier', 1, 'Réaction'), row('Projectile magique', 1), row('Armure du mage', 1), row('Détection de la magie', 1, 'Action ou Rituel'),
     row('Foulée brumeuse', 2, 'Action bonus'), row('Invisibilité', 2),
-    row('Boule de feu', 3), row('Contresort', 3, 'Réaction'), row('Lumière du jour', 3),
+    row('Boule de feu', 3), row('Contresort', 3, 'Réaction'), row('Éclair', 3),
     row('Illusion mineure', 0)
 ];
 const wizard = (level, extra = {}) => mk({ char_class: 'Magicien', char_level: String(level), int_score: '18', dynamic_spells: BOOK, ...extra });
@@ -139,11 +140,41 @@ describe('Sorts choisis : enregistrer un choix (setSpellChoicePatch)', () => {
             { subclass_choices: { college_of_lore: { autre: 'x', discovery1: 'Guidance' } } });
     });
 
-    test('Choix effacé : la valeur est retirée, et le groupe vide aussi', () => {
+    test('Choix effacé : la valeur est retirée, le groupe vide aussi, et la clé s\'il ne reste plus rien', () => {
         const two = wizard(18, { subclass_choices: { wizard: { mastery1: 'Magic Missile', mastery2: 'Invisibility' } } });
         assert.deepEqual(setSpellChoicePatch(two, derive(two), 'mastery1', ''), { subclass_choices: { wizard: { mastery2: 'Invisibility' } } });
+        // Dernier choix de la fiche : la clé est retirée (undefined), jamais laissée en objet vide
         const one = wizard(18, { subclass_choices: { wizard: { mastery1: 'Magic Missile' } } });
-        assert.deepEqual(setSpellChoicePatch(one, derive(one), 'mastery1', ''), { subclass_choices: {} });
+        const last = setSpellChoicePatch(one, derive(one), 'mastery1', '');
+        assert.deepEqual(Object.keys(last), ['subclass_choices']);
+        assert.equal(last.subclass_choices, undefined);
+        // Un autre groupe a encore des choix (sous-classe) : seul le groupe vide part
+        const other = wizard(18, { subclass_choices: { wizard: { mastery1: 'Magic Missile' }, evoker: { autre: 'x' } } });
+        assert.deepEqual(setSpellChoicePatch(other, derive(other), 'mastery1', ''), { subclass_choices: { evoker: { autre: 'x' } } });
+        // Le groupe garde un autre choix que les sorts (Collège du Savoir) : il reste
+        const bard = lore(6, { subclass_choices: { college_of_lore: { autre: 'x', discovery1: 'Guidance' } } });
+        assert.deepEqual(setSpellChoicePatch(bard, derive(bard), 'discovery1', ''), { subclass_choices: { college_of_lore: { autre: 'x' } } });
+    });
+
+    test('Choisir un sort puis revenir sur « Choisir » : la fiche redevient exactement celle d\'avant', () => {
+        for (const [start, key, value] of [[lore(6), 'discovery1', 'Guidance'], [wizard(18), 'mastery1', 'Magic Missile'], [wizard(20), 'signature2', 'Fireball']]) {
+            const store = createStore(start);
+            const before = JSON.stringify(store.get());
+            const print = fingerprint(store.get());
+            store.update(setSpellChoicePatch(store.get(), derive(store.get()), key, value));
+            assert.notEqual(JSON.stringify(store.get()), before);
+            assert.notEqual(fingerprint(store.get()), print);
+            store.update(setSpellChoicePatch(store.get(), derive(store.get()), key, ''));
+            // Ce qui est enregistré (JSON) et l'empreinte de la synchronisation : comme avant le choix
+            assert.equal(JSON.stringify(store.get()), before);
+            assert.equal(fingerprint(store.get()), print);
+            assert.equal(JSON.parse(JSON.stringify(store.get())).subclass_choices, undefined);
+            // La clé retirée se lit comme une clé absente : aucun sort choisi, mêmes sorts donnés
+            assert.deepEqual(chosenSpells(store.get(), derive(store.get()), db), []);
+            assert.deepEqual(grantedSpellKeys(store.get(), derive(store.get()), db), grantedSpellKeys(start, derive(start), db));
+            // Effacer de nouveau : rien à faire
+            assert.deepEqual(setSpellChoicePatch(store.get(), derive(store.get()), key, ''), {});
+        }
     });
 
     test('Rien ne change : patch vide (même valeur, effacer un choix absent)', () => {
@@ -218,7 +249,7 @@ describe('Sorts choisis : menus du Magicien (sorts de son grimoire)', () => {
     });
 
     test('Sorts de prédilection : tout sort de niveau 3 du grimoire, quel que soit son temps', () => {
-        assert.deepEqual(values(options(signature, 'signature1')), ['Fireball', 'Counterspell', 'Daylight']);
+        assert.deepEqual(values(options(signature, 'signature1')), ['Fireball', 'Counterspell', 'Lightning Bolt']);
         assert.deepEqual(options(signature, 'signature1').map(option => option.group), ['Niveau 3', 'Niveau 3', 'Niveau 3']);
     });
 
@@ -244,6 +275,44 @@ describe('Sorts choisis : menus du Magicien (sorts de son grimoire)', () => {
         assert.deepEqual(values(options(signature, 'signature1', { rows })), []);
     });
 
+    test('Sort que la base connaît hors de la liste du Magicien : pas dans le livre, pas proposé', () => {
+        // Lueurs féeriques (Barde, Druide), Soins, Bénédiction, Lumière du jour : notés au tableau quand même
+        const rows = [row('Lueurs féeriques', 1), row('Soins', 1), row('Bénédiction', 1), row('Projectile magique', 1),
+            row('Lumière du jour', 3), row('Boule de feu', 3), row('Faerie Fire', 1)];
+        assert.deepEqual(values(options(mastery, 'mastery1', { rows })), ['Magic Missile']);
+        assert.deepEqual(values(options(signature, 'signature1', { rows })), ['Fireball']);
+        // Sort inconnu de la base : on fait confiance au joueur
+        assert.deepEqual(values(options(mastery, 'mastery1', { rows: [row('Sort maison', 1)] })), ['Sort maison']);
+        // Tous les sorts de Magicien de la base restent proposables
+        const wizardSpells = db.filter(spell => spell.level === 3 && spell.classes.includes('wizard'));
+        assert.equal(options(signature, 'signature1', { rows: wizardSpells.map(spell => row(spell.name, 3)) }).length, wizardSpells.length);
+    });
+
+    test('Sort donné par la sous-classe, un don ou l\'espèce (given) : pas dans le livre, pas proposé', () => {
+        // Ténèbres (sort de Magicien de niveau 2, une action) donné par l'espèce ; Sommeil par un don
+        const rows = [row('Ténèbres', 2), row('Invisibilité', 2), row('Sommeil', 1), row('Projectile magique', 1), row('Sort maison', 1)];
+        const given = new Set(['Ténèbres', 'Sleep', 'Sort maison'].map(spellNameKey));
+        assert.deepEqual(values(options(mastery, 'mastery2', { rows })), ['Invisibility', 'Darkness']);
+        assert.deepEqual(values(options(mastery, 'mastery2', { rows, given })), ['Invisibility']);
+        // Reconnu par le nom français comme par le nom anglais, et par le nom noté d'un sort inconnu de la base
+        assert.deepEqual(values(options(mastery, 'mastery1', { rows, given })), ['Magic Missile']);
+        assert.deepEqual(values(options(mastery, 'mastery2', { rows: [row('Darkness', 2)], given })), []);
+        // Liste vide ou valeur abîmée : rien n'est écarté
+        for (const none of [null, undefined, new Set(), [], 'x']) {
+            assert.deepEqual(values(options(mastery, 'mastery2', { rows, given: none })), ['Invisibility', 'Darkness']);
+        }
+        // Déjà choisi avant (ancienne sauvegarde) : gardé en tête du menu, pour rester lisible et modifiable
+        const [stale, ...rest] = options(mastery, 'mastery2', { rows, given, current: 'Darkness' });
+        assert.deepEqual([stale.value, stale.label, stale.stale, stale.selected], ['Darkness', 'Ténèbres', true, true]);
+        assert.deepEqual(values(rest), ['Invisibility']);
+    });
+
+    test('Découvertes magiques : la liste des sorts donnés ne retire rien (ces sorts ne viennent pas du livre)', () => {
+        const discoveries = feature('decouvertes_magiques');
+        const menu = (context) => spellChoiceOptions(discoveries, field(discoveries.id, 'discovery1'), { db, maxLevel: 3, ...context });
+        assert.deepEqual(menu({ given: new Set(['Bless', 'Fireball'].map(spellNameKey)) }), menu({}));
+    });
+
     test('Lignes vides, abîmées, sorts mineurs : ignorés', () => {
         const rows = [null, 'x', {}, row('', 1), row('Illusion mineure', 0), row('Projectile magique', 1)];
         assert.deepEqual(values(options(mastery, 'mastery1', { rows })), ['Magic Missile']);
@@ -254,7 +323,7 @@ describe('Sorts choisis : menus du Magicien (sorts de son grimoire)', () => {
     test('Sort choisi : option marquée ; sort pris par l\'autre menu : grisé', () => {
         const first = options(signature, 'signature1', { current: 'Fireball', taken: ['Counterspell'] });
         assert.deepEqual(first.map(option => [option.value, option.selected, option.disabled]),
-            [['Fireball', true, false], ['Counterspell', false, true], ['Daylight', false, false]]);
+            [['Fireball', true, false], ['Counterspell', false, true], ['Lightning Bolt', false, false]]);
         // Valeur enregistrée sous le nom français : la même option est marquée
         assert.equal(options(signature, 'signature1', { current: 'Boule de feu' }).find(option => option.selected).value, 'Fireball');
     });
@@ -449,6 +518,51 @@ describe('Sorts choisis : ce que le grimoire affiche (spellChoiceView)', () => {
         assert.match(mastery.fields[1].hint, /Aucun sort de niveau 2 lancé en une action dans votre grimoire/);
     });
 
+    test('Magicien Elfe drow : le sort d\'espèce noté au tableau n\'est pas proposé (il n\'est pas dans le livre)', () => {
+        const rows = [row('Lueurs féeriques', 1), row('Ténèbres', 2), row('Invisibilité', 2), row('Projectile magique', 1)];
+        const drow = wizard(18, { char_species: 'Elfe', species_choices: { option: 'drow', ability: 'int' }, dynamic_spells: rows });
+        const given = givenSpellKeys(drow, derive(drow));
+        assert.ok(given.has(spellNameKey('Lueurs féeriques')) && given.has(spellNameKey('Ténèbres')));
+        const [mastery] = view(drow, { db, given });
+        assert.deepEqual(mastery.fields.map(menu => menu.options.map(option => option.value)), [['Magic Missile'], ['Invisibility']]);
+        // Sans l'espèce : Ténèbres est un sort de Magicien comme un autre ; Lueurs féeriques n'en est jamais un
+        const human = wizard(18, { dynamic_spells: rows });
+        const [plain] = view(human, { db, given: givenSpellKeys(human, derive(human)) });
+        assert.deepEqual(plain.fields.map(menu => menu.options.map(option => option.value)), [['Magic Missile'], ['Invisibility', 'Darkness']]);
+        // La ligne « Livre » ne compte pas ces sorts non plus : le menu et le compte disent la même chose
+        assert.equal(spellbookCount(rows, grantedSpellKeys(drow, derive(drow), db)), 2);
+    });
+
+    test('Sort d\'un don noté au tableau (Initié à la magie) : pas proposé non plus', () => {
+        const rows = [row('Sommeil', 1), row('Projectile magique', 1)];
+        const c = wizard(18, {
+            dynamic_spells: rows, feat_1: 'initie_a_la_magie',
+            feat_choices: { 1: { initie_a_la_magie: { list: 'wizard', castAbility: 'int', cantrip1: 'Light', cantrip2: 'Mage Hand', spell: 'Sleep' } } }
+        });
+        const given = givenSpellKeys(c, derive(c));
+        assert.ok(given.has(spellNameKey('Sommeil')));
+        const [mastery] = view(c, { db, given });
+        assert.deepEqual(mastery.fields[0].options.map(option => option.value), ['Magic Missile']);
+    });
+
+    test('Sort choisi qui n\'est pas un sort du livre : l\'avertissement dit pourquoi, rien n\'est effacé', () => {
+        const rows = [row('Ténèbres', 2), row('Lueurs féeriques', 1), row('Projectile magique', 1)];
+        const drow = wizard(18, {
+            char_species: 'Elfe', species_choices: { option: 'drow', ability: 'int' }, dynamic_spells: rows,
+            subclass_choices: { wizard: { mastery1: 'Faerie Fire', mastery2: 'Darkness' } }
+        });
+        const [mastery] = view(drow, { db, given: givenSpellKeys(drow, derive(drow)) });
+        assert.deepEqual(mastery.fields.map(menu => menu.value), ['Faerie Fire', 'Darkness']);
+        assert.equal(mastery.fields[0].warning, "« Lueurs féeriques » vous est donné par votre sous-classe, un don ou votre espèce : ce n'est pas un sort de votre livre. Choisissez-en un autre.");
+        assert.equal(mastery.fields[1].warning, "« Ténèbres » vous est donné par votre sous-classe, un don ou votre espèce : ce n'est pas un sort de votre livre. Choisissez-en un autre.");
+        // Sort hors de la liste du Magicien, sans don ni espèce
+        const human = wizard(18, { dynamic_spells: rows, subclass_choices: { wizard: { mastery1: 'Faerie Fire' } } });
+        const [plain] = view(human, { db, given: givenSpellKeys(human, derive(human)) });
+        assert.equal(plain.fields[0].warning, "« Lueurs féeriques » n'est pas un sort de Magicien : il ne peut pas être dans votre livre. Choisissez-en un autre.");
+        // Base pas encore chargée : aucun avertissement
+        assert.deepEqual(view(drow, { db: null, given: givenSpellKeys(drow, derive(drow)) })[0].fields.map(menu => menu.warning), ['', '']);
+    });
+
     test('Sorts de prédilection sans sort de niveau 3 au grimoire : le menu dit quoi noter', () => {
         const [, signature] = view(wizard(20, { dynamic_spells: [row('Projectile magique', 1)] }));
         assert.equal(signature.fields[0].hint, "Aucun sort de niveau 3 dans votre grimoire : notez-le d'abord dans le tableau des sorts.");
@@ -637,7 +751,9 @@ describe('Sorts choisis : interface (js/ui/spells/choices.js, granted.js, spells
     });
 
     test('Blocs « Sorts de classe » (Magicien) et « Sorts de sous-classe » (Collège du Savoir)', () => {
-        assert.match(granted, /spellChoiceView\(character, d, \{ db: getSpellsDb\(\), maxLevel: highestSlotLevel\(d\.spellSlots\) \}\)/);
+        // given : les sorts donnés SANS les sorts choisis (grantedSpellKeys écarterait du menu le sort choisi lui-même)
+        assert.match(granted, /spellChoiceView\(character, d, \{\s*db: getSpellsDb\(\), maxLevel: highestSlotLevel\(d\.spellSlots\), given: givenSpellKeys\(character, d\)\s*\}\)/);
+        assert.doesNotMatch(granted, /given: grantedSpellKeys/);
         assert.match(granted, /choiceFeatures\(choices, 'class', character\.dynamic_spells\)/);
         assert.match(granted, /choiceFeatures\(choices, 'subclass', character\.dynamic_spells\)/);
         assert.match(granted, /classBox\.hidden = spells\.length === 0 && arcana\.length === 0 && features\.length === 0/);

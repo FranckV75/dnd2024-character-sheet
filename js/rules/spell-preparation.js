@@ -21,7 +21,9 @@
 //    fenêtre « Préparer mes sorts » compare les sorts préparés à ceux de son ouverture
 //    (preparedSpellNames, preparationSwap) et le dit en clair ; plus d'un sort retiré : simple
 //    avertissement, rien n'est bloqué (premier remplissage, gain de niveau, erreur à corriger).
-//    Rien n'est écrit dans la fiche pour ce suivi.
+//    Rien n'est écrit dans la fiche pour ce suivi : d'une ouverture à l'autre, la fenêtre ne sait
+//    pas si l'échange a déjà eu lieu. Elle ne dit « échange de ce repos long » qu'ouverte par le
+//    rappel de fin de repos long ; ouverte par le bouton du grimoire, elle rappelle la règle.
 //  - Fenêtre « Préparer mes sorts » (Clerc, Druide, Paladin, Rôdeur : préparation parmi toute la
 //    liste de classe, changée après un repos long) : sorts de la liste jusqu'au plus haut
 //    emplacement, cocher (prep à true, ou ligne ajoutée depuis la base), décocher (prep à false ;
@@ -42,7 +44,7 @@ import {
     rowLevel, spellNameKey, slotView, slotLevels, toggleSlotUsed, findSpellByName, spellToRow, spellNames,
     spellDisplayName, isPrepared, isSpellRowEmpty, normalizeText, plainText
 } from './spells.js';
-import { classAlwaysPreparedSpells } from './class-progression.js';
+import { classGrantedSpells } from './class-progression.js';
 import { featSpellGroups } from './feat-spells.js';
 import { subclassSpells } from './subclass-features.js';
 import { speciesSpellNames } from './species.js';
@@ -118,20 +120,23 @@ export function fitsWholeList(row, source, spell = null) {
 }
 
 /**
- * Sorts déjà donnés à la fiche (toujours préparés par la classe, sorts de sous-classe atteints,
- * sorts de dons et d'espèce, sorts choisis d'une capacité : Maîtrise des sorts, Sorts de
- * prédilection, Découvertes magiques) : notés aussi au grimoire, ils ne comptent pas dans la table
- * de la classe. Cercle de la Terre sans terrain choisi : aucun terrain n'est préparé, ses sorts
- * restent des sorts de Druide ordinaires.
+ * Sorts donnés à la fiche sans choix dans le grimoire : toujours préparés par la classe, sorts de
+ * sous-classe atteints, sorts de dons et d'espèce. Chaque sort est reconnu sous son nom français
+ * et sous son nom anglais (ligne « Divine Smite » d'une fiche venue de la v3). Cercle de la Terre
+ * sans terrain choisi : aucun terrain n'est préparé, ses sorts restent des sorts de Druide
+ * ordinaires.
+ * Sans les sorts choisis d'une capacité (Maîtrise des sorts, Sorts de prédilection, Découvertes
+ * magiques) : les menus du Magicien s'en servent pour écarter ce qui n'est pas dans le livre
+ * (spellChoiceView de js/rules/spell-choices.js).
  * @param {Object} character
  * @param {Object} derived - deriveCharacter()
- * @param {Array<Object>|null} [db] - base de sorts : un sort choisi est enregistré sous son nom
- *        anglais, la base donne son nom français (celui de la ligne du grimoire) ; absente (base
- *        pas encore chargée) : seul le nom enregistré est reconnu
  * @returns {Set<string>} noms comparables (spellNameKey)
  */
-export function grantedSpellKeys(character, derived, db = null) {
-    const names = derived.classSlug ? classAlwaysPreparedSpells(derived.classSlug, derived.level) : [];
+export function givenSpellKeys(character, derived) {
+    const names = [];
+    for (const spell of derived.classSlug ? classGrantedSpells(derived.classSlug, derived.level) : []) {
+        names.push(spell.name, spell.vo);
+    }
     const { reached } = subclassSpells(derived);
     const landUnchosen = derived.subclass === 'circle_of_the_land' && new Set(reached.map(spell => spell.group)).size > 1;
     for (const spell of reached) {
@@ -142,7 +147,22 @@ export function grantedSpellKeys(character, derived, db = null) {
         for (const spell of group.spells) names.push(spell.name, spell.vo);
     }
     names.push(...speciesSpellNames(character, derived));
-    return new Set([...names.filter(Boolean).map(spellNameKey), ...chosenSpellKeys(character, derived, db)]);
+    return new Set(names.filter(Boolean).map(spellNameKey).filter(Boolean));
+}
+
+/**
+ * Sorts déjà donnés à la fiche (givenSpellKeys : classe, sous-classe, dons, espèce ; et sorts
+ * choisis d'une capacité : Maîtrise des sorts, Sorts de prédilection, Découvertes magiques) :
+ * notés aussi au grimoire, ils sont toujours préparés et ne comptent pas dans la table de la classe.
+ * @param {Object} character
+ * @param {Object} derived - deriveCharacter()
+ * @param {Array<Object>|null} [db] - base de sorts : un sort choisi est enregistré sous son nom
+ *        anglais, la base donne son nom français (celui de la ligne du grimoire) ; absente (base
+ *        pas encore chargée) : seul le nom enregistré est reconnu
+ * @returns {Set<string>} noms comparables (spellNameKey)
+ */
+export function grantedSpellKeys(character, derived, db = null) {
+    return new Set([...givenSpellKeys(character, derived), ...chosenSpellKeys(character, derived, db)]);
 }
 
 /**
@@ -406,32 +426,43 @@ export function preparedSpellNames(rows, granted = null) {
  * dans les sorts préparés depuis l'ouverture de la fenêtre « Préparer mes sorts », dit en une
  * phrase. Un sort retiré puis recoché ne compte pas. Ajouter des sorts sans en retirer est normal
  * (premier remplissage, gain de niveau : la liste se complète jusqu'au nombre de la table).
+ * L'échange n'est permis qu'à la fin d'un repos long, et la fiche ne retient pas d'une ouverture à
+ * l'autre s'il a déjà eu lieu : la phrase ne parle de « l'échange de ce repos long » que si la
+ * fenêtre est ouverte par le rappel de fin de repos long (afterLongRest) ; ouverte par le bouton
+ * du grimoire, elle rappelle que l'échange se fait à la fin d'un repos long, une seule fois.
  * @param {Map<string, string>} before - preparedSpellNames() à l'ouverture de la fenêtre
  * @param {Map<string, string>} after - preparedSpellNames() maintenant
+ * @param {{ afterLongRest?: boolean }} [options] - fenêtre ouverte par le rappel de fin de repos long
  * @returns {{ removed: string[], added: string[], over: boolean, text: string }}
  *   removed / added : noms des sorts retirés et ajoutés ; over : plus d'un sort retiré, ce que la
  *   règle ne permet pas (simple avertissement : la fiche ne bloque et n'annule rien)
  */
-export function preparationSwap(before, after) {
+export function preparationSwap(before, after, options = null) {
+    // Seul un vrai « true » compte : sans option (ou option abîmée), la phrase prudente
+    const afterLongRest = options?.afterLongRest === true;
     const from = before instanceof Map ? before : new Map();
     const to = after instanceof Map ? after : new Map();
     const removed = [...from].filter(([key]) => !to.has(key)).map(([, name]) => name);
     const added = [...to].filter(([key]) => !from.has(key)).map(([, name]) => name);
     const quote = (names) => names.map(name => `« ${name} »`).join(', ');
     const over = removed.length > 1;
+    // Devant un échange : celui de ce repos long, ou simple rappel de la règle hors du repos long
+    const swap = afterLongRest ? 'Échange de ce repos long' : "Échange (permis une seule fois, à la fin d'un repos long)";
     let text;
     if (over) {
         text = `Attention : ${removed.length} sorts retirés (${quote(removed)}). La règle ne permet d'en remplacer qu'un seul par repos long : recochez ceux que vous gardez.`;
     } else if (removed.length === 1 && added.length === 0) {
-        text = `${quote(removed)} retiré : cochez le sort qui le remplace.`;
+        text = `${quote(removed)} retiré : cochez le sort qui le remplace.${afterLongRest ? '' : " Rappel : cet échange se fait à la fin d'un repos long, une seule fois."}`;
     } else if (removed.length === 1 && added.length === 1) {
-        text = `Échange de ce repos long : ${quote(removed)} remplacé par ${quote(added)}.`;
+        text = `${swap} : ${quote(removed)} remplacé par ${quote(added)}.`;
     } else if (removed.length === 1) {
-        text = `Échange de ce repos long : ${quote(removed)} retiré. Ajoutés : ${quote(added)} (un seul le remplace ; les autres complètent votre liste, après un gain de niveau).`;
+        text = `${swap} : ${quote(removed)} retiré. Ajoutés : ${quote(added)} (un seul le remplace ; les autres complètent votre liste, après un gain de niveau).`;
     } else if (added.length) {
         text = `Aucun sort retiré. ${added.length > 1 ? 'Ajoutés' : 'Ajouté'} : ${quote(added)} (vous complétez votre liste : premier choix ou gain de niveau).`;
     } else {
-        text = "Un seul échange par repos long : aucun sort remplacé pour l'instant.";
+        text = afterLongRest
+            ? "Un seul échange par repos long : aucun sort remplacé pour l'instant."
+            : "Un seul échange est permis, à la fin d'un repos long : aucun sort remplacé pour l'instant.";
     }
     return { removed, added, over, text };
 }

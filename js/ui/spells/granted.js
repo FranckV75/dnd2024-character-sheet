@@ -25,7 +25,7 @@
 
 import { spellLevelLabel } from '../../rules/spells.js';
 import { spellChoiceView } from '../../rules/spell-choices.js';
-import { highestSlotLevel } from '../../rules/spell-preparation.js';
+import { highestSlotLevel, givenSpellKeys } from '../../rules/spell-preparation.js';
 import { spellChoiceGroup, keepChoiceFocus } from './choices.js';
 import { featSpellGroups, setFeatSpellUsePatch } from '../../rules/feat-spells.js';
 import { subclassSpells, subclassFeatures, markListedSpells } from '../../rules/subclass-features.js';
@@ -405,8 +405,11 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb, onCast = null
         speciesBox,
         render(character, d) {
             affinity = elementalAffinity(d);
-            // Sorts choisis d'une capacité (Magicien 18+, Barde du Collège du Savoir 6+) : [] sinon
-            const choices = spellChoiceView(character, d, { db: getSpellsDb(), maxLevel: highestSlotLevel(d.spellSlots) });
+            // Sorts choisis d'une capacité (Magicien 18+, Barde du Collège du Savoir 6+) : [] sinon.
+            // given : sorts donnés (sous-classe, don, espèce), absents des menus du livre du Magicien
+            const choices = spellChoiceView(character, d, {
+                db: getSpellsDb(), maxLevel: highestSlotLevel(d.spellSlots), given: givenSpellKeys(character, d)
+            });
             renderClassSpells(character, d, choices);
             renderFeatSpells(character, d);
             renderSubclassSpells(character, d, choices);

@@ -5,7 +5,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-    preparesWholeList, grantedSpellKeys, spellPrepState, inCombatView, isCastable,
+    preparesWholeList, grantedSpellKeys, givenSpellKeys, spellPrepState, inCombatView, isCastable,
     castSlotOptions, useSpellSlot, wholeListSource, fitsWholeList, highestSlotLevel,
     SPELL_PREPARATION, WHOLE_LIST_CLASSES, preparesFromClassList, longRestPreparation, preparationView,
     prepareSpellRows, unprepareSpellRows, setRowPrepared, matchesSpellQuery,
@@ -138,6 +138,46 @@ describe('Sorts donnés hors du compte', () => {
         const keys = grantedSpellKeys({ char_class: 'Paladin', char_level: '5' }, paladin);
         assert.ok(keys.has(spellNameKey('Châtiment divin')));
         assert.ok(keys.has(spellNameKey('Appel de destrier')));
+    });
+
+    test('Sort de classe noté sous son nom anglais (fiche venue de la v3) : toujours préparé, hors du compte', () => {
+        const record = { char_class: 'Paladin', char_level: '5' };
+        const granted = grantedSpellKeys(record, deriveCharacter(record));
+        for (const name of ['Divine Smite', 'divine smite', 'Find Steed', 'Châtiment divin', 'Appel de destrier']) {
+            assert.ok(granted.has(spellNameKey(name)), name);
+        }
+        const rows = [
+            { ...EMPTY_SPELL, lvl: '1', name: 'Divine Smite', prep: true }, { ...EMPTY_SPELL, lvl: '2', name: 'Find Steed', prep: false },
+            { ...EMPTY_SPELL, lvl: '1', name: 'Bénédiction', prep: true }
+        ];
+        assert.deepEqual(rows.map(entry => spellPrepState(entry, { granted })), ['granted', 'granted', 'prepared']);
+        assert.equal(spellCounts(rows, '', granted).prepared, 1);
+        // Suivi de l'échange (« Préparer mes sorts ») : la ligne anglaise n'est pas un sort préparé compté
+        assert.deepEqual([...preparedSpellNames(rows, granted).values()], ['Bénédiction']);
+        // Toutes les classes : le nom anglais de chaque sort toujours préparé est reconnu
+        for (const [name, level, english] of [['Rôdeur', '1', "Hunter's Mark"], ['Druide', '1', 'Speak with Animals'],
+            ['Occultiste', '9', 'Contact Other Plane'], ['Barde', '20', 'Power Word Kill']]) {
+            const c = { char_class: name, char_level: level };
+            assert.ok(grantedSpellKeys(c, deriveCharacter(c)).has(spellNameKey(english)), english);
+        }
+        // Avant le niveau de la capacité : rien
+        const young = { char_class: 'Paladin', char_level: '1' };
+        assert.equal(grantedSpellKeys(young, deriveCharacter(young)).has(spellNameKey('Divine Smite')), false);
+    });
+
+    test('givenSpellKeys : les sorts donnés sans les sorts choisis d\'une capacité', () => {
+        const wizard = { char_class: 'Magicien', char_level: '18', subclass_choices: { wizard: { mastery1: 'Magic Missile' } } };
+        const d = deriveCharacter(wizard);
+        assert.equal(givenSpellKeys(wizard, d).has(spellNameKey('Magic Missile')), false);
+        assert.equal(grantedSpellKeys(wizard, d).has(spellNameKey('Magic Missile')), true);
+        // Sans sort choisi : les deux listes sont les mêmes
+        for (const record of [{ char_class: 'Paladin', char_level: '9', char_subclass: 'Serment de dévotion' },
+            { char_class: 'Magicien', char_level: '5', char_species: 'Elfe', species_choices: { option: 'drow', ability: 'int' } }, {}]) {
+            const derived = deriveCharacter(record);
+            assert.deepEqual(givenSpellKeys(record, derived), grantedSpellKeys(record, derived));
+        }
+        const drow = { char_class: 'Magicien', char_level: '5', char_species: 'Elfe', species_choices: { option: 'drow', ability: 'int' } };
+        assert.ok(givenSpellKeys(drow, deriveCharacter(drow)).has(spellNameKey('Ténèbres')));
     });
 
     test('Cercle de la Terre : sans terrain choisi, aucun sort de terrain n\'est retiré du compte', () => {
@@ -401,6 +441,8 @@ describe('Fenêtre « Préparer mes sorts »', () => {
 });
 
 describe('Paladin et Rôdeur : fenêtre « Préparer mes sorts », un seul sort remplacé par repos long', () => {
+    /** Fenêtre ouverte par le rappel de fin de repos long */
+    const REST = { afterLongRest: true };
     const base = JSON.parse(readFileSync(new URL('../data/spells.json', import.meta.url), 'utf8'));
     const db = Array.isArray(base) ? base : Object.values(base);
     const spell = (name) => {
@@ -477,26 +519,57 @@ describe('Paladin et Rôdeur : fenêtre « Préparer mes sorts », un seul sort 
 
     test('Suivi : rien de changé, un sort retiré, un sort remplacé', () => {
         const before = preparedSpellNames([row('Soins', true), row('Bénédiction', true)]);
-        assert.deepEqual(preparationSwap(before, before),
+        assert.deepEqual(preparationSwap(before, before, REST),
             { removed: [], added: [], over: false, text: "Un seul échange par repos long : aucun sort remplacé pour l'instant." });
         const removed = preparedSpellNames([row('Soins'), row('Bénédiction', true)]);
-        assert.deepEqual(preparationSwap(before, removed),
+        assert.deepEqual(preparationSwap(before, removed, REST),
             { removed: ['Soins'], added: [], over: false, text: '« Soins » retiré : cochez le sort qui le remplace.' });
         const swapped = preparedSpellNames([row('Soins'), row('Bénédiction', true), row('Héroïsme', true)]);
-        assert.deepEqual(preparationSwap(before, swapped),
+        assert.deepEqual(preparationSwap(before, swapped, REST),
             { removed: ['Soins'], added: ['Héroïsme'], over: false, text: 'Échange de ce repos long : « Soins » remplacé par « Héroïsme ».' });
+    });
+
+    test('Suivi hors du rappel de fin de repos long (bouton du grimoire) : la phrase rappelle la règle, sans parler de « ce repos long »', () => {
+        const before = preparedSpellNames([row('Soins', true), row('Bénédiction', true)]);
+        const removed = preparedSpellNames([row('Soins'), row('Bénédiction', true)]);
+        const swapped = preparedSpellNames([row('Soins'), row('Bénédiction', true), row('Héroïsme', true)]);
+        const more = preparedSpellNames([row('Soins'), row('Bénédiction', true), row('Héroïsme', true), row('Faveur divine', true)]);
+        // Sans option, ou afterLongRest: false : même chose (le choix prudent est le défaut)
+        for (const options of [undefined, null, {}, { afterLongRest: false }, { afterLongRest: 'oui' }]) {
+            assert.equal(preparationSwap(before, before, options).text,
+                "Un seul échange est permis, à la fin d'un repos long : aucun sort remplacé pour l'instant.");
+            assert.equal(preparationSwap(before, removed, options).text,
+                "« Soins » retiré : cochez le sort qui le remplace. Rappel : cet échange se fait à la fin d'un repos long, une seule fois.");
+            assert.equal(preparationSwap(before, swapped, options).text,
+                "Échange (permis une seule fois, à la fin d'un repos long) : « Soins » remplacé par « Héroïsme ».");
+            assert.match(preparationSwap(before, more, options).text,
+                /^Échange \(permis une seule fois, à la fin d'un repos long\) : « Soins » retiré\. Ajoutés : « Héroïsme », « Faveur divine »/);
+        }
+        // Aucune de ces phrases ne dit « de ce repos long » ; ce qui a changé est le même dans les deux cas
+        for (const after of [before, removed, swapped, more]) {
+            const plain = preparationSwap(before, after);
+            const rest = preparationSwap(before, after, REST);
+            assert.doesNotMatch(plain.text, /de ce repos long/);
+            assert.deepEqual([plain.removed, plain.added, plain.over], [rest.removed, rest.added, rest.over]);
+        }
+        // Sorts ajoutés sans en retirer, plus d'un sort retiré : mêmes phrases dans les deux cas
+        const added = preparedSpellNames([row('Soins', true), row('Bénédiction', true), row('Héroïsme', true)]);
+        assert.equal(preparationSwap(before, added).text, preparationSwap(before, added, REST).text);
+        const none = preparedSpellNames([row('Héroïsme', true)]);
+        assert.equal(preparationSwap(before, none).over, true);
+        assert.equal(preparationSwap(before, none).text, preparationSwap(before, none, REST).text);
     });
 
     test('Suivi : plus d\'un sort retiré, avertissement sans rien bloquer ; recocher annule', () => {
         const before = preparedSpellNames([row('Soins', true), row('Bénédiction', true), row('Héroïsme', true)]);
         const two = preparedSpellNames([row('Soins'), row('Bénédiction'), row('Héroïsme', true), row('Faveur divine', true)]);
-        const status = preparationSwap(before, two);
+        const status = preparationSwap(before, two, REST);
         assert.equal(status.over, true);
         assert.deepEqual([status.removed, status.added], [['Soins', 'Bénédiction'], ['Faveur divine']]);
         assert.match(status.text, /^Attention : 2 sorts retirés \(« Soins », « Bénédiction »\)\. La règle ne permet d'en remplacer qu'un seul par repos long/);
         // Un des deux recoché : retour à un seul échange
         const back = preparedSpellNames([row('Soins'), row('Bénédiction', true), row('Héroïsme', true), row('Faveur divine', true)]);
-        assert.deepEqual(preparationSwap(before, back),
+        assert.deepEqual(preparationSwap(before, back, REST),
             { removed: ['Soins'], added: ['Faveur divine'], over: false, text: 'Échange de ce repos long : « Soins » remplacé par « Faveur divine ».' });
     });
 
@@ -508,14 +581,16 @@ describe('Paladin et Rôdeur : fenêtre « Préparer mes sorts », un seul sort 
         const one = preparationSwap(preparedSpellNames([row('Soins', true)]), preparedSpellNames([row('Soins', true), row('Héroïsme', true)]));
         assert.equal(one.text, 'Aucun sort retiré. Ajouté : « Héroïsme » (vous complétez votre liste : premier choix ou gain de niveau).');
         // Un échange et un sort de plus (repos long juste après un gain de niveau)
-        const both = preparationSwap(preparedSpellNames([row('Soins', true)]), preparedSpellNames([row('Héroïsme', true), row('Bénédiction', true)]));
+        const both = preparationSwap(preparedSpellNames([row('Soins', true)]), preparedSpellNames([row('Héroïsme', true), row('Bénédiction', true)]), REST);
         assert.equal(both.over, false);
         assert.match(both.text, /^Échange de ce repos long : « Soins » retiré\. Ajoutés : « Héroïsme », « Bénédiction » \(un seul le remplace/);
     });
 
     test('Suivi : valeurs absentes ou abîmées lues comme « aucun sort préparé »', () => {
         for (const broken of [null, undefined, [], {}, 'x']) {
-            assert.equal(preparationSwap(broken, broken).text, "Un seul échange par repos long : aucun sort remplacé pour l'instant.");
+            assert.equal(preparationSwap(broken, broken, REST).text, "Un seul échange par repos long : aucun sort remplacé pour l'instant.");
+            assert.equal(preparationSwap(broken, broken).text, "Un seul échange est permis, à la fin d'un repos long : aucun sort remplacé pour l'instant.");
+            assert.equal(preparationSwap(broken, broken, broken).text, "Un seul échange est permis, à la fin d'un repos long : aucun sort remplacé pour l'instant.");
         }
         assert.deepEqual(preparationSwap(null, new Map([['soins', 'Soins']])).added, ['Soins']);
     });
@@ -527,9 +602,9 @@ describe('Paladin et Rôdeur : fenêtre « Préparer mes sorts », un seul sort 
         const opened = preparedSpellNames(rows, granted);
         assert.equal(opened.size, 3);
         rows = unprepareSpellRows(rows, spell('Héroïsme'), db);
-        assert.equal(preparationSwap(opened, preparedSpellNames(rows, granted)).text, '« Héroïsme » retiré : cochez le sort qui le remplace.');
+        assert.equal(preparationSwap(opened, preparedSpellNames(rows, granted), REST).text, '« Héroïsme » retiré : cochez le sort qui le remplace.');
         const { rows: next, added } = prepareSpellRows(rows, spell('Faveur divine'), db, EMPTY_SPELL);
-        assert.equal(preparationSwap(opened, preparedSpellNames(next, granted)).text, 'Échange de ce repos long : « Héroïsme » remplacé par « Faveur divine ».');
+        assert.equal(preparationSwap(opened, preparedSpellNames(next, granted), REST).text, 'Échange de ce repos long : « Héroïsme » remplacé par « Faveur divine ».');
         // Retour en arrière complet : la ligne ajoutée repart, le sort retiré est recoché
         rows = prepareSpellRows(unprepareSpellRows(next, spell('Faveur divine'), db, added), spell('Héroïsme'), db, EMPTY_SPELL).rows;
         assert.deepEqual(preparationSwap(opened, preparedSpellNames(rows, granted)).removed, []);
@@ -553,7 +628,12 @@ describe('Paladin et Rôdeur : fenêtre « Préparer mes sorts », un seul sort 
         const ui = readFileSync(new URL('../js/ui/spells/prepare.js', import.meta.url), 'utf8');
         assert.match(ui, /const opened = replacesOneSpell\(classSlug\)\s*\? preparedSpellNames\(rowsOf\(store\.get\(\)\), grantedSpellKeys\(store\.get\(\), start, db\)\) : null;/);
         assert.match(ui, /el\('p', \{ class: 'prep-swap', role: 'status', hidden: !opened \}\)/);
-        assert.match(ui, /preparationSwap\(opened, preparedSpellNames\(rows, granted\)\)/);
+        assert.match(ui, /preparationSwap\(opened, preparedSpellNames\(rows, granted\), \{ afterLongRest \}\)/);
+        // Seul le rappel de fin de repos long dit à la fenêtre qu'un repos long vient de finir
+        assert.match(ui, /export async function openPrepareSpells\(\{ store, setStatus, afterLongRest = false \}\)/);
+        assert.match(ui, /on: \{ click: \(\) => \{ openPrepareSpells\(ctx\); \} \}/);
+        const rest = readFileSync(new URL('../js/ui/rest.js', import.meta.url), 'utf8');
+        assert.deepEqual(rest.match(/openPrepareSpells\([^)]*\)/g), ['openPrepareSpells({ store, setStatus, afterLongRest: true })']);
         assert.match(ui, /swap\.classList\.toggle\('is-over', status\.over\)/);
         assert.match(ui, /el\('div', \{ class: 'prep-controls' \}, search, counter, swap\)/);
         // Rien n'est bloqué : les cases restent de simples cases

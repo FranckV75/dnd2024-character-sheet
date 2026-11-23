@@ -15,7 +15,10 @@
 //    liste, décochables (losange seulement).
 //  - Paladin, Rôdeur (un seul sort remplacé par repos long) : une ligne, sous le compteur, dit ce
 //    qui a changé depuis l'ouverture de la fenêtre (« X remplacé par Y ») et avertit si plus d'un
-//    sort a été retiré. Rien n'est bloqué ni écrit dans la fiche pour ce suivi (preparationSwap).
+//    sort a été retiré. Rien n'est bloqué ni écrit dans la fiche pour ce suivi (preparationSwap) :
+//    la fenêtre ne sait donc pas si l'échange du repos long a déjà eu lieu. Elle ne parle de
+//    « l'échange de ce repos long » qu'ouverte par le rappel de fin de repos long (afterLongRest) ;
+//    ouverte par le bouton du grimoire, elle rappelle que l'échange se fait à la fin d'un repos long.
 // Geste de JEU (après un repos long) : utilisable fiche verrouillée, comme le losange.
 // Ouverte par le bouton de la barre du grimoire et par le rappel de fin de repos long (rest.js).
 // =============================================================================
@@ -73,9 +76,11 @@ function ruleText(slug, maxLevel) {
 
 /**
  * Ouvre la fenêtre (rien si le personnage n'est pas concerné).
- * @param {{ store: Object, setStatus: (message: string) => void }} ctx
+ * @param {{ store: Object, setStatus: (message: string) => void, afterLongRest?: boolean }} ctx
+ *        afterLongRest : ouverte par le rappel de fin de repos long (js/ui/rest.js) ; sinon par le
+ *        bouton du grimoire, à tout moment (la ligne de suivi du Paladin et du Rôdeur le dit)
  */
-export async function openPrepareSpells({ store, setStatus }) {
+export async function openPrepareSpells({ store, setStatus, afterLongRest = false }) {
     const db = await loadSpells();
     if (!Array.isArray(db) || db.length === 0) {
         setStatus('⚠️ Base de sorts indisponible : la liste de votre classe ne peut pas s\'afficher.');
@@ -205,7 +210,7 @@ export async function openPrepareSpells({ store, setStatus }) {
         counter.classList.toggle('is-over', warnings.length > 0);
         counter.title = warnings.join(' ');
         if (opened) {
-            const status = preparationSwap(opened, preparedSpellNames(rows, granted));
+            const status = preparationSwap(opened, preparedSpellNames(rows, granted), { afterLongRest });
             swap.textContent = frenchSpaces(status.text);
             swap.classList.toggle('is-over', status.over);
         }

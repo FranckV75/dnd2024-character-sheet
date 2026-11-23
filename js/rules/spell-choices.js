@@ -12,7 +12,12 @@
 // { college_of_lore: { discovery1: 'Guidance' } }. La valeur est le nom anglais du sort quand la
 // base de sorts le connaît (il ne change pas quand un nom français est corrigé), sinon le nom noté
 // au grimoire. Rien n'est écrit tant que le joueur ne choisit rien ; un choix effacé retire sa
-// valeur. L'ancien site ignore cette clé (V4_ONLY_KEYS, js/cloud/sync.js).
+// valeur, son groupe s'il est vide, et la clé elle-même s'il ne reste plus aucun choix (la fiche
+// redevient exactement celle d'avant). L'ancien site ignore cette clé (V4_ONLY_KEYS, js/cloud/sync.js).
+// Menus du Magicien : seulement les sorts de son livre. Un sort noté au tableau mais donné par la
+// sous-classe, un don ou l'espèce n'y est pas (comme pour la ligne « Livre », spellbookCount) ; un
+// sort que la base connaît hors de la liste du Magicien non plus (le livre ne contient que des
+// sorts de Magicien).
 // Les cases des Sorts de prédilection sont celles de CLASS_COUNTERS (js/rules/subclass-uses.js).
 //
 // La base de sorts (data/spells.json) est chargée après la fiche : toutes les fonctions acceptent
@@ -62,6 +67,29 @@ function spellFinder(db) {
         NAME_INDEXES.set(db, index);
     }
     return (name) => index.get(normalizeText(name)) ?? null;
+}
+
+/** Tous les noms comparables (spellNameKey) d'un sort : nom noté ou enregistré, noms de la base, nom anglais */
+function comparableKeys(name, spell) {
+    return [...new Set([name, ...spellNames(spell), spell?.vo].filter(Boolean).map(spellNameKey).filter(Boolean))];
+}
+
+/**
+ * Pourquoi un sort noté au tableau n'est pas un sort du livre (capacités 'book' du Magicien) :
+ *  - 'given' : donné par la sous-classe, un don ou l'espèce (toujours préparé, hors du livre) ;
+ *  - 'list'  : la base de sorts le connaît, hors de la liste de la classe (le livre ne contient que
+ *    des sorts de Magicien). Sort inconnu de la base : on fait confiance au joueur ;
+ *  - ''      : rien ne s'y oppose.
+ * @param {Object} feature - SPELL_CHOICE_FEATURES ('book')
+ * @param {string} name - nom noté au tableau, ou valeur enregistrée
+ * @param {Object|null} spell - sort de la base
+ * @param {Set<string>|null} given - givenSpellKeys (js/rules/spell-preparation.js)
+ * @returns {''|'given'|'list'}
+ */
+function outOfBook(feature, name, spell, given) {
+    if (given instanceof Set && given.size && comparableKeys(name, spell).some(key => given.has(key))) return 'given';
+    const classes = Array.isArray(spell?.classes) && spell.classes.length ? spell.classes : null;
+    return classes && !classes.includes(feature.classSlug) ? 'list' : '';
 }
 
 /**
@@ -121,7 +149,7 @@ export function chosenSpells(character, derived, db = null) {
                 featureId: feature.id, featureName: feature.name, key: field.key, label: field.label, value,
                 spell, name: spell ? spellDisplayName(spell) : value, vo: spell?.vo ?? value,
                 level: field.spellLevel ?? (spell && Number.isFinite(known) ? known : null),
-                keys: [...new Set([value, ...spellNames(spell), spell?.vo].filter(Boolean).map(spellNameKey).filter(Boolean))],
+                keys: comparableKeys(value, spell),
                 from: feature.from, cast: feature.cast ?? null, atLevel: feature.cast ? field.spellLevel ?? null : null,
                 uses: field.uses ?? null
             });
@@ -146,12 +174,16 @@ export function chosenSpellKeys(character, derived, db = null, { from = null } =
 
 /**
  * Patch qui enregistre un sort choisi (valeur vide : le choix est effacé ; plus aucun choix dans le
- * groupe : le groupe est retiré). Seulement pour un menu d'une capacité atteinte.
+ * groupe : le groupe est retiré ; plus aucun groupe : la clé elle-même est retirée, par une valeur
+ * undefined, ni enregistrée ni comptée dans l'empreinte de la fiche, comme pour « odyssey_mode » :
+ * choisir un sort puis revenir sur « Choisir » rend la fiche d'avant). Seulement pour un menu
+ * d'une capacité atteinte.
  * @param {Object} character
  * @param {Object} derived - deriveCharacter(character)
  * @param {string} key - champ (« mastery1 », « discovery2 »…)
  * @param {string} value - nom anglais du sort (ou nom noté au grimoire)
- * @returns {Object} { subclass_choices: {...} }, ou {} si le menu est inconnu ou si rien ne change
+ * @returns {Object} { subclass_choices: {...} } ({ subclass_choices: undefined } : clé retirée),
+ *          ou {} si le menu est inconnu ou si rien ne change
  */
 export function setSpellChoicePatch(character, derived, key, value) {
     const feature = spellChoiceFeatures(derived).find(entry => entry.fields.some(field => field.key === key));
@@ -165,7 +197,7 @@ export function setSpellChoicePatch(character, derived, key, value) {
     const next = { ...state };
     if (Object.keys(current).length) next[feature.bucket] = current;
     else delete next[feature.bucket];
-    return { [SUBCLASS_CHOICES_KEY]: next };
+    return { [SUBCLASS_CHOICES_KEY]: Object.keys(next).length ? next : undefined };
 }
 
 /**
@@ -203,7 +235,9 @@ function listSpells(db, feature, maxLevel) {
  *  - 'book' (Magicien) : sorts notés au grimoire de la fiche au niveau demandé, lancés en une
  *    action si la capacité le demande (temps d'incantation de la base quand elle connaît le sort,
  *    sinon colonne « Temps » de la ligne). Un sort que la base connaît à un autre niveau que celui
- *    de sa ligne n'est pas proposé ;
+ *    de sa ligne n'est pas proposé. Seulement les sorts du livre : ni un sort donné par la
+ *    sous-classe, un don ou l'espèce (given), ni un sort que la base connaît hors de la liste du
+ *    Magicien (outOfBook) ;
  *  - 'lists' (Découvertes magiques) : sorts de la base pris dans les listes de la capacité, sorts
  *    mineurs et sorts d'un niveau pour lequel le personnage a des emplacements (maxLevel).
  * Le sort déjà choisi reste toujours dans le menu, même s'il n'est plus proposable (stale) ; un
@@ -211,12 +245,15 @@ function listSpells(db, feature, maxLevel) {
  * porte selected (même si la valeur enregistrée est un autre nom du même sort).
  * @param {Object} feature - SPELL_CHOICE_FEATURES
  * @param {Object} field - un de ses menus
- * @param {{ db?: Array<Object>|null, rows?: Array<Object>, maxLevel?: number, current?: string, taken?: string[] }} [context]
+ * @param {{ db?: Array<Object>|null, rows?: Array<Object>, maxLevel?: number, current?: string, taken?: string[],
+ *   given?: Set<string>|null }} [context]
  *        rows : dynamic_spells ; maxLevel : highestSlotLevel ; current : valeur enregistrée du menu ;
- *        taken : valeurs des autres menus de la capacité
+ *        taken : valeurs des autres menus de la capacité ; given : sorts donnés par la classe, la
+ *        sous-classe, un don ou l'espèce (givenSpellKeys de js/rules/spell-preparation.js, SANS les
+ *        sorts choisis ici : ils s'écarteraient eux-mêmes du menu)
  * @returns {Array<{ value: string, label: string, group: string, disabled: boolean, selected: boolean, stale?: boolean }>}
  */
-export function spellChoiceOptions(feature, field, { db = null, rows = [], maxLevel = 0, current = '', taken = [] } = {}) {
+export function spellChoiceOptions(feature, field, { db = null, rows = [], maxLevel = 0, current = '', taken = [], given = null } = {}) {
     const spells = Array.isArray(db) ? db : [];
     const find = spellFinder(spells);
     const options = [];
@@ -239,6 +276,7 @@ export function spellChoiceOptions(feature, field, { db = null, rows = [], maxLe
             if (!name) continue;
             const spell = find(name);
             if (spell && Number(spell.level) !== field.spellLevel) continue;
+            if (outOfBook(feature, name, spell, given)) continue;
             if (feature.castTime === 'action' && !isActionCastTime(spell ? spell.castTime : row.time)) continue;
             add(spell ?? spellNameKey(name), spell ? cleanName(spell.vo) || name : name, spell ? spellDisplayName(spell) : name, field.spellLevel);
         }
@@ -266,11 +304,14 @@ function fieldNeed(feature, field) {
  * Tout ce qu'il faut pour afficher les capacités à sorts choisis du personnage : phrase
  * d'explication, menus (options, valeur, avertissement) et sorts choisis.
  * Avertissements (simples rappels, rien n'est effacé), une fois la base de sorts chargée : sort
- * choisi qui n'est plus au grimoire (Magicien), sort qui n'est plus proposable (Découvertes
- * magiques : niveau sans emplacement, autre liste).
+ * choisi qui n'est plus au grimoire, ou qui n'est pas un sort du livre (Magicien : sort donné par
+ * la sous-classe, un don ou l'espèce, sort hors de la liste du Magicien), sort qui n'est plus
+ * proposable (Découvertes magiques : niveau sans emplacement, autre liste).
  * @param {Object} character
  * @param {Object} derived - deriveCharacter(character)
- * @param {{ db?: Array<Object>|null, maxLevel?: number }} [context] - maxLevel : highestSlotLevel
+ * @param {{ db?: Array<Object>|null, maxLevel?: number, given?: Set<string>|null }} [context]
+ *        maxLevel : highestSlotLevel ; given : givenSpellKeys(character, derived), sorts donnés à
+ *        écarter des menus du Magicien (voir spellChoiceOptions)
  * @returns {Array<{ id: string, name: string, level: number, owner: 'class'|'subclass', intro: string,
  *   from: 'book'|'lists', inPlay: boolean,
  *   fields: Array<{ key: string, label: string, value: string, options: ReturnType<typeof spellChoiceOptions>,
@@ -280,7 +321,7 @@ function fieldNeed(feature, field) {
  *   value : valeur de l'option choisie ('' : rien), celle du menu même si la fiche a enregistré un
  *   autre nom du même sort ; hint : pourquoi le menu est vide
  */
-export function spellChoiceView(character, derived, { db = null, maxLevel = 0 } = {}) {
+export function spellChoiceView(character, derived, { db = null, maxLevel = 0, given = null } = {}) {
     const rows = Array.isArray(character?.dynamic_spells) ? character.dynamic_spells : [];
     const loaded = Array.isArray(db) && db.length > 0;
     const find = spellFinder(db);
@@ -290,12 +331,17 @@ export function spellChoiceView(character, derived, { db = null, maxLevel = 0 } 
         const fields = feature.fields.map(field => {
             const saved = values[field.key] ?? '';
             const taken = feature.fields.filter(other => other.key !== field.key).map(other => values[other.key]).filter(Boolean);
-            const options = spellChoiceOptions(feature, field, { db, rows, maxLevel, current: saved, taken });
+            const options = spellChoiceOptions(feature, field, { db, rows, maxLevel, current: saved, taken, given });
             const value = options.find(option => option.selected)?.value ?? '';
             const stale = options.find(option => option.stale);
             let warning = '';
             // Base pas encore chargée : le nom anglais enregistré ne se compare pas aux lignes, pas d'alerte
-            if (stale && loaded && feature.from === 'book') {
+            const why = stale && loaded && feature.from === 'book' ? outOfBook(feature, saved, find(saved), given) : '';
+            if (why === 'given') {
+                warning = `« ${stale.label} » vous est donné par votre sous-classe, un don ou votre espèce : ce n'est pas un sort de votre livre. Choisissez-en un autre.`;
+            } else if (why === 'list') {
+                warning = `« ${stale.label} » n'est pas un sort de Magicien : il ne peut pas être dans votre livre. Choisissez-en un autre.`;
+            } else if (stale && loaded && feature.from === 'book') {
                 warning = `« ${stale.label} » n'est plus noté dans votre grimoire comme sort ${fieldNeed(feature, field)} : notez-le dans le tableau des sorts, ou choisissez-en un autre.`;
             } else if (stale && loaded) {
                 warning = `« ${stale.label} » n'est pas un sort du Clerc, du Druide ou du Magicien d'un niveau pour lequel vous avez des emplacements : choisissez-en un autre.`;

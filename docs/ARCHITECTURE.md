@@ -111,11 +111,16 @@ js/
 │   ├── spell-preparation.js  Sorts préparés (classes à liste fixe ou à toute la liste) et
 │   │                   lancement d'un sort (fenêtre « Lancer ») ; Paladin et Rôdeur : un seul
 │   │                   sort remplacé par repos long (replacesOneSpell, preparationSwap : ce qui
-│   │                   a changé depuis l'ouverture de « Préparer mes sorts », sans rien écrire)
+│   │                   a changé depuis l'ouverture de « Préparer mes sorts », sans rien écrire ;
+│   │                   « échange de ce repos long » seulement si la fenêtre vient du rappel de
+│   │                   fin de repos long). Sorts donnés : givenSpellKeys (classe, sous-classe,
+│   │                   dons, espèce ; nom français et anglais), grantedSpellKeys (+ sorts choisis)
 │   ├── spell-choices.js  Sorts choisis d'une capacité (données : data/spell-choices.js) : menus
 │   │                   (spellChoiceOptions, spellChoiceView), choix enregistré dans la clé
 │   │                   existante « subclass_choices » (setSpellChoicePatch), sorts toujours
-│   │                   préparés hors du compte (chosenSpellKeys, repris par grantedSpellKeys)
+│   │                   préparés hors du compte (chosenSpellKeys, repris par grantedSpellKeys).
+│   │                   Menus du Magicien : seulement les sorts du livre (ni sort donné par la
+│   │                   sous-classe, un don ou l'espèce, ni sort hors de la liste du Magicien)
 │   ├── spellbook.js    Livre de sorts du Magicien (sorts sans dépense, coût d'une copie)
 │   ├── feats.js · feat-effects.js · feat-uses.js · feat-choices.js
 │   │                   Dons : emplacements atteints, effets, usages dépensés, choix mémorisés
@@ -145,7 +150,9 @@ js/
 │   │                   'long' : Maîtrise des sorts du Magicien)
 │   ├── concentration.js  Sort de concentration (clé facultative « concentration »), jet après dégâts
 │   ├── hit-points.js   PV en jeu : dégâts, soins, PV temporaires, boutons − / + (écran : ui/hit-points.js)
-│   ├── class-progression.js  Aptitudes atteintes / à venir, sorts mineurs et préparés permis
+│   ├── class-progression.js  Aptitudes atteintes / à venir, sorts mineurs et préparés permis ;
+│   │                   sorts toujours préparés par la classe (classGrantedSpells) ; inSheet : où
+│   │                   sont les menus d'une aptitude à sorts choisis (« Dans la fiche : … »)
 │   ├── experience.js   XP : seuils de niveau, XP restants, XP gagnés
 │   ├── counters.js     Compteurs − / + (Épuisement, Foi ou Inspiration, renommée) et pièces (Bourse).
 │   │                   readCounter : seule lecture d'une case « N » ou « N/M » (entier de 6 chiffres
@@ -256,7 +263,8 @@ js/
     │   ├── choices.js  Menus des sorts choisis d'une capacité, dans ces blocs (Magicien : Sorts
     │   │               de classe ; Collège du Savoir : Sorts de sous-classe)
     │   ├── prepare.js  Fenêtre « Préparer mes sorts » (Clerc, Druide, Paladin, Rôdeur ; pour les
-    │   │               deux derniers, ligne « X remplacé par Y » : un seul échange par repos long)
+    │   │               deux derniers, ligne « X remplacé par Y » : un seul échange par repos long ;
+    │   │               afterLongRest : ouverte par le rappel de fin de repos long, js/ui/rest.js)
     │   └── cleanup.js  Bouton « Retirer les sorts non préparés »
     ├── derived.js      deriveCharacter calculé une fois par version du personnage, partagé
     ├── fold.js         Blocs repliables (sous-classe, compagnons, sorts de sous-classe), retenus
@@ -444,7 +452,10 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
     de la classe, faute de sous-classe) et `{ college_of_lore: { discovery1, discovery2 } }` pour le Barde
     du Collège du Savoir, à côté des autres choix de la sous-classe. La valeur est le nom anglais du sort
     quand la base de sorts le connaît (comme `feat_choices`), sinon le nom noté au grimoire. Un choix
-    d'une capacité pas encore atteinte est ignoré, jamais effacé.
+    d'une capacité pas encore atteinte est ignoré, jamais effacé. Un sort remis sur « Choisir » retire sa
+    valeur, son groupe s'il est vide, et la clé elle-même s'il ne reste aucun choix (valeur `undefined`
+    dans le store, comme `odyssey_mode` : ni enregistrée ni comptée dans l'empreinte) : la fiche redevient
+    exactement celle d'avant le choix.
 - `odyssey_mode` : mode « Odyssée des Seigneurs Dragons » de la fiche (`js/rules/odyssey.js`). Facultative :
   absente, ou toute autre valeur que `"off"`, = mode actif. Elle n'est jamais dans la fiche vierge
   (`migrate.js` y ajoute les valeurs par défaut) et n'est écrite que quand le joueur décoche la case « Mode

@@ -5,6 +5,8 @@
 //  - titre « Classe : Barbare, niveau 6 » (sa pastille replie le bloc) ;
 //  - colonnes de la table au niveau du personnage (Rages 4, puis 5 au niveau 12…) ;
 //  - aptitudes atteintes (chaque pastille de niveau replie la sienne), puis « À venir », repliées.
+//  - sous une aptitude atteinte dont les sorts se choisissent dans le grimoire (Maîtrise des
+//    sorts, Sorts de prédilection) : ligne « Dans la fiche : … » qui dit où sont ses menus.
 // Lecture seule : rien n'est écrit dans la fiche. Règles : js/rules/class-progression.js.
 // =============================================================================
 
@@ -30,7 +32,12 @@ function featureItem(classSlug, feature, upcoming) {
                 ? el('span', { class: 'subclass-level', text: level })
                 : foldButton(`${level}, ${feature.name}`, el('span', { text: level })),
             el('span', { class: 'subclass-feature-name', text: feature.name })),
-        feature.text ? el('p', { class: 'subclass-feature-text', text: feature.text }) : null);
+        feature.text ? el('p', { class: 'subclass-feature-text', text: feature.text }) : null,
+        // Aptitude dont les sorts se choisissent dans le grimoire : où sont ses menus (même ligne
+        // « Dans la fiche » que les capacités de sous-classe, js/ui/subclass.js)
+        feature.inSheet && !upcoming
+            ? el('p', { class: 'subclass-feature-auto' }, icon('gear'), el('span', { text: `Dans la fiche : ${feature.inSheet}` }))
+            : null);
 }
 
 /**
