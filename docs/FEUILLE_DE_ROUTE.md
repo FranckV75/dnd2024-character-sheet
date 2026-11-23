@@ -87,7 +87,9 @@ coupé~~. Faite le 21/11/2026 : ~~étude du multiclassage~~ (`docs/etudes/MULTIC
 héroïque en mode Odyssée~~ (point 1, audit du 22/11/2026). Faits en 4.47.0 (23/11/2026, pas encore
 publiée) : ~~pièce « Inspiration héroïque » « Disponible / Non disponible » dans les deux modes~~,
 ~~petits − / + autour du titre (Points de Foi, renommée)~~, ~~liste des armes à parcourir (bouton ▾)~~,
-~~confirmation avant de fermer « Configuration de l'arme »~~ (maquettes validées par Franck).
+~~confirmation avant de fermer « Configuration de l'arme »~~ (maquettes validées par Franck),
+~~liste des armures à parcourir (bouton ▾, armures et bouclier du manuel seulement)~~, ~~noms des
+sorts de toutes les listes de classe~~.
 Reste :
 
 1. **Multiclassage** : l'étude est faite et contre-vérifiée, rien n'est construit. Elle conseille
@@ -153,8 +155,14 @@ Décisions de Franck en attente sur la 4.47.0 :
   frappe ; la pièce revient quand on la quitte).
 - « Configuration de l'arme » est la seule fenêtre qui demande avant de fermer ; la fenêtre de
   l'armure (roue dentée des armures) ferme toujours sans demander. La faire pareil ?
+- Écoles de magie où le manuel se contredit lui-même (en anglais comme en français) : « Sphère de
+  feu » est Évocation dans les listes de classe mais Invocation dans sa description ; « Aura du
+  croisé » est Transmutation dans la liste du Paladin mais Évocation dans sa description. La fiche
+  garde l'école de la description. Garder ainsi ?
+- Liste des armures : seulement les armures et le bouclier du manuel ; un groupe « Autres »
+  (anneau, cape, sort…) viendrait plus tard, avec la liste et les noms donnés par Franck.
 
-Petits restes de la 4.47.0 (pas urgents) : sur ordinateur, la phrase du bouton ▾ des armes est coupée dans la colonne étroite des messages (comme
+Petits restes de la 4.47.0 (pas urgents) : sur ordinateur, la phrase du bouton ▾ des armes et des armures est coupée dans la colonne étroite des messages (comme
 celle du grimoire ; texte entier au toucher) ; toucher le titre « Points de Foi » ou « Points de
 renommée », entre ses petits boutons, ouvre le clavier de la case (comme avant) ; sur Android, un
 geste retour répété dans « Configuration de l'arme » finit par la fermer sans question (Chrome
@@ -232,15 +240,13 @@ Détail des idées :
 - Journal de campagne : notes datées par séance, suivi propre à l'Odyssée (serments, quêtes).
 - Poids porté : total du matériel comparé à la capacité de charge (gardé en tête, pas utile pour
   le moment).
-- Vérification des noms français, classe par classe, d'après les photos du manuel. Commencée en
-  4.47.0 (demande de Franck) : table des armes (« Bâton de combat », « sauf à cheval ») et liste
-  des sorts du Magicien, niveaux 0 à 7 (9 sorts affichés sous leur nom du manuel : Main du mage,
-  Armure du mage, Aspersion acide, Faux amis, Verrou magique, Terreur, Présence royale de Yolane,
-  Possession, Œil du mage). Une fiche déjà remplie garde l'ancien nom, toujours reconnu (pas de
-  conversion : rien ne change dans les sauvegardes). Reste : la liste du Magicien niveaux 8 et 9,
-  celles des autres classes (Barde, Clerc, Druide, Ensorceleur, Occultiste, Paladin, Rôdeur ; 17
-  photos), où sont par exemple « Hérissement » (affiché « Invocation de projectiles ») et « Marche
-  sur l'onde » (affiché « Marche sur l'eau ») ; puis dons, espèces, aptitudes, armures, outils.
+- Vérification des noms français d'après les photos du manuel. ~~Table des armes~~ (« Bâton de
+  combat », « sauf à cheval »), ~~table des armures~~ (rien à corriger) et ~~listes de sorts des
+  huit classes~~ (4.47.0, demande de Franck : chaque liste lue deux fois et comparée à la base ;
+  11 sorts renommés, dont « Main du mage », « Terreur », « Hérissement de projectiles », « Marche
+  sur l'onde » ; école d'Otiluke corrigée). Une fiche déjà remplie garde l'ancien nom, toujours
+  reconnu (pas de conversion). Reste : dons, espèces, aptitudes de classe et de sous-classe,
+  outils ; les sorts de l'Odyssée (Néréide : « Marche sur l'eau ») suivent leur propre livre.
 - Mode consultation sur téléphone (lecture seule).
 - Connexion par lien magique (courriel), en plus du mot de passe.
 

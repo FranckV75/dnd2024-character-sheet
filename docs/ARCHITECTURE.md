@@ -98,6 +98,8 @@ js/
 │   │                   Défense sans armure de sous-classe) et maîtrise des armes
 │   ├── armors.js       Tableau des armures (types, ligne d'armure) ; le calcul de CA est dans
 │   │                   character.js (computeArmorClass, armorLine), réexporté ici
+│   ├── armor-picker.js  Liste des armures à parcourir (bouton ▾, 4.47.0) : les quatre groupes de
+│   │                   la table des armures du manuel (légères, intermédiaires, lourdes, boucliers)
 │   ├── weapon-masteries.js  Bottes d'armes : botte d'une arme, effet affiché
 │   ├── weapon-picker.js  Liste des armes à parcourir (bouton ▾, 4.47.0) : les quatre groupes de
 │   │                   la table des armes du manuel, puis l'Attaque à mains nues ; ✓ sans griser
@@ -193,7 +195,7 @@ js/
     ├── tabs.js · theme.js · lock.js · toolbar.js · account.js · gallery.js
     ├── status-bar.js   Dernier message de la barre du haut (#save-status) lisible au doigt : petite
     │                   flèche quand il est coupé, toucher pour le déplier ou le replier (isClipped)
-    ├── armors.js · rest.js · style-editor.js
+    ├── armors.js · rest.js · style-editor.js   (armors.js : bouton ▾ de la liste des armures, 4.47.0)
     ├── weapons.js      Tableau des armes, chef d'orchestre (247 lignes) : structure fixe, filtres,
     │                   lecture et écriture de la fiche, verrou, rendu ; seul export : initWeapons
     ├── weapons/        Morceaux du tableau des armes (4.46.0). Ils ne partagent aucune variable :

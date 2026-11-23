@@ -238,7 +238,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Les armures",
-                text: "Sous « Maîtrises d'armures », cochez les armures que votre personnage sait porter. « Ajouter une armure » crée une ligne pour une armure, un bouclier ou un autre bonus de défense. Cochez « Équipée / actif » quand vous la portez : la classe d'armure est recalculée. Touchez la valeur de la colonne CA pour voir le calcul."
+                text: "Sous « Maîtrises d'armures », cochez les armures que votre personnage sait porter. « Ajouter une armure » crée une ligne. Touchez son nom vide, ou le bouton ▾ : les armures du manuel s'ouvrent sans clavier, avec leur CA (✓ : déjà notée). Un anneau ou une cape s'écrit à la main. Cochez « Équipée / actif » quand vous la portez : la CA est recalculée. Touchez la valeur de la colonne CA pour voir le calcul."
             },
             {
                 title: "Les capacités à cocher",

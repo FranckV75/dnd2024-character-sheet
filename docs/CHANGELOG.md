@@ -2,7 +2,7 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
-## [4.47.0] - 2026-11-23 (pièce « Inspiration héroïque », petits − / +, liste des armes)
+## [4.47.0] - 2026-11-23 (pièce « Inspiration héroïque », petits − / +, listes des armes et des armures)
 Maquettes validées par Franck le 23/11/2026 (version 3 : « Disponible » / « Non disponible », ni
 oui / non ni case ronde ; boutons autour du titre, sa proposition 1).
 ### Added
@@ -13,6 +13,12 @@ oui / non ni case ronde ; boutons autour du titre, sa proposition 1).
   saisie resserre la liste. Une arme déjà dans le tableau porte une ✓ mais reste choisissable (deux
   dagues). Règle pure `weaponPickerGroups` (`js/rules/weapon-picker.js`) ; bouton ▾ au style du
   grimoire ; `browse.empty` dans `js/ui/autocomplete.js`.
+- Liste des armures à parcourir, de même (demande de Franck) : nom vide touché ou bouton ▾, les
+  quatre groupes de la table des armures du manuel (photo p. 219 : armures légères, intermédiaires,
+  lourdes, boucliers), avec leur CA ; ✓ sans griser (armure de rechange). Manuel seul pour
+  l'instant (choix de Franck) : un anneau, une cape ou un sort s'écrit toujours à la main. Règle
+  pure `armorPickerGroups` (`js/rules/armor-picker.js`). Les 13 armures et le bouclier du catalogue
+  ont été vérifiés sur la photo (noms, CA, Force, Discrétion, poids, prix) : rien à corriger.
 - « Configuration de l'arme » : « Annuler », toucher le fond ou Échap demandent confirmation si un
   réglage a changé (« Continuer à modifier » / « Fermer sans appliquer ») ; rien de changé, la
   fenêtre se ferme aussitôt. Échap est pris dès l'appui de la touche (Chrome et Edge
@@ -31,8 +37,12 @@ oui / non ni case ronde ; boutons autour du titre, sa proposition 1).
 - Noms du Manuel des joueurs français (photos de Franck) : arme « Bâton de combat » (et non « Bâton »),
   Lance d'arçon « Deux mains (sauf à cheval) » ; sorts « Main du mage », « Armure du mage »,
   « Aspersion acide », « Faux amis », « Verrou magique », « Terreur », « Présence royale de Yolane »,
-  « Possession », « Œil du mage » (listes du Magicien p. 118-120 ; base des sorts : nom du manuel en
-  premier, ancien nom d'AideDD gardé derrière « | »). Une fiche déjà remplie garde l'ancien nom,
+  « Possession », « Œil du mage » (listes du Magicien p. 118-121), « Hérissement de projectiles »
+  (et non « Invocation de projectiles »), « Marche sur l'onde » (et non « Marche sur l'eau ») ; base
+  des sorts : nom du manuel en premier, ancien nom d'AideDD gardé derrière « | ». Les listes de sorts
+  des huit classes à sorts ont été lues deux fois chacune sur les photos et comparées à la base
+  (nom, niveau, école, concentration, rituel, classes) : plus aucun autre écart de nom. École de la
+  « Sphère résiliente d'Otiluke » : Abjuration (et non Évocation), comme dans le manuel anglais. Une fiche déjà remplie garde l'ancien nom,
   toujours reconnu (`RENAMED_WEAPONS` déplacé dans `js/data/dd-rules.js`, ✓ de la liste des armes,
   `findSpellByName`) ; aucune conversion des sauvegardes. Tests : `tests/book-names.test.js`.
 - Points de Foi et Points de renommée : petits boutons − / + ronds de part et d'autre du titre au
