@@ -69,7 +69,7 @@ describe('Dons qui donnent des outils (données)', () => {
         assert.equal(new Set(FAST_CRAFTING_TOOLS).size, 8);
         for (const id of FAST_CRAFTING_TOOLS) {
             assert.equal(byId(id).category, 'artisan', id);
-            assert.ok(FEATS_DATA.faconneur.desc.includes(`<td>${byId(id).name}</td>`), byId(id).name);
+            assert.ok(FEATS_DATA.faconneur.desc.includes(`<br>• ${byId(id).name} : `), byId(id).name);
         }
     });
 });
