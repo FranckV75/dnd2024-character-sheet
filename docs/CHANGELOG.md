@@ -24,6 +24,8 @@ oui / non ni case ronde ; boutons autour du titre, sa proposition 1).
   fenêtre se ferme aussitôt. Échap est pris dès l'appui de la touche (Chrome et Edge
   laissent sinon fermer au 3e appui) ; un geste retour répété sur Android ferme sans question. Nouvelle option `onDismiss` d'`openModal` et `cancelLabel` de
   `confirmModal` (`js/ui/modal.js`).
+- Réglages de l'armure ou du bouclier (roue dentée des armures) : même confirmation avant de
+  fermer sans appliquer un changement (type, valeur de base, bonus magique ; accord de Franck).
 ### Changed
 - Inspiration héroïque : une pièce, dorée avec une étoile pleine et « Disponible », ou vide en
   pointillés avec « Non disponible » (`inspirationCoin`, `inspirationCoinPatch`,
@@ -42,7 +44,10 @@ oui / non ni case ronde ; boutons autour du titre, sa proposition 1).
   des sorts : nom du manuel en premier, ancien nom d'AideDD gardé derrière « | ». Les listes de sorts
   des huit classes à sorts ont été lues deux fois chacune sur les photos et comparées à la base
   (nom, niveau, école, concentration, rituel, classes) : plus aucun autre écart de nom. École de la
-  « Sphère résiliente d'Otiluke » : Abjuration (et non Évocation), comme dans le manuel anglais. Une fiche déjà remplie garde l'ancien nom,
+  « Sphère résiliente d'Otiluke » : Abjuration (et non Évocation), comme dans le manuel anglais.
+  Écoles où le manuel se contredit (choix de Franck) : « Sphère de feu » en Évocation (et non
+  Invocation : listes de classe, errata officiel d'octobre 2026) ; « Aura du croisé » reste en
+  Évocation (description du sort ; la liste du Paladin dit Transmutation, sans errata). Une fiche déjà remplie garde l'ancien nom,
   toujours reconnu (`RENAMED_WEAPONS` déplacé dans `js/data/dd-rules.js`, ✓ de la liste des armes,
   `findSpellByName`) ; aucune conversion des sauvegardes. Tests : `tests/book-names.test.js`.
 - Points de Foi et Points de renommée : petits boutons − / + ronds de part et d'autre du titre au

@@ -25,10 +25,11 @@ en fin de session :
   deux modes, petits − / + autour du titre des Points de Foi et de renommée, liste des armes à
   parcourir (bouton ▾), confirmation avant de fermer « Configuration de l'arme », noms du manuel
   français (« Bâton de combat », 11 sorts : toutes les listes de classe comparées), liste des
-  armures à parcourir (bouton ▾). Relue par des agents ; défauts corrigés. Attend « Publie » (tout
-  en une fois, choix de Franck). Reste à vérifier sur photos : dons, espèces, aptitudes, outils
-  (« Détail des idées » de `docs/FEUILLE_DE_ROUTE.md`). Décisions en attente : point 1 de
-  `docs/FEUILLE_DE_ROUTE.md` (4.47.0) ; sur la 4.44.0 et la 4.45.0 : point 3.
+  armures à parcourir (bouton ▾) et confirmation avant de fermer ses réglages, « Sphère de feu »
+  en Évocation. Relue par des agents ; défauts corrigés. Attend « Publie » (tout en une fois, choix
+  de Franck). Reste à vérifier sur photos : dons, espèces, aptitudes, outils (« Détail des idées »
+  de `docs/FEUILLE_DE_ROUTE.md`). Décisions sur la 4.47.0 : toutes prises le 23/11/2026. En
+  attente : sur la 4.44.0 et la 4.45.0, point 3 de `docs/FEUILLE_DE_ROUTE.md`.
 - **Serveur de travail** : `npm run dev` n'écoute plus que l'ordinateur (127.0.0.1 et ::1) et ne
   sert jamais `.git` ; relancé le 22/11/2026 avec cette protection (vérifié avec netstat).
 - **Multiclassage** : étude faite et contre-vérifiée (`docs/etudes/MULTICLASSAGE.md`). Rien de
@@ -127,7 +128,7 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 
 ## Sessions
 
-### 23/11/2026 — Décisions sur la 4.46.0, puis 4.47.0 : pièce « Inspiration héroïque », petits − / +, listes des armes et des armures, confirmation de la fenêtre d'arme, noms du manuel (pas encore publiée)
+### 23/11/2026 — Décisions sur la 4.46.0, puis 4.47.0 : pièce « Inspiration héroïque », petits − / +, listes des armes et des armures, confirmation des fenêtres d'arme et d'armure, noms du manuel (pas encore publiée)
 
 - Franck a tranché toutes les décisions de la 4.46.0 (tablette essayée) ; il a demandé
   l'Inspiration héroïque pour tous en mode Odyssée et une confirmation avant de fermer la fenêtre
@@ -148,6 +149,10 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
   plus que 2 noms faux (« Hérissement de projectiles », « Marche sur l'onde ») et une école fausse
   (Otiluke : Abjuration). Deux écoles où le manuel se contredit lui-même : question à Franck.
   Table des armures vérifiée sur la photo p. 219 : rien à corriger.
+- Franck a validé toutes les décisions de la 4.47.0 (« Ok pour tout ») : d'où la même
+  confirmation pour les réglages de l'armure. Écoles : Évocation pour les deux sorts, avec ses
+  raisons (Sphère de feu : errata officiel d'octobre 2026 ; Aura du croisé : la description du sort
+  prime sur la liste du Paladin, sans errata).
 - Rien n'est publié : Franck veut tout publier en même temps, sur son « Publie ».
 
 ### 22/11/2026 — Audit de santé, puis lots A à F : petites corrections, Inspiration héroïque en mode Odyssée, ménage, découpage du grimoire et des armes, « Dépenser » (4.46.0, publiée le 23/11/2026)

@@ -89,7 +89,8 @@ publiée) : ~~pièce « Inspiration héroïque » « Disponible / Non disponible
 ~~petits − / + autour du titre (Points de Foi, renommée)~~, ~~liste des armes à parcourir (bouton ▾)~~,
 ~~confirmation avant de fermer « Configuration de l'arme »~~ (maquettes validées par Franck),
 ~~liste des armures à parcourir (bouton ▾, armures et bouclier du manuel seulement)~~, ~~noms des
-sorts de toutes les listes de classe~~.
+sorts de toutes les listes de classe~~, ~~confirmation avant de fermer les réglages de l'armure~~,
+~~« Sphère de feu » en Évocation~~ (décisions de Franck du 23/11/2026).
 Reste :
 
 1. **Multiclassage** : l'étude est faite et contre-vérifiée, rien n'est construit. Elle conseille
@@ -146,19 +147,13 @@ seul test le vérifie). Défauts plus anciens vus au passage, non touchés : le 
 peut défiler de 8 px dans son cadre ; à 768 px « Ralentissement » et l'en-tête « Notes » se
 coupent ; à 1024 px « FOR : +6 » passe sur deux lignes.
 
-Décisions de Franck en attente sur la 4.47.0 :
-- Liste des armes : une arme déjà dans le tableau est marquée ✓ mais reste choisissable (deux
-  dagues, deux épées courtes), au contraire du grimoire où un sort déjà noté est grisé.
-- L'Attaque à mains nues est proposée en dernier, dans un groupe « Sans arme ».
-- Mode coupé, une case « Inspiration héroïque » qui contient du texte (« 1 (béni) ») garde sa case
-  à saisir à la main, sans pièce, jusqu'à ce qu'on y remette un nombre (la case reste pendant la
-  frappe ; la pièce revient quand on la quitte).
-- « Configuration de l'arme » est la seule fenêtre qui demande avant de fermer ; la fenêtre de
-  l'armure (roue dentée des armures) ferme toujours sans demander. La faire pareil ?
-- Écoles de magie où le manuel se contredit lui-même (en anglais comme en français) : « Sphère de
-  feu » est Évocation dans les listes de classe mais Invocation dans sa description ; « Aura du
-  croisé » est Transmutation dans la liste du Paladin mais Évocation dans sa description. La fiche
-  garde l'école de la description. Garder ainsi ?
+~~Décisions de Franck sur la 4.47.0~~ : toutes prises le 23/11/2026 (« Ok pour tout »). Gardés
+tels quels : une arme déjà dans le tableau reste choisissable (✓ sans griser) ; l'Attaque à mains
+nues en dernier, groupe « Sans arme » ; mode coupé, une case « Inspiration héroïque » en texte
+libre garde sa case à saisir. Demandé et fait : la fenêtre de réglages de l'armure demande aussi
+confirmation avant de fermer sans appliquer. Écoles où le manuel se contredit : Évocation pour les
+deux (« Sphère de feu » : listes de classe et errata officiel d'octobre 2026 ; « Aura du croisé » :
+description du sort, la liste du Paladin dit Transmutation sans errata).
 - Liste des armures : seulement les armures et le bouclier du manuel ; un groupe « Autres »
   (anneau, cape, sort…) viendrait plus tard, avec la liste et les noms donnés par Franck.
 
