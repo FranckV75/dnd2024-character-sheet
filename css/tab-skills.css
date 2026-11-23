@@ -221,7 +221,7 @@
     display: contents;
 }
 
-.odyssey-grid .field > :is(label, .field-label) {
+.odyssey-grid .field > :is(label, .field-label, .label-steps) {
     align-self: end;
     margin: 0;
     text-align: center;

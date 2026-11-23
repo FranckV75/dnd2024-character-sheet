@@ -125,10 +125,11 @@
 /* Cases d'un même groupe (« Bonus de maîtrise / Points de Foi / Vitesse », « Dés de vie / Dés
    utilisés ») : des colonnes égales qui partagent les mêmes rangées (subgrid), pour que les
    libellés soient sur une même ligne et les valeurs sur une autre, quoi qu'il y ait dessous.
-   Rangées : marge, libellé, valeur (ou case et boutons − / +, calées sur la ligne de base du
-   texte), pastille « +N par niveau », bouton « Inspiration héroïque » (mode Odyssée,
+   Rangées : marge, libellé (ou libellé entre petits boutons − / +), valeur (calée sur la ligne
+   de base du texte ; mode Odyssée coupé, la pièce « Inspiration héroïque » à la place de la case,
+   sur deux rangées), pastille « +N par niveau », pièce « Inspiration héroïque » (mode Odyssée,
    js/ui/odyssey.js), marge. La pastille de la Vitesse (« dont +3 m », parfois sur 3 lignes)
-   s'étend sur les deux rangées du dessous : elle ne repousse pas le bouton de la case voisine.
+   s'étend sur les deux rangées du dessous : elle ne repousse pas la pièce de la case voisine.
    Les deux marges égales centrent l'ensemble ; une rangée vide ne prend aucune place (pas
    d'écart entre rangées : chaque élément sous le libellé porte son propre écart de 6 px). */
 .stat-group {
@@ -170,8 +171,16 @@
     grid-row: 4;
 }
 
-.stat-cell > .faith-inspiration {
-    grid-row: 5;
+.stat-cell > .label-steps {
+    grid-row: 2;
+    align-self: end;
+    margin-top: 0;
+}
+
+/* Titre entre les petits boutons − / + (css/stepper.css) : la rangée des titres garde sa hauteur
+   (trois lignes réservées par les cases voisines), lui n'en réserve pas */
+.stat-group .stat-cell .label-steps > .label {
+    min-height: 0;
 }
 
 /* Libellés de longueurs différentes (« Bonus de maîtrise » ou « Inspiration héroïque » sur

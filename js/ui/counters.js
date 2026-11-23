@@ -1,14 +1,17 @@
 // =============================================================================
 // COUNTERS.JS (interface) - Boutons − / + des compteurs et pavé « Bourse »
 //
-//  - Épuisement (0 à 6), Points de Foi (mode Odyssée) ou Inspiration héroïque (0 ou 1, mode
-//    coupé), Points de renommée (Odyssée, 0 à 20) : un bouton − et un bouton + autour de la case (js/ui/stepper.js). Une case qui
-//    contient du texte (« 2 (Chanceux) ») n'est pas touchée : seule la saisie à la main la change.
+//  - Épuisement (0 à 6) : un bouton − et un bouton + autour de la case (js/ui/stepper.js).
+//  - Points de Foi (mode Odyssée) et Points de renommée (Odyssée, 0 à 20) : petits boutons − / +
+//    autour du TITRE de la case (choix de Franck, 23/11/2026). Mode coupé, la case des Points de
+//    Foi devient la pièce « Inspiration héroïque » (0 ou 1) : ses boutons sont alors cachés
+//    (js/ui/odyssey.js). Une case qui contient du texte (« 2 (Chanceux) ») n'est pas touchée :
+//    seule la saisie à la main la change.
 //  - Pièces : bouton « Bourse » sous les cinq cases : choisir la pièce, taper le montant, puis
 //    Gagner ou Dépenser (pas de monnaie rendue automatiquement).
 // Le libellé de cette case, le nom de ses boutons et sa pastille « +5 par niveau » suivent le mode
 // Odyssée de la fiche : js/ui/odyssey.js ; son maximum aussi (inspirationWording). Mode Odyssée,
-// l'Inspiration héroïque d'un Humain ou d'un Champion a son propre bouton sous la case (js/ui/odyssey.js).
+// l'Inspiration héroïque a sa propre pièce sous la case (js/ui/odyssey.js).
 // Épuisement, Inspiration et pièces sont des champs de jeu (utilisables fiche verrouillée) ;
 // les boutons de la renommée sont masqués fiche verrouillée (edit-only), comme sa case.
 // Règles : js/rules/counters.js. Mise en forme : css/stepper.css.
@@ -24,8 +27,8 @@ import { plainText } from '../rules/plain-text.js';
 const COUNTERS = [
     { key: 'fatigue_level', noun: 'niveau d\'Épuisement', max: 6, asNumber: true },
     // Points de Foi (mode Odyssée) ou Inspiration héroïque, une seule à la fois (mode coupé)
-    { key: 'heroic_inspiration', noun: 'point de Foi', max: (record) => inspirationWording(record).max, onlyOne: INSPIRATION_ONLY_ONE },
-    { key: 'glory_score', noun: 'point de renommée', max: 20, className: 'edit-only' }
+    { key: 'heroic_inspiration', noun: 'point de Foi', max: (record) => inspirationWording(record).max, onlyOne: INSPIRATION_ONLY_ONE, aroundLabel: true },
+    { key: 'glory_score', noun: 'point de renommée', max: 20, className: 'edit-only', aroundLabel: true }
 ];
 
 /**
@@ -39,6 +42,7 @@ export function initCounters({ root, store, setStatus = () => {} }) {
             noun: counter.noun,
             className: counter.className ?? '',
             rowClass: 'counter-stepper',
+            around: counter.aroundLabel ? root.querySelector(`label[for="f-${counter.key}"]`) : null,
             onStep: (delta) => {
                 const record = store.get();
                 // Plafond, « + » refusé, texte libre jamais réécrit : stepCounter (js/rules/counters.js)

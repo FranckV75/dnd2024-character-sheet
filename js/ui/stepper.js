@@ -5,6 +5,9 @@
 // suit le relâchement est ignoré (sinon un pas de trop). Pas de menu du système à l'appui long.
 // La règle du pas (bornes, valeur écrite) appartient à l'appelant : onStep(delta) rend true si
 // la valeur a changé (sinon la répétition s'arrête).
+// Deux dispositions : autour de la case (rangée .stepper, boutons de 36 px au doigt) ou, plus
+// discrets, autour du titre de la case (option around : rangée .label-steps, petits boutons
+// ronds ; choix de Franck, 23/11/2026, pour les Points de Foi et les Points de renommée).
 // Mise en forme : css/stepper.css.
 // =============================================================================
 
@@ -84,20 +87,37 @@ export function stepperLabels(noun) {
     return { minus: `Retirer 1 ${noun}`, plus: `Ajouter 1 ${noun}` };
 }
 
+/** Boutons − et + de chaque case entourée (renameSteppers, steppersOf) */
+const STEPPERS = new WeakMap();
+
 /**
- * Entoure une case de boutons − et + (rangée .stepper).
+ * Entoure une case de boutons − et + (rangée .stepper), ou son titre (option around : rangée
+ * .label-steps à la place du titre, la case reste seule dessous).
  * @param {HTMLElement} input
- * @param {{ noun: string, onStep: (delta: number) => boolean, className?: string, rowClass?: string }} options
+ * @param {{ noun: string, onStep: (delta: number) => boolean, className?: string, rowClass?: string,
+ *   around?: HTMLElement|null }} options - around : titre de la case (son <label>)
  * @returns {{ row: HTMLElement, minus: HTMLButtonElement, plus: HTMLButtonElement }}
  */
-export function wrapWithSteppers(input, { noun, onStep, className = '', rowClass = '' }) {
-    const row = el('div', { class: `stepper ${rowClass}`.trim() });
-    input.before(row);
+export function wrapWithSteppers(input, { noun, onStep, className = '', rowClass = '', around = null }) {
     const labels = stepperLabels(noun);
-    const minus = stepButton({ label: labels.minus, iconName: 'minus', onStep: () => onStep(-1), className });
-    const plus = stepButton({ label: labels.plus, iconName: 'plus', onStep: () => onStep(1), className });
-    row.append(minus, input, plus);
+    const mini = around ? 'is-mini' : '';
+    const minus = stepButton({ label: labels.minus, iconName: 'minus', onStep: () => onStep(-1), className: `${className} ${mini}`.trim() });
+    const plus = stepButton({ label: labels.plus, iconName: 'plus', onStep: () => onStep(1), className: `${className} ${mini}`.trim() });
+    const row = el('div', { class: `${around ? 'label-steps' : 'stepper'} ${rowClass}`.trim() });
+    const anchor = around ?? input;
+    anchor.before(row);
+    row.append(minus, anchor, plus);
+    STEPPERS.set(input, { minus, plus });
     return { row, minus, plus };
+}
+
+/**
+ * Boutons − et + d'une case entourée par wrapWithSteppers (null sinon).
+ * @param {HTMLElement} input
+ * @returns {{ minus: HTMLButtonElement, plus: HTMLButtonElement }|null}
+ */
+export function steppersOf(input) {
+    return STEPPERS.get(input) ?? null;
 }
 
 /**
@@ -107,9 +127,9 @@ export function wrapWithSteppers(input, { noun, onStep, className = '', rowClass
  * @param {string} noun
  */
 export function renameSteppers(input, noun) {
-    const buttons = input.closest('.stepper')?.querySelectorAll(':scope > .step-btn') ?? [];
+    const buttons = steppersOf(input);
     const labels = stepperLabels(noun);
-    for (const [button, label] of [[buttons[0], labels.minus], [buttons[1], labels.plus]]) {
+    for (const [button, label] of [[buttons?.minus, labels.minus], [buttons?.plus, labels.plus]]) {
         if (!button || button.getAttribute('aria-label') === label) continue;
         button.setAttribute('aria-label', label);
         button.title = `${label} (appui long : plusieurs)`;

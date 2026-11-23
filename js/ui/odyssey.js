@@ -24,14 +24,16 @@
 //    les points de la case (payFavor), met la fenêtre à jour sur place et le dit dans la barre du
 //    haut (le bouton + de la case les rend en cas d'erreur ; utilisable fiche verrouillée). Son
 //    bouton « Les dieux de Thyléa » ouvre par-dessus la liste des dieux, leur domaine et leurs
-//    faveurs. Mode coupé :
-//    « Inspiration héroïque », sans pastille ; ses boutons − / + vont de 0 à 1 (js/ui/counters.js).
-//  - Bouton « Inspiration héroïque » sous la pastille (mode actif seulement) : les points de Foi ne
-//    remplacent pas l'Inspiration héroïque. Visible pour un Humain (Ingénieux), un Champion niveau
-//    10+, ou quand elle est allumée (odysseyInspirationUseful) ; une fois affiché, il reste sous le
-//    doigt jusqu'au prochain changement de fiche ou de mode (éteint par erreur, il se rallume).
-//    Bascule (aria-pressed) : clé facultative odyssey_inspiration ("1" ; éteint : clé retirée).
-//    Champ de jeu : utilisable fiche verrouillée. Imprimé seulement allumé (css/print.css).
+//    faveurs. Ses petits boutons − / + entourent le titre (js/ui/counters.js).
+//  - Pièce « Inspiration héroïque » (4.47.0, maquette validée par Franck le 23/11/2026) : on l'a
+//    ou on ne l'a pas. Dorée, étoile pleine, « Disponible » ; vide, en pointillés, « Non
+//    disponible ». Un toucher la retourne et la barre du haut le dit (inspirationCoin).
+//    Mode actif : sous la pastille, avec son titre, pour tous les personnages (les points de Foi
+//    ne remplacent pas l'Inspiration héroïque) ; clé facultative odyssey_inspiration ("1" ;
+//    non disponible : clé retirée). Mode coupé : la cellule s'appelle « Inspiration héroïque » et
+//    la pièce prend la place de la case et de ses boutons (heroic_inspiration "1" ou "0") ; une
+//    case qui contient du texte reste affichée, sans pièce, pour être corrigée à la main.
+//    Champ de jeu : utilisable fiche verrouillée. Imprimée comme à l'écran (css/print.css).
 // Les listes d'espèces, de sous-classes et de dons suivent le mode dans js/ui/sheet.js.
 // Mise en forme : css/toolbar.css (.toolbar-check).
 // =============================================================================
@@ -40,7 +42,7 @@ import { el, icon } from './dom.js';
 import { derivedOf } from './derived.js';
 import { isLocked } from './lock.js';
 import { frenchSpaces } from './help.js';
-import { renameSteppers } from './stepper.js';
+import { renameSteppers, steppersOf } from './stepper.js';
 import { openModal } from './modal.js';
 import { COMPACT_QUERY } from './toolbar.js';
 import {
@@ -48,7 +50,7 @@ import {
     odysseyActive, setOdysseyModePatch, odysseyModeHint, odysseyModeMessage, odysseyDroppedMessage,
     odysseyBoxDisplay, inspirationWording, faithPerLevel, faithMention, faithSentence, faithHint,
     faithWindow, payFavor, pointsWord, spendLabel, faithSpentMessage,
-    ODYSSEY_INSPIRATION_LABEL, odysseyInspirationLit, odysseyInspirationUseful, odysseyInspirationPatch,
+    ODYSSEY_INSPIRATION_LABEL, INSPIRATION_STATES, inspirationCoin, inspirationCoinPatch,
     odysseyInspirationMessage, odysseyInspirationHint
 } from '../rules/odyssey.js';
 import { FAITH_WAYS, FAITH_FOOTNOTE, FAITH_GODS, FAITH_GODS_INTRO, FAITH_SPELL_NOTE } from '../data/faith-favors.js';
@@ -138,7 +140,8 @@ function initBox(root, store) {
 /**
  * Case « Points de Foi » / « Inspiration héroïque » (onglet Combat) : libellé, nom de ses boutons
  * − / + et pastille des points de Foi gagnés par niveau (mode actif seulement), qui ouvre la
- * fenêtre des faveurs ; dessous, le bouton « Inspiration héroïque » (mode actif, quand il sert).
+ * fenêtre des faveurs ; la pièce « Inspiration héroïque », sous la pastille (mode actif) ou à la
+ * place de la case (mode coupé).
  * @param {HTMLElement} root
  * @param {Object} store
  * @param {(message: string) => void} setStatus
@@ -157,36 +160,12 @@ function initInspiration(root, store, setStatus, compact) {
         const character = store.get();
         if (odysseyActive(character)) openFaithFavors(store, setStatus, compact);
     });
-    // Inspiration héroïque à part (mode actif) : étoile pleine quand elle est allumée
-    const toggle = el('button', { type: 'button', class: 'feat-mention faith-inspiration', hidden: true, 'aria-pressed': 'false' },
-        el('span', { class: 'feat-mention-line' }, icon('star'), el('span', { text: ODYSSEY_INSPIRATION_LABEL })));
-    // Les deux pastilles l'une sous l'autre, sous la case (css/feats.css)
-    cell?.append(mention, toggle);
-    toggle.addEventListener('click', () => {
-        const character = store.get();
-        if (!odysseyActive(character)) return;
-        const lit = !odysseyInspirationLit(character);
-        store.update(odysseyInspirationPatch(lit));
-        setStatus(frenchSpaces(odysseyInspirationMessage(lit, statusRoom(compact.matches))));
-    });
-    let shown = false;
-    /** @param {Array<string>|null} changedKeys - null : fiche ouverte ou remplacée */
-    const renderToggle = (character, changedKeys) => {
-        const active = odysseyActive(character);
-        const derived = active ? derivedOf(character) : null;
-        // Une fois affiché, le bouton reste jusqu'au prochain changement de fiche ou de mode
-        const calm = changedKeys === null || changedKeys.includes(ODYSSEY_MODE_KEY);
-        shown = active && (odysseyInspirationUseful(character, derived) || (shown && !calm));
-        toggle.hidden = !shown;
-        if (!shown) return;
-        const lit = odysseyInspirationLit(character);
-        toggle.setAttribute('aria-pressed', String(lit));
-        const hint = frenchSpaces(odysseyInspirationHint(character, derived));
-        if (toggle.title !== hint) toggle.title = hint;
-    };
+    const coin = initCoin(store, setStatus, compact);
+    // Pastille puis pièce, l'une sous l'autre, sous la case (css/feats.css)
+    cell?.append(mention, coin.button);
     let signature = '';
-    const render = (character, changedKeys = null) => {
-        renderToggle(character, changedKeys);
+    const render = (character) => {
+        coin.render(character, input);
         const wording = inspirationWording(character);
         if (label.textContent !== wording.label) label.textContent = wording.label;
         renameSteppers(input, wording.noun);
@@ -200,8 +179,52 @@ function initInspiration(root, store, setStatus, compact) {
         mention.title = frenchSpaces(`${next} Touchez la pastille pour les faveurs qu'ils permettent.`);
         mention.setAttribute('aria-label', `${faithMention(faith)} : ${next} Ouvre la liste des faveurs.`);
     };
-    store.subscribe((character, changedKeys) => render(character, changedKeys));
+    store.subscribe((character) => render(character));
     render(store.get());
+}
+
+/**
+ * Pièce « Inspiration héroïque » : bouton bascule (aria-pressed), titre (mode actif), pièce et
+ * mot « Disponible » / « Non disponible ».
+ * @param {Object} store
+ * @param {(message: string) => void} setStatus
+ * @param {MediaQueryList} compact
+ * @returns {{ button: HTMLButtonElement, render: (character: Object, input: HTMLElement) => void }}
+ */
+function initCoin(store, setStatus, compact) {
+    const state = el('span', { class: 'inspiration-state' });
+    const button = el('button', { type: 'button', class: 'inspiration-coin', hidden: true, 'aria-pressed': 'false', 'aria-label': ODYSSEY_INSPIRATION_LABEL },
+        el('span', { class: 'label inspiration-caption', text: ODYSSEY_INSPIRATION_LABEL }),
+        el('span', { class: 'inspiration-face', 'aria-hidden': 'true' }, icon('star')),
+        state);
+    button.addEventListener('click', () => {
+        const character = store.get();
+        const now = inspirationCoin(character);
+        if (!now.readable) return;
+        const lit = !now.lit;
+        store.update(inspirationCoinPatch(character, lit));
+        setStatus(frenchSpaces(odysseyInspirationMessage(lit, statusRoom(compact.matches))));
+    });
+    let signature = '';
+    const render = (character, input) => {
+        const coin = inspirationCoin(character);
+        // Mode coupé : la pièce remplace la case et ses boutons (sauf texte saisi à la main)
+        const alone = coin.place === 'alone';
+        input.hidden = alone && coin.readable;
+        const steppers = steppersOf(input);
+        for (const step of [steppers?.minus, steppers?.plus]) if (step) step.hidden = alone;
+        button.hidden = !coin.readable;
+        button.classList.toggle('is-alone', alone);
+        button.setAttribute('aria-pressed', String(coin.lit));
+        const word = coin.lit ? INSPIRATION_STATES.lit : INSPIRATION_STATES.unlit;
+        if (state.textContent !== word) state.textContent = word;
+        const hint = frenchSpaces(odysseyInspirationHint(character, derivedOf(character)));
+        if (hint !== signature) {
+            signature = hint;
+            button.title = hint;
+        }
+    };
+    return { button, render };
 }
 
 /**

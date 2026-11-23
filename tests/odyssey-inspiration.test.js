@@ -1,16 +1,17 @@
 /**
- * TESTS — INSPIRATION HÉROÏQUE EN MODE ODYSSÉE (js/rules/odyssey.js, js/ui/odyssey.js)
+ * TESTS — PIÈCE « INSPIRATION HÉROÏQUE » (js/rules/odyssey.js, js/ui/odyssey.js)
  * Les points de Foi de l'Odyssée remplacent les « points de héros » du guide du MJ, pas
- * l'Inspiration héroïque : un Humain (Ingénieux) ou un Champion niveau 10+ la note avec un bouton
- * à part sous la case. Clé facultative « odyssey_inspiration » : "1" = allumée ; absente = éteinte.
+ * l'Inspiration héroïque : en mode Odyssée, chaque personnage la note avec une pièce à part sous
+ * la case (clé facultative « odyssey_inspiration » : "1" = disponible ; absente = non disponible).
+ * Mode coupé, la pièce remplace la case heroic_inspiration (0 ou 1), sans boutons − / +.
  */
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
     ODYSSEY_MODE_KEY, ODYSSEY_INSPIRATION_KEY, ODYSSEY_INSPIRATION_LABEL,
-    odysseyInspirationLit, odysseyInspirationSources, odysseyInspirationUseful, odysseyInspirationPatch,
-    odysseyInspirationMessage, odysseyInspirationHint, restInspirationSentence
+    odysseyInspirationLit, odysseyInspirationSources, odysseyInspirationPatch, INSPIRATION_STATES,
+    inspirationCoin, inspirationCoinPatch, odysseyInspirationMessage, odysseyInspirationHint, restInspirationSentence
 } from '../js/rules/odyssey.js';
 import { STATUS_ROOM, STATUS_ROOM_NARROW } from '../js/data/status-bar.js';
 import { createDefaultCharacter, OPTIONAL_KEY_DEFAULTS } from '../js/state/schema.js';
@@ -27,34 +28,58 @@ import { ALL_FIXTURES, readFixture } from './helpers/fixtures.js';
 const sheet = (extra = {}) => ({ ...createDefaultCharacter(), char_name: 'Test', ...extra });
 const OFF = { [ODYSSEY_MODE_KEY]: 'off' };
 const LIT = { [ODYSSEY_INSPIRATION_KEY]: '1' };
-const useful = (record) => odysseyInspirationUseful(record, deriveCharacter(record));
 const champion = (level, extra = {}) => sheet({ char_class: 'Guerrier', char_subclass: 'Champion', char_level: String(level), ...extra });
 
-describe('Inspiration héroïque (mode Odyssée) : quand le bouton sert', () => {
-    test('Humain : oui (trait Ingénieux), quelle que soit la classe', () => {
-        assert.equal(useful(sheet({ char_species: 'Humain', char_class: 'Clerc', char_level: '4' })), true);
-        assert.equal(useful(sheet({ char_species: 'Human' })), true);
-        assert.equal(useful(sheet({ char_species: '<b>Humain</b>' })), true);
+describe('Pièce « Inspiration héroïque » : où elle est, ce qu\'elle montre', () => {
+    test('Mode Odyssée : sous les points de Foi pour TOUS les personnages (choix de Franck, 23/11/2026)', () => {
+        for (const record of [sheet(), sheet({ char_species: 'Elfe', char_class: 'Magicien', char_level: '4' }), sheet({ char_species: 'Humain' }), champion(10)]) {
+            assert.deepEqual(inspirationCoin(record), { place: 'faith', lit: false, readable: true });
+            assert.deepEqual(inspirationCoin({ ...record, ...LIT }), { place: 'faith', lit: true, readable: true });
+        }
+        // Les points de Foi n'allument pas la pièce : ce sont deux choses à part
+        assert.equal(inspirationCoin(sheet({ heroic_inspiration: '3/4' })).lit, false);
     });
 
-    test('Champion : à partir du niveau 10 (Héros du champ d\'honneur)', () => {
-        assert.equal(useful(champion(10)), true);
-        assert.equal(useful(champion(14)), true);
-        assert.equal(useful(champion(9)), false);
-        // Autre sous-classe du Guerrier, même niveau : non
-        assert.equal(useful(sheet({ char_class: 'Guerrier', char_subclass: 'Maître de guerre', char_level: '10' })), false);
+    test('Mode coupé : la pièce remplace la case (0 ou 1) ; une vieille valeur « 3 » compte comme disponible', () => {
+        assert.deepEqual(inspirationCoin(sheet({ ...OFF, heroic_inspiration: '' })), { place: 'alone', lit: false, readable: true });
+        assert.deepEqual(inspirationCoin(sheet({ ...OFF, heroic_inspiration: '0' })), { place: 'alone', lit: false, readable: true });
+        assert.deepEqual(inspirationCoin(sheet({ ...OFF, heroic_inspiration: '1' })), { place: 'alone', lit: true, readable: true });
+        assert.deepEqual(inspirationCoin(sheet({ ...OFF, heroic_inspiration: 1 })), { place: 'alone', lit: true, readable: true });
+        assert.equal(inspirationCoin(sheet({ ...OFF, heroic_inspiration: '3' })).lit, true);
+        assert.equal(inspirationCoin(sheet({ ...OFF, heroic_inspiration: '1/1' })).lit, true);
+        // La clé du mode Odyssée ne compte pas en mode coupé
+        assert.equal(inspirationCoin(sheet({ ...OFF, ...LIT, heroic_inspiration: '0' })).lit, false);
     });
 
-    test('Elfe Magicien : non ; allumé, il reste visible (jamais caché allumé)', () => {
-        const elf = sheet({ char_species: 'Elfe', char_class: 'Magicien', char_level: '4' });
-        assert.equal(useful(elf), false);
-        assert.equal(useful({ ...elf, ...LIT }), true);
+    test('Mode coupé, texte saisi à la main : pas de pièce, la case reste à corriger, jamais réécrite', () => {
+        for (const value of ['1 (béni)', 'oui', '-1', 'abc']) {
+            const record = sheet({ ...OFF, heroic_inspiration: value });
+            assert.equal(inspirationCoin(record).readable, false, value);
+            assert.deepEqual(inspirationCoinPatch(record, true), {}, value);
+            assert.deepEqual(inspirationCoinPatch(record, false), {}, value);
+        }
     });
 
-    test('Mode coupé : jamais (la case elle-même est l\'Inspiration héroïque), même allumé', () => {
-        assert.equal(useful(sheet({ ...OFF, char_species: 'Humain' })), false);
-        assert.equal(useful(champion(10, OFF)), false);
-        assert.equal(useful(sheet({ ...OFF, ...LIT })), false);
+    test('Toucher la pièce : la bonne clé dans chaque mode', () => {
+        assert.deepEqual(inspirationCoinPatch(sheet(), true), { [ODYSSEY_INSPIRATION_KEY]: '1' });
+        assert.deepEqual(inspirationCoinPatch(sheet(LIT), false), { [ODYSSEY_INSPIRATION_KEY]: undefined });
+        assert.deepEqual(inspirationCoinPatch(sheet(OFF), true), { heroic_inspiration: '1' });
+        assert.deepEqual(inspirationCoinPatch(sheet({ ...OFF, heroic_inspiration: '3' }), false), { heroic_inspiration: '0' });
+        // Mode actif, les points de Foi ne sont jamais touchés par la pièce
+        assert.ok(!('heroic_inspiration' in inspirationCoinPatch(sheet({ heroic_inspiration: '3/4' }), true)));
+    });
+
+    test('Mots sous la pièce : « Disponible » / « Non disponible » (ni oui / non)', () => {
+        assert.deepEqual(INSPIRATION_STATES, { lit: 'Disponible', unlit: 'Non disponible' });
+    });
+
+    test('Mode coupé, aller-retour : la case revient à ce qu\'elle était (empreinte)', () => {
+        const store = createStore(sheet({ ...OFF, heroic_inspiration: '0' }));
+        const before = sheetFingerprint(store.get());
+        store.update(inspirationCoinPatch(store.get(), true));
+        assert.equal(store.get().heroic_inspiration, '1');
+        store.update(inspirationCoinPatch(store.get(), false));
+        assert.equal(sheetFingerprint(store.get()), before);
     });
 
     test('Sources dites dans l\'infobulle', () => {
@@ -89,7 +114,7 @@ describe('Inspiration héroïque (mode Odyssée) : valeur enregistrée', () => {
             const { character } = migrateCharacter(sheet({ char_species: 'Humain', [ODYSSEY_INSPIRATION_KEY]: value }));
             const derived = deriveCharacter(character);
             assert.equal(odysseyInspirationLit(character), false, label);
-            assert.doesNotThrow(() => odysseyInspirationUseful(character, derived), label);
+            assert.doesNotThrow(() => inspirationCoin(character), label);
             assert.doesNotThrow(() => odysseyInspirationHint(character, derived), label);
             assert.doesNotThrow(() => sheetFingerprint(character), label);
         }
@@ -140,14 +165,25 @@ describe('Inspiration héroïque (mode Odyssée) : valeur enregistrée', () => {
             assert.equal(odysseyInspirationLit(character), false);
             const before = sheetFingerprint(character);
             const store = createStore(character);
-            odysseyInspirationUseful(store.get(), deriveCharacter(store.get()));
+            inspirationCoin(store.get());
+            odysseyInspirationHint(store.get(), deriveCharacter(store.get()));
             assert.deepEqual(store.get(), character);
             assert.equal(sheetFingerprint(store.get()), before);
         });
     }
 });
 
-describe('Inspiration héroïque (mode Odyssée) : phrases', () => {
+describe('Pièce « Inspiration héroïque » : phrases', () => {
+    test('Infobulle : dit comment lire la pièce, dans les deux modes', () => {
+        for (const record of [sheet(), sheet(OFF)]) {
+            const hint = odysseyInspirationHint(record, deriveCharacter(record));
+            assert.match(hint, /dorée, elle est disponible ; vide, non disponible/);
+            assert.match(hint, /relancer un dé/);
+        }
+        assert.match(odysseyInspirationHint(sheet(), deriveCharacter(sheet())), /à part des points de Foi/);
+        assert.doesNotMatch(odysseyInspirationHint(sheet(OFF), deriveCharacter(sheet(OFF))), /points de Foi/);
+    });
+
     test('Barre du haut : une ligne sur tablette, dit quoi faire', () => {
         for (const lit of [true, false]) {
             const message = odysseyInspirationMessage(lit);
@@ -159,11 +195,12 @@ describe('Inspiration héroïque (mode Odyssée) : phrases', () => {
             assert.ok(narrow.length <= STATUS_ROOM_NARROW, `${narrow.length} : ${narrow}`);
         }
         assert.match(odysseyInspirationMessage(true), /relancer un dé/);
-        assert.match(odysseyInspirationMessage(false), /éteint/);
+        assert.match(odysseyInspirationMessage(false), /non disponible/);
+        assert.match(odysseyInspirationMessage(true), /pièce/);
     });
 
     test('Repos long d\'un Humain : mode actif, la phrase dit où la noter ; mode coupé, inchangée', () => {
-        assert.equal(restInspirationSentence(sheet()), 'Humain (Ingénieux) : vous gagnez l’Inspiration héroïque (bouton sous les Points de Foi).');
+        assert.equal(restInspirationSentence(sheet()), 'Humain (Ingénieux) : vous gagnez l’Inspiration héroïque (pièce sous les Points de Foi).');
         assert.equal(restInspirationSentence(sheet(OFF)), 'Humain (Ingénieux) : vous gagnez l’Inspiration héroïque.');
     });
 
@@ -176,7 +213,7 @@ describe('Inspiration héroïque (mode Odyssée) : phrases', () => {
     });
 });
 
-describe('Inspiration héroïque (mode Odyssée) : interface', () => {
+describe('Pièce « Inspiration héroïque » : interface', () => {
     const ui = readFileSync(new URL('../js/ui/odyssey.js', import.meta.url), 'utf8');
     const print = readFileSync(new URL('../css/print.css', import.meta.url), 'utf8');
 
@@ -184,10 +221,26 @@ describe('Inspiration héroïque (mode Odyssée) : interface', () => {
         assert.match(ui, /'aria-pressed': 'false'/);
         // Tablette : une ligne ; ordinateur : la colonne étroite des messages (statusRoom, tests/odyssey.test.js)
         assert.match(ui, /odysseyInspirationMessage\(lit, statusRoom\(compact\.matches\)\)/);
-        assert.match(ui, /toggle\.title = hint/);
+        assert.match(ui, /button\.title = hint/);
     });
 
-    test('Imprimé seulement allumé', () => {
-        assert.match(print, /\.faith-inspiration\[aria-pressed="false"\] \{\s*display: none;/);
+    test('Petits boutons − / + autour du titre (Points de Foi, renommée) ; cachés en mode coupé', () => {
+        const counters = readFileSync(new URL('../js/ui/counters.js', import.meta.url), 'utf8');
+        const stepperCss = readFileSync(new URL('../css/stepper.css', import.meta.url), 'utf8');
+        const feats = readFileSync(new URL('../css/feats.css', import.meta.url), 'utf8');
+        assert.match(counters, /key: 'heroic_inspiration'[^\n]*aroundLabel: true/);
+        assert.match(counters, /key: 'glory_score'[^\n]*aroundLabel: true/);
+        assert.doesNotMatch(counters, /key: 'fatigue_level'[^\n]*aroundLabel/);
+        // .btn-icon et .inspiration-coin imposent leur display : l'attribut hidden seul ne suffit pas
+        assert.match(stepperCss, /\.label-steps > \.step-btn\[hidden\] \{\s*display: none;/);
+        assert.match(feats, /\.inspiration-coin\[hidden\] \{\s*display: none;/);
+        assert.match(ui, /step\.hidden = alone/);
+        assert.match(ui, /input\.hidden = alone && coin\.readable/);
+    });
+
+    test('Imprimée comme à l\'écran, sans fond ni halo', () => {
+        assert.doesNotMatch(print, /inspiration-coin[^{]*\{\s*display: none/);
+        // Plus fort que le halo de la pièce disponible (css/feats.css)
+        assert.match(print, /\.inspiration-coin\[aria-pressed\] \.inspiration-face \{\s*box-shadow: none;/);
     });
 });

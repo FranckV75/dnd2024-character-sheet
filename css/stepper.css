@@ -189,26 +189,56 @@
     box-shadow: 0 0 0 3px var(--gold-glow);
 }
 
-/* ---------- Compteurs (Épuisement, Inspiration, renommée) et PV des compagnons ---------- */
+/* ---------- Compteurs (Épuisement, Points de Foi, renommée) et PV des compagnons ---------- */
 
 .counter-stepper .input {
     max-width: 4em;
 }
 
-/* Inspiration héroïque : case étroite (cellule de 100 à 150 px) : la valeur sur toute la largeur,
-   les boutons − / + en dessous, comme les PV au-delà de 1100 px */
-.stat-cell .counter-stepper {
-    display: grid;
-    grid-template-columns: repeat(2, auto);
+/* Points de Foi et Points de renommée : petits boutons ronds de part et d'autre du TITRE de la
+   case (choix de Franck, 23/11/2026) ; le titre passe sur deux lignes entre eux si la cellule est
+   étroite (101 px au plus juste, ordinateur). La case reste seule dessous, sur toute la largeur. */
+.label-steps {
+    display: flex;
+    align-items: center;
     justify-content: center;
-    gap: 6px 14px;
+    gap: 4px;
+    min-width: 0;
 }
 
-.stat-cell .counter-stepper .input {
-    grid-column: 1 / -1;
-    grid-row: 1;
-    max-width: none;
-    width: 100%;
+.label-steps > label {
+    min-width: 0;
+}
+
+/* Boutons cachés (mode Odyssée coupé : la case devient la pièce « Inspiration héroïque ») :
+   .btn-icon impose son display, plus fort que l'attribut hidden seul */
+.label-steps > .step-btn[hidden] {
+    display: none;
+}
+
+.step-btn.is-mini {
+    width: 26px;
+    height: 26px;
+    min-width: 0;
+    min-height: 0;
+}
+
+.step-btn.is-mini .icon {
+    width: 13px;
+    height: 13px;
+}
+
+/* Au doigt : le bouton reste petit à l'œil, sa zone de toucher fait 44 × 40 px (26 + 2 × 9 de
+   large ; 26 + 10 au-dessus + 4 en dessous, pour ne pas mordre sur la case juste dessous) */
+@media (pointer: coarse) {
+    .label-steps .step-btn.is-mini {
+        min-width: 0;
+        min-height: 0;
+    }
+
+    .label-steps .step-btn.is-mini::after {
+        inset: -10px -9px -4px;
+    }
 }
 
 .companion-hp .stepper {

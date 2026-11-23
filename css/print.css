@@ -794,15 +794,19 @@ tr[data-magic="3"] .magic-gem-face {
     display: block;
 }
 
-/* Inspiration héroïque à part des points de Foi (mode Odyssée) : imprimée seulement allumée,
-   en simple texte comme les autres mentions */
-.faith-inspiration[aria-pressed="false"] {
-    display: none;
+/* Pièce « Inspiration héroïque » : imprimée comme à l'écran (disponible ou non), sans fond ni
+   halo (souvent non imprimés) : disponible = cercle plein à l'encre, étoile pleine */
+.inspiration-coin[aria-pressed] .inspiration-face {
+    box-shadow: none;
 }
 
-.faith-inspiration[aria-pressed="true"] {
-    border: none;
+.inspiration-coin[aria-pressed="true"] .inspiration-face {
+    border-color: var(--text);
     background: transparent;
+    color: var(--text);
+}
+
+.inspiration-coin .inspiration-state {
     color: var(--text);
 }
 
