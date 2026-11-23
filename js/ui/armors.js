@@ -11,6 +11,8 @@
 // base viennent du manuel. La CA de la fiche est recalculée par sheet.js à chaque changement.
 // Nom : saisie libre (anneau, cape, sort…), suggestions du manuel, ou liste à parcourir sans
 // clavier (nom vide touché, ou bouton ▾ ; groupes de la table des armures, js/rules/armor-picker.js).
+// Réglages (engrenage) : quitter sans appliquer après un changement demande d'abord si l'on
+// abandonne ces changements, comme « Configuration de l'arme » (choix de Franck, 23/11/2026).
 // =============================================================================
 
 import { EMPTY_ARMOR } from '../state/schema.js';
@@ -207,6 +209,7 @@ export function initArmors({ root, store, setStatus }) {
         const entry = catalogueArmor(original);
         const manual = followsManual(original, entry);
         const name = textOf(original.name).trim();
+        const shield = armorCategory(original) === 'shield';
         const id = `armor-config-${++configCounter}`;
 
         // Type et base : lecture seule pour une armure du manuel, réglables sinon
@@ -290,14 +293,19 @@ export function initArmors({ root, store, setStatus }) {
         fields.push(magicField, preview);
         refresh();
 
-        openModal({
-            title: armorCategory(original) === 'shield' ? 'Réglages du bouclier' : "Réglages de l'armure",
+        // Quitter sans appliquer après un changement : on demande d'abord (comme « Configuration
+        // de l'arme », choix de Franck du 23/11/2026) ; rien de changé : fermeture immédiate
+        const settingsSnapshot = () => JSON.stringify([typeSelect.value, baseInput.value.trim(), magicSelect.value]);
+        const opened = settingsSnapshot();
+        let asking = false;
+        const close = openModal({
+            title: shield ? 'Réglages du bouclier' : "Réglages de l'armure",
             icon: 'gear',
             body: el('div', { class: 'weapons-config' },
                 el('p', { class: 'weapons-config-name', text: name || 'Sans nom' }),
                 ...fields),
             actions: [
-                { label: 'Annuler' },
+                { label: 'Annuler', dismiss: true },
                 {
                     label: 'Appliquer', primary: true,
                     onClick: () => {
@@ -322,7 +330,26 @@ export function initArmors({ root, store, setStatus }) {
                         setStatus(`${name || 'Armure'} : ${line.kind === 'none' ? 'ne compte pas dans la CA' : `CA ${line.display}`}`);
                     }
                 }
-            ]
+            ],
+            // Réglage changé : on demande avant de le perdre (une seule question à la fois)
+            onDismiss: () => {
+                if (settingsSnapshot() === opened) return true;
+                if (!asking) {
+                    asking = true;
+                    confirmModal({
+                        title: 'Abandonner les changements ?',
+                        message: `Vous avez changé des réglages ${shield ? 'de ce bouclier' : 'de cette armure'} sans les appliquer. Si vous fermez, ils seront perdus.`,
+                        confirmLabel: 'Fermer sans appliquer',
+                        // « Annuler » serait ambigu ici : annuler la fermeture, ou les changements ?
+                        cancelLabel: 'Continuer à modifier',
+                        danger: true
+                    }).then((leave) => {
+                        asking = false;
+                        if (leave) close();
+                    });
+                }
+                return false;
+            }
         });
     }
 

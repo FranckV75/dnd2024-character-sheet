@@ -10,6 +10,7 @@ import { readFileSync } from 'node:fs';
 
 const modal = readFileSync(new URL('../js/ui/modal.js', import.meta.url), 'utf8');
 const config = readFileSync(new URL('../js/ui/weapons/config.js', import.meta.url), 'utf8');
+const armors = readFileSync(new URL('../js/ui/armors.js', import.meta.url), 'utf8');
 
 describe('Fenêtres : quitter sans agir (onDismiss)', () => {
     test('Les trois chemins passent par onDismiss : bouton dismiss, fond, touche Échap', () => {
@@ -48,5 +49,17 @@ describe('Configuration de l\'arme : confirmation avant de perdre un changement'
             assert.ok(snapshot.includes(field), field);
         }
         assert.match(snapshot, /filter\(\(line\) => line\.dmg\.trim\(\) \|\| line\.reason\.trim\(\)\)/);
+    });
+});
+
+describe("Réglages de l'armure : même confirmation (accord de Franck, 23/11/2026)", () => {
+    test('« Annuler », fond, Échap : question seulement après un changement', () => {
+        assert.match(armors, /\{ label: 'Annuler', dismiss: true \}/);
+        assert.match(armors, /const settingsSnapshot = \(\) => JSON\.stringify\(\[typeSelect\.value, baseInput\.value\.trim\(\), magicSelect\.value\]\);/);
+        assert.match(armors, /if \(settingsSnapshot\(\) === opened\) return true;/);
+        assert.match(armors, /if \(!asking\) \{/);
+        assert.match(armors, /confirmLabel: 'Fermer sans appliquer'/);
+        assert.match(armors, /cancelLabel: 'Continuer à modifier'/);
+        assert.match(armors, /if \(leave\) close\(\);/);
     });
 });
