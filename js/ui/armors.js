@@ -9,8 +9,13 @@
 // le calcul s'affiche dans une bulle au toucher ou au survol. Le type, la valeur de base (clé
 // « ca ») et le bonus magique se règlent avec l'engrenage ; pour une armure du manuel, type et
 // base viennent du manuel. La CA de la fiche est recalculée par sheet.js à chaque changement.
-// Nom : saisie libre (anneau, cape, sort…), suggestions du manuel, ou liste à parcourir sans
-// clavier (nom vide touché, ou bouton ▾ ; groupes de la table des armures, js/rules/armor-picker.js).
+// Nom : saisie libre (toujours possible), suggestions, ou liste à parcourir sans clavier (nom
+// vide touché, ou bouton ▾ ; js/rules/armor-picker.js) : les quatre groupes de la table des
+// armures du manuel, puis le groupe « Autres » (anneau, cape, sort… : js/data/armor-others.js).
+// Une entrée « Autres » choisie devient une ligne ordinaire (type, valeur de base, commentaire
+// qui dit sa condition), réglable ensuite avec l'engrenage comme une ligne saisie à la main ;
+// la bulle de sa CA ajoute le détail de l'entrée (armorBubbleText), et la même entrée active deux
+// fois est signalée par l'avertissement de la ligne (armorWarnings).
 // Réglages (engrenage) : quitter sans appliquer après un changement demande d'abord si l'on
 // abandonne ces changements, comme « Configuration de l'arme » (choix de Franck, 23/11/2026).
 // =============================================================================
@@ -21,11 +26,13 @@ import { locateRow } from '../state/other-tab.js';
 import { parseNumber, armorCategory, mediumArmorDexMax } from '../rules/character.js';
 import { derivedOf } from './derived.js';
 import {
-    ARMOR_TYPES, searchArmorCatalogue, armorRowFromCatalogue, armorWarnings, armorTraining, isBlankArmor,
+    ARMOR_TYPES, searchArmorCatalogue, searchArmorChoices, armorRowFromCatalogue, armorRowFromChoice, isArmorOther,
+    armorWarnings, armorTraining, isBlankArmor, armorBaseText, armorBubbleText,
     armorMagicBonus, armorCanBeMagic, withArmorMagic, ARMOR_MAGIC_MAX, armorLine, catalogueArmor, catalogueArmorClass
 } from '../rules/armors.js';
-import { armorPickerGroups } from '../rules/armor-picker.js';
+import { armorPickerGroups, ARMOR_PICKER_OTHER } from '../rules/armor-picker.js';
 import { EQUIPMENT_DATA } from '../data/equipment.js';
+import { ARMOR_OTHERS } from '../data/armor-others.js';
 import { el, icon, setIconLabel } from './dom.js';
 import { cellText } from './cell-text.js';
 import { attachAutocomplete } from './autocomplete.js';
@@ -68,24 +75,13 @@ const STATUS_COUNTED = 'Comptée dans la CA de la fiche.';
  *  la barre du haut quand on le touche (tablette) */
 const PICK_TITLE = 'Choisir dans la liste des armures (sans ouvrir le clavier)';
 const PICK_HELP = 'Liste des armures : touchez-en une pour remplir la ligne (✓ : déjà dans le tableau).';
+/** Suggestion pendant la saisie du nom : « CA 16 · Lourde », « CA +1 · Autres » */
+const suggestionDetail = (entry) => `CA ${entry.ca} · ${isArmorOther(entry) ? ARMOR_PICKER_OTHER.title : entry.type}`;
 
 const textOf = (value) => stripHTML(safeText(value));
 const armorsOf = (character) => (Array.isArray(character.dynamic_armors) ? character.dynamic_armors : []);
 const asObject = (row) => (row && typeof row === 'object' ? row : {});
 const typeOf = (row) => textOf(row.type) || 'none';
-
-/**
- * Valeur de base à enregistrer (clé « ca ») : le nombre saisi, précédé de « + » pour un bouclier
- * ou un bonus positif, comme les valeurs du manuel ; sans nombre : vide.
- * @param {string} raw
- * @param {string} type - valeur de ARMOR_TYPES
- * @returns {string}
- */
-function baseText(raw, type) {
-    const value = parseNumber(String(raw ?? ''), Number.NaN);
-    if (!Number.isFinite(value)) return '';
-    return (type === 'Bouclier' || type === 'Bonus') && value > 0 ? `+${value}` : String(value);
-}
 
 /** Contexte du calcul de CA d'une ligne (modificateurs, maîtrise, Dex max des armures intermédiaires) */
 function armorContext(derived) {
@@ -239,7 +235,7 @@ export function initArmors({ root, store, setStatus }) {
             if (!manual) {
                 const type = typeSelect.value;
                 if (type !== initialType) next.type = type;
-                if (baseInput.value.trim() !== initialBase.trim() || type !== initialType) next.ca = baseText(baseInput.value, type);
+                if (baseInput.value.trim() !== initialBase.trim() || type !== initialType) next.ca = armorBaseText(baseInput.value, type);
             }
             const canMagic = armorCanBeMagic(next);
             return withArmorMagic(next, canMagic ? Number(magicSelect.value) : 0);
@@ -368,7 +364,9 @@ export function initArmors({ root, store, setStatus }) {
                 el('strong', { class: 'spell-tooltip-name', text: info.name || 'Sans nom' }),
                 info.category ? el('span', { class: 'spell-tooltip-level', text: info.category }) : null),
             el('p', { class: 'armor-ca-formula', text: info.formula }),
-            info.note ? el('p', { class: 'armor-ca-note', 'data-counted': String(info.counted), text: info.note }) : null
+            info.note ? el('p', { class: 'armor-ca-note', 'data-counted': String(info.counted), text: info.note }) : null,
+            // Ligne choisie dans le groupe « Autres » : ce que l'entrée précise (conditions, non compté)
+            info.detail ? el('p', { class: 'armor-ca-detail', text: info.detail }) : null
         ];
     }
 
@@ -386,14 +384,16 @@ export function initArmors({ root, store, setStatus }) {
     }
 
     /**
-     * Liste à parcourir (nom vide touché, ou bouton ▾) : les armures du manuel par groupe, avec leur
-     * CA ; ✓ : déjà dans le tableau, toujours choisissable (armure de rechange).
+     * Liste à parcourir (nom vide touché, ou bouton ▾) : les armures du manuel par groupe, puis le
+     * groupe « Autres » (anneau, cape, sort…), avec leur CA ; ✓ : déjà dans le tableau, toujours
+     * choisissable (armure de rechange ; une entrée « Autres » active deux fois est signalée sur
+     * la ligne, armorWarnings).
      * @param {number} index - ligne qu'on remplit (exclue des armures « déjà notées »)
      * @param {string} query
      */
     function browseItems(index, query) {
-        const others = armorsOf(store.get()).filter((_, i) => i !== index);
-        return armorPickerGroups(EQUIPMENT_DATA.armors, { query, rows: others }).flatMap((group) => [
+        const noted = armorsOf(store.get()).filter((_, i) => i !== index);
+        return armorPickerGroups(EQUIPMENT_DATA.armors, { query, rows: noted, others: ARMOR_OTHERS }).flatMap((group) => [
             { header: group.title },
             ...group.items.map((item) => ({
                 label: item.armor.name,
@@ -445,7 +445,9 @@ export function initArmors({ root, store, setStatus }) {
         }, icon('trash'));
 
         // Nom saisi au clavier (sans passer par les suggestions) : si c'est exactement une armure
-        // du manuel et que le type n'est pas encore choisi, la ligne est complétée comme une suggestion
+        // du manuel et que le type n'est pas encore choisi, la ligne est complétée comme une suggestion.
+        // Les entrées du groupe « Autres » ne sont jamais complétées ainsi : il faut les choisir
+        // (un « Anneau de protection » tapé à la main reste comme le joueur l'a écrit).
         controls.name.addEventListener('change', () => {
             const row = asObject(armorsOf(store.get())[index]);
             if (typeOf(row) !== 'none') return;
@@ -468,14 +470,14 @@ export function initArmors({ root, store, setStatus }) {
         }, icon('chevron'));
         detach = attachAutocomplete(controls.name, {
             minChars: 1,
-            getItems: (query, { browse = false } = {}) => (browse ? browseItems(index, query) : searchArmorCatalogue(query).map(a => ({
-                label: a.name, detail: `CA ${a.ca} · ${a.type}`, value: a
+            getItems: (query, { browse = false } = {}) => (browse ? browseItems(index, query) : searchArmorChoices(query).map(a => ({
+                label: a.name, detail: suggestionDetail(a), value: a
             }))),
-            // Nom vide touché, ou bouton ▾ : toutes les armures du manuel, par groupe
-            browse: { enabled: () => !isLocked(), trigger: controls.pick, empty: 'Aucune armure du manuel ne correspond' },
+            // Nom vide touché, ou bouton ▾ : toutes les armures du manuel par groupe, puis « Autres »
+            browse: { enabled: () => !isLocked(), trigger: controls.pick, empty: 'Rien dans la liste ne correspond' },
             onSelect: (item) => {
                 controls.name.value = item.value.name;
-                replaceRow(index, row => armorRowFromCatalogue(item.value, row));
+                replaceRow(index, row => armorRowFromChoice(item.value, row));
             }
         });
         detachers.push(detach);
@@ -560,9 +562,12 @@ export function initArmors({ root, store, setStatus }) {
             controls.ca.textContent = line.display;
             controls.ca.dataset.status = status;
             const note = status === 'counted' ? STATUS_COUNTED : result.note;
+            // Ligne venue du groupe « Autres » : détail de l'entrée ; ligne de rappel (Peau d'écorce) :
+            // la bulle dit que c'est un rappel au lieu d'inviter à choisir un type
+            const bubble = armorBubbleText(row, line);
             details[i] = {
                 name: label, category: CATEGORY_NAMES[line.category] || '',
-                formula: line.formula, note, counted: status === 'counted'
+                formula: bubble.formula, detail: bubble.detail, note, counted: status === 'counted'
             };
             controls.ca.setAttribute('aria-label',
                 `CA de ${label ? `« ${label} »` : `la ligne ${i + 1}`} : ${line.kind === 'none' ? 'ne compte pas' : line.display}`);

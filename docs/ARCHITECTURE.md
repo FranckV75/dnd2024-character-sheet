@@ -57,6 +57,10 @@ js/
 │   ├── class-progression.js  Aptitudes de base des 12 classes par niveau (résumés) et
 │   │                   colonnes de leur table (Rages, sorts mineurs, sorts préparés…)
 │   ├── equipment.js    Armures
+│   ├── armor-others.js Groupe « Autres » de la liste des armures : objets magiques et sorts qui
+│   │                   changent la CA (anneau, cape, Armure du mage…) ; une entrée = un objet
+│   │                   { name, type, value, ca, comment (80 caractères au plus), detail et
+│   │                   oldComments facultatifs }, mode d'emploi en tête du fichier
 │   ├── tools.js        Outils du manuel (37, par catégorie, caractéristique) ; outil de chaque historique
 │   ├── help.js         Textes du mode d'emploi (rubriques → entrées { title, text }) ; tout libellé
 │   │                   cité entre « » doit exister dans l'interface (tests/help.test.js)
@@ -100,9 +104,14 @@ js/
 │   ├── class-features.js  Capacités de classe calculées (Aura de protection, Touche-à-tout,
 │   │                   Défense sans armure de sous-classe) et maîtrise des armes
 │   ├── armors.js       Tableau des armures (types, ligne d'armure) ; le calcul de CA est dans
-│   │                   character.js (computeArmorClass, armorLine), réexporté ici
+│   │                   character.js (computeArmorClass, armorLine), réexporté ici ; ligne écrite
+│   │                   par une entrée « Autres » (armorRowFromOther : mêmes clés qu'à la main),
+│   │                   reconnue ensuite à son nom et à son commentaire (armorOtherOfRow) : détail
+│   │                   dans la bulle de CA (armorBubbleText), même entrée active deux fois
+│   │                   signalée (armorWarnings) ; valeur écrite par l'engrenage (armorBaseText)
 │   ├── armor-picker.js  Liste des armures à parcourir (bouton ▾, 4.47.0) : les quatre groupes de
-│   │                   la table des armures du manuel (légères, intermédiaires, lourdes, boucliers)
+│   │                   la table des armures du manuel (légères, intermédiaires, lourdes, boucliers),
+│   │                   puis le groupe « Autres » (data/armor-others.js)
 │   ├── weapon-masteries.js  Bottes d'armes : botte d'une arme, effet affiché
 │   ├── weapon-picker.js  Liste des armes à parcourir (bouton ▾, 4.47.0) : les quatre groupes de
 │   │                   la table des armes du manuel, puis l'Attaque à mains nues ; ✓ sans griser
