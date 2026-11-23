@@ -53,6 +53,7 @@ js/
 │   ├── dd-rules.js     Classes, sous-classes (dont Odyssée), espèces, historiques,
 │   │                   destins héroïques, emplacements de sorts, armes
 │   │                   (noms du Manuel français ; anciens noms dans aliasesFr, lus par namesOf)
+│   │                   ; anciens noms d'armes dans RENAMED_WEAPONS (« Bâton » → « Bâton de combat »)
 │   ├── class-progression.js  Aptitudes de base des 12 classes par niveau (résumés) et
 │   │                   colonnes de leur table (Rages, sorts mineurs, sorts préparés…)
 │   ├── equipment.js    Armures
