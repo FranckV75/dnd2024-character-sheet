@@ -90,7 +90,8 @@ héroïque en mode Odyssée~~ (point 1, audit du 22/11/2026). Faits en 4.47.0 (2
 ~~confirmation avant de fermer « Configuration de l'arme »~~ (maquettes validées par Franck),
 ~~liste des armures à parcourir (bouton ▾, armures et bouclier du manuel seulement)~~, ~~noms des
 sorts de toutes les listes de classe~~, ~~confirmation avant de fermer les réglages de l'armure~~,
-~~« Sphère de feu » en Évocation~~ (décisions de Franck du 23/11/2026).
+~~« Sphère de feu » en Évocation~~ (décisions de Franck du 23/11/2026). Fait en 4.47.1
+(23/11/2026, pas encore publiée) : ~~noms du manuel pour les dons, espèces, aptitudes et outils~~.
 Reste :
 
 1. **Multiclassage** : l'étude est faite et contre-vérifiée, rien n'est construit. Elle conseille
@@ -162,6 +163,22 @@ celle du grimoire ; texte entier au toucher) ; toucher le titre « Points de Foi
 renommée », entre ses petits boutons, ouvre le clavier de la case (comme avant) ; sur Android, un
 geste retour répété dans « Configuration de l'arme » finit par la fermer sans question (Chrome
 l'impose ; Échap au clavier, lui, pose toujours la question).
+
+Décisions de Franck en attente sur la 4.47.1 (noms du manuel ; corrigé aujourd'hui = ce que dit
+le livre, rien n'est changé pour ces points) :
+- Garder la correction « Formes du cercle améliorées » (le livre imprime « améliorés ») ?
+- « Tempérée » / « Tropicale » (Cercle de la Terre) : le livre écrit « tempéré » dans le texte et
+  « Terres tempérées » dans les titres ; garder ?
+- Dons d'origines : la fiche affiche « Prérequis : Niv 1+ », le livre n'en met aucun ; retirer ?
+- « Présents de Féerie » (Vagabond féerique) et « Manifestations de l'ordre » (Sorcellerie
+  mécanique) sont présentés comme des aptitudes ; dans le livre, ce sont des tables rattachées à
+  une aptitude. Garder ainsi ?
+- Lames psychiques (Âme acérée) : le livre imprime une portée de 12/36 m, sans doute une coquille
+  (60/120 pieds = 18/36 m) ; la fiche garde 18/36 m.
+- Outils : « Boîtes de jeux » et « Instruments de musique » en catégories à part dans la fenêtre
+  (le livre les range dans « Autres outils ») ; garder ?
+- Ordre des options du Cœur sauvage : celui de la fiche (Ours, Aigle, Loup…) ou celui du livre
+  (ordre alphabétique) ?
 
 **À chaque version, désormais** : ajouter l'entrée de la version en tête de `js/data/whats-new.js`
 (sinon `npm run check` échoue) et mettre à jour la notice `js/data/help.js`.
@@ -235,13 +252,12 @@ Détail des idées :
 - Journal de campagne : notes datées par séance, suivi propre à l'Odyssée (serments, quêtes).
 - Poids porté : total du matériel comparé à la capacité de charge (gardé en tête, pas utile pour
   le moment).
-- Vérification des noms français d'après les photos du manuel. ~~Table des armes~~ (« Bâton de
-  combat », « sauf à cheval »), ~~table des armures~~ (rien à corriger) et ~~listes de sorts des
-  huit classes~~ (4.47.0, demande de Franck : chaque liste lue deux fois et comparée à la base ;
-  11 sorts renommés, dont « Main du mage », « Terreur », « Hérissement de projectiles », « Marche
-  sur l'onde » ; école d'Otiluke corrigée). Une fiche déjà remplie garde l'ancien nom, toujours
-  reconnu (pas de conversion). Reste : dons, espèces, aptitudes de classe et de sous-classe,
-  outils ; les sorts de l'Odyssée (Néréide : « Marche sur l'eau ») suivent leur propre livre.
+- ~~Vérification des noms français d'après les photos du manuel~~ : faite. Armes, armures et
+  listes de sorts en 4.47.0 ; dons, espèces, outils, historiques, aptitudes des 12 classes et des
+  48 sous-classes du manuel en 4.47.1 (23/11/2026 : une quinzaine de libellés corrigés, voir
+  `docs/CHANGELOG.md`). Les sorts et sous-classes de l'Odyssée (Néréide : « Marche sur l'eau »)
+  suivent leur propre livre. Pages non vérifiées faute de liste dans la fiche : options de
+  Métamagie, Manifestations occultes.
 - Mode consultation sur téléphone (lecture seule).
 - Connexion par lien magique (courriel), en plus du mot de passe.
 

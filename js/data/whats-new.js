@@ -13,6 +13,16 @@
 /** @type {ReadonlyArray<{ version: string, items: ReadonlyArray<string> }>} */
 export const WHATS_NEW = Object.freeze([
     {
+        version: '4.47.1',
+        items: [
+            'Noms du manuel français, relus sur le livre : Voie du Cœur sauvage « Chouette » et « Coup de bélier » ; Belluaire « bête primitive » et « Frappe de la Bête ».',
+            'Révélation incarnée « Perception de l\'invisible » et « Déplacement sinueux » ; Troisième œil du Devin « Compréhension supérieure » et « Détection de l\'invisibilité ».',
+            'Dons : « Faveur de Résistance aux énergies », « Soigneur de bataille » (Guérisseur), « Critique renforcé » (Trancheur), et le groupe « Dons : Origines » dans la liste.',
+            'Ensorceleur : on écrit « points de Sorcellerie », comme dans le manuel.',
+            'Vos choix déjà faits sont gardés : seuls les noms affichés changent.'
+        ]
+    },
+    {
         version: '4.47.0',
         items: [
             'L\'Inspiration héroïque est une pièce : dorée avec « Disponible » quand vous l\'avez, vide avec « Non disponible » sinon. Touchez-la pour passer de l\'une à l\'autre.',

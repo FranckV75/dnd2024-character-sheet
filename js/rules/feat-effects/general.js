@@ -31,7 +31,7 @@ export const GENERAL_FEAT_RULES = {
     mage_de_guerre: ({ add }) => {
         add('saves.con', 'Avantage pour maintenir la Concentration.');
         add('spells', "Sort réactif : quand une créature quitte votre allonge et provoque une attaque d'opportunité, vous pouvez à la place lancer sur elle, en Réaction, un sort d'une action qui ne cible qu'elle.");
-        add('spells', 'Composantes somatiques possibles même avec des armes ou un bouclier dans les mains.');
+        add('spells', 'Composante somatique : gestes des sorts possibles même avec des armes ou un bouclier dans les mains.');
         add('featSlot', 'Avantage pour la Concentration noté sur la sauvegarde de Constitution.');
     },
 
@@ -151,12 +151,12 @@ export const GENERAL_FEAT_RULES = {
         add('featSlot', 'Briseur de concentration : une créature en concentration à qui vous infligez des dégâts (arme ou sort) a le Désavantage à sa sauvegarde pour maintenir sa Concentration.');
     },
 
-    // Guérisseur — PHB 2024 « Healer », p. 201 (« Battle Medic » : Médecin de combat)
+    // Guérisseur — PHB 2024 « Healer », p. 201 (« Battle Medic » : Soigneur de bataille)
     guerisseur: ({ derived: { pb }, add }) => {
-        add('healing', `Médecin de combat : en dépensant une utilisation d'une trousse de soins (action Utilisation), une créature à 1,50 m dépense un de ses dés de vie ; vous le lancez et elle récupère le résultat ${signed(pb)} PV.`,
+        add('healing', `Soigneur de bataille : en dépensant une utilisation d'une trousse de soins (action Utilisation), une créature à 1,50 m dépense un de ses dés de vie ; vous le lancez et elle récupère le résultat ${signed(pb)} PV.`,
             { value: pb });
-        add('healing', 'Retirage des soins : sur un dé de soins (sort ou Médecin de combat), relancez un 1 et gardez le nouveau résultat.');
-        add('featSlot', `Médecin de combat : dé de vie de la cible ${signed(pb)} ; relancer les 1.`, { value: pb });
+        add('healing', 'Retirage des soins : sur un dé de soins (sort ou Soigneur de bataille), relancez un 1 et gardez le nouveau résultat.');
+        add('featSlot', `Soigneur de bataille : dé de vie de la cible ${signed(pb)} ; relancer les 1.`, { value: pb });
     },
 
     // ---- Lot 5 (règles vérifiées dans le PHB 2024 anglais ; le +1 : js/rules/feat-choices.js) ----

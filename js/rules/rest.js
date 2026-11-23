@@ -185,7 +185,7 @@ function slotRecoveryFeature(character, d) {
  */
 /**
  * Restauration ensorcelée (Ensorceleur niveau 5+, une fois par repos long) : nombre maximal de
- * points de sorcellerie rendus au repos court, la moitié du niveau (arrondie à l'inférieur) ; 0 sinon.
+ * points de Sorcellerie rendus au repos court, la moitié du niveau (arrondie à l'inférieur) ; 0 sinon.
  * @param {{ classSlug: string, level: number }} d - résultat de deriveCharacter
  * @returns {number}
  */
@@ -328,7 +328,7 @@ export function planLongRest(character) {
     // Choix de sous-classe effacés au repos (Présage cosmique en plus au repos long)
     const subclassChoices = restSubclassChoices(character, d, 'long');
     Object.assign(patch, subclassChoices.patch);
-    // Compagnons de sous-classe (bête primordiale, stimfée, dragon…) : PV pleins
+    // Compagnons de sous-classe (bête primitive, stimfée, dragon…) : PV pleins
     const companions = restCompanions(character, d, 'long');
     Object.assign(patch, companions.patch);
 

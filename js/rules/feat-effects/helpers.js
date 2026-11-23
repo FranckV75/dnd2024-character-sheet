@@ -113,7 +113,7 @@ export function irresistibleBoost(record, derived) {
     return ability ? { score: derived.scores[ability], name: abilityName(ability) } : null;
 }
 
-/** Types de dégâts choisis avec Faveur de résistance aux énergies */
+/** Types de dégâts choisis avec Faveur de Résistance aux énergies */
 export function energyChoices(record) {
     const choice = firstChoice(record, 'faveur_de_resistance_aux_energies');
     return [choice.energy1, choice.energy2].filter(Boolean);

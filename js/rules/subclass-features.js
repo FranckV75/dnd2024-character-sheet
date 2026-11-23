@@ -40,7 +40,7 @@ const chaMod = (derived) => Number(derived?.mods?.cha) || 0;
  */
 const paladinDC = (derived) => 8 + (Number(derived?.pb) || 2) + chaMod(derived);
 /** Avantages de Révélation incarnée (cases du menu, js/data/subclass-choices.js) */
-const REVELATIONS = [['rev_aquatic', 'Adaptation aquatique'], ['rev_flight', 'Vol scintillant'], ['rev_see', 'Voir l\'invisible'], ['rev_worm', 'Mouvement vermiforme']];
+const REVELATIONS = [['rev_aquatic', 'Adaptation aquatique'], ['rev_flight', 'Vol scintillant'], ['rev_see', 'Perception de l\'invisible'], ['rev_worm', 'Déplacement sinueux']];
 const SPELLS_TEXT = 'Bloc « Sorts de sous-classe » de l\'onglet Magie : toujours préparés, hors du nombre de sorts préparés.';
 
 /**
@@ -92,7 +92,7 @@ const MANUAL_AUTOMATION = {
     wild_magic_sorcery: {
         deferlante_de_magie_sauvage: { text: 'Boutons « Bouffée ? (d20) » et « Table (d100) » dans l\'onglet Combat : le résultat et sa ligne dans la table du manuel (les effets se lisent dans le manuel).', partial: true },
         marees_du_chaos: { text: 'Quand sa case est cochée, rappel de la Bouffée automatique sous les boutons de tirage.' },
-        influence_sur_la_chance: { text: 'Repère « Hasard ±1d4 » près des cases de points de sorcellerie (onglet Combat).', partial: true },
+        influence_sur_la_chance: { text: 'Repère « Hasard ±1d4 » près des cases de points de Sorcellerie (onglet Combat).', partial: true },
         chaos_maitrise: { text: 'Le bouton d100 (et la Bouffée après un 20) tire deux résultats ; vous gardez celui de votre choix.' },
         deferlante_domptee: { text: 'Rappel sous les boutons de tirage tant que sa case n\'est pas cochée.' }
     },
@@ -412,8 +412,8 @@ const MANUAL_AUTOMATION = {
         troisieme_il: {
             text: (d) => ({
                 darkvision: 'Vision dans le noir à 36 m choisie : repère près de la Vitesse jusqu\'au prochain repos.',
-                comprehension: 'Lire toutes les langues choisi, jusqu\'au prochain repos.',
-                see: 'Voir l\'invisible choisi : Détection de l\'invisibilité sans emplacement.'
+                comprehension: 'Compréhension supérieure choisie : lire toutes les langues jusqu\'au prochain repos.',
+                see: 'Détection de l\'invisibilité choisie : le sort de l\'invisibilité sans emplacement.'
             })[d.subclassChoices?.eye] ?? 'Avantage à choisir dans le menu ci-dessous à chaque utilisation ; effacé au repos.',
             partial: true
         }
@@ -438,7 +438,7 @@ const MANUAL_AUTOMATION = {
         },
         aspect_sauvage: {
             text: (d) => ({
-                owl: 'Hibou : vision dans le noir à 18 m (ou +18 m si vous l\'avez déjà), à noter vous-même avec vos sens.',
+                owl: 'Chouette : vision dans le noir à 18 m (ou +18 m si vous l\'avez déjà), à noter vous-même avec vos sens.',
                 panther: 'Panthère : repère « escalade = Vitesse » près de la Vitesse (onglet Combat).',
                 salmon: 'Saumon : repère « nage = Vitesse » près de la Vitesse (onglet Combat).'
             })[d.subclassChoices?.aspect] ?? 'Aspect à choisir dans le menu ci-dessous : Panthère et Saumon ajoutent un repère près de la Vitesse.',
@@ -448,7 +448,7 @@ const MANUAL_AUTOMATION = {
             text: (d) => ({
                 falcon: 'Faucon : repère « vol = Vitesse » près de la Vitesse, allumé avec le bouton Rage si aucune armure n\'est équipée.',
                 lion: 'Lion choisi pour cette Rage (pas de vol).',
-                ram: 'Bélier choisi pour cette Rage (pas de vol).'
+                ram: 'Coup de bélier choisi pour cette Rage (pas de vol).'
             })[d.subclassChoices?.power] ?? 'Option à choisir dans le menu ci-dessous : le Faucon ajoute un repère de vol près de la Vitesse.',
             partial: true
         }

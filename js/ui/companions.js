@@ -2,7 +2,7 @@
 // COMPANIONS.JS - Cartes des compagnons de sous-classe dans « Compagnons & familiers »
 // (onglet Aptitudes & Traits), au-dessus du texte libre du joueur (lot 7)
 //
-// Bête primordiale du Maître des bêtes, stimfée du Conclave des Amazones, pseudodragon et dragon lié
+// Bête primitive du Belluaire, stimfée du Conclave des Amazones, pseudodragon et dragon lié
 // du Serment du Seigneur Dragon : statistiques calculées par js/rules/subclass-companions.js.
 // Seuls les PV actuels s'écrivent dans la fiche (clé subclass_companions) ; ils restent modifiables
 // quand la fiche est verrouillée (suivi en jeu). Le champ libre « Compagnons & familiers » ne change pas.

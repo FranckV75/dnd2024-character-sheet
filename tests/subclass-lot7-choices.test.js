@@ -324,8 +324,8 @@ describe('Textes des capacités selon le choix noté (lot D)', () => {
     });
     test('Troisième œil : texte selon l\'avantage choisi, rappel sinon', () => {
         assert.match(auto(diviner(10, { eye: 'darkvision' }), 'troisieme_il'), /^Vision dans le noir à 36 m choisie/);
-        assert.match(auto(diviner(10, { eye: 'comprehension' }), 'troisieme_il'), /^Lire toutes les langues choisi/);
-        assert.match(auto(diviner(10, { eye: 'see' }), 'troisieme_il'), /^Voir l'invisible choisi/);
+        assert.match(auto(diviner(10, { eye: 'comprehension' }), 'troisieme_il'), /^Compréhension supérieure choisie/);
+        assert.match(auto(diviner(10, { eye: 'see' }), 'troisieme_il'), /^Détection de l'invisibilité choisie/);
         assert.ok(auto(diviner(10), 'troisieme_il').startsWith('Avantage à choisir dans le menu ci-dessous à chaque utilisation ; effacé au repos.'));
         assert.ok(auto(diviner(10, { eye: 'xray' }), 'troisieme_il').startsWith('Avantage à choisir dans le menu ci-dessous à chaque utilisation ; effacé au repos.'));
     });

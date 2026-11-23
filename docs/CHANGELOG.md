@@ -2,6 +2,48 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.47.1] - 2026-11-23 (noms du manuel : dons, espèces, aptitudes, outils)
+Non publiée (attend l'accord de Franck).
+Vérification sur les photos du Manuel des joueurs français, demandée par Franck : dons (p. 199-211),
+espèces (p. 186-197), outils (p. 220-221), historiques (p. 177-185) et aptitudes des douze classes
+et de leurs 48 sous-classes (tables de progression comprises). Chaque photo lue par un agent, puis
+chaque écart revu par Claude sur la photo avant correction. Espèces, outils, historiques, noms et
+niveaux des aptitudes de classe et de sous-classe, colonnes des tables : tous conformes. Seuls des
+libellés changent ; les clés enregistrées (`owl`, `ram`, `rev_see`, `rev_worm`, `comprehension`,
+`see`, identifiants des dons) restent, aucune fiche n'est réécrite.
+### Changed
+- Dons : « Faveur de Résistance aux énergies » (R majuscule, comme le livre) ; groupe « Dons :
+  Origines » dans les listes (la clé interne reste « Origine ») ; prérequis « aptitude Sorts »,
+  « aptitude Style de combat » (et non « capacité »), aussi dans les alertes de prérequis.
+  Sous-titres des bénéfices : « Soigneur de bataille » (Guérisseur, et non « Médecin de combat »,
+  choisi le 04/11 avant les photos : le test qui l'imposait est inversé), « Sort du 1er niveau »
+  (Initié à la magie, aussi le libellé de son menu), « Composante somatique » (Mage de guerre),
+  « Critique renforcé » (Trancheur), « Augmentation de caractéristique » (Combattant monté).
+- Voie du Cœur sauvage : options « Chouette » (et non « Hibou ») et « Coup de bélier » (et non
+  « Bélier ») ; Voie de l'Arbre-Monde : « Sève cosmique » et « Force vivifiante » dans le résumé de
+  Vitalité de l'arbre ; Voie du Zélateur : « Revitalisation » (et non « Revivification »).
+- Belluaire : « bête primitive » (et non « primordiale », menu « Bête primitive ») ; action
+  « Frappe de la Bête » ; sur la carte du compagnon, « La Bête au combat » (et non « Ordres ») et
+  « Restaurer ou remplacer la Bête » (et non « Retour »), titres du manuel p. 160.
+- Sorcellerie aberrante, Révélation incarnée : « Perception de l'invisible » et « Déplacement
+  sinueux » (et non « Voir l'invisible », « Mouvement vermiforme »). « Points de Sorcellerie » avec
+  la majuscule du livre (compteur, repos, textes).
+- Devin, Troisième œil : « Compréhension supérieure (toutes les langues) » et « Détection de
+  l'invisibilité » (et non « Lire toutes les langues », « Voir l'invisible »).
+- Commentaires du code : anciens noms « Maître des bêtes », « bête primordiale » remplacés.
+### Notes
+- Laissés tels quels, à décider par Franck : « Formes du cercle améliorées » (le livre imprime
+  « améliorés », coquille) ; types de terre « Tempérée » / « Tropicale » (le livre écrit les deux) ;
+  « Niv 1+ » affiché en prérequis des dons d'origines (le livre n'en met pas) ; « Présents de
+  Féerie » et « Manifestations de l'ordre » présentés comme aptitudes (ce sont des tables du livre) ;
+  « Dés psioniques » de l'Âme acérée (le livre : dés d'Énergie psionique) ; Lames psychiques à
+  18/36 m (le livre imprime 12/36 m, sans doute une coquille : 60/120 pieds) ; outils « Boîtes de
+  jeux » et « Instruments de musique » en catégories à part (le livre les range dans « Autres
+  outils ») ; ordre des options du Cœur sauvage (le livre suit l'ordre alphabétique).
+- Vérifié à l'écran (navigateur intégré, fiche de test) : menus du Cœur sauvage, carte du
+  compagnon du Belluaire, Révélation incarnée, Troisième œil, compteur de Sorcellerie, groupes de
+  la liste des dons ; 0 erreur console. 1 844 tests.
+
 ## [4.47.0] - 2026-11-23 (pièce « Inspiration héroïque », petits − / +, listes des armes et des armures)
 Publiée le 23/11/2026.
 Maquettes validées par Franck le 23/11/2026 (version 3 : « Disponible » / « Non disponible », ni

@@ -162,7 +162,7 @@ const CHOICE_RULES = {
             { key: 'castAbility', label: 'Caractéristique des sorts', options: CASTING_ABILITIES },
             initiateSpellField('cantrip1', 'Sort mineur 1', 'cantrips'),
             initiateSpellField('cantrip2', 'Sort mineur 2', 'cantrips'),
-            initiateSpellField('spell', 'Sort de niveau 1', 'level1')
+            initiateSpellField('spell', 'Sort du 1er niveau', 'level1')
         ]
     },
     affinite_feerique: {
@@ -218,7 +218,7 @@ const GENERAL_ASI_RULES = Object.fromEntries(Object.entries(FEATS_DATA)
         ? { fixedAbility: ids[0], fields: [] }
         : { fields: [{ key: 'ability', label: 'Caractéristique +1', options: abilityOptions(ids) }] }]));
 
-/** Types de dégâts de Faveur de résistance aux énergies (PHB 2024 p. 210) : [id, nom] */
+/** Types de dégâts de Faveur de Résistance aux énergies (PHB 2024 p. 210) : [id, nom] */
 export const ENERGY_TYPES = Object.freeze([
     ['acid', 'Acide'], ['cold', 'Froid'], ['fire', 'Feu'], ['lightning', 'Foudre'], ['necrotic', 'Nécrotique'],
     ['poison', 'Poison'], ['psychic', 'Psychique'], ['radiant', 'Radiant'], ['thunder', 'Tonnerre']

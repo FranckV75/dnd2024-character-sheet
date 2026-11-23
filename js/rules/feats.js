@@ -57,7 +57,7 @@ const CLASS_SLOT_CAPTIONS = Object.freeze({
     14: { caption: 'Guerrier : don en plus', reserved: 'Réservé aux Guerriers' }
 });
 
-/** Classes qui ont la capacité Style de combat (prérequis des dons de cette catégorie) */
+/** Classes qui ont l'aptitude Style de combat (prérequis des dons de cette catégorie) */
 const FIGHTING_STYLE_CLASSES = Object.freeze(['fighter', 'paladin', 'ranger']);
 
 /**
@@ -136,7 +136,7 @@ export function featSlotLevelFor(slot, character) {
 }
 
 /**
- * Le personnage a-t-il la capacité Style de combat (prérequis des dons de cette catégorie) ?
+ * Le personnage a-t-il l'aptitude Style de combat (prérequis des dons de cette catégorie) ?
  * Guerrier dès le niveau 1, Paladin et Rôdeur dès le niveau 2.
  * @param {Object} character
  * @returns {boolean}

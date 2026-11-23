@@ -246,7 +246,7 @@ describe('featEffects : dons du lot 1 (PHB 2024)', () => {
         assert.deepEqual(texts(effects['saves.con']), ['Avantage pour maintenir la Concentration.']);
         assert.equal(effects.spells.length, 2);
         assert.match(effects.spells[0].text, /^Sort réactif : /);
-        assert.match(effects.spells[1].text, /^Composantes somatiques/);
+        assert.match(effects.spells[1].text, /^Composante somatique/);
         assert.deepEqual(effects['saves.dex'], []);
         // L'emplacement ne renvoie plus à une zone des sorts que l'onglet Magie n'affiche pas :
         // l'encadré « Dans la fiche » reprend les deux rappels (FEAT_SHEET_ZONES, js/ui/sheet.js)
@@ -356,13 +356,13 @@ describe('featEffects : dons du lot 1 (PHB 2024)', () => {
         const effects = featEffects(fighter({ feat_1: 'guerisseur' }));
         assert.equal(effects.healing.length, 2);
         assert.equal(effects.healing[0].value, 2);
-        assert.match(effects.healing[0].text, /^Médecin de combat : en dépensant une utilisation d'une trousse de soins \(action Utilisation\).*résultat \+2 PV\.$/);
+        assert.match(effects.healing[0].text, /^Soigneur de bataille : en dépensant une utilisation d'une trousse de soins \(action Utilisation\).*résultat \+2 PV\.$/);
         assert.match(effects.healing[1].text, /^Retirage des soins : .*relancez un 1/);
         // Mêmes noms que la description du don (js/data/feats.js)
-        for (const name of ['Médecin de combat', 'Retirage des soins', 'action Utilisation']) {
+        for (const name of ['Soigneur de bataille', 'Retirage des soins', 'action Utilisation']) {
             assert.ok(FEATS_DATA.guerisseur.desc.includes(name), name);
         }
-        assert.equal(effects['featSlot:1'][0].text, 'Médecin de combat : dé de vie de la cible +2 ; relancer les 1.');
+        assert.equal(effects['featSlot:1'][0].text, 'Soigneur de bataille : dé de vie de la cible +2 ; relancer les 1.');
     });
 });
 

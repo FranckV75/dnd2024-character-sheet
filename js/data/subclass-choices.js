@@ -20,7 +20,7 @@
 //    nomme le choix actuel (zone rest de featEffects, js/rules/subclass-choices.js) ;
 //  - requires : { key, value } : menu proposé (et choix compté) seulement si un AUTRE menu de la
 //    même sous-classe, placé avant lui, a cette valeur (seconde école de l'Éclectisme) ; value peut
-//    être une liste de valeurs permises (type de la Frappe de bête : Terre ou Mer) ;
+//    être une liste de valeurs permises (type de la Frappe de la Bête : Terre ou Mer) ;
 //  - kind: 'number' : compteur (« − [14] + ») au lieu d'un menu, avec min et max (entiers) ; la
 //    valeur est enregistrée en chaîne (« 14 »), sans zéro en tête ; options: [] (aucune option).
 // Règles résumées du Player's Handbook 2024 anglais et du guide de l'Odyssée (pages en commentaire).
@@ -105,11 +105,11 @@ export const SUBCLASS_CHOICE_FIELDS = {
         },
         {
             key: 'aspect', feature: 'aspect_sauvage', label: 'Aspect', inPlay: true, restReminder: 'long', when: 'Changé à chaque repos long.',
-            options: [['owl', 'Hibou'], ['panther', 'Panthère'], ['salmon', 'Saumon']]
+            options: [['owl', 'Chouette'], ['panther', 'Panthère'], ['salmon', 'Saumon']]
         },
         {
             key: 'power', feature: 'puissance_sauvage', label: 'Puissance', inPlay: true, when: 'Choisie à chaque entrée en Rage.',
-            options: [['falcon', 'Faucon'], ['lion', 'Lion'], ['ram', 'Bélier']]
+            options: [['falcon', 'Faucon'], ['lion', 'Lion'], ['ram', 'Coup de bélier']]
         }
     ],
     // Maître de guerre (PHB 2024, p. 93-95) : manœuvres connues (3, puis 5, 7 et 9 aux niveaux 7, 10
@@ -204,12 +204,12 @@ export const SUBCLASS_CHOICE_FIELDS = {
             options: [['wis', 'Sagesse'], ['int', 'Intelligence'], ['cha', 'Charisme']]
         }
     ],
-    // Maître des bêtes (PHB 2024, p. 122-124) : bête invoquée (nouvelle bête possible à la fin de
+    // Belluaire (PHB 2024, p. 122-124) : bête invoquée (nouvelle bête possible à la fin de
     // chaque repos long) et type des dégâts de sa Frappe (Bête des cieux : toujours tranchants, menu
     // masqué ; Bête des mers : un « Tranchants » enregistré est ignoré par js/rules/subclass-companions.js)
     beast_master: [
         {
-            key: 'beast', feature: 'compagnon_primordial', label: 'Bête primordiale', inPlay: true, restReminder: 'long',
+            key: 'beast', feature: 'compagnon_primordial', label: 'Bête primitive', inPlay: true, restReminder: 'long',
             when: 'Nouvelle bête possible à la fin de chaque repos long (l\'ancienne disparaît, PV pleins).',
             options: Object.entries(PRIMAL_BEASTS).map(([id, beast]) => [id, beast.label])
         },
@@ -245,10 +245,10 @@ export const SUBCLASS_CHOICE_FIELDS = {
     aberrant_sorcery: [
         { key: 'rev_aquatic', feature: 'revelation_dans_la_chair', label: 'Adaptation aquatique', toggle: true, inPlay: true, clearOn: 'rest', options: [['on', 'Adaptation aquatique']] },
         { key: 'rev_flight', feature: 'revelation_dans_la_chair', label: 'Vol scintillant', toggle: true, inPlay: true, clearOn: 'rest', options: [['on', 'Vol scintillant']] },
-        { key: 'rev_see', feature: 'revelation_dans_la_chair', label: 'Voir l\'invisible', toggle: true, inPlay: true, clearOn: 'rest', options: [['on', 'Voir l\'invisible']] },
+        { key: 'rev_see', feature: 'revelation_dans_la_chair', label: 'Perception de l\'invisible', toggle: true, inPlay: true, clearOn: 'rest', options: [['on', 'Perception de l\'invisible']] },
         {
-            key: 'rev_worm', feature: 'revelation_dans_la_chair', label: 'Mouvement vermiforme', toggle: true, inPlay: true, clearOn: 'rest',
-            when: 'Cochez les avantages pris (1 point de sorcellerie chacun) ; décochés au repos.', options: [['on', 'Mouvement vermiforme']]
+            key: 'rev_worm', feature: 'revelation_dans_la_chair', label: 'Déplacement sinueux', toggle: true, inPlay: true, clearOn: 'rest',
+            when: 'Cochez les avantages pris (1 point de Sorcellerie chacun) ; décochés au repos.', options: [['on', 'Déplacement sinueux']]
         }
     ],
     // Sorcellerie mécanique (PHB 2024, p. 146) : manifestation purement descriptive, choisie ou tirée au d6
@@ -303,7 +303,7 @@ export const SUBCLASS_CHOICE_FIELDS = {
         {
             key: 'eye', feature: 'troisieme_il', label: 'Troisième œil', inPlay: true, clearOn: 'rest', wide: true,
             when: 'Choisi en utilisant le Troisième œil ; effacé au repos.',
-            options: [['darkvision', 'Vision dans le noir (36 m)'], ['comprehension', 'Lire toutes les langues'], ['see', 'Voir l\'invisible']]
+            options: [['darkvision', 'Vision dans le noir (36 m)'], ['comprehension', 'Compréhension supérieure (toutes les langues)'], ['see', 'Détection de l\'invisibilité']]
         }
     ]
 };

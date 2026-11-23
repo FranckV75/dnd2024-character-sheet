@@ -14,6 +14,9 @@ import { isPolearm } from '../js/rules/feat-effects.js';
 import { findSpellByName, spellDisplayName } from '../js/rules/spells.js';
 import { FIXED_FEAT_SPELLS } from '../js/data/feat-spells.js';
 import { createDefaultCharacter } from '../js/state/schema.js';
+import { FEATS_DATA } from '../js/data/feats.js';
+import { SUBCLASS_CHOICE_FIELDS } from '../js/data/subclass-choices.js';
+import { SUBCLASS_FEATURES } from '../js/data/subclass-features.js';
 
 const db = JSON.parse(readFileSync(new URL('../data/spells.json', import.meta.url), 'utf8'));
 
@@ -93,5 +96,45 @@ describe('Sorts : noms du manuel affichés, anciens noms reconnus', () => {
     test('Sort donné par un don (Télékinésiste) : nom du manuel', () => {
         assert.equal(FIXED_FEAT_SPELLS.mageHand[1], 'Main du mage');
         assert.ok(findSpellByName(db, FIXED_FEAT_SPELLS.mageHand[1]));
+    });
+});
+
+// 4.47.1 : dons, espèces, aptitudes et outils relus sur les photos (23/11/2026). Seuls des libellés
+// changent : les clés enregistrées (owl, ram, rev_see, rev_worm, comprehension, see…) restent.
+describe('Dons et aptitudes : noms du manuel (4.47.1)', () => {
+    const labels = (subclass, key) => Object.fromEntries(
+        SUBCLASS_CHOICE_FIELDS[subclass].find(f => f.key === key).options);
+
+    test('Dons : « Faveur de Résistance aux énergies », sous-titres et prérequis du manuel', () => {
+        assert.equal(FEATS_DATA.faveur_de_resistance_aux_energies.name, 'Faveur de Résistance aux énergies');
+        assert.ok(FEATS_DATA.guerisseur.desc.includes('<strong>Soigneur de bataille</strong>'));
+        assert.ok(FEATS_DATA.initie_a_la_magie.desc.includes('<strong>Sort du 1er niveau</strong>'));
+        assert.ok(FEATS_DATA.mage_de_guerre.desc.includes('<strong>Composante somatique</strong>'));
+        assert.ok(FEATS_DATA.trancheur.desc.includes('<strong>Critique renforcé</strong>'));
+        assert.ok(Object.values(FEATS_DATA).every(f => !/capacité (Sorts|Style)/.test(f.prereq ?? '')));
+    });
+
+    test('Voie du Cœur sauvage : « Chouette » et « Coup de bélier »', () => {
+        assert.equal(labels('path_of_the_wild_heart', 'aspect').owl, 'Chouette');
+        assert.equal(labels('path_of_the_wild_heart', 'power').ram, 'Coup de bélier');
+    });
+
+    test('Révélation incarnée : « Perception de l\'invisible » et « Déplacement sinueux »', () => {
+        assert.equal(labels('aberrant_sorcery', 'rev_see').on, "Perception de l'invisible");
+        assert.equal(labels('aberrant_sorcery', 'rev_worm').on, 'Déplacement sinueux');
+    });
+
+    test('Troisième œil du Devin : noms des trois bénéfices', () => {
+        const eye = labels('diviner', 'eye');
+        assert.match(eye.darkvision, /^Vision dans le noir/);
+        assert.match(eye.comprehension, /^Compréhension supérieure/);
+        assert.equal(eye.see, "Détection de l'invisibilité");
+    });
+
+    test('Belluaire : « bête primitive » et « Frappe de la Bête »', () => {
+        const companion = SUBCLASS_FEATURES.beast_master.find(f => f.id === 'compagnon_primordial');
+        assert.match(companion.text, /bête primitive/);
+        assert.match(companion.text, /Frappe de la Bête/);
+        assert.ok(!/primordiale|Frappe de bête/.test(JSON.stringify(SUBCLASS_FEATURES.beast_master)));
     });
 });

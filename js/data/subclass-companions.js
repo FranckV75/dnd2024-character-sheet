@@ -3,7 +3,7 @@
 //
 // Blocs constants des créatures que donne une sous-classe ; les chiffres qui dépendent du personnage
 // (PV, CA, bonus d'attaque, DD, sauvegardes) sont calculés par js/rules/subclass-companions.js.
-//  - Maître des bêtes (PHB 2024, p. 122-124) : bête primordiale des terres, des mers ou des cieux ;
+//  - Belluaire (PHB 2024, p. 122-124) : bête primitive des terres, des mers ou des cieux ;
 //  - Conclave des Amazones (Odyssée, p. 49 et 51) : stimfée, oiseau mécanique ; monture d'Outremonde
 //    du sort Trouver une monture (Magie des Amazones, niveau 5 ; bloc du PHB 2024, p. 272) ;
 //  - Serment du Seigneur Dragon (Odyssée, p. 47 et 49, sort pacte du Seigneur Dragon p. 55) :
@@ -13,7 +13,7 @@
 // Ordre des caractéristiques : str, dex, con, int, wis, cha.
 // =============================================================================
 
-/** Types de dégâts de la Frappe de bête (choix « strike ») : [valeur, libellé du menu, texte des dégâts] */
+/** Types de dégâts de la Frappe de la Bête (choix « strike ») : [valeur, libellé du menu, texte des dégâts] */
 export const BEAST_STRIKE_TYPES = Object.freeze([
     ['bludgeoning', 'Contondants', 'contondants'],
     ['piercing', 'Perforants', 'perforants'],

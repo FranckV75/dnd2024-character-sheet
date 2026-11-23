@@ -130,9 +130,9 @@ describe('Faveurs épiques : effets', () => {
         const wizard = boon('faveur_de_memoire_magique', { ability: 'int' }, { char_class: 'Magicien' });
         assert.ok(slotTexts(wizard).some(t => /lancez 1d4/.test(t)));
         const warlock = boon('faveur_de_memoire_magique', { ability: 'cha' }, { char_class: 'Sorcier' });
-        assert.ok(featEffects(warlock)['featSlot:19'].some(n => n.check && /capacité Sorts/.test(n.text)));
+        assert.ok(featEffects(warlock)['featSlot:19'].some(n => n.check && /aptitude Sorts/.test(n.text)));
         assert.ok(!slotTexts(wizard).some(t => /Prérequis/.test(t)));
-        assert.ok(featEffects(boon('faveur_de_memoire_magique'))['featSlot:19'].some(n => n.check && /capacité Sorts/.test(n.text)));
+        assert.ok(featEffects(boon('faveur_de_memoire_magique'))['featSlot:19'].some(n => n.check && /aptitude Sorts/.test(n.text)));
         const knight = boon('faveur_de_memoire_magique', {}, { char_subclass: 'Chevalier occulte' });
         assert.ok(!slotTexts(knight).some(t => /Prérequis/.test(t)));
     });

@@ -128,14 +128,14 @@ describe('Dons', () => {
             assert.match(f.asi, /\(max 30\)$/, key);
             assert.ok(f.desc.includes("jusqu'à un maximum de 30"), key);
         }
-        assert.equal(FEATS_DATA.faveur_de_memoire_magique.prereq, 'niveau 19 ou supérieur, capacité Sorts');
+        assert.equal(FEATS_DATA.faveur_de_memoire_magique.prereq, 'niveau 19 ou supérieur, aptitude Sorts');
     });
 
     test('Descriptions : coquilles et noms d\'actions corrigés', () => {
         const all = feats.map(([, f]) => f.desc).join('\n');
         // Noms des actions du Manuel des joueurs 2024 français (Pointe = Dash, Furtivité = Hide, confirmés par Franck)
-        assert.ok(!/action Foncer|action Se cacher|Soigneur de bataille|êtes en À terre|obtenez de Vision/.test(all));
-        assert.ok(FEATS_DATA.guerisseur.desc.includes('<strong>Médecin de combat</strong>'));
+        assert.ok(!/action Foncer|action Se cacher|Médecin de combat|êtes en À terre|obtenez de Vision/.test(all));
+        assert.ok(FEATS_DATA.guerisseur.desc.includes('<strong>Soigneur de bataille</strong>'));
         assert.ok(FEATS_DATA.faconneur.desc.includes('Gourdin, massue, bâton de combat'));
         assert.ok(FEATS_DATA.expert_de_la_charge.desc.includes("l'action Pointe"));
         assert.ok(FEATS_DATA.mobile.desc.includes("l'action Pointe"));

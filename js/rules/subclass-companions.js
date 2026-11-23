@@ -1,7 +1,7 @@
 // =============================================================================
 // SUBCLASS-COMPANIONS.JS (règles) - Cartes des compagnons et familiers de sous-classe (lot 7)
 //
-// Maître des bêtes (bête primordiale), Conclave des Amazones (stimfée, puis monture d'Outremonde du
+// Belluaire (bête primitive), Conclave des Amazones (stimfée, puis monture d'Outremonde du
 // sort Trouver une monture au niveau 5), Serment du Seigneur Dragon
 // (pseudodragon, puis dragon lié au niveau 7) : la fiche calcule une carte de statistiques d'après
 // le niveau, le bonus de maîtrise et les caractéristiques du personnage, et les choix mémorisés
@@ -103,7 +103,7 @@ export function setCompanionHpPatch(character, key, value, max) {
 }
 
 /**
- * Un choix de sous-classe qui fait venir une nouvelle créature (autre bête primordiale) : ses PV
+ * Un choix de sous-classe qui fait venir une nouvelle créature (autre bête primitive) : ses PV
  * enregistrés sont effacés (PV pleins). {} si ce choix ne touche aucun compagnon.
  * @param {Object} character
  * @param {string} subclass
@@ -185,7 +185,7 @@ const emptyCard = (key, feature, name, subtitle, short) => ({
     abilities: [], lines: [], traits: [], actions: [], notes: []
 });
 
-/** Maître des bêtes : bête primordiale (PHB 2024, p. 122-124) */
+/** Belluaire : bête primitive (PHB 2024, p. 122-124) */
 function primalCompanion(derived, record) {
     const level = Number(derived.level) || 1;
     const pb = Number(derived.pb) || 2;
@@ -196,11 +196,11 @@ function primalCompanion(derived, record) {
     const beast = Object.hasOwn(PRIMAL_BEASTS, choice.beast ?? '') ? PRIMAL_BEASTS[choice.beast] : null;
     const card = emptyCard(COMPANION_KEYS.primal, 'compagnon_primordial',
         beast ? `Compagnon primitif : ${beast.label}` : 'Compagnon primitif',
-        beast ? `Bête de taille ${beast.size.toLowerCase()}, neutre ; agit à votre tour` : 'Bête primordiale',
-        beast ? beast.label.toLowerCase() : 'bête primordiale');
+        beast ? `Bête de taille ${beast.size.toLowerCase()}, neutre ; agit à votre tour` : 'Bête primitive',
+        beast ? beast.label.toLowerCase() : 'bête primitive');
     card.ac = { value: 13 + wis, detail: `13 + Sagesse (${signed(wis)})` };
     if (!beast) {
-        card.missing = 'Choisissez la bête (Terre, Mer ou Ciel) dans le menu « Bête primordiale » du bloc Sous-classe (onglet Aptitudes & Traits) : ses PV, sauvegardes et sa Frappe s\'afficheront ici.';
+        card.missing = 'Choisissez la bête (des terres, des mers ou des cieux) dans le menu « Bête primitive » du bloc Sous-classe (onglet Aptitudes & Traits) : ses PV, sauvegardes et sa Frappe s\'afficheront ici.';
         return card;
     }
     const max = beast.hpBase + beast.hpPerLevel * level;
@@ -226,7 +226,7 @@ function primalCompanion(derived, record) {
         });
     }
     if (level >= 15) card.traits.push({ name: 'Partage des sorts', text: 'Un sort que vous lancez en vous ciblant peut aussi l\'affecter si elle est à 9 m ou moins.' });
-    card.traits.push({ name: 'Retour', text: 'Morte depuis moins d\'une heure : action Magie, vous la touchez et dépensez un emplacement de sort ; elle revient 1 minute plus tard avec tous ses PV.' });
+    card.traits.push({ name: 'Restaurer ou remplacer la Bête', text: 'Morte depuis moins d\'une heure : action Magie, vous la touchez et dépensez un emplacement de sort ; elle revient 1 minute plus tard avec tous ses PV.' });
 
     // Frappe : type choisi s'il est permis à cette bête (Mer : pas tranchants ; Ciel : toujours tranchants)
     const allowed = beast.strikeTypes;
@@ -239,11 +239,11 @@ function primalCompanion(derived, record) {
     const extra = beast.grapple ? ` La cible est Agrippée (DD d'évasion ${dc}).` : beast.strikeExtra ? ` ${beast.strikeExtra}` : '';
     card.actions = [
         {
-            name: level >= 11 ? 'Frappe de bête (×2 par ordre)' : 'Frappe de bête',
+            name: level >= 11 ? 'Frappe de la Bête (×2 par ordre)' : 'Frappe de la Bête',
             text: `Corps à corps ${signed(attack)}, allonge 1,5 m. Touché : ${dice(beast.strikeDie, beast.strikeFlat + wis)} ${typeText}${force}.${extra}`
         },
         {
-            name: 'Ordres',
+            name: 'La Bête au combat',
             text: `Sans votre ordre (action bonus), elle ne fait que l'action Esquive. Vous pouvez aussi renoncer à une de vos attaques de l'action Attaque pour qu'elle fasse sa Frappe.${level >= 7 ? ' Commandée, elle peut en plus prendre l\'action Désengagement, Esquive, Pointe ou Soutien par sa propre action bonus.' : ''} Si vous êtes Neutralisé, elle agit librement.`
         }
     ];

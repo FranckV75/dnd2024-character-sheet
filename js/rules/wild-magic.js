@@ -111,7 +111,7 @@ export function wildMagicPanel(character, derived) {
 }
 
 /**
- * Repère près des points de sorcellerie (zone classResource, format FeatNote avec classFeature: true),
+ * Repère près des points de Sorcellerie (zone classResource, format FeatNote avec classFeature: true),
  * fusionné par classFeatureNotes (class-features.js) : Comme par hasard, niveau 6.
  * @param {Object} derived - deriveCharacter()
  * @returns {Object<string, Object[]>}

@@ -101,7 +101,7 @@ function buildSkills(root) {
 function featOptions(types = FEAT_TYPE_ORDER, hidden = []) {
     const feats = Object.entries(FEATS_DATA).filter(([id]) => !hidden.includes(id)).map(([id, f]) => ({ id, ...f }));
     return types.map(type => {
-        const group = el('optgroup', { label: type === 'Épique' ? 'Faveurs épiques' : `Dons : ${type}` });
+        const group = el('optgroup', { label: type === 'Épique' ? 'Faveurs épiques' : type === 'Origine' ? 'Dons : Origines' : `Dons : ${type}` });
         feats.filter(f => f.type === type)
             .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
             .forEach(f => group.append(el('option', {

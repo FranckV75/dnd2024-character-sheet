@@ -19,8 +19,11 @@ en fin de session :
   du manuel français (« Bâton de combat », 11 sorts : toutes les listes de classe comparées),
   « Sphère de feu » en Évocation. Décisions sur la 4.46.0 et la 4.47.0 : toutes prises par Franck
   le 23/11/2026. En attente : sur la 4.44.0 et la 4.45.0, point 3 de `docs/FEUILLE_DE_ROUTE.md`.
-- **Suite** : vérifier sur photos les noms français des dons, espèces, aptitudes et outils
-  (« Détail des idées » de `docs/FEUILLE_DE_ROUTE.md`).
+- **Prête, pas publiée** : **4.47.1** (branche `v4`, commit local, rien de poussé) : noms du manuel
+  français pour les dons, espèces, aptitudes et outils, vérifiés sur toutes les photos. Attend le
+  « Publie » de Franck et ses réponses aux 7 petites questions (point 3 de la feuille de route,
+  « Décisions de Franck en attente sur la 4.47.1 »).
+- **Suite** : multiclassage (attend les réponses de Franck), ou une idée du point 3.
 - **Serveur de travail** : `npm run dev` n'écoute plus que l'ordinateur (127.0.0.1 et ::1) et ne
   sert jamais `.git` ; relancé le 22/11/2026 avec cette protection (vérifié avec netstat).
 - **Multiclassage** : étude faite et contre-vérifiée (`docs/etudes/MULTICLASSAGE.md`). Rien de
@@ -120,6 +123,23 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
    `docs/FEUILLE_DE_ROUTE.md`.
 
 ## Sessions
+
+### 23/11/2026 (soir) — Noms du manuel : dons, espèces, aptitudes et outils (4.47.1, non publiée)
+
+- Demande de Franck : vérifier sur les photos les noms français des dons, espèces, aptitudes et
+  outils. Six agents en parallèle (lecture seule) ont lu toutes les photos utiles (dons, espèces,
+  outils, historiques, douze classes et leurs sous-classes) ; Claude a revu chaque écart sur la
+  photo avant de corriger.
+- Résultat : espèces, outils, historiques, noms et niveaux des aptitudes, colonnes des tables :
+  conformes. Une quinzaine de libellés corrigés (Chouette, Coup de bélier, Frappe de la Bête, bête
+  primitive, Perception de l'invisible, Déplacement sinueux, Compréhension supérieure, Soigneur de
+  bataille, Faveur de Résistance aux énergies, « Dons : Origines », « aptitude » dans les
+  prérequis, points de Sorcellerie…). Clés enregistrées inchangées.
+- « Médecin de combat » avait été choisi le 04/11, avant les photos ; le livre dit « Soigneur de
+  bataille » : le test qui imposait l'ancien nom est inversé.
+- Vérifié à l'écran sur une fiche de test du navigateur intégré, 0 erreur console ; 1 844 tests.
+- Laissé à Franck : 7 petites questions (coquilles du livre, tables présentées comme aptitudes,
+  « Niv 1+ » des dons d'origines…), point 3 de la feuille de route.
 
 ### 23/11/2026 — Décisions sur la 4.46.0, puis 4.47.0 : pièce « Inspiration héroïque », petits − / +, listes des armes et des armures, confirmation des fenêtres d'arme et d'armure, noms du manuel (publiée le 23/11/2026)
 

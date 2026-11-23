@@ -90,7 +90,7 @@ export const SUBCLASS_COUNTERS = Object.freeze({
             inText: 'Rage des dieux',
             max: once,
             reset: 'long',
-            use: 'En entrant en Rage : forme divine 1 minute (vol, résistances, Revivification).'
+            use: 'En entrant en Rage : forme divine 1 minute (vol, résistances, Revitalisation).'
         }
     ],
     oath_of_devotion: [
@@ -237,19 +237,19 @@ export const SUBCLASS_COUNTERS = Object.freeze({
     ],
     aberrant_sorcery: [
         { feature: 'implosion_distordante', label: "Distorsion implosive", inText: "Distorsion implosive", max: once, reset: 'long',
-            use: "Action Magie : téléportation et 3d10 de force. 5 points de sorcellerie la rendent (décochez)." }
+            use: "Action Magie : téléportation et 3d10 de force. 5 points de Sorcellerie la rendent (décochez)." }
     ],
     clockwork_sorcery: [
         { feature: 'retablissement_de_l_equilibre', label: "Équilibre restauré", inText: "Équilibre restauré", max: chaMin1, reset: 'long',
             use: "Réaction : annule l'Avantage et le Désavantage d'un jet à 18 m." },
         { feature: 'transe_de_l_ordre', label: "Transe harmonique", inText: "Transe harmonique", max: once, reset: 'long',
-            use: "Action Bonus, 1 minute : vos d20 de 9 ou moins comptent comme 10. 5 points de sorcellerie la rendent (décochez)." },
+            use: "Action Bonus, 1 minute : vos d20 de 9 ou moins comptent comme 10. 5 points de Sorcellerie la rendent (décochez)." },
         { feature: 'cavalcade_mecanique', label: "Chevauchée mécanique", inText: "Chevauchée mécanique", max: once, reset: 'long',
-            use: "Action Magie : 100 PV à répartir, réparations, fin des sorts. 7 points de sorcellerie la rendent (décochez)." }
+            use: "Action Magie : 100 PV à répartir, réparations, fin des sorts. 7 points de Sorcellerie la rendent (décochez)." }
     ],
     draconic_sorcery: [
         { feature: 'ailes_de_dragon', label: "Ailes draconiques", inText: "Ailes draconiques", max: once, reset: 'long',
-            use: "Action Bonus : vol de 18 m pendant 1 heure. 3 points de sorcellerie la rendent (décochez)." },
+            use: "Action Bonus : vol de 18 m pendant 1 heure. 3 points de Sorcellerie la rendent (décochez)." },
         { feature: 'compagnon_draconique', label: "Compagnon draconique", inText: "Compagnon draconique", max: once, reset: 'long',
             use: "Convocation de dragon sans emplacement." }
     ],
@@ -309,7 +309,7 @@ export const SUBCLASS_COUNTERS = Object.freeze({
         { feature: 'troisieme_il', label: "Troisième œil", inText: "Troisième œil", max: once, reset: 'short',
             use: ({ subclassChoices: c } = {}) => ({
                 darkvision: "Vision dans le noir à 36 m jusqu'au prochain repos.",
-                comprehension: "Lire toutes les langues jusqu'au prochain repos.",
+                comprehension: "Compréhension supérieure : lire toutes les langues jusqu'au prochain repos.",
                 see: "Détection de l'invisibilité sans emplacement."
             })[c?.eye] ?? "Action Bonus : vision dans le noir 36 m, lire les langues, ou Détection de l'invisibilité." }
     ],

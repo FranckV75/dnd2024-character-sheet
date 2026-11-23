@@ -92,9 +92,9 @@ export function getClassResourceInfo(level, className, mods) {
         reset = "one";
     }
     else if (clsClean.includes('ensorceleur') || clsClean.includes('sorcer')) {
-        // Points de sorcellerie : à partir du niveau 2
+        // Points de Sorcellerie : à partir du niveau 2
         if (level >= 2) {
-            label = "Points de sorcellerie";
+            label = "Points de Sorcellerie";
             count = level;
             reset = "none";
         }

@@ -83,8 +83,8 @@ describe('Maître des bêtes : compagnon primitif', () => {
         assert.equal(c.ac.value, 16);
         assert.deepEqual([c.hp.max, c.hp.current, c.hp.dice], [20, 20, '3d8']);
         assert.deepEqual(saves(c), [4, 4, 4, 1, 4, 2]);
-        const strike = action(c, 'Frappe de bête');
-        assert.equal(strike.name, 'Frappe de bête');
+        const strike = action(c, 'Frappe de la Bête');
+        assert.equal(strike.name, 'Frappe de la Bête');
         assert.match(strike.text, /^Corps à corps \+5, allonge 1,5 m\. Touché : 1d8 \+ 5 perforants\./);
         assert.match(strike.text, /\+1d6 dégâts du même type/);
         assert.doesNotMatch(strike.text, /Force/);
@@ -100,7 +100,7 @@ describe('Maître des bêtes : compagnon primitif', () => {
         const c = card(beastMaster(7, { beast: 'land', strike: 'slashing' }, { wis_score: '16' }), COMPANION_KEYS.primal);
         assert.equal(c.hp.max, 40);
         assert.match(action(c, 'Frappe').text, /\+6, .*1d8 \+ 5 tranchants \(ou Force/);
-        assert.match(action(c, 'Ordres').text, /action Désengagement, Esquive, Pointe ou Soutien/);
+        assert.match(action(c, 'La Bête au combat').text, /action Désengagement, Esquive, Pointe ou Soutien/);
         assert.deepEqual(saves(c), [5, 5, 5, 2, 5, 3]);
     });
 
@@ -109,7 +109,7 @@ describe('Maître des bêtes : compagnon primitif', () => {
         const c = c11();
         assert.equal(c.ac.value, 17);
         assert.equal(c.hp.max, 60);
-        assert.equal(action(c, 'Frappe').name, 'Frappe de bête (×2 par ordre)');
+        assert.equal(action(c, 'Frappe').name, 'Frappe de la Bête (×2 par ordre)');
         assert.match(action(c, 'Frappe').text, /\+8, .*1d8 \+ 6 perforants/);
         assert.deepEqual(saves(c), [6, 6, 6, 3, 6, 4]);
         assert.equal(trait(c, 'Fureur bestiale').inactive, true);
@@ -386,7 +386,7 @@ describe('Textes « Dans la fiche »', () => {
 });
 
 describe('Relecture du lot 7 : compagnon à 0 PV', () => {
-    test('repos long : dragon lié à 0 PV reste à 0, la bête primordiale blessée revient à PV pleins', async () => {
+    test('repos long : dragon lié à 0 PV reste à 0, la bête primitive blessée revient à PV pleins', async () => {
         const { restCompanions, COMPANION_KEYS } = await import('../js/rules/subclass-companions.js');
         const { deriveCharacter } = await import('../js/rules/character.js');
         const { createDefaultCharacter } = await import('../js/state/schema.js');

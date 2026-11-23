@@ -167,7 +167,7 @@ Aucun de ces styles ne sert à Korgul, Hedera, Fafnir ou Cephalus : leur classe 
 **Descriptions vides :** aucune (les 12 faveurs épiques ont été rédigées au lot 0).
 
 **Textes à corriger :**
-- ✅ Guérisseur : nom retenu « Médecin de combat » partout (données et rappels).
+- ✅ Guérisseur : nom retenu « Soigneur de bataille » partout (données et rappels), celui du Manuel des joueurs français (photo p. 201, 23/11/2026) ; « Médecin de combat » (choisi le 04/11, avant les photos) est abandonné.
 - Façonneur : dans la table de fabrication, « masse » doit être « massue ».
 - Athlète : coquille « Lorsque vous êtes en À terre ».
 - ✅ Discret : « action Furtivité » est bien le nom du Manuel des joueurs 2024 français (action « Hide », confirmé par Franck le 10/11/2026 ; la correction en « Se cacher » a été annulée en 4.28.1). Coquille « Vous obtenez de Vision aveugle ».

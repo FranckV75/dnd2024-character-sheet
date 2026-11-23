@@ -61,7 +61,7 @@ describe('Emplacement « Style de combat » (feat_2) et style en plus du Champio
     });
 
     test('style pris dans un emplacement général sans la capacité : alerte de prérequis', () => {
-        assert.ok(slotTexts(hero({ char_class: 'Magicien', feat_4: 'defense' }), 4).some(t => /^Prérequis : la capacité Style de combat/.test(t)));
+        assert.ok(slotTexts(hero({ char_class: 'Magicien', feat_4: 'defense' }), 4).some(t => /^Prérequis : l'aptitude Style de combat/.test(t)));
         assert.ok(!slotTexts(hero({ feat_4: 'defense' }), 4).some(t => /^Prérequis/.test(t)));
     });
 

@@ -147,7 +147,7 @@ function openShortRest(store) {
             el('ul', {},
                 also.map(text => iconLine(text)),
                 sorcererBox && el('li', { class: 'has-icon' }, el('label', { class: 'rest-check' }, sorcererBox,
-                    el('span', { text: `Utiliser Restauration ensorcelée : jusqu'à ${sorcerousMax} points de sorcellerie (une fois par repos long)` }))),
+                    el('span', { text: `Utiliser Restauration ensorcelée : jusqu'à ${sorcerousMax} points de Sorcellerie (une fois par repos long)` }))),
                 hint && iconLine(hint, 'sparkle', 'muted'))),
         featBlock(preview.featNotes)
     ];

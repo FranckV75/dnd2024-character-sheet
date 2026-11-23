@@ -7,7 +7,7 @@ const FEATS_DATA = {
     "adepte_elementaire": {
         "name": "Adepte élémentaire",
         "type": "Général",
-        "prereq": "niveau 4 ou supérieur, capacité Sorts ou Magie de pacte",
+        "prereq": "niveau 4 ou supérieur, aptitude Sorts ou Magie de pacte",
         "asi": "+1 Int ou Sag ou Cha",
         "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Intelligence, Sagesse ou Charisme de 1, jusqu'à un maximum de 20. <br><strong>Maîtrise des énergies</strong>. Choisissez l'un des types de dégâts suivants : Acide, Froid, Feu, Foudre ou Tonnerre. Les sorts que vous lancez ignorent la Résistance aux dégâts du type choisi. De plus, lorsque vous lancez des dégâts pour un sort que vous lancez et qui inflige des dégâts de ce type, vous pouvez considérer n'importe quel 1 sur un dé de dégâts comme un 2. <br><strong>Répétable</strong>. Vous pouvez utiliser ce don plusieurs fois, mais vous devez choisir un type de dégâts différent à chaque fois pour Maîtrise des énergies."
     },
@@ -35,21 +35,21 @@ const FEATS_DATA = {
     "archerie": {
         "name": "Archerie",
         "type": "Style de combat",
-        "prereq": "capacité Style de combat",
+        "prereq": "aptitude Style de combat",
         "asi": "Aucune",
         "desc": "Vous obtenez un bonus de +2 aux jets d'attaque effectués avec des armes à distance."
     },
     "arme_a_deux_mains": {
         "name": "Armes à deux mains",
         "type": "Style de combat",
-        "prereq": "capacité Style de combat",
+        "prereq": "aptitude Style de combat",
         "asi": "Aucune",
         "desc": "Lorsque vous lancez les dégâts pour une attaque effectuée avec une arme de corps à corps tenue à deux mains, vous pouvez considérer n'importe quel 1 ou 2 sur un dé de dégâts comme un 3. L'arme doit posséder la propriété Deux mains ou Polyvalente pour obtenir cet avantage."
     },
     "arme_de_lancer": {
         "name": "Armes de lancer",
         "type": "Style de combat",
-        "prereq": "capacité Style de combat",
+        "prereq": "aptitude Style de combat",
         "asi": "Aucune",
         "desc": "Lorsque vous touchez lors d'un jet d'attaque à distance avec une arme dotée de la propriété Lancer, vous obtenez un bonus de +2 aux dégâts."
     },
@@ -91,21 +91,21 @@ const FEATS_DATA = {
     "combat_a_deux_armes": {
         "name": "Combat à deux armes",
         "type": "Style de combat",
-        "prereq": "capacité Style de combat",
+        "prereq": "aptitude Style de combat",
         "asi": "Aucune",
         "desc": "Lorsque vous effectuez une attaque supplémentaire grâce à une arme dotée de la propriété Légère, vous pouvez ajouter votre modificateur de caractéristique aux dégâts de cette attaque si vous ne l'ajoutez pas déjà."
     },
     "combat_a_mains_nues": {
         "name": "Combat à mains nues",
         "type": "Style de combat",
-        "prereq": "capacité Style de combat",
+        "prereq": "aptitude Style de combat",
         "asi": "Aucune",
         "desc": "Lorsque vous touchez avec votre attaque à mains nues et infligez des dégâts, vous pouvez infliger des dégâts contondants égaux à 1d6 plus votre modificateur de Force au lieu des dégâts normaux d'une attaque à mains nues. Si vous ne tenez ni arme ni bouclier lors du jet d'attaque, le d6 devient un d8. <br>Au début de chacun de vos tours, vous pouvez infliger 1d4 dégâts contondants à une créature que vous agrippez."
     },
     "combat_en_aveugle": {
         "name": "Combat en aveugle",
         "type": "Style de combat",
-        "prereq": "capacité Style de combat",
+        "prereq": "aptitude Style de combat",
         "asi": "Aucune",
         "desc": "Vous possédez Vision aveugle avec une portée de 3 mètres."
     },
@@ -121,7 +121,7 @@ const FEATS_DATA = {
         "type": "Général",
         "prereq": "niveau 4 ou supérieur",
         "asi": "+1 For ou Dex ou Sag",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristiques</strong>. Augmentez votre Force, Dextérité ou Sagesse de 1, jusqu'à un maximum de 20. <br><strong>Frappe montée</strong>. Lorsque vous êtes sur une monture, vous bénéficiez d'un Avantage aux jets d'attaque contre toute créature non montée dans un rayon de 1,50 m autour de votre monture et dont la taille est inférieure d'au moins une taille à celle de votre monture. <br><strong>Pas de côté</strong>. Si votre monture est soumise à un effet qui lui permet d'effectuer un jet de sauvegarde de Dextérité pour ne subir que la moitié des dégâts, elle ne subit aucun dégât en cas de réussite au jet de sauvegarde et seulement la moitié en cas d'échec. Pour que votre monture bénéficie de cet avantage, vous devez la monter et aucun de vous deux ne doit être Incapable d'agir. <br><strong>Déviation</strong>. Lorsque vous êtes sur une monture, vous pouvez forcer une attaque qui touche votre monture à vous toucher à la place si vous n'êtes pas Incapable d'agir."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Force, Dextérité ou Sagesse de 1, jusqu'à un maximum de 20. <br><strong>Frappe montée</strong>. Lorsque vous êtes sur une monture, vous bénéficiez d'un Avantage aux jets d'attaque contre toute créature non montée dans un rayon de 1,50 m autour de votre monture et dont la taille est inférieure d'au moins une taille à celle de votre monture. <br><strong>Pas de côté</strong>. Si votre monture est soumise à un effet qui lui permet d'effectuer un jet de sauvegarde de Dextérité pour ne subir que la moitié des dégâts, elle ne subit aucun dégât en cas de réussite au jet de sauvegarde et seulement la moitié en cas d'échec. Pour que votre monture bénéficie de cet avantage, vous devez la monter et aucun de vous deux ne doit être Incapable d'agir. <br><strong>Déviation</strong>. Lorsque vous êtes sur une monture, vous pouvez forcer une attaque qui touche votre monture à vous toucher à la place si vous n'êtes pas Incapable d'agir."
     },
     "comedien": {
         "name": "Comédien",
@@ -133,7 +133,7 @@ const FEATS_DATA = {
     "defense": {
         "name": "Défense",
         "type": "Style de combat",
-        "prereq": "capacité Style de combat",
+        "prereq": "aptitude Style de combat",
         "asi": "Aucune",
         "desc": "Lorsque vous portez une armure légère, intermédiaire ou lourde, vous obtenez un bonus de +1 à la Classe d'Armure."
     },
@@ -154,7 +154,7 @@ const FEATS_DATA = {
     "duel": {
         "name": "Duel",
         "type": "Style de combat",
-        "prereq": "capacité Style de combat",
+        "prereq": "aptitude Style de combat",
         "asi": "Aucune",
         "desc": "Lorsque vous tenez une arme de corps à corps dans une main et aucune autre arme, vous obtenez un bonus de +2 aux dégâts infligés avec cette arme."
     },
@@ -246,7 +246,7 @@ const FEATS_DATA = {
     "faveur_de_memoire_magique": {
         "name": "Faveur de mémoire magique",
         "type": "Épique",
-        "prereq": "niveau 19 ou supérieur, capacité Sorts",
+        "prereq": "niveau 19 ou supérieur, aptitude Sorts",
         "asi": "+1 Int ou Sag ou Cha (max 30)",
         "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Intelligence, Sagesse ou Charisme de 1, jusqu'à un maximum de 30. <br><strong>Incantation gratuite</strong>. Chaque fois que vous lancez un sort avec un emplacement de sort de niveau 1 à 4, lancez 1d4. Si le résultat est égal au niveau de l'emplacement, celui-ci n'est pas dépensé."
     },
@@ -265,7 +265,7 @@ const FEATS_DATA = {
         "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez une valeur de caractéristique de votre choix de 1, jusqu'à un maximum de 30. <br><strong>Baroud d'honneur</strong>. Lorsque vous devriez tomber à 0 point de vie, vous pouvez tomber à 1 point de vie à la place et regagner un nombre de points de vie égal à la moitié de vos points de vie maximum. Une fois cet avantage utilisé, vous ne pouvez plus l'utiliser avant d'avoir terminé un Repos long. <br><strong>Regain de vitalité</strong>. Vous disposez d'une réserve de dix d10. Par une action Bonus, vous pouvez dépenser des dés de cette réserve, les lancer et regagner un nombre de points de vie égal au total obtenu. Vous récupérez tous les dés dépensés à la fin d'un Repos long."
     },
     "faveur_de_resistance_aux_energies": {
-        "name": "Faveur de résistance aux énergies",
+        "name": "Faveur de Résistance aux énergies",
         "type": "Épique",
         "prereq": "niveau 19 ou supérieur",
         "asi": "+1 au choix (max 30)",
@@ -326,12 +326,12 @@ const FEATS_DATA = {
         "type": "Origine",
         "prereq": "Niv 1+",
         "asi": "Aucune",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Médecin de combat</strong>. Si vous possédez une trousse de soins, vous pouvez dépenser une utilisation et soigner une créature à 1,50 m ou moins de vous par une action Utilisation. Cette créature peut dépenser un de ses Dés de vie, puis vous lancez ce dé. La créature récupère un nombre de points de vie égal au résultat du jet plus votre bonus de maîtrise. <br><strong>Retirage des soins</strong>. Chaque fois que vous lancez un dé pour déterminer le nombre de points de vie que vous restaurez avec un sort ou avec l'avantage Médecin de combat de ce don, vous pouvez relancer le dé si vous avez obtenu un 1, et devez utiliser le nouveau résultat."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Soigneur de bataille</strong>. Si vous possédez une trousse de soins, vous pouvez dépenser une utilisation et soigner une créature à 1,50 m ou moins de vous par une action Utilisation. Cette créature peut dépenser un de ses Dés de vie, puis vous lancez ce dé. La créature récupère un nombre de points de vie égal au résultat du jet plus votre bonus de maîtrise. <br><strong>Retirage des soins</strong>. Chaque fois que vous lancez un dé pour déterminer le nombre de points de vie que vous restaurez avec un sort ou avec l'avantage Soigneur de bataille de ce don, vous pouvez relancer le dé si vous avez obtenu un 1, et devez utiliser le nouveau résultat."
     },
     "hoplite": {
         "name": "Hoplite (Odyssée)",
         "type": "Style de combat",
-        "prereq": "capacité Style de combat",
+        "prereq": "aptitude Style de combat",
         "asi": "Aucune",
         "source": "Odyssée",
         "desc": "Style de combat de L'Odyssée des Seigneurs Dragons (guide du joueur, présenté avec la sous-classe L'Hoplite du Guerrier). Tant que vous portez un bouclier, lorsqu'une créature attaque au corps à corps un allié situé à 1,50 mètre ou moins de vous, vous pouvez prendre une Réaction pour effectuer contre elle une attaque d'opportunité au corps à corps."
@@ -339,7 +339,7 @@ const FEATS_DATA = {
     "incantateur_d_elite": {
         "name": "Incantateur d'élite",
         "type": "Général",
-        "prereq": "niveau 4 ou supérieur, capacité Sorts ou Magie de pacte",
+        "prereq": "niveau 4 ou supérieur, aptitude Sorts ou Magie de pacte",
         "asi": "+1 Int ou Sag ou Cha",
         "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Intelligence, Sagesse ou Charisme de 1, jusqu'à un maximum de 20. <br><strong>Contournement d'abri</strong>. Vos jets d'attaque de sort ignorent les Abris partiels et les Abris supérieurs. <br><strong>Incantation au corps à corps</strong>. Être à 1,50 mètre ou moins d'un ennemi n'inflige pas de Désavantage à vos jets d'attaque avec des sorts. <br><strong>Portée améliorée</strong>. Lorsque vous lancez un sort d'une portée d'au moins 3 mètres et qui nécessite un jet d'attaque, vous pouvez augmenter sa portée de 18 mètres."
     },
@@ -348,21 +348,21 @@ const FEATS_DATA = {
         "type": "Origine",
         "prereq": "Niv 1+",
         "asi": "Aucune",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Deux sorts mineurs</strong>. Vous apprenez deux sorts mineurs de votre choix parmi la liste de sorts de Clerc, Druide ou Magicien. L'Intelligence, la Sagesse ou le Charisme est votre caractéristique d'incantation pour les sorts de ce don (à choisir lors de la sélection de ce don). <br><strong>Sort de niveau 1</strong>. Choisissez un sort de niveau 1 dans la liste que vous avez sélectionnée pour les sorts mineurs de ce don. Ce sort est toujours prêt. Vous pouvez le lancer une fois sans emplacement de sort, et vous récupérez la possibilité de le lancer de cette manière à la fin d'un Repos long. Vous pouvez également lancer le sort en utilisant un emplacement de sort que vous possédez. <br><strong>Changement de sort</strong>. Chaque fois que vous gagnez un niveau, vous pouvez remplacer l'un des sorts choisis pour ce don par un autre sort de même niveau, choisi dans la liste de sorts choisis. <br><strong>Répétable</strong>. Vous pouvez prendre ce don plusieurs fois, mais vous devez choisir une liste de sorts différente à chaque fois."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Deux sorts mineurs</strong>. Vous apprenez deux sorts mineurs de votre choix parmi la liste de sorts de Clerc, Druide ou Magicien. L'Intelligence, la Sagesse ou le Charisme est votre caractéristique d'incantation pour les sorts de ce don (à choisir lors de la sélection de ce don). <br><strong>Sort du 1er niveau</strong>. Choisissez un sort de niveau 1 dans la liste que vous avez sélectionnée pour les sorts mineurs de ce don. Ce sort est toujours prêt. Vous pouvez le lancer une fois sans emplacement de sort, et vous récupérez la possibilité de le lancer de cette manière à la fin d'un Repos long. Vous pouvez également lancer le sort en utilisant un emplacement de sort que vous possédez. <br><strong>Changement de sort</strong>. Chaque fois que vous gagnez un niveau, vous pouvez remplacer l'un des sorts choisis pour ce don par un autre sort de même niveau, choisi dans la liste de sorts choisis. <br><strong>Répétable</strong>. Vous pouvez prendre ce don plusieurs fois, mais vous devez choisir une liste de sorts différente à chaque fois."
     },
     "interception": {
         "name": "Interception",
         "type": "Style de combat",
-        "prereq": "capacité Style de combat",
+        "prereq": "aptitude Style de combat",
         "asi": "Aucune",
         "desc": "Lorsqu'une créature que vous pouvez voir touche une autre créature à 1,50 m ou moins de vous lors d'un jet d'attaque, vous pouvez prendre une Réaction pour réduire les dégâts infligés à la cible de 1d10 plus votre bonus de maîtrise. Vous devez tenir un bouclier ou une arme courante ou de guerre pour utiliser cette Réaction."
     },
     "mage_de_guerre": {
         "name": "Mage de guerre",
         "type": "Général",
-        "prereq": "niveau 4 ou supérieur, capacité Sorts ou Magie de pacte",
+        "prereq": "niveau 4 ou supérieur, aptitude Sorts ou Magie de pacte",
         "asi": "+1 Int ou Sag ou Cha",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Intelligence, Sagesse ou Charisme de 1, jusqu'à un maximum de 20. <br><strong>Concentration</strong>. Vous bénéficiez d'un Avantage aux jets de sauvegarde de Constitution que vous effectuez pour maintenir votre concentration. <br><strong>Sort réactif</strong>. Lorsqu'une créature provoque une Attaque d'opportunité de votre part en quittant votre allonge, vous pouvez prendre une Réaction pour lancer un sort sur elle, au lieu d'effectuer une Attaque d'opportunité. Le sort doit avoir un temps d'incantation d'une action et ne doit cibler que cette créature. <br><strong>Composantes somatiques</strong>. Vous pouvez exécuter les composantes somatiques des sorts même lorsque vous avez des armes ou un bouclier dans une ou deux mains."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Intelligence, Sagesse ou Charisme de 1, jusqu'à un maximum de 20. <br><strong>Concentration</strong>. Vous bénéficiez d'un Avantage aux jets de sauvegarde de Constitution que vous effectuez pour maintenir votre concentration. <br><strong>Sort réactif</strong>. Lorsqu'une créature provoque une Attaque d'opportunité de votre part en quittant votre allonge, vous pouvez prendre une Réaction pour lancer un sort sur elle, au lieu d'effectuer une Attaque d'opportunité. Le sort doit avoir un temps d'incantation d'une action et ne doit cibler que cette créature. <br><strong>Composante somatique</strong>. Vous pouvez exécuter les composantes somatiques des sorts même lorsque vous avez des armes ou un bouclier dans une ou deux mains."
     },
     "magie_rituelle": {
         "name": "Magie rituelle",
@@ -445,7 +445,7 @@ const FEATS_DATA = {
     "protection": {
         "name": "Protection",
         "type": "Style de combat",
-        "prereq": "capacité Style de combat",
+        "prereq": "aptitude Style de combat",
         "asi": "Aucune",
         "desc": "Lorsqu'une créature que vous pouvez voir attaque une cible autre que vous située à 1,50 mètre ou moins de vous, vous pouvez prendre une Réaction pour interposer votre bouclier si vous en tenez un. Vous infligez un Désavantage au jet d'attaque déclencheur et à tous les autres jets d'attaque contre la cible jusqu'au début de votre prochain tour si vous restez à 1,50 mètre ou moins de la cible."
     },
@@ -527,7 +527,7 @@ const FEATS_DATA = {
         "type": "Général",
         "prereq": "niveau 4 ou supérieur",
         "asi": "+1 For ou Dex",
-        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Force ou Dextérité de 1, jusqu'à un maximum de 20. <br><strong>Coupe-jarret</strong>. Une fois par tour, lorsque vous touchez une créature avec une attaque infligeant des dégâts tranchants, vous pouvez réduire la vitesse de cette créature de 3 mètres jusqu'au début de votre prochain tour. <br><strong>Critique amélioré</strong>. Lorsque vous réussissez un Coup critique infligeant des dégâts tranchants à une créature, celle-ci subit un Désavantage aux jets d'attaque jusqu'au début de votre prochain tour."
+        "desc": "Vous bénéficiez des avantages suivants. <br><strong>Augmentation de caractéristique</strong>. Augmentez votre Force ou Dextérité de 1, jusqu'à un maximum de 20. <br><strong>Coupe-jarret</strong>. Une fois par tour, lorsque vous touchez une créature avec une attaque infligeant des dégâts tranchants, vous pouvez réduire la vitesse de cette créature de 3 mètres jusqu'au début de votre prochain tour. <br><strong>Critique renforcé</strong>. Lorsque vous réussissez un Coup critique infligeant des dégâts tranchants à une créature, celle-ci subit un Désavantage aux jets d'attaque jusqu'au début de votre prochain tour."
     },
     "tueur_de_mages": {
         "name": "Tueur de mages",

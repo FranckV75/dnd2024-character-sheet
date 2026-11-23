@@ -187,10 +187,10 @@ export function featEffects(character, derived = deriveCharacter(character || {}
             (effects[`featSlot:${slot.level}`] ??= []).push(note(slot.featId,
                 'Prérequis : niveau 19 (les faveurs épiques se prennent au niveau 19).', { check: true }));
         }
-        // Style de combat (PHB 2024) : prérequis « capacité Style de combat » (Guerrier ; Paladin et Rôdeur au niveau 2)
+        // Style de combat (PHB 2024) : prérequis « aptitude Style de combat » (Guerrier ; Paladin et Rôdeur au niveau 2)
         if (Object.hasOwn(FEATS_DATA, slot.featId) && FEATS_DATA[slot.featId].type === 'Style de combat' && !hasFightingStyle(record)) {
             (effects[`featSlot:${slot.level}`] ??= []).push(note(slot.featId,
-                'Prérequis : la capacité Style de combat (Guerrier dès le niveau 1, Paladin ou Rôdeur dès le niveau 2).',
+                "Prérequis : l'aptitude Style de combat (Guerrier dès le niveau 1, Paladin ou Rôdeur dès le niveau 2).",
                 { check: true }));
         }
         if (!Object.hasOwn(FEAT_RULES, slot.featId)) continue;

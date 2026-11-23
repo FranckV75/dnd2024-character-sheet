@@ -46,12 +46,12 @@ export const EPIC_FEAT_RULES = {
         }
     },
 
-    // Faveur de mémoire magique — « Boon of Spell Recall » (prérequis : capacité Sorts)
+    // Faveur de mémoire magique — « Boon of Spell Recall » (prérequis : aptitude Sorts)
     faveur_de_memoire_magique: ({ derived, record, add }) => {
         const text = "Sort lancé avec un emplacement de niveau 1 à 4 : lancez 1d4 ; si le résultat est égal au niveau de l'emplacement, celui-ci n'est pas dépensé.";
         add('featSlot', text);
         if (derived.classSlug && !hasSpellcasting(record, derived)) {
-            add('featSlot', 'Prérequis : la capacité Sorts (une classe de lanceur de sorts, ou Chevalier occulte, Arnaqueur arcanique).', { check: true });
+            add('featSlot', "Prérequis : l'aptitude Sorts (une classe de lanceur de sorts, ou Chevalier occulte, Arnaqueur arcanique).", { check: true });
         }
     },
 
@@ -69,7 +69,7 @@ export const EPIC_FEAT_RULES = {
         add('featSlot', "Regain de vitalité, réserve de dix d10 (cases ci-dessous) : action Bonus, lancez-en autant que vous voulez et regagnez le total en PV ; tous rendus au repos long.");
     },
 
-    // Faveur de résistance aux énergies — « Boon of Energy Resistance »
+    // Faveur de Résistance aux énergies — « Boon of Energy Resistance »
     faveur_de_resistance_aux_energies: ({ derived, record, add }) => {
         const chosen = energyChoices(record);
         const dc = 8 + derived.mods.con + derived.pb;

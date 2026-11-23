@@ -309,7 +309,7 @@ export function initSubclassFeatures({ root, store }) {
         // Compteur vidé (ou saisie illisible, que le navigateur rend vide) : rien n'est effacé
         const patch = control.type === 'number' && value.trim() === ''
             ? {} : setSubclassChoicePatch(character, current, control.dataset.subclassChoice, value);
-        // Nouvelle bête primordiale (lot 7) : PV pleins, ses PV enregistrés sont effacés
+        // Nouvelle bête primitive (lot 7) : PV pleins, ses PV enregistrés sont effacés
         if (Object.keys(patch).length) store.update({ ...patch, ...companionChoicePatch(character, current, control.dataset.subclassChoice) });
         // Compteur : la saisie affiche la valeur retenue (ramenée dans la plage, ou ancienne valeur si
         // la saisie est illisible), même quand l'enregistrement ne change rien
