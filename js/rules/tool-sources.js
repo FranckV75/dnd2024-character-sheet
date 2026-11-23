@@ -11,7 +11,11 @@
 //  - toolSourceProgress : combien d'outils notés dans la case comptent pour chaque source. Un outil
 //    noté ne compte qu'une fois : il va d'abord à la source la plus étroite (outil précis, puis
 //    liste courte, puis catégorie, puis « toute la liste »). Les listes sont emboîtées ou sans outil
-//    commun : ce partage donne à chaque source le plus d'outils possible ;
+//    commun : ce partage donne à chaque source le plus d'outils possible. Exception : Chef cuisinier
+//    ne donne ses Ustensiles que « si vous ne les maîtrisez pas déjà » : l'outil noté compte pour le
+//    don sans être retiré aux autres sources (source « shared ») ;
+//  - toolCountWarning : phrase de la fenêtre qui dit que le compte prend tous les outils cochés,
+//    ceux de la classe compris (la fiche ne sait pas d'où vient un outil coché) ;
 //  - featuredToolSections : encadrés du haut de la fenêtre (les sources qui proposent exactement
 //    les mêmes outils partagent un encadré : Artiste et Musicien, tous deux « instruments »).
 // Un don prévu pour plus tard (emplacement pas encore atteint) ne compte pas, comme partout.
@@ -39,27 +43,37 @@ const ANY_TOOL_LABELS = Object.freeze(['un outil au choix', 'deux outils au choi
  * @typedef {Object} ToolSource
  * @property {string} id - 'background', ou 'feat:<emplacement>:<don>'
  * @property {'background'|'feat'} kind
- * @property {string} title - « Historique (Sage) », « Don Façonneur (niveau 1) »
+ * @property {string} title - « Historique (Sage) », « Don Façonneur (niveau 1) », « Don Musicien
+ *   (niveau 1, Humain) »
  * @property {string} from - suite de « Donné par … » : « votre historique (Sage) »
  * @property {string} label - ce qui est donné : « Outils de voleur », « trois instruments de musique au choix »
  * @property {string|null} toolId - outil précis ; null s'il y a un choix
  * @property {string[]|null} toolIds - outils qui comptent pour la source ; null : toute la liste
  * @property {string|null} categoryId - catégorie entière où se fait le choix (sinon null)
  * @property {number} count - nombre d'outils donnés (0 : Doué sans menu réglé sur « Un outil »)
+ * @property {boolean} [shared] - l'outil n'est donné que s'il n'est pas déjà maîtrisé (Chef
+ *   cuisinier) : noté, il compte ici sans être retiré aux autres sources
  */
+
+/** « niveau 1 », « niveau 1, Humain », « niveau 7, Champion » : sans parenthèses, pour un titre qui en a déjà */
+const slotLabel = (level) => featSlotName(level).replace(/ \(([^()]+)\)$/, ', $1');
 
 /** Source d'un don, d'après FEAT_TOOLS ; null si le don ne donne aucun outil pour l'instant */
 function featSource(record, slot, grants) {
     const rule = FEAT_TOOLS[slot.featId];
     const name = featName(slot.featId);
-    const slotName = featSlotName(slot.level);
+    const slotName = slotLabel(slot.level);
     const base = {
         id: `feat:${slot.level}:${slot.featId}`, kind: 'feat',
         title: `Don ${name} (${slotName})`, from: `votre don ${name} (${slotName})`
     };
     if (rule.tool) {
         const tool = TOOL_BY_ID.get(rule.tool);
-        return tool ? { ...base, label: tool.name, toolId: tool.id, toolIds: [tool.id], categoryId: null, count: 1 } : null;
+        if (!tool) return null;
+        return {
+            ...base, label: tool.name, toolId: tool.id, toolIds: [tool.id], categoryId: null, count: 1,
+            ...(rule.ifMissing ? { shared: true } : {})
+        };
     }
     if (rule.tools) {
         return { ...base, label: rule.choice, toolId: null, toolIds: [...rule.tools], categoryId: null, count: rule.count };
@@ -135,7 +149,8 @@ export function toolProgressText(noted, count, precise) {
  * @param {Object} record
  * @returns {{ id: string, noted: number, count: number, done: boolean, status: string, toolIds: string[] }[]}
  *   dans l'ordre des sources ; noted : outils de la case comptés pour la source (toolIds) ; done :
- *   tout ce que donne la source est noté ; status : toolProgressText
+ *   tout ce que donne la source est noté ; status : toolProgressText. Le compte prend tous les
+ *   outils notés, d'où qu'ils viennent : ceux de la classe ne sont pas des sources (toolCountWarning)
  */
 export function toolSourceProgress(sources, record) {
     const noted = toolsInText(record?.profs_tools);
@@ -146,9 +161,11 @@ export function toolSourceProgress(sources, record) {
         .sort((a, b) => (sources[a].toolIds?.length ?? Infinity) - (sources[b].toolIds?.length ?? Infinity) || a - b);
     for (const index of order) {
         const source = sources[index];
-        const mine = noted.filter((id) => !used.has(id) && (source.toolIds === null || source.toolIds.includes(id)))
+        // Source « shared » (Chef cuisinier) : son outil compte pour elle même s'il sert déjà à une
+        // autre source, et reste disponible pour les autres
+        const mine = noted.filter((id) => (source.shared || !used.has(id)) && (source.toolIds === null || source.toolIds.includes(id)))
             .slice(0, source.count);
-        for (const id of mine) used.add(id);
+        if (!source.shared) for (const id of mine) used.add(id);
         taken.set(index, mine);
     }
     return sources.map((source, index) => {
@@ -167,6 +184,22 @@ export function toolSourceProgress(sources, record) {
             toolIds: mine
         };
     });
+}
+
+/**
+ * Phrase d'avertissement sous « D'où viennent vos outils » : le compte prend tous les outils
+ * cochés, y compris ceux de la classe ou de l'espèce, qui ne sont pas des sources ici. Un Barde
+ * (trois instruments par sa classe) qui a le don Musicien verrait sinon « 3 sur 3 » sans avoir
+ * choisi les instruments du don. Utile seulement quand une source laisse un choix : un outil
+ * précis (Outils de voleur) se note une fois, d'où qu'il vienne.
+ * @param {ToolSource[]} sources - toolSources(record)
+ * @returns {string} '' si aucune source ne laisse de choix
+ */
+export function toolCountWarning(sources) {
+    if (!sources.some((source) => source.toolId === null && source.count > 0)) return '';
+    return 'Le compte prend tous les outils cochés, aussi ceux de votre classe ou de votre espèce : la fiche ne sait pas '
+        + "d'où vient un outil. Si elles vous en donnent dans la même liste, cochez-les en plus. Exemple : un Barde qui a "
+        + 'le don Musicien coche ses trois instruments de classe et trois autres.';
 }
 
 /** « a », « a et b », « a, b et c » */

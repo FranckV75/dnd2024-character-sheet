@@ -235,6 +235,11 @@
     margin: 0;
 }
 
+/* Seconde phrase (le compte prend aussi les outils de la classe) : un peu d'air */
+.modal-tools .tools-sources .prep-hint + .prep-hint {
+    margin-top: 4px;
+}
+
 /* Avancement : pointillé tant qu'il reste des outils à noter, trait plein une fois tout noté
    (même dessin que les étiquettes des dons, css/feats.css) */
 .modal-tools .tools-source-state {

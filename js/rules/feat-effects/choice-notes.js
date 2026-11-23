@@ -173,7 +173,7 @@ export function choiceNotes(grant, { derived, grants, record, add }) {
         }
         add('featSlot', `Préparation : 1 heure et 50 po de matériaux pour ${derived.pb} doses ; action Bonus pour enduire une arme ou une munition (1 minute, ou jusqu'à ce qu'elle touche).`, { value: derived.pb });
         add('featSlot', 'Poison virulent : vos jets de dégâts de poison ignorent la Résistance au poison.');
-        toolNote(record, /empoison/, "Matériel d'empoisonneur", add);
+        toolNote(record, /empoison/, "Matériel d'empoisonneur", add, 'poisoner');
     }
 
     // Rappels propres au don (noms des actions : ceux de js/data/feats.js)

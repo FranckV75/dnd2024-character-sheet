@@ -12,6 +12,8 @@
 //    js/rules/tools.js), et jamais en double. Un outil « au choix » (Artisan, Artiste, Soldat…) n'est
 //    pas écrit : il se choisit dans la fenêtre des outils (backgroundAppliedMessage y invite). Les
 //    caractéristiques ne sont jamais modifiées (les valeurs saisies comprennent déjà le bonus).
+//    Hors ligne (mise en forme indisponible, la case Outils est en lecture seule), l'outil n'est
+//    ni promis ni écrit : option toolWritable de backgroundSummary et de backgroundApplyPatch.
 // Données : DD_RULES.backgrounds (js/data/dd-rules.js). Fonctions pures.
 // =============================================================================
 
@@ -19,26 +21,27 @@ import { DD_RULES } from '../data/dd-rules.js';
 import { ABILITIES, SKILLS } from '../data/constants.js';
 import { FEATS_DATA } from '../data/feats.js';
 import { featChoicesState, slotChoice, MAGIC_INITIATE_CLASSES } from './feat-choices.js';
-import { backgroundToolExpectation, expectedToolNoted, addToolToText } from './tools.js';
+import { backgroundToolExpectation, expectedToolNoted, addToolToText, toolBoxFiller } from './tools.js';
 import { plainText } from './plain-text.js';
 
 const plain = (value) => plainText(value, { spaced: true });
 const fold = (value) => plain(value).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[’']/g, "'").toLowerCase();
 
 /** Mots qui montrent qu'un outil est noté dans « Outils » (outils au choix : un mot de la famille).
- *  Reconnaissance large, pour les textes écrits à la main ; s'y ajoute le nom exact d'un outil du
- *  manuel (expectedToolNoted, js/rules/tools.js), celui qu'écrit la fenêtre « Choisir dans la liste » */
+ *  Reconnaissance large, pour les textes écrits à la main, en français ou en anglais (« thieves' tools »,
+ *  « herbalisme ») ; s'y ajoute le nom exact d'un outil du manuel (expectedToolNoted,
+ *  js/rules/tools.js), celui qu'écrit la fenêtre « Choisir dans la liste » */
 const TOOL_WORDS = Object.freeze({
     "Calligrapher's Supplies": ['calligraph'],
     "Artisan's Tools": ['artisan', 'alchim', 'brass', 'calligraph', 'bricol', 'cartograph', 'charpent', 'cordonn', 'cuisin',
         'forgeron', 'joaill', 'macon', 'peintr', 'potier', 'sculpt', 'souffleur', 'tann', 'tisser'],
-    'Forgery Kit': ['contrefacon', 'faussaire'],
-    "Thieves' Tools": ['voleur'],
+    'Forgery Kit': ['contrefacon', 'faussaire', 'forgery'],
+    "Thieves' Tools": ['voleur', 'thieve'],
     'Musical Instrument': ['musique', 'luth', 'flute', 'tambour', 'lyre', 'cor', 'viole', 'cornemuse', 'chalemie', 'tympanon', 'flute de pan'],
-    "Carpenter's Tools": ['charpent'],
+    "Carpenter's Tools": ['charpent', 'carpenter'],
     'Gaming Set': ['jeu', 'echecs', 'osselets', 'cartes', 'dragons'],
     "Cartographer's Tools": ['cartograph'],
-    'Herbalism Kit': ['herbor'],
+    'Herbalism Kit': ['herbor', 'herbal'],
     "Navigator's Tools": ['navigat']
 });
 
@@ -54,17 +57,6 @@ export function backgroundOf(record) {
         if ([id, background.name, background.nameFr].some((n) => fold(n) === name)) return { id, ...background };
     }
     return null;
-}
-
-/**
- * Outil donné par l'historique du personnage, pour la fenêtre « Choisir dans la liste ».
- * @param {Object} record
- * @returns {null | { background: string, toolId: string|null, categoryId: string, label: string }}
- */
-export function backgroundTool(record) {
-    const background = backgroundOf(record);
-    const expectation = background ? backgroundToolExpectation(background.toolProfs[0]) : null;
-    return expectation ? { background: background.nameFr, ...expectation } : null;
 }
 
 /** L'outil de cet historique est-il noté dans la case « Outils » ? (voir backgroundToolNoted) */
@@ -104,16 +96,21 @@ function featLabel(background) {
 /**
  * Lignes de l'encadré « Historique ».
  * @param {Object} record
+ * @param {{ toolWritable?: boolean }} [options] - toolWritable : la case Outils peut être écrite
+ *   (false hors ligne, quand la mise en forme est indisponible : js/ui/sanitize.js)
  * @returns {null | {
  *   name: string,
  *   lines: { id: string, label: string, text: string, check?: string }[],
- *   canApply: boolean, applyText: string[], writesTool: boolean, toolChoice: string|null
+ *   canApply: boolean, applyText: string[], writesTool: boolean, toolChoice: string|null,
+ *   toolOffline: string|null, toolFiller: string|null
  * }} check : ce qui manque sur la fiche (« À vérifier ») ; writesTool : le bouton « Appliquer » a
  *   l'outil précis de l'historique à écrire dans la case Outils ; toolChoice : outil au choix pas
- *   encore noté (« un instrument de musique au choix »), que le bouton n'écrit pas ; null sans
- *   historique reconnu
+ *   encore noté (« un instrument de musique au choix »), que le bouton n'écrit pas ; toolOffline :
+ *   outil précis pas encore noté que le bouton ne peut pas écrire hors ligne (il n'est alors ni
+ *   compté dans canApply ni annoncé dans applyText) ; toolFiller : la case ne contient qu'un mot
+ *   d'attente (« Aucun », « - »), qui restera devant l'outil écrit ; null sans historique reconnu
  */
-export function backgroundSummary(record) {
+export function backgroundSummary(record, { toolWritable = true } = {}) {
     const background = backgroundOf(record);
     if (!background) return null;
     const lines = [];
@@ -161,11 +158,14 @@ export function backgroundSummary(record) {
     if (missing.length) applyText.push(`cocher ${missing.map((s) => s.name).join(' et ')}`);
     if (!feat1) applyText.push(`choisir le don ${featName} au niveau 1`);
     const expectation = backgroundToolExpectation(background.toolProfs[0]);
-    const writesTool = !toolNoted && Boolean(expectation?.toolId);
+    const preciseMissing = !toolNoted && Boolean(expectation?.toolId);
+    const writesTool = preciseMissing && toolWritable;
     if (writesTool) applyText.push(`noter ${expectation.label} dans la case Outils`);
     return {
         name: background.nameFr, lines, canApply: applyText.length > 0, applyText, writesTool,
-        toolChoice: !toolNoted && expectation && !expectation.toolId ? expectation.label : null
+        toolChoice: !toolNoted && expectation && !expectation.toolId ? expectation.label : null,
+        toolOffline: preciseMissing && !toolWritable ? expectation.label : null,
+        toolFiller: writesTool ? toolBoxFiller(record?.profs_tools) || null : null
     };
 }
 
@@ -176,9 +176,11 @@ export function backgroundSummary(record) {
  * est gardé tel quel, le nom s'écrit après lui). Un outil au choix n'est pas écrit. Rien d'autre
  * ne change.
  * @param {Object} record
+ * @param {{ toolWritable?: boolean }} [options] - false : la case Outils n'est pas écrite (hors
+ *   ligne), le reste est appliqué
  * @returns {Object} patch ({} si rien à faire)
  */
-export function backgroundApplyPatch(record) {
+export function backgroundApplyPatch(record, { toolWritable = true } = {}) {
     const background = backgroundOf(record);
     if (!background) return {};
     const patch = {};
@@ -197,7 +199,7 @@ export function backgroundApplyPatch(record) {
         }
     }
     const expectation = backgroundToolExpectation(background.toolProfs[0]);
-    if (expectation?.toolId && !toolNotedFor(record, background)) {
+    if (toolWritable && expectation?.toolId && !toolNotedFor(record, background)) {
         const current = typeof record?.profs_tools === 'string' ? record.profs_tools : '';
         const next = addToolToText(current, expectation.toolId);
         if (next !== current) patch.profs_tools = next;
@@ -209,28 +211,39 @@ export function backgroundApplyPatch(record) {
 const joinList = (items) => (items.length <= 1 ? items.join('') : `${items.slice(0, -1).join(', ')} et ${items[items.length - 1]}`);
 
 /**
- * Phrase de la fenêtre de confirmation du bouton « Appliquer ».
- * @param {Object} summary - backgroundSummary(record), avant d'appliquer
+ * Phrase de la fenêtre de confirmation du bouton « Appliquer ». Elle ne promet que ce qui sera
+ * fait : hors ligne, elle dit que l'outil ne sera pas écrit ; si la case Outils ne contient qu'un
+ * mot d'attente (« Aucun »), elle prévient qu'il restera devant l'outil.
+ * @param {Object} summary - backgroundSummary(record, options), avant d'appliquer
  * @returns {string}
  */
 export function backgroundApplyConfirm(summary) {
     const kept = summary.writesTool
         ? "Les caractéristiques ne changent pas, et rien de ce que vous avez écrit dans la case Outils n'est retiré."
         : 'Les caractéristiques et les outils ne changent pas.';
+    const filler = summary.toolFiller
+        ? ` La case contient déjà « ${summary.toolFiller} » : ce texte reste devant l'outil, à vous de l'effacer ensuite.`
+        : '';
     const choice = summary.toolChoice
         ? ` L'outil de l'historique (${summary.toolChoice}) se choisit ensuite avec « Choisir dans la liste ».`
         : '';
-    return `La fiche va ${joinList(summary.applyText)}. ${kept}${choice}`;
+    const offline = summary.toolOffline
+        ? ` L'outil de l'historique (${summary.toolOffline}) n'est pas écrit : hors ligne, la case Outils ne se modifie pas. Rechargez la page une fois connecté.`
+        : '';
+    return `La fiche va ${joinList(summary.applyText)}. ${kept}${filler}${choice}${offline}`;
 }
 
 /**
  * Message de la barre du haut après « Appliquer ».
- * @param {Object} summary - backgroundSummary(record), APRÈS avoir appliqué
- * @returns {string} invite à choisir l'outil s'il est au choix et pas encore noté ; signale un
- *   outil précis resté à noter (mise en forme indisponible hors ligne : la case n'a pas été écrite)
+ * @param {Object} summary - backgroundSummary(record, options), APRÈS avoir appliqué, avec les
+ *   mêmes options qu'avant
+ * @returns {string} invite à choisir l'outil s'il est au choix et pas encore noté ; hors ligne,
+ *   dit que l'outil précis n'a pas été écrit, sans renvoyer à la fenêtre des outils (elle ne
+ *   s'ouvre pas non plus hors ligne)
  */
 export function backgroundAppliedMessage(summary) {
     const done = `Historique ${summary.name} appliqué.`;
     if (summary.toolChoice) return `${done} Outil au choix : bouton « Choisir dans la liste », ligne Outil.`;
+    if (summary.toolOffline) return `Historique ${summary.name} appliqué, sauf l'outil (hors ligne) : rechargez la page une fois connecté.`;
     return summary.writesTool ? `${done} Outil à noter : bouton « Choisir dans la liste », ligne Outil.` : done;
 }

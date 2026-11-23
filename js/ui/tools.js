@@ -12,7 +12,8 @@
 //    (Façonneur, Musicien, Doué, Chef cuisinier, Empoisonneur), avec où il en est (« Noté »,
 //    « 2 sur 3 ») ; puis un encadré par outil donné, ou par liste où il se choisit (une catégorie
 //    entière mise en tête n'est pas répétée plus bas). Rien n'est coché tout seul : la fenêtre aide
-//    à choisir, le joueur coche (js/rules/tool-sources.js).
+//    à choisir, le joueur coche (js/rules/tool-sources.js). Quand une origine laisse un choix, une
+//    phrase prévient que le compte prend aussi les outils de la classe (toolCountWarning).
 // Le texte passe par le chemin des champs riches : nettoyage DOMPurify puis store. Aucune clé
 // nouvelle. Ouverte aussi depuis l'encadré « Historique » (js/ui/background.js).
 // =============================================================================
@@ -25,7 +26,9 @@ import { TOOLS } from '../data/tools.js';
 import {
     toolsInText, addToolToText, removeToolFromText, matchesToolQuery, toolGroups, toolAbilityName
 } from '../rules/tools.js';
-import { toolSources, toolSourceProgress, featuredToolSections, sectionProgress } from '../rules/tool-sources.js';
+import {
+    toolSources, toolSourceProgress, featuredToolSections, sectionProgress, toolCountWarning
+} from '../rules/tool-sources.js';
 
 const FIELD = 'profs_tools';
 
@@ -132,10 +135,13 @@ export function openToolPicker({ store, setStatus }) {
             state);
         return { source, li, state };
     });
+    // Le compte prend tous les outils cochés, ceux de la classe compris : dit quand une origine laisse un choix
+    const countWarning = toolCountWarning(sources);
     const sourcesBox = sourceRows.length ? el('section', { class: 'tools-sources', 'aria-label': "D'où viennent vos outils" },
         el('h3', { class: 'prep-level', text: "D'où viennent vos outils" }),
         el('ul', { class: 'tools-source-list' }, sourceRows.map((row) => row.li)),
-        el('p', { class: 'prep-hint muted', text: "Rien n'est coché tout seul : cochez vous-même les outils choisis. Vos autres outils (classe, espèce, appris en jeu) se cochent de la même façon." })) : null;
+        el('p', { class: 'prep-hint muted', text: "Rien n'est coché tout seul : cochez vous-même les outils choisis. Vos autres outils (classe, espèce, appris en jeu) se cochent de la même façon." }),
+        countWarning ? el('p', { class: 'prep-hint muted', text: countWarning }) : null) : null;
 
     const paint = (state, { status, done }) => {
         state.textContent = status;

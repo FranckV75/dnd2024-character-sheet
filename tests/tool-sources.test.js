@@ -11,8 +11,9 @@ import { featEffects } from '../js/rules/feat-effects.js';
 import { FEAT_CHOICE_RULES } from '../js/rules/feat-choices.js';
 import { createDefaultCharacter } from '../js/state/schema.js';
 import {
-    toolSources, toolSourceProgress, featuredToolSections, sectionProgress, toolProgressText
+    toolSources, toolSourceProgress, featuredToolSections, sectionProgress, toolProgressText, toolCountWarning
 } from '../js/rules/tool-sources.js';
+import { backgroundSummary } from '../js/rules/background.js';
 
 const byId = (id) => TOOLS.find((tool) => tool.id === id);
 const idsOf = (category) => TOOLS.filter((tool) => tool.category === category).map((tool) => tool.id);
@@ -49,6 +50,18 @@ describe('Dons qui donnent des outils (données)', () => {
         }
         assert.equal(byId(FEAT_TOOLS.chef_cuisinier.tool).name, 'Ustensiles de cuisinier');
         assert.equal(byId(FEAT_TOOLS.empoisonneur.tool).name, "Matériel d'empoisonneur");
+    });
+
+    test('Chef cuisinier : outil donné seulement s\'il n\'est pas déjà maîtrisé (texte du don), lui seul', () => {
+        assert.deepEqual(Object.keys(FEAT_TOOLS).filter((id) => FEAT_TOOLS[id].ifMissing), ['chef_cuisinier']);
+        assert.ok(FEATS_DATA.chef_cuisinier.desc.includes('si vous ne les maîtrisez pas déjà'));
+        assert.ok(!/pas déjà/.test(FEATS_DATA.empoisonneur.desc));
+    });
+
+    test('Empoisonneur : la description du don nomme l\'outil comme la fenêtre et la note (« matériel »)', () => {
+        assert.ok(FEATS_DATA.empoisonneur.desc.includes("Vous maîtrisez le matériel d'empoisonneur."));
+        assert.ok(FEATS_DATA.empoisonneur.desc.includes('avec ce matériel'));
+        assert.doesNotMatch(FEATS_DATA.empoisonneur.desc, /\bkit\b/i);
     });
 
     test('Façonnage rapide : les huit outils d\'artisan de la table du don, sans doublon', () => {
@@ -148,7 +161,26 @@ describe('Sources : historique et dons', () => {
         const human = toolSources({ char_species: 'Humain', feat_1: 'musicien', feat_0: 'musicien' });
         assert.equal(human.length, 1);
         assert.equal(human[0].title, 'Don Musicien (niveau 1)');
-        assert.equal(toolSources({ char_species: 'Humain', feat_0: 'faconneur' })[0].title, 'Don Façonneur (niveau 1 (Humain))');
+    });
+
+    test('Second don d\'origine de l\'Humain : pas de parenthèses dans les parenthèses', () => {
+        const [source] = toolSources({ char_species: 'Humain', char_background: '', feat_0: 'musicien' });
+        assert.equal(source.id, 'feat:0:musicien');
+        assert.equal(source.title, 'Don Musicien (niveau 1, Humain)');
+        assert.equal(source.from, 'votre don Musicien (niveau 1, Humain)');
+        assert.equal(featuredToolSections([source])[0].title,
+            'Donné par votre don Musicien (niveau 1, Humain) : trois instruments de musique au choix');
+        assert.equal(toolSources({ char_species: 'Humain', feat_0: 'faconneur' })[0].title, 'Don Façonneur (niveau 1, Humain)');
+        // Aucun titre ni « Donné par » n'emboîte deux parenthèses, quel que soit l'emplacement
+        const record = {
+            char_species: 'Humain', char_class: 'Guerrier', char_subclass: 'Champion', char_level: '20', char_background: 'Sage',
+            feat_0: 'musicien', feat_1: 'faconneur', feat_4: 'chef_cuisinier', feat_6: 'empoisonneur', feat_7: 'doue',
+            feat_choices: { 7: { doue: { pick1: 'tool' } } }
+        };
+        for (const item of toolSources(record)) {
+            assert.doesNotMatch(item.title, /\([^)]*\(/, item.title);
+            assert.doesNotMatch(item.from, /\([^)]*\(/, item.from);
+        }
     });
 
     test('Don prévu pour plus tard (niveau pas atteint) : pas de source', () => {
@@ -230,6 +262,50 @@ describe('Avancement : ce qui est noté dans la case Outils', () => {
         assert.deepEqual(statuses(build(tools('carpenter'))), ['Noté', '0 sur 3', '0 sur 2']);
         assert.deepEqual(statuses(build(tools('carpenter', 'smith', 'lute'))), ['Noté', '1 sur 3', '1 sur 2']);
         assert.deepEqual(statuses(build(tools('carpenter', 'smith', 'mason', 'potter', 'weaver', 'lute'))), ['Noté', '3 sur 3', '2 sur 2']);
+    });
+
+    test('Chef cuisinier (« si vous ne les maîtrisez pas déjà ») : ses Ustensiles comptent aussi pour une autre source', () => {
+        // Artisan qui avait choisi les Ustensiles de cuisinier, puis prend Chef cuisinier : un seul outil, et c'est la règle
+        const artisan = { char_level: '4', char_background: 'Artisan', feat_4: 'chef_cuisinier', profs_tools: 'Ustensiles de cuisinier' };
+        assert.deepEqual(toolSources(artisan).map((source) => [source.id, source.shared === true]),
+            [['background', false], ['feat:4:chef_cuisinier', true]]);
+        assert.deepEqual(statuses(artisan), ['Choisi', 'Noté']);
+        // Même avis que l'encadré Historique
+        assert.equal(backgroundSummary(artisan).lines.find((line) => line.id === 'tool').check, undefined);
+        assert.ok(toolSourceProgress(toolSources(artisan), artisan).every((entry) => entry.done));
+        // Rien de noté : les deux restent à faire
+        assert.deepEqual(statuses({ ...artisan, profs_tools: '' }), ['À choisir', 'À noter']);
+        assert.deepEqual(statuses({ ...artisan, profs_tools: tools('smith') }), ['Choisi', 'À noter']);
+        assert.deepEqual(statuses({ ...artisan, profs_tools: tools('smith', 'cook') }), ['Choisi', 'Noté']);
+        // Avec Doué (un outil dans toute la liste) : les Ustensiles peuvent être l'outil de Doué
+        const skilled = {
+            char_level: '4', feat_1: 'doue', feat_4: 'chef_cuisinier', feat_choices: { 1: { doue: { pick1: 'tool' } } },
+            profs_tools: 'Ustensiles de cuisinier'
+        };
+        assert.deepEqual(statuses(skilled), ['Choisi', 'Noté']);
+        // Un outil précis sans cette clause reste compté une seule fois (Empoisonneur, puis Doué)
+        const poisoner = { ...skilled, feat_4: 'empoisonneur', profs_tools: "Matériel d'empoisonneur" };
+        assert.equal(toolSources(poisoner)[1].shared, undefined);
+        assert.deepEqual(statuses(poisoner), ['À choisir', 'Noté']);
+    });
+
+    test('Le compte prend tous les outils cochés, ceux de la classe compris : la fenêtre le dit quand il y a un choix', () => {
+        // Limite connue : les outils de classe ne sont pas des sources. Barde (trois instruments par
+        // sa classe) avec le don Musicien : « 3 sur 3 » dès ses instruments de classe notés
+        const bard = { char_class: 'Barde', char_level: '4', char_background: 'Sage', feat_4: 'musicien', profs_tools: tools('lute', 'flute', 'lyre') };
+        assert.deepEqual(statuses(bard), ['À noter', '3 sur 3']);
+        const warning = toolCountWarning(toolSources(bard));
+        assert.match(warning, /^Le compte prend tous les outils cochés, aussi ceux de votre classe ou de votre espèce/);
+        assert.match(warning, /cochez-les en plus/);
+        // Dit dès qu'une source laisse un choix : historique au choix, Façonneur, Doué réglé sur un outil
+        assert.ok(toolCountWarning(toolSources({ char_background: 'Soldat' })));
+        assert.ok(toolCountWarning(toolSources({ feat_1: 'faconneur' })));
+        assert.ok(toolCountWarning(toolSources({ feat_1: 'doue', feat_choices: { 1: { doue: { pick1: 'tool' } } } })));
+        // Pas de phrase quand rien ne se compte : aucun choix (outil précis), Doué pas réglé, aucune source
+        assert.equal(toolCountWarning(toolSources({ char_background: 'Criminel' })), '');
+        assert.equal(toolCountWarning(toolSources({ char_level: '4', char_background: 'Sage', feat_4: 'chef_cuisinier' })), '');
+        assert.equal(toolCountWarning(toolSources({ feat_1: 'doue' })), '');
+        assert.equal(toolCountWarning([]), '');
     });
 
     test('Doué pas encore réglé : rien à compter, pas d\'avancement', () => {
@@ -334,6 +410,15 @@ describe('Rappels sous les dons : où noter leurs outils', () => {
         assert.ok(noted.some((note) => note.ticked && note.text === "Matériel d'empoisonneur : maîtrise notée dans la case Outils."));
         assert.ok(!noted.some(pointsToWindow));
         assert.ok(slotNotes(hero({ feat_4: 'chef_cuisinier' }), 4).some((note) => note.check && pointsToWindow(note)));
+    });
+
+    test('Outil du don écrit en anglais : noté, comme dans la fenêtre des outils', () => {
+        const poisoner = slotNotes(hero({ feat_4: 'empoisonneur', profs_tools: "Poisoner's Kit" }), 4);
+        assert.ok(poisoner.some((note) => note.ticked && note.text === "Matériel d'empoisonneur : maîtrise notée dans la case Outils."));
+        assert.ok(!poisoner.some(pointsToWindow));
+        const chef = slotNotes(hero({ feat_4: 'chef_cuisinier', profs_tools: "Luth, cook's utensils" }), 4);
+        assert.ok(chef.some((note) => note.ticked && note.text === 'Ustensiles de cuisinier : maîtrise notée dans la case Outils.'));
+        assert.deepEqual(statuses({ char_level: '4', feat_4: 'empoisonneur', profs_tools: "Poisoner's Kit" }), ['Noté']);
     });
 
     test('Table du Façonneur : « Façonnage rapide », nom du manuel français, partout', () => {

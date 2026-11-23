@@ -6,7 +6,9 @@
 // du test fait avec lui (fait de règle), et quelques mots sur son usage (résumé écrit pour la
 // fiche, pas le texte du livre).
 //  - aliases : autres façons d'écrire le même outil dans la case « Outils » (anciens noms,
-//    formes courtes), reconnues comme le nom lui-même ;
+//    formes courtes), reconnues comme le nom lui-même ; pour les outils d'artisan et les « autres
+//    outils », aussi le nom anglais du manuel (« Thieves' Tools ») : une fiche remplie en anglais
+//    n'est pas complétée par le même outil écrit une seconde fois en français ;
 //  - exact : le nom ne se reconnaît qu'avec ses accents (« Dés », pour ne pas trouver le mot
 //    courant « des »).
 // Dons qui donnent des maîtrises d'outils : FEAT_TOOLS (Player's Handbook 2024 anglais, chapitre 5 ;
@@ -32,30 +34,30 @@ const tool = (id, name, category, ability, use, extra = {}) => Object.freeze({ i
 /** @type {ReadonlyArray<{ id: string, name: string, category: string, ability: string, use: string, aliases?: string[], exact?: boolean }>} */
 export const TOOLS = Object.freeze([
     // --- Outils d'artisan (p. 220-221) ---
-    tool('alchemist', "Matériel d'alchimiste", 'artisan', 'int', 'reconnaître un produit inconnu', { aliases: ["Outils d'alchimiste"] }),
-    tool('brewer', 'Matériel de brasseur', 'artisan', 'int', 'reconnaître un alcool, un poison', { aliases: ['Outils de brasseur'] }),
-    tool('calligrapher', 'Matériel de calligraphe', 'artisan', 'dex', 'écriture soignée, encres', { aliases: ['Outils de calligraphe'] }),
-    tool('painter', 'Matériel de peintre', 'artisan', 'wis', 'peindre ce que vous avez vu', { aliases: ['Outils de peintre'] }),
-    tool('tinker', 'Outils de bricoleur', 'artisan', 'dex', 'petits mécanismes, objets en métal'),
-    tool('cartographer', 'Outils de cartographe', 'artisan', 'wis', 'dessiner une carte'),
-    tool('carpenter', 'Outils de charpentier', 'artisan', 'str', 'portes, coffres, objets en bois'),
-    tool('cobbler', 'Outils de cordonnier', 'artisan', 'dex', 'réparer et ajuster des chaussures'),
-    tool('smith', 'Outils de forgeron', 'artisan', 'str', 'armes et armures en métal'),
-    tool('jeweler', 'Outils de joaillier', 'artisan', 'int', 'estimer une gemme'),
-    tool('mason', 'Outils de maçon', 'artisan', 'str', 'tailler et creuser la pierre'),
-    tool('woodcarver', 'Outils de menuisier', 'artisan', 'dex', 'sculpter le bois, arcs et flèches'),
-    tool('potter', 'Outils de potier', 'artisan', 'int', 'céramique, cruches et lampes'),
-    tool('glassblower', 'Outils de souffleur de verre', 'artisan', 'int', 'verre, fioles et loupes'),
-    tool('leatherworker', 'Outils de tanneur', 'artisan', 'dex', 'travail du cuir'),
-    tool('weaver', 'Outils de tisserand', 'artisan', 'dex', 'tissus, vêtements et cordes'),
-    tool('cook', 'Ustensiles de cuisinier', 'artisan', 'wis', 'cuisiner, repérer un plat avarié', { aliases: ['Outils de cuisinier'] }),
+    tool('alchemist', "Matériel d'alchimiste", 'artisan', 'int', 'reconnaître un produit inconnu', { aliases: ["Outils d'alchimiste", "Alchemist's Supplies"] }),
+    tool('brewer', 'Matériel de brasseur', 'artisan', 'int', 'reconnaître un alcool, un poison', { aliases: ['Outils de brasseur', "Brewer's Supplies"] }),
+    tool('calligrapher', 'Matériel de calligraphe', 'artisan', 'dex', 'écriture soignée, encres', { aliases: ['Outils de calligraphe', "Calligrapher's Supplies"] }),
+    tool('painter', 'Matériel de peintre', 'artisan', 'wis', 'peindre ce que vous avez vu', { aliases: ['Outils de peintre', "Painter's Supplies"] }),
+    tool('tinker', 'Outils de bricoleur', 'artisan', 'dex', 'petits mécanismes, objets en métal', { aliases: ["Tinker's Tools"] }),
+    tool('cartographer', 'Outils de cartographe', 'artisan', 'wis', 'dessiner une carte', { aliases: ["Cartographer's Tools"] }),
+    tool('carpenter', 'Outils de charpentier', 'artisan', 'str', 'portes, coffres, objets en bois', { aliases: ["Carpenter's Tools"] }),
+    tool('cobbler', 'Outils de cordonnier', 'artisan', 'dex', 'réparer et ajuster des chaussures', { aliases: ["Cobbler's Tools"] }),
+    tool('smith', 'Outils de forgeron', 'artisan', 'str', 'armes et armures en métal', { aliases: ["Smith's Tools"] }),
+    tool('jeweler', 'Outils de joaillier', 'artisan', 'int', 'estimer une gemme', { aliases: ["Jeweler's Tools"] }),
+    tool('mason', 'Outils de maçon', 'artisan', 'str', 'tailler et creuser la pierre', { aliases: ["Mason's Tools"] }),
+    tool('woodcarver', 'Outils de menuisier', 'artisan', 'dex', 'sculpter le bois, arcs et flèches', { aliases: ["Woodcarver's Tools"] }),
+    tool('potter', 'Outils de potier', 'artisan', 'int', 'céramique, cruches et lampes', { aliases: ["Potter's Tools"] }),
+    tool('glassblower', 'Outils de souffleur de verre', 'artisan', 'int', 'verre, fioles et loupes', { aliases: ["Glassblower's Tools"] }),
+    tool('leatherworker', 'Outils de tanneur', 'artisan', 'dex', 'travail du cuir', { aliases: ["Leatherworker's Tools"] }),
+    tool('weaver', 'Outils de tisserand', 'artisan', 'dex', 'tissus, vêtements et cordes', { aliases: ["Weaver's Tools"] }),
+    tool('cook', 'Ustensiles de cuisinier', 'artisan', 'wis', 'cuisiner, repérer un plat avarié', { aliases: ['Outils de cuisinier', "Cook's Utensils"] }),
     // --- Autres outils (p. 221) ---
-    tool('disguise', 'Accessoires de déguisement', 'other', 'cha', 'maquillage et costumes', { aliases: ['Kit de déguisement'] }),
-    tool('navigator', 'Instruments de navigateur', 'other', 'wis', 'trouver sa route en mer', { aliases: ['Outils de navigateur', 'Instruments de navigation'] }),
-    tool('forgery', 'Matériel de contrefaçon', 'other', 'dex', 'imiter une écriture, un cachet', { aliases: ['Kit de contrefaçon', 'Matériel de faussaire'] }),
-    tool('poisoner', "Matériel d'empoisonneur", 'other', 'int', 'repérer et préparer un poison', { aliases: ["Kit d'empoisonneur"] }),
-    tool('herbalism', "Matériel d'herboriste", 'other', 'int', 'reconnaître une plante, potions', { aliases: ["Kit d'herboriste"] }),
-    tool('thieves', 'Outils de voleur', 'other', 'dex', 'crocheter, désamorcer un piège'),
+    tool('disguise', 'Accessoires de déguisement', 'other', 'cha', 'maquillage et costumes', { aliases: ['Kit de déguisement', 'Disguise Kit'] }),
+    tool('navigator', 'Instruments de navigateur', 'other', 'wis', 'trouver sa route en mer', { aliases: ['Outils de navigateur', 'Instruments de navigation', "Navigator's Tools"] }),
+    tool('forgery', 'Matériel de contrefaçon', 'other', 'dex', 'imiter une écriture, un cachet', { aliases: ['Kit de contrefaçon', 'Matériel de faussaire', 'Forgery Kit'] }),
+    tool('poisoner', "Matériel d'empoisonneur", 'other', 'int', 'repérer et préparer un poison', { aliases: ["Kit d'empoisonneur", "Poisoner's Kit"] }),
+    tool('herbalism', "Matériel d'herboriste", 'other', 'int', 'reconnaître une plante, potions', { aliases: ["Kit d'herboriste", "Kit d'herbalisme", 'Herbalism Kit'] }),
+    tool('thieves', 'Outils de voleur', 'other', 'dex', 'crocheter, désamorcer un piège', { aliases: ["Thieves' Tools"] }),
     // --- Boîtes de jeux (variantes de la « Boîte de jeux », p. 221) : Sagesse ---
     tool('cards', 'Cartes à jouer', 'gaming', 'wis', 'jeux de cartes', { aliases: ['Jeu de cartes'] }),
     tool('dice', 'Dés', 'gaming', 'wis', 'jeux de dés', { exact: true, aliases: ['Jeu de dés'] }),
@@ -103,6 +105,8 @@ export const FAST_CRAFTING_TOOLS = Object.freeze([
  * Dons qui donnent des maîtrises d'outils (clés de js/data/feats.js). Les cinq dons du manuel qui en
  * donnent, vérifiés dans le texte de chaque don (PHB 2024 anglais) :
  *  - tool : un outil précis (Chef cuisinier « Chef », p. 202 ; Empoisonneur « Poisoner », p. 206) ;
+ *    ifMissing : le don ne donne l'outil que si le personnage ne le maîtrise pas déjà (Chef
+ *    cuisinier) : le même outil noté peut donc compter aussi pour une autre source ;
  *  - tools + count : plusieurs outils différents à choisir dans une liste (Façonneur « Crafter », p. 200) ;
  *  - category + count : plusieurs outils à choisir dans une catégorie (Musicien « Musician », p. 201) ;
  *  - any : n'importe quel outil, autant que de menus du don réglés sur « Un outil » (Doué
@@ -110,7 +114,7 @@ export const FAST_CRAFTING_TOOLS = Object.freeze([
  * choice : libellé du choix, dans nos mots.
  */
 export const FEAT_TOOLS = Object.freeze({
-    chef_cuisinier: Object.freeze({ tool: 'cook' }),
+    chef_cuisinier: Object.freeze({ tool: 'cook', ifMissing: true }),
     empoisonneur: Object.freeze({ tool: 'poisoner' }),
     faconneur: Object.freeze({
         tools: FAST_CRAFTING_TOOLS, count: 3,

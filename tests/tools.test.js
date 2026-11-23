@@ -7,10 +7,10 @@ import { DD_RULES } from '../js/data/dd-rules.js';
 import { ABILITY_IDS } from '../js/data/constants.js';
 import {
     toolsInText, addToolToText, removeToolFromText, backgroundToolExpectation, expectedToolNoted,
-    matchesToolQuery, toolGroups, toolAbilityName
+    matchesToolQuery, toolGroups, toolAbilityName, toolBoxFiller
 } from '../js/rules/tools.js';
 import {
-    backgroundSummary, backgroundTool, backgroundApplyPatch, backgroundToolNoted, backgroundApplyConfirm,
+    backgroundSummary, backgroundApplyPatch, backgroundToolNoted, backgroundApplyConfirm,
     backgroundAppliedMessage
 } from '../js/rules/background.js';
 import { STATUS_ROOM } from '../js/data/status-bar.js';
@@ -33,6 +33,22 @@ describe('Données des outils', () => {
             assert.ok(ABILITY_IDS.includes(tool.ability), tool.name);
             assert.ok(tool.use && tool.use.split(/\s+/).length <= 6, tool.name);
         }
+    });
+
+    test('Outils d\'artisan et autres outils : le nom anglais du manuel est reconnu comme le nom français', () => {
+        const english = (tool) => (tool.aliases ?? []).filter((alias) => /\b(Tools|Supplies|Utensils|Kit)$/.test(alias) && !/^Kit /.test(alias));
+        for (const tool of TOOLS.filter((t) => t.category === 'artisan' || t.category === 'other')) {
+            assert.equal(english(tool).length, 1, tool.name);
+            const [name] = english(tool);
+            assert.deepEqual(toolsInText(name), [tool.id], name);
+            assert.deepEqual(toolsInText(`Luth, ${name.toLowerCase()} (appris en ville)`), ['lute', tool.id], name);
+            // Déjà noté : cocher l'outil n'écrit rien de plus ; le décocher retire le nom anglais
+            assert.equal(addToolToText(name, tool.id), name, name);
+            assert.equal(removeToolFromText(`${name}, Luth`, tool.id), 'Luth', name);
+        }
+        // Un nom anglais ne se trouve pas au milieu d'un autre mot
+        assert.deepEqual(toolsInText("Blacksmith's tools"), []);
+        assert.deepEqual(toolsInText('Chariots, véhicules terrestres'), []);
     });
 
     test('Caractéristiques : jeux = Sagesse, instruments = Charisme, voleur = Dextérité', () => {
@@ -289,9 +305,6 @@ describe('Outil de l\'historique', () => {
         assert.deepEqual(backgroundToolExpectation("Thieves' Tools"), { toolId: 'thieves', categoryId: 'other', label: 'Outils de voleur' });
         assert.deepEqual(backgroundToolExpectation('Gaming Set'), { toolId: null, categoryId: 'gaming', label: 'un type de boîte de jeux au choix' });
         assert.equal(backgroundToolExpectation('Inconnu'), null);
-        assert.deepEqual(backgroundTool({ char_background: 'Soldat' }),
-            { background: 'Soldat', toolId: null, categoryId: 'gaming', label: 'un type de boîte de jeux au choix' });
-        assert.equal(backgroundTool({ char_background: '' }), null);
     });
 
     test('Noté dans la case : l\'outil attendu, ou un outil de la catégorie', () => {
@@ -392,6 +405,98 @@ describe('« Appliquer à la fiche » et l\'outil de l\'historique', () => {
         }
         // Écrit à la main autrement que dans la liste (Sage : « Calligraphie »)
         assert.equal('profs_tools' in backgroundApplyPatch(settled('sage', { profs_tools: 'Calligraphie' })), false);
+    });
+
+    test('Outil déjà noté en anglais (nom du manuel anglais) : pas de doublon en français', () => {
+        for (const [id, background] of PRECISE) {
+            const english = background.toolProfs[0];
+            for (const text of [english, english.toLowerCase(), `Luth, ${english}`, `<b>${english.replace("'", '’')}</b>`]) {
+                const record = settled(id, { profs_tools: text });
+                assert.deepEqual(backgroundApplyPatch(record), {}, `${background.nameFr} : ${text}`);
+                assert.equal(backgroundSummary(record).writesTool, false, `${background.nameFr} : ${text}`);
+                assert.equal(toolLine(record).check, undefined, `${background.nameFr} : ${text}`);
+                // La fenêtre des outils le montre coché, sous le même outil
+                assert.ok(toolsInText(text).includes(backgroundToolExpectation(english).toolId), `${background.nameFr} : ${text}`);
+            }
+        }
+    });
+
+    test('Variantes écrites à la main (« Kit d\'herbalisme », « Thieves tools ») : pas de doublon non plus', () => {
+        const untouched = (id, text) => assert.deepEqual(backgroundApplyPatch(settled(id, { profs_tools: text })), {}, text);
+        for (const text of ['Herbalism kit', "Kit d'herbalisme", 'Herbalisme', 'kit d’herbalisme (offert)']) untouched('hermit', text);
+        for (const text of ['Thieves tools', "thieve's tools", "Thieves' Tool"]) untouched('criminal', text);
+        for (const text of ["Carpenter's tools", 'carpenter tools']) untouched('farmer', text);
+        for (const text of ['Forgery kit', 'forgery']) untouched('charlatan', text);
+        assert.equal(DD_RULES.backgrounds.hermit.toolProfs[0], 'Herbalism Kit');
+        assert.equal(DD_RULES.backgrounds.charlatan.toolProfs[0], 'Forgery Kit');
+        // Un autre outil écrit en anglais ne passe pas pour celui de l'historique
+        assert.equal(backgroundApplyPatch(settled('criminal', { profs_tools: 'Herbalism kit' })).profs_tools, 'Herbalism kit, Outils de voleur');
+    });
+
+    test('Case qui ne contient qu\'un mot d\'attente (« Aucun », « - ») : rien n\'est retiré, la confirmation prévient', () => {
+        for (const [text, read] of [['Aucun', 'Aucun'], ['aucun.', 'aucun.'], ['Aucun outil', 'Aucun outil'], ['<div>Néant</div>', 'Néant'],
+            ['-', '-'], ['—', '—'], [' Rien ', 'Rien'], ['N/A', 'N/A'], ["Pas d'outil", "Pas d'outil"]]) {
+            assert.equal(toolBoxFiller(text), read, text);
+            const record = settled('criminal', { profs_tools: text });
+            const summary = backgroundSummary(record);
+            assert.equal(summary.toolFiller, read, text);
+            // Le texte du joueur reste, l'outil s'écrit à la suite
+            const next = backgroundApplyPatch(record).profs_tools;
+            assert.ok(next.startsWith(text.replace('</div>', '').trimEnd()), text);
+            assert.deepEqual(toolsInText(next), ['thieves'], text);
+            assert.ok(backgroundApplyConfirm(summary)
+                .endsWith(` La case contient déjà « ${read} » : ce texte reste devant l'outil, à vous de l'effacer ensuite.`), text);
+        }
+        for (const text of ['', '   ', '<div><br></div>', 'Luth', 'Aucun pour le moment', 'Chariots', 'Rien de spécial', 'Luth - Lyre']) {
+            assert.equal(toolBoxFiller(text), '', text);
+            assert.equal(backgroundSummary(settled('criminal', { profs_tools: text })).toolFiller, null, text);
+        }
+        assert.equal(toolBoxFiller(undefined), '');
+        // Rien à écrire (outil au choix, ou déjà noté) : pas d'avertissement
+        assert.equal(backgroundSummary(settled('soldier', { profs_tools: 'Aucun' })).toolFiller, null);
+        assert.equal(backgroundSummary({ char_background: 'Criminel', profs_tools: 'Outils de voleur' }).toolFiller, null);
+        assert.doesNotMatch(backgroundApplyConfirm(backgroundSummary({ char_background: 'Criminel', profs_tools: 'Luth' })), /La case contient/);
+    });
+
+    test('Hors ligne (case Outils en lecture seule) : l\'outil n\'est ni proposé, ni promis, ni écrit', () => {
+        const offline = { toolWritable: false };
+        for (const [id, background] of PRECISE) {
+            // Il ne reste que l'outil : plus de bouton « Appliquer »
+            const only = backgroundSummary(settled(id), offline);
+            assert.equal(only.canApply, false, background.nameFr);
+            assert.equal(only.writesTool, false, background.nameFr);
+            assert.deepEqual(only.applyText, [], background.nameFr);
+            assert.equal(only.toolOffline, background.toolFr, background.nameFr);
+            assert.ok(only.lines.find((line) => line.id === 'tool').check, background.nameFr);
+            assert.deepEqual(backgroundApplyPatch(settled(id), offline), {}, background.nameFr);
+
+            // Compétences et don à appliquer : le reste se fait, la case Outils n'est pas dans le patch
+            const record = { char_background: id, profs_tools: 'Luth' };
+            const summary = backgroundSummary(record, offline);
+            assert.equal(summary.canApply, true, background.nameFr);
+            assert.ok(!summary.applyText.some((text) => text.includes('Outils')), background.nameFr);
+            const confirm = backgroundApplyConfirm(summary);
+            assert.doesNotMatch(confirm, /noter .* dans la case Outils/, background.nameFr);
+            assert.ok(confirm.includes('Les caractéristiques et les outils ne changent pas.'), background.nameFr);
+            assert.ok(confirm.endsWith(` L'outil de l'historique (${background.toolFr}) n'est pas écrit : hors ligne, la case Outils ne se modifie pas. Rechargez la page une fois connecté.`), background.nameFr);
+            const patch = backgroundApplyPatch(record, offline);
+            assert.equal('profs_tools' in patch, false, background.nameFr);
+            assert.ok(Object.keys(patch).length > 0, background.nameFr);
+            // Message : dit que l'outil n'est pas écrit, sans renvoyer à la fenêtre (fermée hors ligne)
+            const message = backgroundAppliedMessage(backgroundSummary({ ...record, ...patch }, offline));
+            assert.equal(message, `Historique ${background.nameFr} appliqué, sauf l'outil (hors ligne) : rechargez la page une fois connecté.`);
+            assert.ok(message.length <= STATUS_ROOM, background.nameFr);
+        }
+        // En ligne : rien de tout cela
+        const online = backgroundSummary({ char_background: 'Criminel' });
+        assert.equal(online.toolOffline, null);
+        assert.equal(online.writesTool, true);
+        assert.deepEqual(backgroundSummary({ char_background: 'Criminel' }, { toolWritable: true }), online);
+        // Outil déjà noté, ou au choix : hors ligne ne change rien
+        assert.deepEqual(backgroundSummary({ char_background: 'Criminel', profs_tools: 'Outils de voleur' }, offline),
+            backgroundSummary({ char_background: 'Criminel', profs_tools: 'Outils de voleur' }));
+        assert.deepEqual(backgroundSummary({ char_background: 'Soldat' }, offline), backgroundSummary({ char_background: 'Soldat' }));
+        assert.deepEqual(backgroundApplyPatch({ char_background: 'Soldat' }, offline), backgroundApplyPatch({ char_background: 'Soldat' }));
     });
 
     test('Outil au choix : jamais écrit ; il reste à choisir dans la fenêtre des outils', () => {

@@ -8,6 +8,8 @@
 //  - addToolToText : ajoute un nom en suivant la présentation déjà là (liste à virgules, à « ; »
 //    ou à « / », ou une ligne par outil, avec la même puce et le même style de paragraphe) ;
 //  - removeToolFromText : retire ce nom précis et son séparateur, rien d'autre ;
+//  - toolBoxFiller : la case ne contient qu'un mot d'attente (« Aucun », « - »), pour prévenir le
+//    joueur qu'il restera devant un outil ajouté (rien n'est retiré à sa place) ;
 //  - backgroundToolExpectation / expectedToolNoted : outil (ou catégorie d'outils au choix) donné
 //    par l'historique, et s'il est noté dans la case.
 // Données : js/data/tools.js. Fonctions pures.
@@ -373,6 +375,21 @@ export function addToolToText(html, toolId) {
     while (previous >= 0 && !list[previous].br) previous--;
     const lineBreak = previous >= 0 && list[previous].newline ? list[previous].raw : '<br>';
     return insertAfter(endOfLastWord(list, lastPiece), `${lineBreak}${mark}${tool.name}`);
+}
+
+/** Mots d'attente écrits dans une case sans outil (texte replié : sans accents ni majuscules) */
+const FILLER = /^(?:(?:aucune?s?(?: outils?)?|pas d'outils?|neant|rien|n\/a)[.!]?|[-–—/.…]+)$/;
+
+/**
+ * La case « Outils » ne contient-elle qu'un mot d'attente (« Aucun », « Néant », « - ») ? Un outil
+ * ajouté s'écrit à la suite (« Aucun, Outils de voleur ») : rien n'est retiré à la place du joueur,
+ * mais la fenêtre de confirmation l'en prévient (js/rules/background.js).
+ * @param {string} html - valeur de profs_tools
+ * @returns {string} le texte de la case tel qu'il se lit, '' si elle est vide ou dit autre chose
+ */
+export function toolBoxFiller(html) {
+    const text = read(html).chars.map((ch) => (ch === '\n' || isSpace(ch) ? ' ' : ch)).join('').trim();
+    return text && FILLER.test(foldText(text)) ? text : '';
 }
 
 /**

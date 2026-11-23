@@ -7,7 +7,9 @@
 // niveau 1 s'il est vide et ajoute à la case « Outils » l'outil précis de l'historique s'il n'y est
 // pas (le texte du joueur est gardé ; le résultat passe par le nettoyage des champs riches), après
 // confirmation. Un outil au choix n'est pas écrit : le message de la barre du haut invite à le
-// choisir. La ligne « Outil » porte le bouton « Choisir dans la liste » (fenêtre des outils,
+// choisir. Hors ligne (mise en forme indisponible : la case Outils est en lecture seule), l'outil
+// n'est ni proposé par le bouton ni promis par la confirmation, et le message dit qu'il n'a pas été
+// écrit. La ligne « Outil » porte le bouton « Choisir dans la liste » (fenêtre des outils,
 // js/ui/tools.js), qui présente en tête l'outil de l'historique.
 // Règles : js/rules/background.js.
 // =============================================================================
@@ -47,9 +49,12 @@ export function initBackground({ root, store, setStatus = () => {} }) {
     const container = root.querySelector('#background-info');
     if (!container) return;
 
+    /** La case « Outils » peut-elle être écrite ? Non hors ligne : même règle que les champs riches */
+    const toolOptions = () => ({ toolWritable: richTextAvailable() });
+
     async function apply() {
-        const character = store.get();
-        const summary = backgroundSummary(character);
+        const options = toolOptions();
+        const summary = backgroundSummary(store.get(), options);
         if (!summary?.canApply) return;
         const ok = await confirmModal({
             title: `Historique : ${summary.name}`,
@@ -58,28 +63,22 @@ export function initBackground({ root, store, setStatus = () => {} }) {
             confirmLabel: 'Appliquer'
         });
         if (!ok) return;
-        const patch = backgroundApplyPatch(store.get());
-        if ('profs_tools' in patch) {
-            // Case « Outils » : même chemin que les champs riches (nettoyage DOMPurify). Mise en forme
-            // indisponible (hors ligne) : la case est en lecture seule, l'outil n'est pas écrit
-            if (richTextAvailable()) patch.profs_tools = sanitizeRich(patch.profs_tools);
-            else delete patch.profs_tools;
+        // Hors ligne, le patch ne contient pas la case « Outils » (la confirmation l'a dit)
+        const patch = backgroundApplyPatch(store.get(), options);
+        // Case « Outils » : même chemin que les champs riches (nettoyage DOMPurify)
+        if ('profs_tools' in patch) patch.profs_tools = sanitizeRich(patch.profs_tools);
+        if (!Object.keys(patch).length) return;
+        store.update(patch);
+        // Le bouton disparaît une fois tout appliqué : le focus revient au titre du bloc
+        if (!container.contains(document.activeElement)) {
+            (container.querySelector('.origin-apply button') ?? container.querySelector('.fold-toggle'))?.focus({ preventScroll: true });
         }
-        if (Object.keys(patch).length) {
-            store.update(patch);
-            // Le bouton disparaît une fois tout appliqué : le focus revient au titre du bloc
-            if (!container.contains(document.activeElement)) {
-                (container.querySelector('.origin-apply button') ?? container.querySelector('.fold-toggle'))?.focus({ preventScroll: true });
-            }
-            setStatus(backgroundAppliedMessage(backgroundSummary(store.get()) ?? summary));
-        } else if (summary.writesTool) {
-            setStatus("⚠️ Outil non écrit hors ligne pour l'instant : rechargez la page une fois connecté.");
-        }
+        setStatus(backgroundAppliedMessage(backgroundSummary(store.get(), options) ?? summary));
     }
 
     let rendered = null;
     const render = (character) => {
-        const summary = backgroundSummary(character);
+        const summary = backgroundSummary(character, toolOptions());
         const signature = JSON.stringify(summary);
         if (signature === rendered) return;
         rendered = signature;

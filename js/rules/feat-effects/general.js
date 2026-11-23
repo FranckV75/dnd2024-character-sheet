@@ -218,7 +218,7 @@ export const GENERAL_FEAT_RULES = {
             { value: 4 + pb, restKind: 'short' });
         add('featSlot', `Repas reconstituant : à la fin d'un repos court, jusqu'à ${4 + pb} créatures qui dépensent un dé de vie regagnent 1d8 PV de plus (rappel dans la fenêtre du repos).`, { value: 4 + pb });
         add('featSlot', `${pb} friandises à cocher (onglet Combat et ci-dessous), refaites au repos long : action Bonus pour en manger une, ${pb} PV temporaires ; elles se gâtent après 8 heures.`, { value: pb });
-        toolNote(record, /cuisin/, 'Ustensiles de cuisinier', add);
+        toolNote(record, /cuisin/, 'Ustensiles de cuisinier', add, 'cook');
     },
 
     // Maître d'hast — PHB 2024 « Polearm Master », p. 206 (attaques calculées sur chaque arme d'hast)
