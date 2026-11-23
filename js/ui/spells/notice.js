@@ -17,20 +17,22 @@ import { plainText, hasSpellContent, spellcastingStatus, grimoireView } from '..
 import { featSpellGroups } from '../../rules/feat-spells.js';
 import { subclassSpells } from '../../rules/subclass-features.js';
 import { speciesSpellNames } from '../../rules/species.js';
+import { classGrantedSpells } from '../../rules/class-progression.js';
 import { el, icon } from '../dom.js';
 import { readGrimoireOpen, saveGrimoireOpen } from './prefs.js';
 import { slotStateOf } from './slots.js';
 import { flash } from './context.js';
 
 /**
- * Des sorts donnés (don, sous-classe, espèce) sont-ils affichés au-dessus du tableau ?
+ * Des sorts donnés (classe, don, sous-classe, espèce) sont-ils affichés au-dessus du tableau ?
  * @param {Object} character
  * @param {Object} d - valeurs calculées (derivedOf)
  * @returns {boolean}
  */
 export function hasGivenSpells(character, d) {
     return featSpellGroups(character, d).length > 0 || subclassSpells(d).reached.length > 0
-        || speciesSpellNames(character, d).length > 0;
+        || speciesSpellNames(character, d).length > 0
+        || (d.classSlug ? classGrantedSpells(d.classSlug, d.level).length > 0 : false);
 }
 
 /**

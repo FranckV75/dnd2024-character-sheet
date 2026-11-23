@@ -17,9 +17,10 @@
 //  - Vue « au combat » (bouton de la barre, retenu sur l'appareil) : seulement les sorts mineurs,
 //    les sorts préparés (même d'office) et les blocs de sorts donnés, les emplacements restants en
 //    clair et un bouton « Lancer » qui coche un emplacement (et propose la Concentration) ; un
-//    sort qui a un lancer gratuit suivi par la fiche (don, espèce, Ennemi juré du Rôdeur, quelques
-//    sous-classes : js/rules/free-casts.js) propose d'abord « Lancer gratuit », qui coche la case
-//    existante de la capacité au lieu d'un emplacement.
+//    sort qui a un lancer gratuit suivi par la fiche (don, espèce, Ennemi juré du Rôdeur, sorts de
+//    classe du Paladin et de l'Occultiste, Arcanum mystique, quelques sous-classes :
+//    js/rules/free-casts.js) propose d'abord « Lancer gratuit », qui coche la case de la capacité
+//    au lieu d'un emplacement.
 //    Sur écran seulement : l'impression garde tout le grimoire.
 //  - Sort préparé d'un niveau sans emplacement : repère « Pas d'emplacement » sous son nom (simple
 //    avertissement, js/rules/spell-preparation.js : missingSlotLevel), expliqué au toucher.
@@ -40,6 +41,9 @@
 //  - Sorts de sous-classe (js/rules/subclass-features.js, données js/data/subclass-spells.js) :
 //    bloc « Sorts de sous-classe » juste après, sur le même modèle (serments du Paladin…), jamais
 //    écrit dans dynamic_spells ; un sort que le joueur a aussi noté dans sa liste porte un repère.
+//  - Sorts de classe (js/rules/class-progression.js : classGrantedSpells) : bloc « Sorts de
+//    classe » avant celui des dons (Châtiment divin, Marque du chasseur, Contact avec les plans…),
+//    avec la case de leur lancer sans emplacement et celles de l'Arcanum mystique.
 //  - Magicien (js/rules/spellbook.js) : ligne « Livre : N sorts » sous la barre (sorts du livre
 //    notés comparés aux sorts obtenus sans dépense, simple repère) et rappel du coût de copie ;
 //    un sort rituel du livre non préparé porte le repère « Lançable en rituel » (Savoir rituel). Dans
@@ -64,7 +68,7 @@
 //  - cast.js : fenêtre « Lancer » ; book.js : livre du Magicien (ligne « Livre », rituels) ;
 //  - notice.js : grimoire replié d'un personnage sans magie ;
 //  - et, comme avant : barre de filtres (filters.js), emplacements de sorts (slots.js), sorts de
-//    dons, de sous-classe et d'espèce (granted.js), infobulle (tooltip.js), fenêtre « Préparer
+//    classe, de dons, de sous-classe et d'espèce (granted.js), infobulle (tooltip.js), fenêtre « Préparer
 //    mes sorts » (prepare.js), bouton « Retirer les sorts non préparés » (cleanup.js), réglages
 //    de l'appareil (prefs.js).
 // =============================================================================
@@ -366,7 +370,7 @@ export function initSpells(ctx) {
             .filter(Number.isInteger)
     });
 
-    // Sorts de dons, de sous-classe et d'espèce (spells/granted.js), au-dessus du tableau ;
+    // Sorts de classe, de dons, de sous-classe et d'espèce (spells/granted.js), au-dessus du tableau ;
     // leur bouton « Lancer » ouvre la même fenêtre que celui du tableau (spells/cast.js)
     const granted = createGrantedSpells({ store, tooltip, getSpellsDb: () => g.spellsDb, onCast: (spell) => castSpell(g, spell) });
 
@@ -379,6 +383,7 @@ export function initSpells(ctx) {
         limitNote,
         book.note,
         slots.element,
+        granted.classBox,
         granted.featBox,
         granted.subclassBox,
         granted.speciesBox,

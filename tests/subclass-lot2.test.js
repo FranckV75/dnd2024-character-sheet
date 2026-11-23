@@ -229,9 +229,15 @@ describe('Serments du Paladin (Iria)', () => {
     });
 
     test('Défense glorieuse (niveau 15) : autant de cases que le Charisme, au moins 1', () => {
-        assert.deepEqual(counters(iria()), []);
-        assert.deepEqual(counters(iria({ char_level: '15' })).map(c => [c.feature, c.max]), [['defense_glorieuse', 3]]);
-        assert.equal(counters(iria({ char_level: '15', cha_score: '8' }))[0].max, 1);
-        assert.deepEqual(counters(iria({ char_level: '20' })).map(c => c.feature), ['defense_glorieuse', 'legende_vivante']);
+        // Cases du serment seulement (celles de la classe : Châtiment de paladin, Fidèle destrier)
+        const oath = (c) => counters(c).filter(counter => counter.source === 'subclass');
+        assert.deepEqual(oath(iria()), []);
+        assert.deepEqual(oath(iria({ char_level: '15' })).map(c => [c.feature, c.max]), [['defense_glorieuse', 3]]);
+        assert.equal(oath(iria({ char_level: '15', cha_score: '8' }))[0].max, 1);
+        assert.deepEqual(oath(iria({ char_level: '20' })).map(c => c.feature), ['defense_glorieuse', 'legende_vivante']);
+        // Les cases de la classe viennent en premier
+        assert.deepEqual(counters(iria({ char_level: '15' })).map(c => [c.source, c.feature]), [
+            ['class', 'chatiment_de_paladin'], ['class', 'fidele_destrier'], ['subclass', 'defense_glorieuse']
+        ]);
     });
 });

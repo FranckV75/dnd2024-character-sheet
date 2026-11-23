@@ -4,6 +4,11 @@
 //  - Sorts de dons (lot 6, js/rules/feat-spells.js) : calculés d'après les dons et leurs choix
 //    (onglet Aptitudes & Traits). Chaque groupe donne le DD et l'attaque de la caractéristique du
 //    don ; les cases « lancer gratuit » sont des contrôles de JEU (utilisables verrouillé).
+//  - Sorts de classe (js/rules/class-progression.js : classGrantedSpells) : Châtiment divin et
+//    Appel de destrier du Paladin, Marque du chasseur du Rôdeur, Contact avec les plans de
+//    l'Occultiste… ; leurs lancers sans emplacement ont une case (CLASS_COUNTERS de
+//    js/rules/subclass-uses.js, mêmes cases que dans l'onglet Combat), ainsi que l'Arcanum mystique
+//    de l'Occultiste (une case par niveau de sort).
 //  - Sorts de sous-classe (js/rules/subclass-features.js, données js/data/subclass-spells.js) :
 //    serments du Paladin, Cercle de la Terre… ; un sort aussi noté dans la liste porte un repère.
 //  - Sorts d'espèce (js/rules/species.js) : lancers gratuits cochés dans subclass_uses (mêmes
@@ -18,7 +23,10 @@ import { spellLevelLabel } from '../../rules/spells.js';
 import { featSpellGroups, setFeatSpellUsePatch } from '../../rules/feat-spells.js';
 import { subclassSpells, subclassFeatures, markListedSpells } from '../../rules/subclass-features.js';
 import { speciesView, speciesCounterDefs } from '../../rules/species.js';
-import { subclassUsesState, setSubclassUsesPatch } from '../../rules/subclass-uses.js';
+import { subclassUsesState, setSubclassUsesPatch, subclassCounters } from '../../rules/subclass-uses.js';
+import { classGrantedSpells } from '../../rules/class-progression.js';
+import { CLASS_FREE_CASTS } from '../../rules/free-casts.js';
+import { DD_RULES } from '../../data/dd-rules.js';
 import { elementalAffinity } from '../../rules/subclass-combat.js';
 import { affinityApplies } from './tooltip.js';
 import { HUMAN_FEAT_SLOT } from '../../state/schema.js';
@@ -28,11 +36,15 @@ import { foldButton, bindFolding, applyFolds } from '../fold.js';
 /**
  * @param {{ store: Object, tooltip: Object, getSpellsDb: () => Object[],
  *   onCast?: (spell: { name: string, level: number, concentration: boolean, ritual: boolean, ritualOnly: boolean, names: string[] }) => void }} deps
- * @returns {{ featBox: HTMLElement, subclassBox: HTMLElement, speciesBox: HTMLElement,
+ * @returns {{ classBox: HTMLElement, featBox: HTMLElement, subclassBox: HTMLElement, speciesBox: HTMLElement,
  *   render(character: Object, d: Object): void }}
  */
 export function createGrantedSpells({ store, tooltip, getSpellsDb, onCast = null }) {
     // Repliables (pastille à chevron du titre, fold.js) : seul le titre reste, retenu sur cet appareil
+    const classBox = el('section', { class: 'feat-spells class-spells', 'aria-labelledby': 'class-spells-title', 'data-fold-key': 'class-spells', hidden: true });
+    bindFolding(classBox);
+    let classSignature = null;
+
     const featBox = el('section', { class: 'feat-spells', 'aria-labelledby': 'feat-spells-title', 'data-fold-key': 'feat-spells', hidden: true });
     bindFolding(featBox);
     let featSignature = null;
@@ -100,12 +112,84 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb, onCast = null
             el('div', { class: 'feat-spell-head' },
                 name,
                 el('span', { class: 'feat-spell-level', text: spellLevelLabel(spell.level) }),
+                // Capacité de classe qui donne le sort (« Fidèle destrier »)
+                spell.source ? el('span', { class: 'feat-spell-tag', 'data-kind': 'source', text: spell.source }) : null,
                 spell.ritual ? el('span', { class: 'feat-spell-tag', text: 'Rituel' }) : null,
             spell.listed ? el('span', { class: 'feat-spell-tag', 'data-kind': 'listed', text: 'Aussi dans votre liste' }) : null,
             affine ? el('span', { class: 'feat-spell-tag', 'data-kind': 'affinity', title: affinity.rule, text: affinity.mention }) : null,
             cast),
             free,
             details ? el('p', { class: 'feat-spell-note', text: details }) : null);
+    }
+
+    // -----------------------------------------------------------------------
+    // Cases d'un lancer sans emplacement rangé dans subclass_uses (sorts d'espèce, sorts de classe,
+    // Arcanum mystique) : les mêmes que dans l'onglet Combat, contrôles de JEU (utilisables verrouillé)
+    // -----------------------------------------------------------------------
+
+    /** @param {{ key: string, label: string, max: number, reset: string }} def - compteur de subclass_uses */
+    function freeBoxes(def) {
+        return el('span', { class: 'feat-spell-free' },
+            ...Array.from({ length: def.max }, (_, index) => el('input', {
+                type: 'checkbox', class: 'round-check', 'data-play': 'true', 'data-free-use': def.key, 'data-index': String(index),
+                'aria-label': `${def.label} : lancer gratuit ${def.max > 1 ? `${index + 1} ` : ''}utilisé`,
+                // Même règle que les cases de l'onglet Combat : toucher la 3e coche les 3 premières,
+                // décocher la 1re les vide toutes
+                on: { change: (event) => {
+                    store.update(setSubclassUsesPatch(store.get(), def.key, event.target.checked ? index + 1 : index, def.max));
+                } }
+            })),
+            el('span', { text: `${def.max > 1 ? `${def.max} lancers` : '1 lancer'} sans emplacement, de nouveau après un ${def.reset === 'short' ? 'repos court ou long' : 'repos long'}` }));
+    }
+
+    /** Cases cochées ici ou dans l'onglet Combat : seul leur état change (le bloc n'est pas reconstruit) */
+    function syncFreeBoxes(box, character, maxOf) {
+        const state = subclassUsesState(character);
+        for (const input of box.querySelectorAll('input[data-free-use]')) {
+            const key = input.dataset.freeUse;
+            const checked = Number(input.dataset.index) < Math.min(Number(state[key]) || 0, maxOf(key));
+            if (input.checked !== checked) input.checked = checked;
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Sorts de classe : toujours préparés par la classe elle-même, hors du compte. Le lancer sans
+    // emplacement de Châtiment de paladin, Fidèle destrier et Communication avec le protecteur a sa
+    // case ; Marque du chasseur garde les cases « Ennemi juré » (ressource de classe, onglet Combat).
+    // Arcanum mystique (Occultiste 11+) : les sorts se notent au tableau, une case par niveau de sort.
+    // -----------------------------------------------------------------------
+
+    function renderClassSpells(character, d) {
+        const className = DD_RULES.classes[d.classSlug]?.nameFr ?? '';
+        const spells = markListedSpells(classGrantedSpells(d.classSlug, d.level), character.dynamic_spells);
+        const counters = subclassCounters(character, d).filter(counter => counter.source === 'class');
+        const boxOf = (spell) => counters.find(counter => CLASS_FREE_CASTS[counter.key]?.spells.some(([vo]) => vo === spell.vo));
+        const arcana = counters.filter(counter => /^warlock\.arcanum_\d$/.test(counter.key));
+        classBox.hidden = spells.length === 0 && arcana.length === 0;
+        const signature = JSON.stringify([className, spells, counters.map(({ key, max, reset, label }) => [key, max, reset, label]), affinityKey()]);
+        if (signature !== classSignature) {
+            classSignature = signature;
+            const line = (spell) => {
+                const item = featSpellLine({ name: spell.name, vo: spell.vo, level: spell.level, listed: spell.listed, source: spell.feature, note: spell.note });
+                const counter = boxOf(spell);
+                if (counter) item.append(freeBoxes(counter));
+                return item;
+            };
+            const arcanumGroup = arcana.length ? el('div', { class: 'feat-spells-group' },
+                el('div', { class: 'feat-spells-head' }, el('strong', { class: 'feat-spells-name', text: 'Arcanum mystique' })),
+                el('p', { class: 'feat-spells-extra', text: "Notez vos sorts d'Arcanum dans le tableau des sorts. Chacun se lance une fois sans emplacement, de nouveau après un repos long : son bouton « Lancer » coche la case de son niveau." }),
+                el('ul', { class: 'feat-spells-list' }, arcana.map(counter => el('li', { class: 'feat-spell' },
+                    el('span', { class: 'feat-spell-level', text: `Sort de niveau ${counter.key.at(-1)}` }), freeBoxes(counter))))) : null;
+            classBox.replaceChildren(...(classBox.hidden ? [] : [
+                el('h4', { class: 'feat-spells-title', id: 'class-spells-title' }, icon('star'), el('span', { text: 'Sorts de classe' }),
+                    foldButton('Sorts de classe')),
+                spells.length ? el('p', { class: 'feat-spells-intro', text: `Donnés par votre classe (${className}) : toujours préparés, ils ne comptent pas dans vos sorts préparés.` }) : null,
+                spells.length ? el('ul', { class: 'feat-spells-list' }, spells.map(line)) : null,
+                arcanumGroup
+            ].filter(Boolean)));
+            applyFolds(classBox);
+        }
+        syncFreeBoxes(classBox, character, key => counters.find(counter => counter.key === key)?.max ?? 0);
     }
 
     // -----------------------------------------------------------------------
@@ -213,21 +297,6 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb, onCast = null
     // (mêmes cases que dans l'onglet Combat, clé « species.sort_… »)
     // -----------------------------------------------------------------------
 
-    function speciesFreeBoxes(def, used) {
-        return el('span', { class: 'feat-spell-free species-spell-free' },
-            ...Array.from({ length: def.max }, (_, index) => el('input', {
-                type: 'checkbox', class: 'round-check', 'data-play': 'true', 'data-species-use': def.key, 'data-index': String(index),
-                checked: index < used,
-                'aria-label': `${def.label} : lancer gratuit ${def.max > 1 ? `${index + 1} ` : ''}utilisé`,
-                // Même règle que les cases de l'onglet Combat : toucher la 3e coche les 3 premières,
-                // décocher la 1re les vide toutes
-                on: { change: (event) => {
-                    store.update(setSubclassUsesPatch(store.get(), def.key, event.target.checked ? index + 1 : index, def.max));
-                } }
-            })),
-            el('span', { text: `${def.max > 1 ? `${def.max} lancers` : '1 lancer'} sans emplacement, de nouveau après un ${def.reset === 'short' ? 'repos court ou long' : 'repos long'}` }));
-    }
-
     function renderSpeciesSpells(character, d) {
         const view = speciesView(character, d);
         const spells = (view?.spells ?? []).filter(spell => spell.reached);
@@ -244,7 +313,7 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb, onCast = null
                 const stats = spell.dc === null
                     ? el('p', { class: 'feat-spells-missing', text: 'Caractéristique à choisir dans « Espèce & historique » (onglet Aptitudes & Traits).' })
                     : el('p', { class: 'feat-spell-note', text: `${spell.source} · ${abilityName[spell.ability]} · DD ${spell.dc} · attaque ${signed(spell.attack)}` });
-                item.append(...[def ? speciesFreeBoxes(def, 0) : null, stats].filter(Boolean));
+                item.append(...[def ? freeBoxes(def) : null, stats].filter(Boolean));
                 return item;
             };
             speciesBox.replaceChildren(...(spells.length ? [
@@ -257,21 +326,17 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb, onCast = null
             ].filter(Boolean) : []));
             applyFolds(speciesBox);
         }
-        // Cases cochées ici ou dans l'onglet Combat : seul leur état change
-        const state = subclassUsesState(character);
-        for (const box of speciesBox.querySelectorAll('input[data-species-use]')) {
-            const def = defs.find(entry => entry.key === box.dataset.speciesUse);
-            const checked = Number(box.dataset.index) < Math.min(Number(state[box.dataset.speciesUse]) || 0, def?.max ?? 0);
-            if (box.checked !== checked) box.checked = checked;
-        }
+        syncFreeBoxes(speciesBox, character, key => defs.find(entry => entry.key === key)?.max ?? 0);
     }
 
     return {
+        classBox,
         featBox,
         subclassBox,
         speciesBox,
         render(character, d) {
             affinity = elementalAffinity(d);
+            renderClassSpells(character, d);
             renderFeatSpells(character, d);
             renderSubclassSpells(character, d);
             renderSpeciesSpells(character, d);

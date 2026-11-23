@@ -5,7 +5,9 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { CLASS_PROGRESSION } from '../js/data/class-progression.js';
-import { classProgression, classSpellCounts, featuresAtLevel, classAlwaysPreparedSpells } from '../js/rules/class-progression.js';
+import {
+    classProgression, classSpellCounts, featuresAtLevel, classAlwaysPreparedSpells, classGrantedSpells
+} from '../js/rules/class-progression.js';
 import { DD_RULES } from '../js/data/dd-rules.js';
 
 describe('Données des 12 classes', () => {
@@ -99,6 +101,33 @@ describe('Sorts mineurs et sorts préparés', () => {
         const names = new Set((Array.isArray(base) ? base : Object.values(base)).map(s => s.name));
         for (const slug of ['bard', 'druid', 'ranger', 'paladin', 'warlock']) {
             for (const name of classAlwaysPreparedSpells(slug, 20)) assert.ok(names.has(name), name);
+        }
+    });
+
+    test('Sorts de classe du bloc « Sorts de classe » : nom anglais, niveau du sort et capacité', () => {
+        assert.deepEqual(classGrantedSpells('paladin', 5), [
+            { classLevel: 2, name: 'Châtiment divin', vo: 'Divine Smite', level: 1, feature: 'Châtiment de paladin' },
+            { classLevel: 5, name: 'Appel de destrier', vo: 'Find Steed', level: 2, feature: 'Fidèle destrier' }
+        ]);
+        assert.deepEqual(classGrantedSpells('paladin', 1), []);
+        assert.deepEqual(classGrantedSpells('wizard', 20), []);
+        assert.deepEqual(classGrantedSpells('', 20), []);
+        assert.deepEqual(classGrantedSpells('toString', 20), []);
+        const [mark] = classGrantedSpells('ranger', 1);
+        assert.equal(mark.feature, 'Ennemi juré');
+        assert.match(mark.note, /Ennemi juré/);
+        // Nom anglais et niveau : ceux de la base de sorts ; capacité : celle de la table de la classe
+        const base = JSON.parse(readFileSync(new URL('../data/spells.json', import.meta.url), 'utf8'));
+        const spells = Array.isArray(base) ? base : Object.values(base);
+        for (const slug of ['bard', 'druid', 'ranger', 'paladin', 'warlock']) {
+            const features = classProgression(slug, 20).reached;
+            for (const spell of classGrantedSpells(slug, 20)) {
+                const known = spells.find(entry => entry.vo === spell.vo);
+                assert.ok(known, spell.vo);
+                assert.equal(known.name.split('|')[0], spell.name);
+                assert.equal(Number(known.level), spell.level, spell.name);
+                assert.ok(features.some(feature => feature.name === spell.feature && feature.level === spell.classLevel), spell.feature);
+            }
         }
     });
 

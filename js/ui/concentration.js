@@ -2,7 +2,7 @@
 // CONCENTRATION.JS (interface) - Ligne « Concentration » en tête de l'encadré « États »
 //
 // Menu du sort sur lequel le personnage se concentre (sorts « C » du grimoire, et sorts donnés par
-// les dons, l'espèce ou la sous-classe qui demandent la Concentration), puis le rappel : jet de
+// la classe, les dons, l'espèce ou la sous-classe qui demandent la Concentration), puis le rappel : jet de
 // sauvegarde de Constitution chiffré après des dégâts, Avantage (Mage de guerre), fin sous l'état
 // Neutralisé avec un bouton « Terminer ». Le pavé « Dégâts / Soins » (js/ui/hit-points.js) donne
 // le DD exact. Champ de jeu : utilisable fiche verrouillée. Règles : js/rules/concentration.js.
@@ -18,6 +18,7 @@ import { loadSpells } from '../data/spells.js';
 import { featSpellGroups } from '../rules/feat-spells.js';
 import { subclassSpells } from '../rules/subclass-features.js';
 import { speciesView } from '../rules/species.js';
+import { classGrantedSpells } from '../rules/class-progression.js';
 
 // Tout ce qui change le menu ou le jet de Constitution (maîtrise, Aura de protection au Charisme, Rage,
 // armure lourde qui rend la Rage sans effet)
@@ -26,12 +27,14 @@ const WATCHED = new Set([CONCENTRATION_KEY, 'dynamic_spells', 'conditions', 'com
     'char_species', 'species_choices', 'feat_choices', 'subclass_choices']);
 
 /**
- * Sorts donnés (dons, espèce, sous-classe) qui demandent la Concentration, d'après la base des sorts.
+ * Sorts donnés (classe, dons, espèce, sous-classe) qui demandent la Concentration, d'après la base
+ * des sorts (Marque du chasseur du Rôdeur, même s'il ne l'a pas notée au tableau).
  * @returns {string[]} noms français
  */
 function grantedConcentration(character, derived, byVo) {
     if (!byVo.size) return [];
     const spells = [
+        ...(derived.classSlug ? classGrantedSpells(derived.classSlug, derived.level) : []),
         ...featSpellGroups(character, derived).flatMap((group) => group.spells),
         ...subclassSpells(derived).reached,
         ...(speciesView(character, derived)?.spells ?? []).filter((spell) => spell.reached)

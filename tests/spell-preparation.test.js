@@ -432,7 +432,8 @@ describe('Sort préparé au-dessus des emplacements (simple avertissement)', () 
         assert.equal(isArcanumSpellLevel(9, mysticArcanumLevel('warlock', 17)), true);
         assert.equal(isArcanumSpellLevel(6, mysticArcanumLevel('warlock', 10)), false);
         assert.equal(isArcanumSpellLevel(6, mysticArcanumLevel('wizard', 20)), false);
-        assert.match(arcanumCastText(6), /^Arcanum mystique : ce sort de niveau 6 .*sans emplacement.*repos long/);
+        // La phrase dit où est la case que « Lancer gratuit » coche
+        assert.match(arcanumCastText(6), /^Arcanum mystique : votre sort d'Arcanum de niveau 6 .*sans emplacement.*repos long.*case « Arcanum mystique \(niveau 6\) »/);
     });
 
     test("Signalé : sort préparé (coché ou fixe) d'un niveau plus haut que le plus haut emplacement", () => {

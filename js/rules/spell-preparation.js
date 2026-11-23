@@ -275,10 +275,11 @@ export function isArcanumSpellLevel(spellLevel, arcanumLevel) {
 /**
  * Phrase de la fenêtre « Lancer » pour un sort d'Arcanum mystique sans emplacement de son niveau :
  * il se lance une fois sans emplacement, de nouveau après un repos long (PHB 2024, « Mystic
- * Arcanum »). La fiche n'a pas de case pour ce lancer : c'est au joueur de le retenir.
+ * Arcanum »). Le lancer est suivi par la case « Arcanum mystique (niveau N) » (CLASS_COUNTERS de
+ * js/rules/subclass-uses.js), que le bouton « Lancer gratuit » coche (js/rules/free-casts.js).
  */
 export function arcanumCastText(level) {
-    return `Arcanum mystique : ce sort de niveau ${level} se lance une fois sans emplacement, puis de nouveau après un repos long. La fiche n'a pas de case pour ce lancer : à vous de le retenir.`;
+    return `Arcanum mystique : votre sort d'Arcanum de niveau ${level} se lance une fois sans emplacement, puis de nouveau après un repos long. Sa case « Arcanum mystique (niveau ${level}) » se coche (grimoire, « Sorts de classe », et onglet Combat).`;
 }
 
 /**
