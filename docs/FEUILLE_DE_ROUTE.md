@@ -92,7 +92,13 @@ héroïque en mode Odyssée~~ (point 1, audit du 22/11/2026). Faits en 4.47.0 (2
 sorts de toutes les listes de classe~~, ~~confirmation avant de fermer les réglages de l'armure~~,
 ~~« Sphère de feu » en Évocation~~ (décisions de Franck du 23/11/2026). Fait en 4.47.1
 (23/11/2026, publiée le 23/11/2026) : ~~noms du manuel pour les dons, espèces, aptitudes et outils~~.
-Reste :
+Faits en 4.48.0 (23/11/2026, pas encore publiée) : ~~suites du grimoire~~ (Paladin et Rôdeur,
+cases des lancers gratuits de classe, Magicien 5 / 18 / 20, Découvertes magiques du Barde du
+Savoir), ~~groupe « Autres » de la liste des armures~~, ~~outils des dons et de l'historique~~.
+Étude faite le 23/11/2026 : ~~explications des options~~ (`docs/etudes/EXPLICATIONS.md`,
+proposition, rien n'est déployé ; Franck choisit ce qui est utile). Laissés de côté par Franck
+le 23/11/2026 : suites du mode Odyssée (choix de la campagne dans « Nouvelle fiche », exemples
+mode coupé) et bilans des autres joueurs (trop tôt). Reste :
 
 1. **Multiclassage** : l'étude est faite et contre-vérifiée, rien n'est construit. Elle conseille
    de garder « Classe » (classe de départ) et « Niveau » (niveau total) et d'ajouter une seule clé
@@ -121,8 +127,8 @@ Petits restes de la 4.44.0 (pas urgents) : une fiche vierge dont on a seulement 
 perd ce réglage à la reconnexion (taper un nom suffit ; à revoir avec le choix de la campagne dans
 « Nouvelle fiche ») ; l'ancien site efface le réglage s'il réenregistre la fiche (comme toutes les
 clés propres à la v4) ; sur ordinateur, le message de la case est court, le détail est dans
-l'infobulle. Suites voulues par Franck, plus tard : choix de la campagne dans « Nouvelle fiche » ;
-personnages d'exemple mode coupé d'office.
+l'infobulle. Suites voulues par Franck, plus tard (laissées de côté le 23/11/2026) : choix de la
+campagne dans « Nouvelle fiche » ; personnages d'exemple mode coupé d'office.
 
 Décisions de Franck en attente sur la 4.43.0 (dégâts en plus) :
 - Repos court : il n'éteint pas les pastilles (comme la Rage) ; seul le repos long les éteint.
@@ -155,8 +161,28 @@ libre garde sa case à saisir. Demandé et fait : la fenêtre de réglages de l'
 confirmation avant de fermer sans appliquer. Écoles où le manuel se contredit : Évocation pour les
 deux (« Sphère de feu » : listes de classe et errata officiel d'octobre 2026 ; « Aura du croisé » :
 description du sort, la liste du Paladin dit Transmutation sans errata).
-- Liste des armures : seulement les armures et le bouclier du manuel ; un groupe « Autres »
-  (anneau, cape, sort…) viendrait plus tard, avec la liste et les noms donnés par Franck.
+- ~~Liste des armures : un groupe « Autres » (anneau, cape, sort…)~~ : fait en 4.48.0, liste de
+  départ de 8 entrées dans `js/data/armor-others.js`, à compléter par Franck.
+
+Décisions de Franck en attente sur la 4.48.0 (choix prudents faits sans lui) :
+- Paladin / Rôdeur : « un seul sort par repos long » est rappelé et suivi pendant que la fenêtre
+  est ouverte, sans rien bloquer ; la fenêtre ne retient pas l'échange d'une ouverture à l'autre
+  (il faudrait une nouvelle clé facultative).
+- Cases des lancers gratuits de classe visibles à deux endroits (bandeau de l'onglet Combat et
+  bloc « Sorts de classe ») ; un Occultiste 17 a 5 groupes de cases dans le bandeau.
+- Arcanum mystique : une case par niveau de sort (6 à 9), pas par sort nommé.
+- Magicien 18 / 20 : seuls les sorts du livre sont proposés (pas ceux d'un don ou de l'espèce,
+  même copiés) ; Maîtrise des sorts : seulement les sorts lancés en une action (règle 2024).
+- Armures « Autres » : noms des objets (VF 2014) à valider ; les lignes de sort (Armure du mage,
+  Bouclier de la foi, Peau d'écorce) restent cochées après un repos (le joueur les décoche) ;
+  Armure du mage et la Robe de l'archimage sont notées comme un bonus (+3, +5) : à décocher en
+  armure ; Peau d'écorce est un simple rappel (ne compte pas) ; une même entrée active deux fois
+  s'additionne, avec un avertissement.
+- Outils : les outils de classe (Barde, Roublard…) ne sont pas une « source » de la fenêtre, donc
+  l'avancement d'un don (Musicien « 3 sur 3 ») les compte aussi ; une phrase le dit. Case Outils
+  qui contient « Aucun » : gardée, l'outil s'écrit à la suite (on ne réécrit jamais).
+- Le guide du joueur de l'Odyssée n'introduit aucun outil (seul le Satyre en donne un au choix) :
+  pas de groupe Odyssée dans la liste.
 
 Petits restes de la 4.47.0 (pas urgents) : sur ordinateur, la phrase du bouton ▾ des armes et des armures est coupée dans la colonne étroite des messages (comme
 celle du grimoire ; texte entier au toucher) ; toucher le titre « Points de Foi » ou « Points de
@@ -178,8 +204,8 @@ tables du livre gardées en lignes à part sous le nom de leur aptitude (identif
 (sinon `npm run check` échoue) et mettre à jour la notice `js/data/help.js`.
 
 Décisions de Franck en attente sur la 4.41.0 :
-- « Appliquer à la fiche » (historique) pourrait écrire aussi l'outil quand l'historique donne un
-  outil précis (Sage, Criminel…) ; aujourd'hui il ne le fait pas.
+- ~~« Appliquer à la fiche » (historique) écrit aussi l'outil précis (Sage, Criminel…)~~ : fait
+  en 4.48.0 (demande de Franck du 23/11/2026).
 - Fenêtre des outils : l'outil précis de l'historique apparaît deux fois (encadré du haut et sa
   catégorie) ; le garder seulement en haut ?
 - Personnage d'exemple : jamais envoyé au compte tout seul (« Enregistrer en ligne » pour le
@@ -188,10 +214,8 @@ Décisions de Franck en attente sur la 4.41.0 :
   jamais à une toute première visite.
 
 Décisions de Franck en attente sur la 4.42.0 :
-- Lancers gratuits sans case dans la fiche, donc pas proposés par « Lancer » : Châtiment divin
-  (Châtiment de paladin), Appel de destrier (Fidèle destrier), Arcanum mystique, Contact avec les
-  plans (Communication avec le protecteur). Les suivre demanderait une nouvelle clé facultative.
-  Pour l'Arcanum, « Lancer » explique la règle mais ne retient pas qu'il a été utilisé.
+- ~~Lancers gratuits sans case (Châtiment divin, Appel de destrier, Arcanum mystique, Contact
+  avec les plans)~~ : cases faites en 4.48.0, rangées dans la clé facultative `subclass_uses`.
 - Cases de sous-classe partagées entre plusieurs sorts (Ancêtre divin, Créatures
   fantasmagoriques, Ressourcement, Mante de majesté, Troisième œil) : pas reliées à « Lancer ».
 - « Retirer les sorts non préparés » : si l'état d'avant ne peut pas être gardé (stockage plein),
@@ -203,15 +227,17 @@ Décisions de Franck en attente sur la 4.42.0 :
   « Multiclassage », pas avant (l'étude prévoit une protection dès sa première version visible).
 
 Petits restes de la 4.42.0 (pas urgents) : sous-classe écrite autrement (« Vie » pour « Domaine
-de la Vie ») : ses sorts de domaine non cochés sont proposés au retrait ; Rôdeur : « Lancer
-gratuit » seulement si Marque du chasseur est notée au tableau ; phrase pâle sur un bouton
+de la Vie ») : ses sorts de domaine non cochés sont proposés au retrait ; ~~Rôdeur : « Lancer
+gratuit » seulement si Marque du chasseur est notée au tableau~~ (bloc « Sorts de classe »,
+4.48.0) ; phrase pâle sur un bouton
 « Lancer gratuit » épuisé (comme les boutons « reste 0 ») ; teintes proches en thème sombre entre
 « Pas d'emplacement » et « Lançable en rituel » ; plan de retrait recalculé à chaque rendu du
 grimoire (à mesurer sur tablette) ; pas de test automatique du cas « état non gardé ».
 
 Petits restes de la 4.41.0 (pas urgents) : ~~anciens noms « Main de mage », « Armure de mage » et
-arme « Bâton »~~ (renommés en 4.47.0, voir « Noms du manuel » plus bas) ; outils propres à l'Odyssée absents de la liste ; dons qui donnent des
-outils (Façonneur…) pas reliés à la fenêtre ; champ « Chercher… » de 38 px de haut (partagé avec
+arme « Bâton »~~ (renommés en 4.47.0, voir « Noms du manuel » plus bas) ; ~~outils propres à
+l'Odyssée~~ (il n'y en a pas) ; ~~dons qui donnent des outils (Façonneur…) pas reliés à la
+fenêtre~~ (4.48.0) ; champ « Chercher… » de 38 px de haut (partagé avec
 « Préparer mes sorts ») ; textes de « Revenir à… » sans espaces insécables ; impression de la
 notice non essayée sur une vraie tablette.
 
@@ -225,22 +251,23 @@ Détail des idées :
   dé et affiche le total. Pas prioritaire pour l'instant.
 - Fiche utilisable sans wifi, installée comme une application sur la tablette (attention aux
   mises à jour, qui doivent toujours arriver). Chantier seul. Pas prioritaire pour l'instant.
-- Grimoire, suites possibles (à décider par Franck) : Paladin et Rôdeur traités comme Clerc et
-  Druide (fenêtre et rappel de repos long) ou non ; cases de suivi pour les lancers gratuits qui
-  n'en ont pas (voir les décisions en attente sur la 4.42.0) ; Magicien : repères pour Maîtrise
-  des sorts (18) et Sorts de prédilection (20), qui demanderaient une nouvelle clé (trop tôt selon
-  Franck), rappel de Mémorisation de sort au repos court, Aptitude érudite au niveau 3 (2 ou
-  3 sorts) ; Barde du Savoir : enregistrer ses deux Découvertes magiques.
+- ~~Grimoire, suites~~ : faites en 4.48.0 (Paladin et Rôdeur, cases des lancers gratuits de
+  classe, Maîtrise des sorts, Sorts de prédilection, Mémorisation de sort, Découvertes magiques).
+  Restent : Aptitude érudite du Magicien (niveau 3) ; cases de sous-classe partagées entre
+  plusieurs sorts pas reliées à « Lancer » (voir la 4.42.0).
 - Grimoire : comme les objets magiques, un aspect qui monte en puissance avec le niveau du sort.
 - Explications des options (demande de Franck, 18/11/2026) : chaque bouton ou option dit en une
   phrase à quoi il sert, lisible aussi sur tablette (fait pour le grimoire en 4.40.0 et pour les
-  nouveautés de la 4.41.0 ; le « Mode d'emploi » explique le reste, onglet par onglet ; une revue
-  bouton par bouton de toute la fiche reste possible).
+  nouveautés de la 4.41.0 ; le « Mode d'emploi » explique le reste, onglet par onglet). Revue
+  bouton par bouton faite le 23/11/2026 : `docs/etudes/EXPLICATIONS.md` (178 contrôles, 40 phrases
+  utiles, candidats au retrait, trois façons d'afficher). Rien n'est déployé : à Franck de dire
+  ce qu'il garde.
 - Outil pour le MJ (« feuille du MJ », demande de Franck, 18/11/2026) : à discuter d'abord.
   Est-ce une bonne idée, et pour quoi faire ? Dans ce projet (même site, même base, lien avec la
   « Vue du groupe ») ou dans un projet séparé (`E:\2 - CODE\<nouveau projet>\`) ? Rien à
   construire avant cette discussion.
 - Bilan des capacités pour les autres joueurs (Iria, personnage de Catherine), comme pour Korgul.
+  Laissé de côté le 23/11/2026 (trop tôt ; peut-être pour tous les personnages plus tard).
 - Vue du groupe (demande « synergies entre joueurs ») : PV, CA et perception passive de chaque
   personnage ; gros chantier, il faut décider qui voit quoi.
 - Journal de campagne : notes datées par séance, suivi propre à l'Odyssée (serments, quêtes).

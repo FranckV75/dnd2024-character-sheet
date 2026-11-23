@@ -19,7 +19,14 @@ en fin de session :
   listes des armes et des armures, confirmation des fenêtres d'arme et d'armure, noms des sorts.
   Décisions sur la 4.46.0, la 4.47.0 et la 4.47.1 : toutes prises par Franck le 23/11/2026. En
   attente : sur la 4.44.0 et la 4.45.0, point 3 de `docs/FEUILLE_DE_ROUTE.md`.
-- **Suite** : multiclassage (attend les réponses de Franck), ou une idée du point 3.
+- **Prête, pas publiée** : version **4.48.0** (23/11/2026), sur `v4` seulement : suites du
+  grimoire (Paladin et Rôdeur, cases des lancers gratuits de classe, Magicien 5 / 18 / 20,
+  Découvertes magiques du Barde du Savoir), groupe « Autres » de la liste des armures, outils des
+  dons et de l'historique. Attend le « Publie » de Franck et ses réponses aux décisions de la
+  4.48.0 (point 3 de `docs/FEUILLE_DE_ROUTE.md`). Étude `docs/etudes/EXPLICATIONS.md` à lire
+  par Franck (rien de déployé).
+- **Suite** : multiclassage (attend les réponses de Franck), ou une idée du point 3. Laissés de
+  côté par Franck le 23/11/2026 : suites du mode Odyssée, bilans des autres joueurs.
 - **Serveur de travail** : `npm run dev` n'écoute plus que l'ordinateur (127.0.0.1 et ::1) et ne
   sert jamais `.git` ; relancé le 22/11/2026 avec cette protection (vérifié avec netstat).
 - **Multiclassage** : étude faite et contre-vérifiée (`docs/etudes/MULTICLASSAGE.md`). Rien de
@@ -41,6 +48,19 @@ en fin de session :
   jamais le texte du livre (le dépôt est public).
 
 ### À vérifier par Franck (reste : l'iPad de Patricia)
+
+À voir sur tablette quand la 4.48.0 sera en ligne (Android, PC, et iPad de Patricia) :
+- Paladin 5 : cases « Châtiment de paladin » et « Fidèle destrier » dans le bandeau de l'onglet
+  Combat et dans le bloc « Sorts de classe » du grimoire ; « Lancer » coche la case.
+- « Préparer mes sorts » d'un Paladin ou d'un Rôdeur : la ligne « Un seul échange… » se lit.
+- Magicien 18 / 20 et Barde du Savoir 6 : les menus du bloc tiennent dans la largeur ; le long
+  menu des Découvertes magiques reste confortable au doigt.
+- Armures : groupe « Autres » en bas de la liste ▾ ; la ligne choisie (Armure du mage…) a une
+  case Commentaire haute à 820 px : gênant ou pas ? Toucher la CA de la ligne montre ses
+  conditions.
+- « Appliquer à la fiche » d'un Sage écrit « Matériel de calligraphe » dans la case Outils ;
+  fenêtre des outils : encadré « D'où viennent vos outils ».
+- La fenêtre « Nouveautés de la version 4.48.0 » s'affiche une fois et se lit en entier.
 
 À voir sur tablette maintenant que la 4.47.1 est en ligne (Android, PC, et iPad de Patricia) :
 - La fenêtre « Nouveautés de la version 4.47.1 » s'affiche une fois et se lit en entier.
@@ -123,6 +143,23 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
    `docs/FEUILLE_DE_ROUTE.md`.
 
 ## Sessions
+
+### 23/11/2026 (nuit) — Suites du grimoire, armures « Autres », outils des dons, étude des explications (4.48.0, pas publiée)
+
+- Demande de Franck : lancer trois chantiers (grimoire, armures « Autres », outils) et une étude
+  (explications bouton par bouton, proposition seulement) ; mode Odyssée et bilan d'Iria laissés
+  de côté. Fait par un workflow : un agent Fable 5.2 par chantier dans sa copie Git, deux
+  relecteurs Opus 5.5 chacun (code et sauvegarde ; règles, noms et tablette), un correcteur ; 25
+  remarques, aucune grave, toutes corrigées ou soumises à Franck.
+- Aucune nouvelle clé de premier niveau : les cases vont dans `subclass_uses`, les sorts choisis
+  dans `subclass_choices` (groupe `wizard`, champs `discovery1/2` du Collège du Savoir). Une fiche
+  qui ne s'en sert pas reste identique (testé).
+- Le guide du joueur de l'Odyssée n'introduit aucun outil : pas de groupe Odyssée.
+- Au passage : la table « Façonnage rapide » du don Façonneur s'affichait collée (les tableaux
+  sont filtrés) ; elle est réécrite en lignes.
+- Fusion dans `v4`, 2 049 tests ; vérifié à l'écran à 820 px (clair et sombre) sur des fiches de
+  test : Paladin 5, Magicien 20, Barde du Savoir 6, Occultiste 17, outils d'un Artisan ;
+  0 erreur console.
 
 ### 23/11/2026 (soir) — Noms du manuel : dons, espèces, aptitudes et outils (4.47.1, publiée le 23/11/2026)
 

@@ -238,7 +238,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Les armures",
-                text: "Sous « Maîtrises d'armures », cochez les armures que votre personnage sait porter. « Ajouter une armure » crée une ligne. Son nom vide, ou le bouton ▾, ouvre sans clavier les armures du manuel avec leur CA (✓ : déjà notée) ; un anneau s'écrit à la main. Cochez « Équipée / actif » quand vous la portez. Touchez la CA pour voir le calcul. La roue dentée demande confirmation si on la ferme sans appliquer."
+                text: "Cochez sous « Maîtrises d'armures » celles que vous savez porter. « Ajouter une armure » crée une ligne : son nom vide, ou le bouton ▾, ouvre les armures du manuel avec leur CA (✓ : déjà notée), puis le groupe « Autres » (anneau, cape, Armure du mage…). Cochez « Équipée / actif » quand elle sert. Touchez la CA pour voir le calcul. La roue dentée demande confirmation si on la ferme sans appliquer."
             },
             {
                 title: "Les capacités à cocher",
@@ -256,7 +256,7 @@ export const HELP_SECTIONS = Object.freeze([
         entries: [
             {
                 title: "« Espèce & historique »",
-                text: "Cet encadré rappelle ce que donnent votre espèce et votre historique. « Appliquer à la fiche » reporte ce que donne l'historique. Les repères « À choisir » et « À vérifier » montrent ce qu'il vous reste à décider ou à contrôler."
+                text: "Cet encadré rappelle ce que donnent votre espèce et votre historique. « Appliquer à la fiche » reporte ce que donne l'historique, et note son outil quand il est précis (un outil au choix se choisit dans la liste des outils). Les repères « À choisir » et « À vérifier » montrent ce qu'il vous reste à décider ou à contrôler."
             },
             {
                 title: "« Dons »",
@@ -294,7 +294,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "« Outils »",
-                text: "La case « Outils » est un texte libre. Fiche modifiable, le bouton « Choisir dans la liste » ouvre la fenêtre « Outils maîtrisés » : cochez vos outils dans la liste du manuel, leur nom s'écrit dans la case. Décocher retire seulement ce nom. Ce que vous avez écrit à la main ne bouge pas."
+                text: "La case « Outils » est un texte libre. Fiche modifiable, le bouton « Choisir dans la liste » ouvre la fenêtre « Outils maîtrisés » : cochez vos outils dans la liste du manuel, leur nom s'écrit dans la case. Décocher retire seulement ce nom. Ce que vous avez écrit à la main ne bouge pas. En haut, « D'où viennent vos outils » rappelle ce que donnent votre historique et vos dons (Façonneur, Musicien, Doué…)."
             },
             {
                 title: "« Langues »",
@@ -348,7 +348,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "« Préparer mes sorts »",
-                text: "Pour le Clerc, le Druide, le Paladin et le Rôdeur, ce bouton ouvre toute la liste de la classe : cochez vos sorts préparés, après un repos long. Un compteur indique combien de sorts sont préparés."
+                text: "Pour le Clerc, le Druide, le Paladin et le Rôdeur, ce bouton ouvre toute la liste de la classe : cochez vos sorts préparés, après un repos long. Un compteur indique combien de sorts sont préparés. Le Paladin et le Rôdeur ne changent qu'un seul sort par repos long : une ligne le rappelle."
             },
             {
                 title: "« Retirer les sorts non préparés »",
@@ -368,7 +368,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Les sorts donnés",
-                text: "Les blocs « Sorts de dons », « Sorts de sous-classe » et « Sorts d'espèce » montrent les sorts donnés par vos dons, votre sous-classe et votre espèce. Ils sont toujours préparés et ne comptent pas dans vos sorts préparés. Cochez la case de leur lancer gratuit quand vous l'utilisez."
+                text: "Les blocs « Sorts de dons », « Sorts de sous-classe » et « Sorts d'espèce » montrent les sorts donnés par vos dons, votre sous-classe et votre espèce. « Sorts de classe » montre ceux de votre classe (Châtiment divin, Arcanum mystique…) et les choix du Magicien. Ils sont toujours préparés et ne comptent pas dans vos sorts préparés. Cochez la case de leur lancer gratuit quand vous l'utilisez."
             },
             {
                 title: "Le livre du Magicien",

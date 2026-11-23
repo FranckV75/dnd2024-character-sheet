@@ -13,6 +13,16 @@
 /** @type {ReadonlyArray<{ version: string, items: ReadonlyArray<string> }>} */
 export const WHATS_NEW = Object.freeze([
     {
+        version: '4.48.0',
+        items: [
+            "Grimoire : nouveau bloc « Sorts de classe » avec une case pour les lancers gratuits du Paladin (Châtiment divin, Appel de destrier) et de l'Occultiste (Arcanum mystique, Contact avec les plans).",
+            "Paladin et Rôdeur : « Préparer mes sorts » rappelle qu'on ne change qu'un seul sort par repos long, et montre l'échange en cours.",
+            "Magicien : menus pour la Maîtrise des sorts (niveau 18) et les Sorts de prédilection (niveau 20), rappel de la Mémorisation de sort au repos court. Barde du Savoir : menus des Découvertes magiques.",
+            "Armures : la liste ▾ a un groupe « Autres » : anneau et cape de protection, bracelets de défense, Armure du mage, Bouclier de la foi… Touchez la CA de la ligne pour lire ses conditions.",
+            "Outils : « Appliquer à la fiche » note l'outil précis de votre historique, et la fenêtre des outils montre ce que donnent votre historique et vos dons (Façonneur, Musicien, Doué…)."
+        ]
+    },
+    {
         version: '4.47.1',
         items: [
             'Noms du manuel français, relus sur le livre : Voie du Cœur sauvage « Chouette » et « Coup de bélier » ; Belluaire « bête primitive » et « Frappe de la Bête ».',

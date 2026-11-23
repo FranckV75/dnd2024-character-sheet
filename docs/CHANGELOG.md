@@ -2,6 +2,43 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.48.0] - 2026-11-23 (suites du grimoire, armures « Autres », outils des dons)
+Pas encore publiée. Trois chantiers demandés par Franck, réalisés chacun dans sa copie de travail
+puis relus (code et sauvegarde ; règles et interface) et corrigés avant la fusion. Aucune nouvelle
+clé de premier niveau : de nouvelles entrées dans les clés facultatives `subclass_uses` et
+`subclass_choices`, écrites au premier usage ; une fiche qui ne s'en sert pas reste identique.
+### Added
+- Grimoire : bloc « Sorts de classe » (sorts toujours préparés par la classe) avec une case pour
+  Châtiment divin (Châtiment de paladin, niv. 2), Appel de destrier (Fidèle destrier, niv. 5),
+  Contact avec les plans (Communication avec le protecteur, Occultiste 9) et l'Arcanum mystique
+  (une case par niveau 6 à 9), vidées au repos long ; « Lancer » propose le lancer gratuit. Les
+  mêmes cases dans le bandeau de l'onglet Combat. Marque du chasseur du Rôdeur se lance depuis ce
+  bloc même si elle n'est pas notée au tableau.
+- Paladin et Rôdeur : « Préparer mes sorts » suit l'échange en cours (un seul sort par repos long,
+  règle 2024) et avertit sans bloquer ; le rappel de repos long le dit.
+- Magicien : rappel de Mémorisation de sort (niv. 5) au repos court ; menus de Maîtrise des sorts
+  (niv. 18, sorts du livre lancés en une action) et des Sorts de prédilection (niv. 20, une case
+  chacun, rendue au repos court ou long). Barde du Collège du Savoir : deux menus des Découvertes
+  magiques (listes du Clerc, du Druide et du Magicien), sorts toujours préparés hors du compte.
+- Armures : groupe « Autres » dans la liste ▾ (`js/data/armor-others.js`, à compléter) : Anneau
+  et Cape de protection, Bracelets de défense, Pierre de Ioun de protection, Robe de l'archimage,
+  Armure du mage, Bouclier de la foi, Peau d'écorce (rappel). La ligne choisie ressemble à une
+  ligne saisie à la main ; la bulle de la CA donne le détail et les conditions ; avertissement si
+  la même entrée est active deux fois.
+- Outils : encadré « D'où viennent vos outils » dans la fenêtre « Outils maîtrisés » (historique
+  et dons : Façonneur, Musicien, Doué, Chef cuisinier, Empoisonneur), avec l'avancement de chaque
+  choix ; la note des dons renvoie à la fenêtre.
+### Changed
+- « Appliquer à la fiche » (historique) écrit aussi l'outil précis de l'historique (Sage,
+  Criminel…) à la suite de la case Outils, sans doublon et sans rien retirer ; un outil au choix
+  n'est pas écrit.
+- Don Façonneur : table « Façonnage rapide » (nom du manuel, et non « Fabrication rapide »),
+  affichée en lignes (le tableau sortait collé) ; Empoisonneur : « matériel d'empoisonneur ».
+- Mode d'emploi : armures, historique, outils, « Préparer mes sorts », sorts donnés.
+### Notes
+- Le guide du joueur de l'Odyssée n'introduit aucun outil (seul le Satyre en donne un au choix).
+- Décisions laissées à Franck : point 3 de `docs/FEUILLE_DE_ROUTE.md` (« sur la 4.48.0 »).
+
 ## [4.47.1] - 2026-11-23 (noms du manuel : dons, espèces, aptitudes, outils)
 Publiée le 23/11/2026 (« Publie » de Franck).
 Vérification sur les photos du Manuel des joueurs français, demandée par Franck : dons (p. 199-211),
