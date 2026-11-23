@@ -8,7 +8,11 @@
 //  - cocher écrit le nom à la suite du texte, décocher retire ce nom et son séparateur : le reste,
 //    écrit à la main, ne bouge pas (js/rules/tools.js) ; ce qui vient de changer est écrit dans
 //    la fenêtre (la barre du haut est cachée derrière elle) ;
-//  - l'outil donné par l'historique (ou la catégorie où il se choisit) est présenté en tête.
+//  - en tête, « D'où viennent vos outils » : ce que donnent l'historique et les dons du personnage
+//    (Façonneur, Musicien, Doué, Chef cuisinier, Empoisonneur), avec où il en est (« Noté »,
+//    « 2 sur 3 ») ; puis un encadré par outil donné, ou par liste où il se choisit (une catégorie
+//    entière mise en tête n'est pas répétée plus bas). Rien n'est coché tout seul : la fenêtre aide
+//    à choisir, le joueur coche (js/rules/tool-sources.js).
 // Le texte passe par le chemin des champs riches : nettoyage DOMPurify puis store. Aucune clé
 // nouvelle. Ouverte aussi depuis l'encadré « Historique » (js/ui/background.js).
 // =============================================================================
@@ -21,7 +25,7 @@ import { TOOLS } from '../data/tools.js';
 import {
     toolsInText, addToolToText, removeToolFromText, matchesToolQuery, toolGroups, toolAbilityName
 } from '../rules/tools.js';
-import { backgroundTool } from '../rules/background.js';
+import { toolSources, toolSourceProgress, featuredToolSections, sectionProgress } from '../rules/tool-sources.js';
 
 const FIELD = 'profs_tools';
 
@@ -41,7 +45,9 @@ export function openToolPicker({ store, setStatus }) {
     // Fiche verrouillée : la case ne se modifie pas (le bouton est d'ailleurs caché)
     if (isLocked()) return;
 
-    const featured = backgroundTool(store.get());
+    // Ce que donnent l'historique et les dons : lu à l'ouverture (ils ne changent pas fenêtre ouverte)
+    const sources = toolSources(store.get());
+    const featured = featuredToolSections(sources);
 
     const search = el('input', {
         type: 'search', class: 'input prep-search', placeholder: 'Chercher un outil…', autocomplete: 'off',
@@ -52,7 +58,7 @@ export function openToolPicker({ store, setStatus }) {
     const said = el('p', { class: 'tools-said', role: 'status', text: 'Chaque case cochée ou décochée met à jour la case Outils.' });
     const noMatch = el('p', { class: 'prep-empty muted', hidden: true, text: 'Aucun outil ne correspond.' });
 
-    /** Une entrée par case affichée : { tool, li, box } (l'outil de l'historique peut en avoir deux) */
+    /** Une entrée par case affichée : { tool, li, box } (un outil mis en tête peut en avoir plusieurs) */
     const entries = [];
 
     /** Nombre de changements faits dans cette fenêtre (message de fermeture) */
@@ -92,30 +98,59 @@ export function openToolPicker({ store, setStatus }) {
         return li;
     }
 
-    const section = (title, tools, extraClass = '') => el('section', { class: `prep-group ${extraClass}`.trim(), 'aria-label': title },
-        el('h3', { class: 'prep-level', text: title }),
+    /** Étiquette d'avancement (« Noté », « 2 sur 3 »), remplie par refresh */
+    const stateTag = () => el('span', { class: 'tools-source-state' });
+
+    const section = (title, tools, extraClass = '', state = null) => el('section', { class: `prep-group ${extraClass}`.trim(), 'aria-label': title },
+        el('h3', { class: 'prep-level' }, el('span', { text: title }), state),
         el('ul', { class: 'prep-items' }, tools.map(item)));
 
     const groups = toolGroups();
     const sections = [];
-    if (featured) {
-        // En tête : l'outil de l'historique, ou la catégorie où il se choisit (qui n'est pas répétée plus bas)
-        const tools = featured.toolId
-            ? TOOLS.filter((tool) => tool.id === featured.toolId)
-            : groups.find((group) => group.id === featured.categoryId)?.tools ?? [];
-        sections.push(section(`Donné par votre historique (${featured.background}) : ${featured.label}`, tools, 'tools-featured'));
+    /** Encadrés du haut : { section (featuredToolSections), state } */
+    const featuredStates = [];
+    // En tête : chaque outil donné par l'historique ou un don, ou la liste où il se choisit
+    for (const entry of featured) {
+        const state = stateTag();
+        featuredStates.push({ section: entry, state });
+        sections.push(section(entry.title, TOOLS.filter((tool) => entry.toolIds.includes(tool.id)), 'tools-featured', state));
     }
+    // Une catégorie entière déjà en tête n'est pas répétée
+    const shownAbove = new Set(featured.map((entry) => entry.categoryId).filter(Boolean));
     for (const group of groups) {
-        if (featured && !featured.toolId && group.id === featured.categoryId) continue;
+        if (shownAbove.has(group.id)) continue;
         sections.push(section(group.name, group.tools));
     }
     const listBox = el('div', { class: 'prep-list' }, sections);
 
-    /** Cases cochées et compteur, d'après le texte de la case (après chaque changement, ici ou ailleurs) */
+    /** Lignes « D'où viennent vos outils » : { source, li, state } */
+    const sourceRows = sources.map((source) => {
+        const state = stateTag();
+        const li = el('li', { class: 'tools-source' },
+            el('span', { class: 'tools-source-title', text: source.title }),
+            el('span', { class: 'tools-source-text', text: `${source.label}.` }),
+            state);
+        return { source, li, state };
+    });
+    const sourcesBox = sourceRows.length ? el('section', { class: 'tools-sources', 'aria-label': "D'où viennent vos outils" },
+        el('h3', { class: 'prep-level', text: "D'où viennent vos outils" }),
+        el('ul', { class: 'tools-source-list' }, sourceRows.map((row) => row.li)),
+        el('p', { class: 'prep-hint muted', text: "Rien n'est coché tout seul : cochez vous-même les outils choisis. Vos autres outils (classe, espèce, appris en jeu) se cochent de la même façon." })) : null;
+
+    const paint = (state, { status, done }) => {
+        state.textContent = status;
+        state.hidden = !status;
+        state.dataset.done = String(done);
+    };
+
+    /** Cases cochées, compteur et avancement, d'après le texte de la case (après chaque changement, ici ou ailleurs) */
     function refresh(character) {
         const noted = new Set(toolsInText(character[FIELD]));
         for (const { tool, box } of entries) box.checked = noted.has(tool.id);
         counter.textContent = noted.size > 1 ? `${noted.size} outils cochés` : `${noted.size} outil coché`;
+        const progress = toolSourceProgress(sources, character);
+        sourceRows.forEach((row, index) => paint(row.state, progress[index]));
+        for (const { section: entry, state } of featuredStates) paint(state, sectionProgress(entry, progress));
     }
 
     function applySearch() {
@@ -144,10 +179,11 @@ export function openToolPicker({ store, setStatus }) {
         body: [
             el('p', { class: 'prep-hint', text: 'Cochez les outils que votre personnage maîtrise : leur nom s\'écrit dans la case « Outils ». Décocher retire seulement ce nom et sa virgule : relisez la case si vous aviez écrit une phrase autour.' }),
             el('p', { class: 'prep-hint muted', text: 'Sous chaque outil : la caractéristique du test fait avec lui (vous y ajoutez votre bonus de maîtrise).' }),
+            sourcesBox,
             el('div', { class: 'prep-controls' }, search, counter, said),
             listBox,
             noMatch
-        ],
+        ].filter(Boolean),
         actions: [{ label: 'Fermer', primary: true }],
         onClose: () => {
             unsubscribe();

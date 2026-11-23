@@ -3,17 +3,23 @@
 //
 // Ce que donne l'historique choisi en haut de la fiche (caractéristiques, don d'origine,
 // compétences, outil, équipement), avec un repère « À vérifier » pour ce qui manque, et un
-// bouton « Appliquer » (fiche déverrouillée) qui coche les compétences et remplit le don de
-// niveau 1 s'il est vide, après confirmation. La ligne « Outil » porte le bouton « Choisir dans la
-// liste » (fenêtre des outils, js/ui/tools.js), qui présente en tête l'outil de l'historique.
+// bouton « Appliquer » (fiche déverrouillée) qui coche les compétences, remplit le don de
+// niveau 1 s'il est vide et ajoute à la case « Outils » l'outil précis de l'historique s'il n'y est
+// pas (le texte du joueur est gardé ; le résultat passe par le nettoyage des champs riches), après
+// confirmation. Un outil au choix n'est pas écrit : le message de la barre du haut invite à le
+// choisir. La ligne « Outil » porte le bouton « Choisir dans la liste » (fenêtre des outils,
+// js/ui/tools.js), qui présente en tête l'outil de l'historique.
 // Règles : js/rules/background.js.
 // =============================================================================
 
 import { el, icon } from './dom.js';
 import { confirmModal } from './modal.js';
 import { foldButton, bindFolding, applyFolds } from './fold.js';
-import { backgroundSummary, backgroundApplyPatch } from '../rules/background.js';
+import {
+    backgroundSummary, backgroundApplyPatch, backgroundApplyConfirm, backgroundAppliedMessage
+} from '../rules/background.js';
 import { toolPickerButton } from './tools.js';
+import { sanitizeRich, richTextAvailable } from './sanitize.js';
 
 /** Clés qui changent le bloc */
 const WATCHED = /^(char_background|feat_1|feat_choices|profs_tools|skill_prof_)/;
@@ -48,18 +54,26 @@ export function initBackground({ root, store, setStatus = () => {} }) {
         const ok = await confirmModal({
             title: `Historique : ${summary.name}`,
             icon: 'scroll',
-            message: `La fiche va ${summary.applyText.join(' et ')}. Les caractéristiques et les outils ne changent pas.`,
+            message: backgroundApplyConfirm(summary),
             confirmLabel: 'Appliquer'
         });
         if (!ok) return;
         const patch = backgroundApplyPatch(store.get());
+        if ('profs_tools' in patch) {
+            // Case « Outils » : même chemin que les champs riches (nettoyage DOMPurify). Mise en forme
+            // indisponible (hors ligne) : la case est en lecture seule, l'outil n'est pas écrit
+            if (richTextAvailable()) patch.profs_tools = sanitizeRich(patch.profs_tools);
+            else delete patch.profs_tools;
+        }
         if (Object.keys(patch).length) {
             store.update(patch);
             // Le bouton disparaît une fois tout appliqué : le focus revient au titre du bloc
             if (!container.contains(document.activeElement)) {
                 (container.querySelector('.origin-apply button') ?? container.querySelector('.fold-toggle'))?.focus({ preventScroll: true });
             }
-            setStatus(`Historique ${summary.name} appliqué.`);
+            setStatus(backgroundAppliedMessage(backgroundSummary(store.get()) ?? summary));
+        } else if (summary.writesTool) {
+            setStatus("⚠️ Outil non écrit hors ligne pour l'instant : rechargez la page une fois connecté.");
         }
     }
 

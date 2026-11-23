@@ -9,7 +9,11 @@ import {
     toolsInText, addToolToText, removeToolFromText, backgroundToolExpectation, expectedToolNoted,
     matchesToolQuery, toolGroups, toolAbilityName
 } from '../js/rules/tools.js';
-import { backgroundSummary, backgroundTool, backgroundApplyPatch } from '../js/rules/background.js';
+import {
+    backgroundSummary, backgroundTool, backgroundApplyPatch, backgroundToolNoted, backgroundApplyConfirm,
+    backgroundAppliedMessage
+} from '../js/rules/background.js';
+import { STATUS_ROOM } from '../js/data/status-bar.js';
 
 const byId = (id) => TOOLS.find((tool) => tool.id === id);
 
@@ -321,8 +325,123 @@ describe('Outil de l\'historique', () => {
         }
     });
 
-    test('« Appliquer à la fiche » n\'écrit toujours pas l\'outil', () => {
-        assert.equal('profs_tools' in backgroundApplyPatch({ char_background: 'Soldat' }), false);
+    test('Noté ou non (reconnaissance large de l\'encadré Historique)', () => {
+        assert.equal(backgroundToolNoted({ char_background: 'Sage', profs_tools: 'Calligraphie' }), true);
+        assert.equal(backgroundToolNoted({ char_background: 'Sage', profs_tools: 'Luth' }), false);
+        assert.equal(backgroundToolNoted({ char_background: 'Soldat', profs_tools: 'Jeux de hasard' }), true);
+        assert.equal(backgroundToolNoted({ profs_tools: 'Luth' }), false);
+    });
+});
+
+describe('« Appliquer à la fiche » et l\'outil de l\'historique', () => {
+    const isPrecise = ([, background]) => Boolean(backgroundToolExpectation(background.toolProfs[0]).toolId);
+    const PRECISE = Object.entries(DD_RULES.backgrounds).filter(isPrecise);
+    const CHOICE = Object.entries(DD_RULES.backgrounds).filter((entry) => !isPrecise(entry));
+    const toolLine = (record) => backgroundSummary(record).lines.find((line) => line.id === 'tool');
+    /** Fiche où il ne reste que l'outil à régler */
+    const settled = (id, extra = {}) => {
+        const background = DD_RULES.backgrounds[id];
+        return {
+            char_background: id, feat_1: background.featId,
+            ...Object.fromEntries(background.skillProfs.map((skill) => [`skill_prof_${skill}`, true])), ...extra
+        };
+    };
+
+    test('Onze historiques à outil précis, cinq à outil au choix', () => {
+        assert.equal(PRECISE.length, 11);
+        assert.deepEqual(CHOICE.map(([id]) => id).sort(), ['artisan', 'entertainer', 'guard', 'noble', 'soldier']);
+    });
+
+    test('Outil précis, case vide : le nom du manuel est écrit, et la ligne Outil n\'est plus « À vérifier »', () => {
+        for (const [id, background] of PRECISE) {
+            const record = settled(id);
+            const summary = backgroundSummary(record);
+            assert.equal(summary.canApply, true, background.nameFr);
+            assert.equal(summary.writesTool, true, background.nameFr);
+            assert.deepEqual(summary.applyText, [`noter ${background.toolFr} dans la case Outils`], background.nameFr);
+            const patch = backgroundApplyPatch(record);
+            assert.deepEqual(patch, { profs_tools: background.toolFr }, background.nameFr);
+            const after = { ...record, ...patch };
+            assert.equal(toolLine(after).check, undefined, background.nameFr);
+            assert.equal(backgroundSummary(after).canApply, false, background.nameFr);
+            // Une seconde fois : plus rien à faire, donc jamais de doublon
+            assert.deepEqual(backgroundApplyPatch(after), {}, background.nameFr);
+        }
+    });
+
+    test('Ce que le joueur a écrit reste tel quel : le nom s\'ajoute à la suite, dans la même présentation', () => {
+        const apply = (text) => backgroundApplyPatch(settled('criminal', { profs_tools: text })).profs_tools;
+        assert.equal(apply('Luth'), 'Luth, Outils de voleur');
+        assert.equal(apply('Luth ; Dés'), 'Luth ; Dés ; Outils de voleur');
+        assert.equal(apply('<div>Luth</div><div>Lyre</div>'), '<div>Luth</div><div>Lyre</div><div>Outils de voleur</div>');
+        assert.equal(apply('Appris chez mon oncle : <b>Outils de forgeron</b> (depuis 3 ans)'),
+            'Appris chez mon oncle : <b>Outils de forgeron</b> (depuis 3 ans), Outils de voleur');
+        for (const text of ['Luth', 'Luth, Lyre', 'Luth<br>Lyre', '<p>Luth</p><p>Lyre</p>', 'Texte libre sans outil', '<font color="#ff0000">Chariots</font>']) {
+            const next = apply(text);
+            assert.equal(removeToolFromText(next, 'thieves'), text, text);
+            assert.deepEqual(toolsInText(next), [...toolsInText(text), 'thieves'], text);
+        }
+    });
+
+    test('Outil déjà noté, sous n\'importe quelle écriture : la case n\'est pas touchée', () => {
+        for (const text of ['Outils de voleur', 'Luth, outils de voleurs', '<b>OUTILS DE VOLEUR</b>', 'Outil de voleur (offert par la guilde)', 'Mon matériel de voleur']) {
+            const record = settled('criminal', { profs_tools: text });
+            assert.equal('profs_tools' in backgroundApplyPatch(record), false, text);
+            assert.equal(backgroundSummary(record).writesTool, false, text);
+            assert.equal(backgroundSummary(record).canApply, false, text);
+        }
+        // Écrit à la main autrement que dans la liste (Sage : « Calligraphie »)
+        assert.equal('profs_tools' in backgroundApplyPatch(settled('sage', { profs_tools: 'Calligraphie' })), false);
+    });
+
+    test('Outil au choix : jamais écrit ; il reste à choisir dans la fenêtre des outils', () => {
+        for (const [id, background] of CHOICE) {
+            const record = settled(id);
+            assert.equal('profs_tools' in backgroundApplyPatch({ char_background: id }), false, background.nameFr);
+            assert.deepEqual(backgroundApplyPatch(record), {}, background.nameFr);
+            const summary = backgroundSummary(record);
+            assert.equal(summary.writesTool, false, background.nameFr);
+            assert.equal(summary.canApply, false, background.nameFr);
+            assert.equal(summary.toolChoice, backgroundToolExpectation(background.toolProfs[0]).label, background.nameFr);
+            assert.ok(toolLine(record).check, background.nameFr);
+        }
+        // Une fois choisi, ou pour un outil précis : rien à choisir
+        assert.equal(backgroundSummary(settled('soldier', { profs_tools: 'Dés' })).toolChoice, null);
+        assert.equal(backgroundSummary(settled('criminal')).toolChoice, null);
+    });
+
+    test('Les autres clés de la fiche ne changent pas, et la fiche reçue n\'est pas modifiée', () => {
+        const record = Object.freeze({ char_background: 'Criminel', profs_tools: 'Luth', profs_weapons: 'Dague', str_score: '12' });
+        const patch = backgroundApplyPatch(record);
+        assert.deepEqual(Object.keys(patch).sort(), ['feat_1', 'profs_tools', 'skill_prof_sleight_of_hand', 'skill_prof_stealth']);
+        assert.equal(record.profs_tools, 'Luth');
+    });
+
+    test('Fenêtre de confirmation : dit ce qui sera écrit, et que rien n\'est retiré', () => {
+        const confirm = (record) => backgroundApplyConfirm(backgroundSummary(record));
+        assert.match(confirm({ char_background: 'Criminel', profs_tools: 'Luth' }),
+            /^La fiche va cocher .+, choisir le don Vigilant au niveau 1 et noter Outils de voleur dans la case Outils\. Les caractéristiques ne changent pas, et rien de ce que vous avez écrit dans la case Outils n'est retiré\.$/);
+        assert.match(confirm({ char_background: 'Criminel', profs_tools: 'Outils de voleur' }),
+            /^La fiche va cocher .+ et choisir le don Vigilant au niveau 1\. Les caractéristiques et les outils ne changent pas\.$/);
+        assert.match(confirm({ char_background: 'Soldat', feat_1: 'sauvagerie_martiale' }),
+            /^La fiche va cocher Athlétisme et Intimidation\. Les caractéristiques et les outils ne changent pas\. L'outil de l'historique \(un type de boîte de jeux au choix\) se choisit ensuite avec « Choisir dans la liste »\.$/);
+        assert.equal(confirm(settled('sage')),
+            "La fiche va noter Matériel de calligraphe dans la case Outils. Les caractéristiques ne changent pas, et rien de ce que vous avez écrit dans la case Outils n'est retiré.");
+    });
+
+    test('Message de la barre du haut : invite à choisir un outil au choix, et tient sur une ligne de tablette', () => {
+        const applied = (record) => backgroundAppliedMessage(backgroundSummary({ ...record, ...backgroundApplyPatch(record) }));
+        assert.equal(applied({ char_background: 'Criminel' }), 'Historique Criminel appliqué.');
+        assert.equal(applied({ char_background: 'Artisan' }),
+            'Historique Artisan appliqué. Outil au choix : bouton « Choisir dans la liste », ligne Outil.');
+        assert.equal(applied({ char_background: 'Artisan', profs_tools: 'Outils de forgeron' }), 'Historique Artisan appliqué.');
+        // Outil précis resté à noter (hors ligne, la case Outils n'est pas écrite)
+        assert.equal(backgroundAppliedMessage(backgroundSummary(settled('sage'))),
+            'Historique Sage appliqué. Outil à noter : bouton « Choisir dans la liste », ligne Outil.');
+        for (const id of Object.keys(DD_RULES.backgrounds)) {
+            assert.ok(applied({ char_background: id }).length <= STATUS_ROOM, id);
+            assert.ok(backgroundAppliedMessage(backgroundSummary({ char_background: id })).length <= STATUS_ROOM, id);
+        }
     });
 });
 

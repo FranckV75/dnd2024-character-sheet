@@ -57,7 +57,9 @@ js/
 │   ├── class-progression.js  Aptitudes de base des 12 classes par niveau (résumés) et
 │   │                   colonnes de leur table (Rages, sorts mineurs, sorts préparés…)
 │   ├── equipment.js    Armures
-│   ├── tools.js        Outils du manuel (37, par catégorie, caractéristique) ; outil de chaque historique
+│   ├── tools.js        Outils du manuel (37, par catégorie, caractéristique) ; outil de chaque historique ;
+│   │                   dons qui donnent des outils (FEAT_TOOLS), table Façonnage rapide. L'Odyssée
+│   │                   n'introduit aucun outil (guide du joueur relu le 23/11/2026)
 │   ├── help.js         Textes du mode d'emploi (rubriques → entrées { title, text }) ; tout libellé
 │   │                   cité entre « » doit exister dans l'interface (tests/help.test.js)
 │   ├── whats-new.js    « Nouveautés » : 3 à 6 lignes par version, la plus récente d'abord ; une
@@ -127,7 +129,10 @@ js/
 │   ├── species.js      Espèce : option choisie (clé facultative « species_choices »), Vision dans
 │   │                   le noir, Résistances, Souffle, sorts d'espèce, cases des traits limités
 │   ├── background.js   Historique : ce qu'il donne, ce qui manque (« À vérifier »), bouton Appliquer
+│   │                   (compétences, don de niveau 1, outil précis ajouté à la case Outils)
 │   ├── tools.js        Case « Outils » (texte libre) : reconnaître, ajouter, retirer un outil du manuel
+│   ├── tool-sources.js D'où viennent les outils (historique, dons Façonneur, Musicien, Doué, Chef
+│   │                   cuisinier, Empoisonneur) et où le joueur en est ; n'écrit jamais rien
 │   ├── class-reminders.js  Rappels des capacités de classe près des valeurs (Sens du danger…)
 │   ├── concentration.js  Sort de concentration (clé facultative « concentration »), jet après dégâts
 │   ├── hit-points.js   PV en jeu : dégâts, soins, PV temporaires, boutons − / + (écran : ui/hit-points.js)
@@ -248,7 +253,8 @@ js/
     ├── calc-bubble.js  Bulle de calcul : détail d'une valeur calculée (CA d'une armure, écusson CA)
     ├── class-progression.js · experience.js · counters.js · companions.js · subclass.js
     ├── species.js · background.js   Encadré « Espèce & historique » (css/origins.css)
-    ├── tools.js        Fenêtre « Choisir dans la liste » de la case Outils (css/tab-skills.css)
+    ├── tools.js        Fenêtre « Choisir dans la liste » de la case Outils (css/tab-skills.css) : en tête,
+    │                   « D'où viennent vos outils » et un encadré par outil donné (historique, dons)
     ├── help.js         Fenêtre « Mode d'emploi » (sommaire, rubriques, impression de la notice)
     ├── whats-new.js    Fenêtre « Nouveautés de la version X » après une mise à jour (annoncée
     │                   par update.js ; jamais par-dessus une autre fenêtre)

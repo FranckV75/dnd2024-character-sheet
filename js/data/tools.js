@@ -9,7 +9,14 @@
 //    formes courtes), reconnues comme le nom lui-même ;
 //  - exact : le nom ne se reconnaît qu'avec ses accents (« Dés », pour ne pas trouver le mot
 //    courant « des »).
-// Utilisé par js/rules/tools.js (reconnaître, ajouter, retirer) et js/ui/tools.js (fenêtre).
+// Dons qui donnent des maîtrises d'outils : FEAT_TOOLS (Player's Handbook 2024 anglais, chapitre 5 ;
+// noms français des photos Dons_03 à Dons_06).
+// L'Odyssée des Seigneurs Dragons (guide du joueur, relu le 23/11/2026) n'introduit aucun outil : ni
+// historique (ses « destins héroïques » ne donnent pas de maîtrise d'outil), ni table d'équipement.
+// Sa seule maîtrise d'outil est un instrument de musique au choix (Satyre, Mémoire musicale), pris
+// dans la liste du manuel. Il n'y a donc pas de groupe « Odyssée » ici.
+// Utilisé par js/rules/tools.js (reconnaître, ajouter, retirer), js/rules/tool-sources.js (d'où
+// viennent les outils) et js/ui/tools.js (fenêtre).
 // =============================================================================
 
 /** Catégories, dans l'ordre d'affichage. choice : libellé d'un outil « au choix » de la catégorie */
@@ -82,4 +89,33 @@ export const BACKGROUND_TOOLS = Object.freeze({
     "Cartographer's Tools": Object.freeze({ tool: 'cartographer' }),
     'Herbalism Kit': Object.freeze({ tool: 'herbalism' }),
     "Navigator's Tools": Object.freeze({ tool: 'navigator' })
+});
+
+/**
+ * Outils de la table « Façonnage rapide » du don Façonneur (manuel français p. 201, photo Dons_03 ;
+ * « Fast Crafting », PHB 2024 p. 200) : les trois outils du don se choisissent parmi ces huit.
+ */
+export const FAST_CRAFTING_TOOLS = Object.freeze([
+    'tinker', 'carpenter', 'smith', 'mason', 'woodcarver', 'potter', 'leatherworker', 'weaver'
+]);
+
+/**
+ * Dons qui donnent des maîtrises d'outils (clés de js/data/feats.js). Les cinq dons du manuel qui en
+ * donnent, vérifiés dans le texte de chaque don (PHB 2024 anglais) :
+ *  - tool : un outil précis (Chef cuisinier « Chef », p. 202 ; Empoisonneur « Poisoner », p. 206) ;
+ *  - tools + count : plusieurs outils différents à choisir dans une liste (Façonneur « Crafter », p. 200) ;
+ *  - category + count : plusieurs outils à choisir dans une catégorie (Musicien « Musician », p. 201) ;
+ *  - any : n'importe quel outil, autant que de menus du don réglés sur « Un outil » (Doué
+ *    « Skilled », p. 201 : trois maîtrises de compétences ou d'outils ; js/rules/feat-choices.js).
+ * choice : libellé du choix, dans nos mots.
+ */
+export const FEAT_TOOLS = Object.freeze({
+    chef_cuisinier: Object.freeze({ tool: 'cook' }),
+    empoisonneur: Object.freeze({ tool: 'poisoner' }),
+    faconneur: Object.freeze({
+        tools: FAST_CRAFTING_TOOLS, count: 3,
+        choice: "trois outils d'artisan différents de la table Façonnage rapide"
+    }),
+    musicien: Object.freeze({ category: 'instrument', count: 3, choice: 'trois instruments de musique au choix' }),
+    doue: Object.freeze({ any: true })
 });

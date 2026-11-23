@@ -86,7 +86,9 @@ describe('Bouton « Appliquer »', () => {
         assert.deepEqual(backgroundApplyPatch(record), {
             skill_prof_history: true,
             feat_1: 'initie_a_la_magie',
-            feat_choices: { 1: { initie_a_la_magie: { list: 'wizard' } } }
+            feat_choices: { 1: { initie_a_la_magie: { list: 'wizard' } } },
+            // Outil précis de l'historique, pas encore noté (détail : tests/tools.test.js)
+            profs_tools: 'Matériel de calligraphe'
         });
     });
 
