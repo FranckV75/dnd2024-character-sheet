@@ -2,6 +2,36 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.47.0] - 2026-11-23 (pièce « Inspiration héroïque », petits − / +, liste des armes)
+Maquettes validées par Franck le 23/11/2026 (version 3 : « Disponible » / « Non disponible », ni
+oui / non ni case ronde ; boutons autour du titre, sa proposition 1).
+### Added
+- Liste des armes à parcourir, comme au grimoire : toucher le nom vide d'une arme, ou le nouveau
+  bouton ▾ après lui, ouvre les armes du manuel sans clavier virtuel, dans les quatre groupes de sa
+  table des armes (photo p. 215 : armes courantes de corps à corps, courantes à distance, de guerre
+  de corps à corps, de guerre à distance), puis l'Attaque à mains nues ; dégâts de chacune ; la
+  saisie resserre la liste. Une arme déjà dans le tableau porte une ✓ mais reste choisissable (deux
+  dagues). Règle pure `weaponPickerGroups` (`js/rules/weapon-picker.js`) ; bouton ▾ au style du
+  grimoire ; `browse.empty` dans `js/ui/autocomplete.js`.
+- « Configuration de l'arme » : « Annuler », toucher le fond ou Échap demandent confirmation si un
+  réglage a changé (« Continuer à modifier » / « Fermer sans appliquer ») ; rien de changé, la
+  fenêtre se ferme aussitôt. Échap est pris dès l'appui de la touche (Chrome et Edge
+  laissent sinon fermer au 3e appui) ; un geste retour répété sur Android ferme sans question. Nouvelle option `onDismiss` d'`openModal` et `cancelLabel` de
+  `confirmModal` (`js/ui/modal.js`).
+### Changed
+- Inspiration héroïque : une pièce, dorée avec une étoile pleine et « Disponible », ou vide en
+  pointillés avec « Non disponible » (`inspirationCoin`, `inspirationCoinPatch`,
+  `INSPIRATION_STATES`, `js/rules/odyssey.js`). Mode Odyssée : sous la pastille des points de Foi,
+  pour tous les personnages (avant : Humain, Champion 10+ ou déjà allumée ; `odysseyInspirationUseful`
+  retirée). Mode coupé : elle remplace la case et ses boutons (écrit `"1"` / `"0"` dans
+  `heroic_inspiration` au toucher ; une case « N/M » des sauvegardes v3, « 0/3 », garde sa forme :
+  « 1/3 ») ; une case en texte libre reste affichée, sans pièce, et ne se cache pas pendant la
+  saisie (la pièce revient quand on quitte la case). Imprimée « Non disponible » à l'encre. Imprimée
+  comme à l'écran, sans fond ni halo. Phrases de la barre du haut et infobulle revues.
+- Points de Foi et Points de renommée : petits boutons − / + ronds de part et d'autre du titre au
+  lieu des gros boutons autour de la valeur (option `around` de `wrapWithSteppers`, `steppersOf`,
+  `js/ui/stepper.js` ; zone de toucher élargie au doigt).
+
 ## [4.46.0] - 2026-11-22 (audit du 22/11/2026, Inspiration héroïque en mode Odyssée, Dépenser les points de Foi)
 Corrections de l'audit de santé du 22/11/2026 (lots A, B, C, D et F ; lot E clos par la décision
 de Franck : les textes AideDD restent). Publiée le 23/11/2026.

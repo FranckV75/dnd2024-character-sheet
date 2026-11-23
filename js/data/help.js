@@ -44,7 +44,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "« Mode Odyssée » décoché : ce qui reste",
-                text: "Rien n'est retiré de votre fiche. Un Centaure reste un Centaure, avec ses traits et ses calculs, et la fiche vous dit ce qu'elle garde. L'encadré « Odyssée des Seigneurs Dragons » reste affiché s'il contient un destin ou des points de renommée ; vide, il disparaît. La case « Points de Foi » de l'onglet Combat devient « Inspiration héroïque » : une seule à la fois, comme le veut le manuel."
+                text: "Rien n'est retiré de votre fiche. Un Centaure reste un Centaure, avec ses traits et ses calculs, et la fiche vous dit ce qu'elle garde. L'encadré « Odyssée des Seigneurs Dragons » reste affiché s'il contient un destin ou des points de renommée ; vide, il disparaît. La case « Points de Foi » de l'onglet Combat devient « Inspiration héroïque » : une pièce, « Disponible » ou « Non disponible »."
             },
             {
                 title: "« Mode Odyssée » décoché : retrouver un choix",
@@ -194,15 +194,15 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Points de Foi ou Inspiration héroïque",
-                text: "Campagne de l'Odyssée (case « Mode Odyssée » cochée), la case s'appelle « Points de Foi » : à chaque niveau, elle repart de 0 et reçoit votre bonus de maîtrise plus votre modificateur de Sagesse (au moins 1). La pastille dorée dessous donne ce nombre ; « Passer au niveau » remet la case pour vous. Mode décoché, c'est « Inspiration héroïque » : les boutons − et + vont seulement de 0 à 1."
+                text: "Mode Odyssée coché, la case s'appelle « Points de Foi » : à chaque niveau, elle repart de 0 et reçoit votre bonus de maîtrise plus votre modificateur de Sagesse (au moins 1). La pastille dorée dessous donne ce nombre ; « Passer au niveau » remet la case pour vous. Les petits − et + autour du titre changent un point. Décoché, la case devient la pièce « Inspiration héroïque », sans − ni +."
             },
             {
                 title: "Dépenser ses points de Foi",
                 text: "Touchez la pastille dorée sous « Points de Foi » : une fenêtre liste les faveurs divines à 1, 3 ou 5 points et marque « Possible » celles que vos points permettent. Elle rappelle comment les demander : prière sur le moment, ou sacrifice pour les jours suivants. Le MJ a le dernier mot. Chaque faveur a son bouton « Dépenser », qui retire ses points de la case (grisé s'il en manque) ; le bouton + les rend."
             },
             {
-                title: "L'Inspiration héroïque en mode Odyssée",
-                text: "Les points de Foi ne remplacent pas l'Inspiration héroïque. Un Humain, ou un Champion à partir du niveau 10, a un bouton « Inspiration héroïque » sous la case « Points de Foi » : touchez-le quand vous l'obtenez (il devient doré), retouchez-le une fois dépensée. Il marche aussi fiche verrouillée."
+                title: "La pièce « Inspiration héroïque »",
+                text: "L'Inspiration héroïque se note avec une pièce : dorée, étoile pleine et « Disponible » quand vous l'avez ; vide, en pointillés, et « Non disponible » sinon. Touchez-la quand vous l'obtenez, retouchez-la une fois dépensée. En mode Odyssée, elle est sous les « Points de Foi », qui ne la remplacent pas ; mode décoché, elle prend la place de la case. Elle marche aussi fiche verrouillée."
             },
             {
                 title: "Les dieux de Thyléa",
@@ -222,7 +222,11 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Les armes",
-                text: "Fiche modifiable, « Ajouter une arme ou un sort mineur » crée une ligne : tapez le début du nom et choisissez dans la liste. Le bonus d'attaque et les dégâts sont calculés. La roue dentée (« Configuration de l'arme ») règle les détails, comme un bonus magique. Les boutons au-dessus du tableau filtrent les armes affichées."
+                text: "Fiche modifiable, « Ajouter une arme ou un sort mineur » crée une ligne. Touchez son nom vide, ou le bouton ▾ (« Choisir dans la liste des armes ») : les armes du manuel s'ouvrent sans clavier, avec leurs dégâts (✓ : déjà dans votre tableau). Vous pouvez aussi taper le début du nom. Le bonus d'attaque et les dégâts sont calculés."
+            },
+            {
+                title: "Régler une arme, filtrer le tableau",
+                text: "La roue dentée (« Configuration de l'arme ») règle les détails, comme un bonus magique. Si vous la fermez sans appliquer vos changements, elle demande d'abord : « Continuer à modifier » ou « Fermer sans appliquer ». Les boutons au-dessus du tableau filtrent les armes affichées."
             },
             {
                 title: "Les bonus de combat",

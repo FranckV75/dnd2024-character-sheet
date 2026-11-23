@@ -98,6 +98,8 @@ js/
 │   ├── armors.js       Tableau des armures (types, ligne d'armure) ; le calcul de CA est dans
 │   │                   character.js (computeArmorClass, armorLine), réexporté ici
 │   ├── weapon-masteries.js  Bottes d'armes : botte d'une arme, effet affiché
+│   ├── weapon-picker.js  Liste des armes à parcourir (bouton ▾, 4.47.0) : les quatre groupes de
+│   │                   la table des armes du manuel, puis l'Attaque à mains nues ; ✓ sans griser
 │   ├── spells.js       Grimoire (recherche, tri, filtres, emplacements de sorts)
 │   ├── spell-picker.js Liste des sorts à parcourir depuis la case du nom (par niveau, liste choisie)
 │   ├── spell-preparation.js  Sorts préparés (classes à liste fixe ou à toute la liste) et
@@ -148,8 +150,10 @@ js/
 │   ├── odyssey.js      Mode Odyssée réglé fiche par fiche (clé facultative « odyssey_mode ») : ce qui
 │   │                   est proposé dans les listes, ce que la fiche garde, encadré de l'onglet 3,
 │   │                   « Points de Foi » (maîtrise + Sagesse par niveau) ou « Inspiration héroïque »
-│   │                   (une seule), phrases pour le joueur ; bouton « Inspiration héroïque » à
-│   │                   part en mode actif (odysseyInspiration*, clé facultative « odyssey_inspiration ») ;
+│   │                   (une seule), phrases pour le joueur ; pièce « Inspiration héroïque »
+│   │                   (inspirationCoin, inspirationCoinPatch, 4.47.0) : sous les points de Foi en
+│   │                   mode actif (clé facultative « odyssey_inspiration »), à la place de la case
+│   │                   en mode coupé ;
 │   │                   fenêtre des faveurs (faithWindow, payFavor, spendFaith)
 │   ├── wild-magic.js   Sorcellerie sauvage : Bouffée (d20) et table (d100)
 │   ├── plain-text.js   plainText(value, { spaced, squash }) et decodeEntities : seule lecture en
@@ -197,12 +201,14 @@ js/
     │   │               initWeapons et donné à chaque fonction
     │   ├── shared.js   Contexte WeaponsContext, colonnes, petits textes (plain, fitStatus,
     │   │               weaponInSentence)
-    │   ├── rows.js     Lignes : construction (buildRow, auto-complétion du nom) et réécriture
+    │   ├── rows.js     Lignes : construction (buildRow, auto-complétion du nom, bouton ▾ de la liste
+    │   │               des armes) et réécriture
     │   │               (refreshRows : valeurs calculées, aspect magique, rappels des dons, botte)
     │   ├── damage.js   Case des dégâts, détail sous l'arme (toggleDamageDetail), pastilles « À allumer »
     │   ├── buffs.js    Bonus de combat (Rage…, BUFF_DEFS), avertissement Rage en armure lourde
     │   ├── edit.js     Ajouter, supprimer (confirmation), « Annuler la suppression » pendant 10 s
-    │   ├── config.js   Fenêtre « Configuration de l'arme » (openConfig) et bouton « Appliquer »
+    │   ├── config.js   Fenêtre « Configuration de l'arme » (openConfig) et bouton « Appliquer » ;
+    │   │               quitter sans appliquer un changement demande confirmation (4.47.0)
     │   ├── config-extras.js  Rubrique « Dégâts en plus » de cette fenêtre (createExtrasEditor)
     │   └── mastery.js  Fenêtre de la règle d'une botte d'arme (openMastery), lecture seule
     ├── spells.js       Grimoire, chef d'orchestre (452 lignes) : crée le contexte partagé,
@@ -253,10 +259,12 @@ js/
     ├── odyssey.js      Case « Mode Odyssée » du menu « Gestion » (css/toolbar.css), encadré Odyssée
     │                   de l'onglet 3 caché quand il est inutile, case « Points de Foi » et sa
     │                   pastille « +5 par niveau » (qui ouvre la fenêtre des faveurs, puis celle
-    │                   des dieux de Thyléa, avec ses boutons « Dépenser »), bouton « Inspiration
-    │                   héroïque » sous la pastille quand il sert ; ou, mode coupé, « Inspiration héroïque »
-    ├── stepper.js · number-pad.js   Boutons − / + à appui long et pavé de chiffres (partagés)
-    ├── modal.js · autocomplete.js · cell-text.js · dom.js   (briques partagées)
+    │                   des dieux de Thyléa, avec ses boutons « Dépenser »), pièce « Inspiration
+    │                   héroïque » sous la pastille ; ou, mode coupé, la pièce seule à la place de la case
+    ├── stepper.js · number-pad.js   Boutons − / + à appui long (autour de la case, ou petits autour
+    │                   de son titre : option around, 4.47.0) et pavé de chiffres (partagés)
+    ├── modal.js · autocomplete.js · cell-text.js · dom.js   (briques partagées ; openModal : onDismiss
+    │                   pour demander avant de quitter sans agir ; autocomplete : mode parcourir)
     ├── boot-notices.js Avis du démarrage (mise en forme indisponible, sauvegarde illisible)
     └── sanitize.js     Nettoyage du texte riche via DOMPurify (sans attribut data-* ni aria-*)
 data/spells.json        Base de sorts (chargée à la demande)
@@ -412,8 +420,11 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   et aucun calcul ne change. Une fiche vierge au mode coupé reste une fiche vierge (`isBlankCharacter`,
   `js/cloud/controller.js`).
 - `odyssey_inspiration` (4.46.0) : Inspiration héroïque notée à part des points de Foi, mode Odyssée actif
-  (`"1"` = allumée ; absente ou toute autre valeur, même un objet piégé, = éteinte :
-  `odysseyInspirationLit`). Même traitement que `odyssey_mode` : jamais dans la fiche vierge (valeur par
+  (`"1"` = disponible ; absente ou toute autre valeur, même un objet piégé, = non disponible :
+  `odysseyInspirationLit`). Depuis la 4.47.0, une pièce sous les points de Foi pour tous les personnages.
+  Mode coupé, la pièce écrit `heroic_inspiration` (`"1"` ou `"0"`, au toucher seulement ; une case
+  « N/M » garde sa forme, « 0/3 » ↔ « 1/3 » ; une case en texte libre garde sa case et n'a pas de pièce,
+  et la garde aussi tant qu'on y écrit). Même traitement que `odyssey_mode` : jamais dans la fiche vierge (valeur par
   défaut `''` dans `OPTIONAL_KEY_DEFAULTS`, `js/state/schema.js`), écrite quand le joueur allume le bouton,
   retirée quand il l'éteint (empreinte inchangée), dans `V4_ONLY_KEYS` et parmi les champs utilisables
   fiche verrouillée (`js/ui/lock.js`).

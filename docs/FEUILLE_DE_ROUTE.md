@@ -36,34 +36,18 @@ Fait en 4.46.0 (22/11/2026, publiée le 23/11/2026), d'après l'audit du
   valent pour la suite »).
 - ~~Lot F~~ : boutons « Dépenser » dans la fenêtre « Points de Foi ».
 
-Décisions de Franck en attente sur la 4.46.0 :
-- Tablette, tableau des armes : « Supériorité » se coupe dans la colonne Dégâts à 820 et 768 px
-  (« Supériori/té »), et le nom d'une arme magique se coupe à côté de sa pastille +1/+2/+3
-  (« Hachet/te »). Trois choix : élargir la colonne Dégâts de 15 à 29 px (prise sur Propriétés ou
-  Botte d'arme), poser la pastille sous le nom (lignes plus hautes), ou accepter la coupure avec
-  trait d'union que font normalement l'iPad et Android (« Supé-riorité »).
-- Bouton « Inspiration héroïque » : seulement pour un Humain, un Champion à partir du niveau 10, ou
-  s'il est déjà allumé. L'afficher pour tous en mode Odyssée (don Musicien d'un allié, Inspiration
-  donnée par le MJ) ?
-- La clé de ce bouton n'est jamais dans la fiche vierge (sinon toutes les fiches auraient changé
-  d'empreinte et les tablettes risquaient d'oublier leur lien au compte) : choix à confirmer.
-- Fenêtre « Points de Foi » : une phrase de rappel s'écrit à côté du bouton « Dépenser » qui vient
-  de servir (la fenêtre couvre la barre du haut sur tablette) : à garder ?
-- Thème sombre : couleurs de la pastille des objets magiques (or bruni, chiffre crème) à valider
-  sur tablette.
-- Onglet Combat : la réserve de 3 lignes des libellés pourrait passer à 2 (12 px de gagnés ; 2 lignes
-  suffisent aujourd'hui de 768 à 1920 px et en A4).
-- Fenêtre « Modifié par l'ancienne version » : ce qui serait perdu est dit avant les deux dates ;
-  un autre ordre ?
-- Fenêtre « Configuration de l'arme » : toucher le fond gris la ferme sans enregistrer, comme
-  « Annuler » (toutes les fenêtres font ainsi) : voulu pour une fenêtre de saisie longue ?
-- Deux commits du découpage (ee7c9c8, 0e37b90) sont signés « Claude Fable 5.2 », les autres
-  « Claude Opus 5.5 » : laisser tel quel (le corriger obligerait à réécrire l'historique) ?
+~~Décisions de Franck sur la 4.46.0~~ : toutes prises le 23/11/2026 (tablette essayée par
+Franck). Gardés tels quels : abréviation « Supériori… » des dégâts (le toucher déplie la ligne
+entière dessous, ce qui lui convient), clé du bouton Inspiration hors de la fiche vierge, phrase
+de rappel près de « Dépenser », pastille magique en sombre, réserve de 3 lignes des libellés,
+ordre du texte « Modifié par l'ancienne version », commits signés Fable. Demandés et faits en
+4.47.0 : Inspiration héroïque pour tous en mode Odyssée, confirmation avant de fermer
+« Configuration de l'arme ».
 
 Petits restes de la 4.46.0 (pas urgents) : le Déplacement rapide du Barbare (+3 m sans armure
 lourde) n'a pas été revu ; sur ordinateur, la ligne du compte (« Non connecté… ») peut aussi être
-coupée sans toucher pour la lire ; mode coupé, une Inspiration héroïque notée à part reste cachée
-(elle revient si l'on recoche) ; un champ inconnu d'une très vieille fiche fait encore poser la
+coupée sans toucher pour la lire ; mode coupé, une Inspiration héroïque notée à part en mode
+Odyssée n'est pas reprise (la pièce lit alors la case ; elle revient si l'on recoche) ; un champ inconnu d'une très vieille fiche fait encore poser la
 question de l'ancienne version (aucune vraie fiche concernée) ; au premier chargement d'un
 navigateur neuf, la ligne Nom / Classe de l'en-tête bouge parfois de 2 px (déjà avant) ; le
 remplacement de la fiche pendant une saisie de sort n'a pas été rejoué à l'écran après le
@@ -100,7 +84,10 @@ Sagesse par niveau, remis par « Passer au niveau »), fenêtre des faveurs à 1
 (toucher la pastille) avec le rappel des dieux de Thyléa et Inspiration héroïque limitée à 1 mode
 coupé~~. Faite le 21/11/2026 : ~~étude du multiclassage~~ (`docs/etudes/MULTICLASSAGE.md`). Faits en
 4.46.0 (22/11/2026, publiée le 23/11/2026) : ~~bouton « Dépenser » des points de Foi~~ et ~~Inspiration
-héroïque en mode Odyssée~~ (point 1, audit du 22/11/2026).
+héroïque en mode Odyssée~~ (point 1, audit du 22/11/2026). Faits en 4.47.0 (23/11/2026, pas encore
+publiée) : ~~pièce « Inspiration héroïque » « Disponible / Non disponible » dans les deux modes~~,
+~~petits − / + autour du titre (Points de Foi, renommée)~~, ~~liste des armes à parcourir (bouton ▾)~~,
+~~confirmation avant de fermer « Configuration de l'arme »~~ (maquettes validées par Franck).
 Reste :
 
 1. **Multiclassage** : l'étude est faite et contre-vérifiée, rien n'est construit. Elle conseille
@@ -120,7 +107,8 @@ Décisions de Franck en attente sur la 4.44.0 (mode Odyssée) :
 - Encadré caché : pour y écrire un destin, il faut d'abord recocher la case (dit dans la notice).
 
 Petits restes de la 4.45.0 (pas urgents) : mode coupé, une vieille valeur au-delà de 1 (« 3 »,
-« 2/3 ») n'est pas corrigée d'elle-même ; « − » la ramène à 1 d'un coup. La pastille des points de
+« 2/3 ») n'est pas corrigée d'elle-même : la pièce la montre « Disponible » et un toucher écrit 0
+(ou « 0/3 », 4.47.0). La pastille des points de
 Foi suit la Sagesse de la fiche, objets magiques compris seulement s'ils sont saisis dans la case
 Sagesse. ~~La fenêtre des faveurs ne retire pas les points elle-même~~ : boutons « Dépenser »
 en 4.46.0.
@@ -155,6 +143,24 @@ au survol) ; l'affichage suppose que les dégâts en plus sont à la fin du text
 seul test le vérifie). Défauts plus anciens vus au passage, non touchés : le tableau des armes
 peut défiler de 8 px dans son cadre ; à 768 px « Ralentissement » et l'en-tête « Notes » se
 coupent ; à 1024 px « FOR : +6 » passe sur deux lignes.
+
+Décisions de Franck en attente sur la 4.47.0 :
+- Liste des armes : une arme déjà dans le tableau est marquée ✓ mais reste choisissable (deux
+  dagues, deux épées courtes), au contraire du grimoire où un sort déjà noté est grisé.
+- L'Attaque à mains nues est proposée en dernier, dans un groupe « Sans arme ».
+- Mode coupé, une case « Inspiration héroïque » qui contient du texte (« 1 (béni) ») garde sa case
+  à saisir à la main, sans pièce, jusqu'à ce qu'on y remette un nombre (la case reste pendant la
+  frappe ; la pièce revient quand on la quitte).
+- « Configuration de l'arme » est la seule fenêtre qui demande avant de fermer ; la fenêtre de
+  l'armure (roue dentée des armures) ferme toujours sans demander. La faire pareil ?
+
+Petits restes de la 4.47.0 (pas urgents) : l'arme « Bâton » s'appelle « Bâton de combat » dans le
+manuel français (déjà noté dans les restes de la 4.41.0, avec conversion des fiches) ; sur
+ordinateur, la phrase du bouton ▾ des armes est coupée dans la colonne étroite des messages (comme
+celle du grimoire ; texte entier au toucher) ; toucher le titre « Points de Foi » ou « Points de
+renommée », entre ses petits boutons, ouvre le clavier de la case (comme avant) ; sur Android, un
+geste retour répété dans « Configuration de l'arme » finit par la fermer sans question (Chrome
+l'impose ; Échap au clavier, lui, pose toujours la question).
 
 **À chaque version, désormais** : ajouter l'entrée de la version en tête de `js/data/whats-new.js`
 (sinon `npm run check` échoue) et mettre à jour la notice `js/data/help.js`.

@@ -19,8 +19,13 @@ en fin de session :
   lisible au toucher, Rage sans effet en armure lourde, titres gardés avec leur texte à
   l'impression, pastille magique en thème sombre, groupe « Bonus de maîtrise / Points de Foi /
   Vitesse » aligné. Le reste est du ménage invisible (découpage du grimoire et des armes).
-  Décisions de Franck en attente sur la 4.46.0 : point 1 de `docs/FEUILLE_DE_ROUTE.md` (la
-  principale : colonne Dégâts coupée sur tablette) ; sur la 4.44.0 et la 4.45.0 : point 3.
+  Décisions sur la 4.46.0 : toutes prises par Franck le 23/11/2026.
+- **Prête, pas publiée** : version **4.47.0** sur la branche `v4` (maquettes validées par Franck
+  le 23/11/2026) : pièce « Inspiration héroïque » (« Disponible » / « Non disponible ») dans les
+  deux modes, petits − / + autour du titre des Points de Foi et de renommée, liste des armes à
+  parcourir (bouton ▾), confirmation avant de fermer « Configuration de l'arme ». Relue par deux
+  agents ; leurs 4 défauts corrigés. Attend « Publie ». Décisions en attente : point 1 de
+  `docs/FEUILLE_DE_ROUTE.md` (4.47.0) ; sur la 4.44.0 et la 4.45.0 : point 3.
 - **Serveur de travail** : `npm run dev` n'écoute plus que l'ordinateur (127.0.0.1 et ::1) et ne
   sert jamais `.git` ; relancé le 22/11/2026 avec cette protection (vérifié avec netstat).
 - **Multiclassage** : étude faite et contre-vérifiée (`docs/etudes/MULTICLASSAGE.md`). Rien de
@@ -42,6 +47,19 @@ en fin de session :
   jamais le texte du livre (le dépôt est public).
 
 ### À vérifier par Franck (reste : l'iPad de Patricia)
+
+À voir sur tablette quand la 4.47.0 sera en ligne (Android, PC, et iPad de Patricia) :
+- Onglet Combat, mode Odyssée : la pièce « Inspiration héroïque » sous la pastille des Points de
+  Foi passe de « Non disponible » (vide, pointillés) à « Disponible » (dorée) au toucher, aussi
+  fiche verrouillée. Mode décoché : la pièce seule à la place de la case, sans − / +.
+- Petits − / + de part et d'autre de « Points de Foi » et « Points de renommée » : faciles à
+  toucher, sans mordre sur les traits pointillés ; toucher le titre entre eux ouvre-t-il le clavier
+  (comme avant) ? Gênant ou pas ?
+- Armes : toucher le nom vide ou le bouton ▾ ouvre la liste (4 groupes, dégâts, ✓) sans clavier ;
+  sur l'iPad, le ▾ reste-t-il doré après le toucher (comme au grimoire) ?
+- « Configuration de l'arme » : changer un réglage puis « Annuler » pose la question ; « Continuer
+  à modifier » garde les réglages. Android : le geste retour pose aussi la question.
+- iPad : « Non disponible » se coupe proprement sur deux lignes sous la pièce.
 
 À voir sur tablette maintenant que la 4.46.0 est en ligne (Android, PC, et iPad de Patricia) :
 - Mode Odyssée, Humain ou Champion niveau 10 : le bouton « Inspiration héroïque » sous la pastille
@@ -105,6 +123,19 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
    `docs/FEUILLE_DE_ROUTE.md`.
 
 ## Sessions
+
+### 23/11/2026 — Décisions sur la 4.46.0, puis 4.47.0 : pièce « Inspiration héroïque », petits − / +, liste des armes, confirmation de la fenêtre d'arme (pas encore publiée)
+
+- Franck a tranché toutes les décisions de la 4.46.0 (tablette essayée) ; il a demandé
+  l'Inspiration héroïque pour tous en mode Odyssée et une confirmation avant de fermer la fenêtre
+  de l'arme.
+- Maquettes de la pièce refaites trois fois : ni oui / non ni case ronde ; « Disponible » /
+  « Non disponible » validé (« Ok pour moi »). Boutons autour du titre : sa proposition 1.
+- Retour de Franck : le trait pointillé mordait sur les petits boutons ; écart de 5 à 7 px depuis.
+- Relecture par deux agents (code, affichage) : forme « 0/3 » perdue, Échap répété qui fermait la
+  fenêtre de l'arme, case en texte libre qui disparaissait pendant la frappe, « Non disponible »
+  gris à l'impression : corrigés et testés (1 809 tests).
+- Rien n'est publié : la 4.47.0 attend « Publie ».
 
 ### 22/11/2026 — Audit de santé, puis lots A à F : petites corrections, Inspiration héroïque en mode Odyssée, ménage, découpage du grimoire et des armes, « Dépenser » (4.46.0, publiée le 23/11/2026)
 

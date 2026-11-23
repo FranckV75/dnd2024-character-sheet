@@ -13,6 +13,16 @@
 /** @type {ReadonlyArray<{ version: string, items: ReadonlyArray<string> }>} */
 export const WHATS_NEW = Object.freeze([
     {
+        version: '4.47.0',
+        items: [
+            'L\'Inspiration héroïque est une pièce : dorée avec « Disponible » quand vous l\'avez, vide avec « Non disponible » sinon. Touchez-la pour passer de l\'une à l\'autre.',
+            'Mode Odyssée : la pièce est sous les « Points de Foi », pour tous les personnages. Mode décoché, elle remplace la case, sans boutons − et +.',
+            'Les boutons − et + des « Points de Foi » et des « Points de renommée » sont plus petits, de part et d\'autre du titre.',
+            'Armes : touchez le nom vide ou le bouton ▾ pour choisir dans la liste du manuel, rangée comme sa table des armes, avec les dégâts de chacune. Une ✓ marque les armes déjà dans votre tableau.',
+            'Dans « Configuration de l\'arme », fermer sans appliquer vos changements demande d\'abord confirmation : « Continuer à modifier » ou « Fermer sans appliquer ».'
+        ]
+    },
+    {
         version: '4.46.0',
         items: [
             'Mode Odyssée : un Humain, ou un Champion à partir du niveau 10, a un bouton « Inspiration héroïque » sous la case « Points de Foi ». Touchez-le quand vous l\'obtenez, retouchez-le une fois dépensée.',
