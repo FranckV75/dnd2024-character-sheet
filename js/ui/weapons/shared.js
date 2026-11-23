@@ -39,6 +39,7 @@ import { STATUS_ROOM } from '../../data/status-bar.js';
  * @property {HTMLTableRowElement} tr - ligne de l'arme
  * @property {Object<string, HTMLTextAreaElement>} inputs - cases de saisie : name, prop, prof, ammo, note
  * @property {ReturnType<typeof import('../magic.js').createMagicParts>} magic - pastille et décors d'arme magique
+ * @property {HTMLButtonElement} pick - bouton ▾ après le nom (ligne sans nom) : liste des armes du manuel
  * @property {HTMLElement} atk - bonus d'attaque (calculé)
  * @property {HTMLElement} dmg - dégâts (calculés)
  * @property {HTMLButtonElement} configBtn

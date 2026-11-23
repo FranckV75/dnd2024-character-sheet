@@ -8,11 +8,12 @@
 //   });
 // Clavier : ↑ ↓ pour naviguer, Entrée pour choisir, Échap pour fermer.
 //
-// Mode « parcourir » (option browse, grimoire) : toucher le champ vide, ou le bouton browse.trigger
+// Mode « parcourir » (option browse : grimoire, tableau des armes) : toucher le champ vide, ou le bouton browse.trigger
 // (qui ouvre la liste sans donner le focus au champ : pas de clavier virtuel sur tablette), montre
 // toute la liste ; la saisie la resserre, sans minimum de lettres ni nombre maximal. getItems reçoit
 // alors { browse: true } et peut rendre des intertitres ({ header: 'Niveau 1' }) et des choix
-// inactifs ({ disabled: true, mark: '✓' }). Toucher ailleurs ferme la liste.
+// inactifs ({ disabled: true, mark: '✓' }), ou seulement marqués ({ mark: '✓' }). browse.empty :
+// phrase quand la saisie ne laisse rien. Toucher ailleurs ferme la liste.
 // =============================================================================
 
 import { el } from './dom.js';
@@ -23,7 +24,7 @@ let counter = 0;
  * @param {HTMLInputElement} input
  * @param {{ getItems: (query: string, context?: { browse: boolean }) => Array<{label?: string, detail?: string, value?: any, header?: string, disabled?: boolean, mark?: string}>,
  *   onSelect: (item: any, context?: { browse: boolean, fromTrigger: boolean }) => void, minChars?: number, maxItems?: number,
- *   browse?: { enabled: () => boolean, trigger?: HTMLElement } }} options
+ *   browse?: { enabled: () => boolean, trigger?: HTMLElement, empty?: string } }} options
  * @returns {(() => void) & { open?: () => void }} Fonction qui détache l'auto-complétion ;
  *          open() (mode parcourir) ouvre ou ferme la liste depuis le bouton
  */
@@ -163,7 +164,7 @@ export function attachAutocomplete(input, { getItems, onSelect, minChars = 2, ma
         const query = input.value.trim();
         if (browsing) {
             items = getItems(query, { browse: true });
-            if (items.length === 0) items = [{ header: 'Aucun sort de la liste ne correspond' }];
+            if (items.length === 0) items = [{ header: browse.empty ?? 'Aucun sort de la liste ne correspond' }];
         } else {
             items = query.length >= minChars ? getItems(query, { browse: false }).slice(0, maxItems) : [];
         }

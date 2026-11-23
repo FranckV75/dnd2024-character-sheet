@@ -2,7 +2,7 @@
 // WEAPONS/ROWS.JS - Lignes du tableau des armes : construction et réécriture
 //
 // buildRow fabrique les éléments d'une arme (cases de saisie, auto-complétion du nom depuis le
-// manuel, pastilles, boutons) ; refreshRows y réécrit ce que dit la fiche : textes saisis, valeurs
+// manuel, bouton ▾ de la liste des armes par groupe comme au grimoire, pastilles, boutons) ; refreshRows y réécrit ce que dit la fiche : textes saisis, valeurs
 // calculées (computeWeapon, jamais enregistrées), aspect magique, rappels des dons (weaponFeatNotes),
 // pastille de la botte, lignes cachées par le filtre. La saisie écrit dans la fiche
 // (dynamic_weapons, par ctx.updateRow) ; l'affichage ne réécrit jamais la sauvegarde.
@@ -15,6 +15,7 @@ import { parseWeaponConfig } from '../../rules/logic.js';
 import { weaponFeatNotes } from '../../rules/feat-effects.js';
 import { findMastery } from '../../rules/weapon-masteries.js';
 import { matchesWeaponFilter, rowFromRulebookWeapon, completeRowFromRulebook, isBlankWeapon } from '../../rules/weapons.js';
+import { weaponPickerGroups } from '../../rules/weapon-picker.js';
 import { el, icon } from '../dom.js';
 import { cellText } from '../cell-text.js';
 import { attachAutocomplete } from '../autocomplete.js';
@@ -35,6 +36,31 @@ function weaponItems(query) {
     return DD_RULES.weapons
         .filter(w => fold(w.name).includes(q))
         .map(w => ({ label: w.name, detail: `${w.dmg} · ${w.category}`, value: w }));
+}
+
+/** Bouton ▾ (liste des armes sans clavier virtuel) : infobulle (souris), puis phrase courte dans
+ *  la barre du haut quand on le touche (tablette) */
+const PICK_TITLE = 'Choisir dans la liste des armes (sans ouvrir le clavier)';
+const PICK_HELP = 'Liste des armes : touchez-en une pour remplir la ligne (✓ : déjà dans le tableau).';
+
+/**
+ * Liste à parcourir (nom vide touché, ou bouton ▾) : les armes du manuel par groupe, avec leurs
+ * dégâts ; ✓ : déjà dans le tableau, toujours choisissable (deux dagues). js/rules/weapon-picker.js.
+ * @param {import('./shared.js').WeaponsContext} ctx
+ * @param {number} index - ligne qu'on remplit (exclue des armes « déjà notées »)
+ * @param {string} query
+ */
+function weaponBrowseItems(ctx, index, query) {
+    const rows = ctx.weapons().filter((_, i) => i !== index);
+    return weaponPickerGroups(DD_RULES.weapons, { query, rows }).flatMap((group) => [
+        { header: group.title },
+        ...group.items.map((item) => ({
+            label: item.weapon.name,
+            detail: item.weapon.dmg,
+            mark: item.noted ? '✓' : '',
+            value: item.weapon
+        }))
+    ]);
 }
 
 /**
@@ -60,9 +86,23 @@ export function buildRow(ctx, index) {
         ctx.updateRow(index, (w) => completeRowFromRulebook(w, findRulebookWeapon(w.name)));
     });
 
-    const detach = attachAutocomplete(inputs.name, {
-        getItems: weaponItems,
+    // Bouton ▾ après le nom (ligne sans nom) : la liste des armes sans ouvrir le clavier
+    let detach = null;
+    const pick = el('button', {
+        type: 'button', class: 'weapons-pick', title: PICK_TITLE, 'aria-label': 'Choisir dans la liste des armes', hidden: true,
+        on: {
+            mousedown: (event) => event.preventDefault(),
+            click: () => {
+                detach?.open();
+                if (pick.getAttribute('aria-expanded') === 'true') ctx.setStatus(PICK_HELP);
+            }
+        }
+    }, icon('chevron'));
+    detach = attachAutocomplete(inputs.name, {
+        getItems: (query, { browse = false } = {}) => (browse ? weaponBrowseItems(ctx, index, query) : weaponItems(query)),
         minChars: 1,
+        // Nom vide touché, ou bouton ▾ : toutes les armes du manuel, par groupe
+        browse: { enabled: () => !isLocked(), trigger: pick, empty: 'Aucune arme du manuel ne correspond' },
         onSelect: (item) => {
             inputs.name.value = item.value.name;
             ctx.updateRow(index, (w) => rowFromRulebookWeapon(w, item.value));
@@ -75,6 +115,7 @@ export function buildRow(ctx, index) {
         enchant(parts, tr);
         ctx.setStatus(parts.message);
     });
+    magic.name.append(pick);
 
     const atk = el('span', { class: 'weapons-calc' });
     const dmg = el('span', { class: 'weapons-calc' });
@@ -134,7 +175,7 @@ export function buildRow(ctx, index) {
         el('td', { class: 'weapons-actions edit-only' }, configBtn, deleteBtn));
 
     const row = {
-        tr, inputs, magic, atk, dmg, configBtn, deleteBtn, notesBtn, notesTr, notesList, notesOpen: false, notesSignature: '',
+        tr, inputs, magic, pick, atk, dmg, configBtn, deleteBtn, notesBtn, notesTr, notesList, notesOpen: false, notesSignature: '',
         masteryBtn, extraTr, extraPills, extraPrint, extraDetail, detailOpen: false, extraSignature: null, detach
     };
 
@@ -268,6 +309,7 @@ export function refreshRows(ctx, list, derived, buffs, character) {
         writeFeatNotes(row, weaponFeatNotes(weapon, character, derived, buffs), label, shown);
         writeMasteryButton(row, findMastery(weapon.prof), label);
         row.inputs.name.placeholder = blank ? 'Nouvelle arme…' : 'Nom…';
+        row.pick.hidden = locked || name !== '';
         if (shown) visible++;
     });
 

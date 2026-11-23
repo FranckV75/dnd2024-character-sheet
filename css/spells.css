@@ -968,7 +968,8 @@
     min-width: 0;
 }
 
-.spell-pick {
+/* Bouton ▾ : le même pour le grimoire et le tableau des armes (js/ui/weapons/rows.js) */
+:is(.spell-pick, .weapons-pick) {
     display: inline-flex;
     flex: none;
     align-items: center;
@@ -983,22 +984,22 @@
     cursor: pointer;
 }
 
-.spell-pick[hidden] {
+:is(.spell-pick, .weapons-pick)[hidden] {
     display: none;
 }
 
-.spell-pick .icon {
+:is(.spell-pick, .weapons-pick) .icon {
     width: 13px;
     height: 13px;
 }
 
-.spell-pick:hover,
-.spell-pick[aria-expanded="true"] {
+:is(.spell-pick, .weapons-pick):hover,
+:is(.spell-pick, .weapons-pick)[aria-expanded="true"] {
     color: var(--accent);
     background: color-mix(in srgb, var(--gold-glow) 35%, transparent);
 }
 
-.spell-pick:focus-visible {
+:is(.spell-pick, .weapons-pick):focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: -2px;
 }
@@ -1248,8 +1249,8 @@ button.spell-no-slot {
         min-height: 36px;
     }
 
-    /* ▾ : 26 px de large, 44 px de haut sous le doigt (la ligne de saisie mesure déjà 44 px) */
-    .spell-pick {
+    /* ▾ (sorts et armes) : 26 px de large, 44 px de haut sous le doigt (ligne de saisie : 44 px) */
+    :is(.spell-pick, .weapons-pick) {
         width: 26px;
         min-height: 44px;
         margin-block: -8px;
