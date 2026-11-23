@@ -5,6 +5,9 @@
 // maîtrisée, et la rubrique « Dégâts en plus » (js/ui/weapons/config-extras.js). Geste d'ÉDITION :
 // sans effet fiche verrouillée. Lit la ligne de l'arme ; écrit son weaponConfig (format v3, validé
 // par buildWeaponConfig, js/rules/weapons.js) quand on touche « Appliquer », rien avant.
+// Quitter sans appliquer (« Annuler », toucher le fond, touche Échap) après avoir changé un
+// réglage : une petite fenêtre demande d'abord si l'on abandonne ces changements (choix de
+// Franck, 23/11/2026). Rien de changé : la fenêtre se ferme tout de suite.
 // =============================================================================
 
 import { weaponProficiency } from '../../rules/class-features.js';
@@ -12,7 +15,7 @@ import { readWeaponConfig, buildWeaponConfig, normalizeDamageDie, WEAPON_DAMAGE_
 import { derivedOf } from '../derived.js';
 import { el } from '../dom.js';
 import { frenchSpaces } from '../help.js';
-import { openModal } from '../modal.js';
+import { openModal, confirmModal } from '../modal.js';
 import { isLocked } from '../lock.js';
 import { enchant, magicLevel, ENCHANT_DELAY_MS } from '../magic.js';
 import { plain, fitStatus, weaponInSentence } from './shared.js';
@@ -108,15 +111,48 @@ export function openConfig(ctx, index) {
     profSelect.setAttribute('aria-describedby', `${id}-prof-help`);
 
     const form = { id, config, statSelect, magicSelect, dieInput, typeSelect, profSelect, error, extras };
-    openModal({
+    const opened = settingsSnapshot(form);
+    let asking = false;
+    const close = openModal({
         title: "Configuration de l'arme",
         icon: 'gear',
         body,
         actions: [
-            { label: 'Annuler' },
+            { label: 'Annuler', dismiss: true },
             { label: 'Appliquer', primary: true, onClick: () => applyConfig(ctx, index, form) }
-        ]
+        ],
+        // Réglage changé : on demande avant de le perdre (une seule question à la fois)
+        onDismiss: () => {
+            if (settingsSnapshot(form) === opened) return true;
+            if (!asking) {
+                asking = true;
+                confirmModal({
+                    title: 'Abandonner les changements ?',
+                    message: frenchSpaces("Vous avez changé des réglages de cette arme sans les appliquer. Si vous fermez, ils seront perdus."),
+                    confirmLabel: 'Fermer sans appliquer',
+                    // « Annuler » serait ambigu ici : annuler la fermeture, ou les changements ?
+                    cancelLabel: 'Continuer à modifier',
+                    danger: true
+                }).then((leave) => {
+                    asking = false;
+                    if (leave) close();
+                });
+            }
+            return false;
+        }
     });
+}
+
+/**
+ * Réglages tels qu'ils sont dans la fenêtre, en un texte comparable : changé depuis l'ouverture ?
+ * Une ligne de « Dégâts en plus » ajoutée puis laissée vide ne compte pas (« Appliquer » la retire).
+ * @param {Object} form - champs de la fenêtre (openConfig)
+ * @returns {string}
+ */
+function settingsSnapshot({ statSelect, magicSelect, dieInput, typeSelect, profSelect, extras }) {
+    return JSON.stringify([statSelect.value, magicSelect.value, dieInput.value.trim(), typeSelect.value, profSelect.value,
+        extras.values().filter((line) => line.dmg.trim() || line.reason.trim())
+            .map(({ dmg, reason, mode, on }) => [dmg.trim(), reason.trim(), mode, on])]);
 }
 
 /**

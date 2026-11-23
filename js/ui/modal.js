@@ -14,6 +14,9 @@
 // Options icon (titre) et actions[].icon : nom d'une icône dessinée de dom.js (moon, cloud...).
 // Option className : classe en plus sur la fenêtre (grande fenêtre du mode d'emploi, css/help.css).
 // actions[].title : infobulle du bouton (souris).
+// Option onDismiss : appelée quand on quitte la fenêtre sans agir (bouton marqué dismiss: true,
+// toucher le fond, touche Échap) ; rend false pour la garder ouverte (ex. demander d'abord si
+// l'on abandonne ses changements : « Configuration de l'arme », js/ui/weapons/config.js).
 // Un titre ou un libellé qui commence par un émoji connu (« 📂 Importer ») reçoit l'icône
 // dessinée équivalente : l'émoji est retiré du texte (et donc du nom lu par les lecteurs d'écran).
 // =============================================================================
@@ -54,10 +57,10 @@ function iconAndText({ text, icon: name }) {
  * Le focus va au premier champ de la fenêtre, sinon au bouton principal. focusField: false le
  * donne directement au bouton principal : sur tablette, focaliser un champ ouvre le clavier
  * virtuel (inutile quand des boutons − / + suffisent, comme au repos court).
- * @param {{ title: string, icon?: string, body?: Node|Node[], actions?: Array<{label: string, icon?: string, title?: string, primary?: boolean, danger?: boolean, onClick?: () => (void|boolean)}>, wide?: boolean, className?: string, focusField?: boolean, onClose?: () => void }} options
+ * @param {{ title: string, icon?: string, body?: Node|Node[], actions?: Array<{label: string, icon?: string, title?: string, primary?: boolean, danger?: boolean, dismiss?: boolean, onClick?: () => (void|boolean)}>, wide?: boolean, className?: string, focusField?: boolean, onClose?: () => void, onDismiss?: () => (void|boolean) }} options
  * @returns {() => void} Fonction qui ferme la fenêtre
  */
-export function openModal({ title, icon, body = [], actions = [{ label: 'Fermer' }], wide = false, className = '', focusField = true, onClose }) {
+export function openModal({ title, icon, body = [], actions = [{ label: 'Fermer' }], wide = false, className = '', focusField = true, onClose, onDismiss }) {
     const previousFocus = document.activeElement;
     const titleId = `modal-title-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -82,9 +85,22 @@ export function openModal({ title, icon, body = [], actions = [{ label: 'Fermer'
 
     dialog.addEventListener('close', finish);
 
+    /** Quitter sans agir : onDismiss peut s'y opposer (rend false) */
+    const dismiss = () => {
+        if (onDismiss?.() === false) return;
+        close();
+    };
+
+    // Touche Échap : même chemin que « Annuler »
+    dialog.addEventListener('cancel', (event) => {
+        if (!onDismiss) return;
+        event.preventDefault();
+        dismiss();
+    });
+
     // Clic sur le fond (en dehors du contenu) : ferme
     dialog.addEventListener('click', (event) => {
-        if (event.target === dialog) close();
+        if (event.target === dialog) dismiss();
     });
 
     const buttons = actions.map(action => el('button', {
@@ -93,6 +109,10 @@ export function openModal({ title, icon, body = [], actions = [{ label: 'Fermer'
         title: action.title,
         on: {
             click: () => {
+                if (action.dismiss) {
+                    dismiss();
+                    return;
+                }
                 const result = action.onClick?.();
                 if (result !== false) close();
             }
@@ -124,10 +144,10 @@ export function openModal({ title, icon, body = [], actions = [{ label: 'Fermer'
 
 /**
  * Demande une confirmation.
- * @param {{ title: string, icon?: string, message: string, confirmLabel?: string, confirmIcon?: string, danger?: boolean }} options
+ * @param {{ title: string, icon?: string, message: string, confirmLabel?: string, confirmIcon?: string, cancelLabel?: string, danger?: boolean }} options
  * @returns {Promise<boolean>}
  */
-export function confirmModal({ title, icon, message, confirmLabel = 'Confirmer', confirmIcon, danger = false }) {
+export function confirmModal({ title, icon, message, confirmLabel = 'Confirmer', confirmIcon, cancelLabel = 'Annuler', danger = false }) {
     return new Promise((resolve) => {
         let answered = false;
         openModal({
@@ -136,7 +156,7 @@ export function confirmModal({ title, icon, message, confirmLabel = 'Confirmer',
             icon: icon || (danger ? 'warning' : undefined),
             body: el('p', { text: message }),
             actions: [
-                { label: 'Annuler' },
+                { label: cancelLabel },
                 { label: confirmLabel, icon: confirmIcon, primary: !danger, danger, onClick: () => { answered = true; } }
             ],
             onClose: () => resolve(answered)
