@@ -35,7 +35,7 @@ const removedText = (count) => `${plural(count)} retiré${count > 1 ? 's' : ''} 
  */
 export function createCleanupButton({ store, setStatus, keepSnapshot, getSpellsDb, getSkip }) {
     const planOf = (character, d) => unpreparedCleanup(character.dynamic_spells, getSpellsDb(), {
-        classSlug: d.classSlug, maxLevel: highestSlotLevel(d.spellSlots), granted: grantedSpellKeys(character, d), skip: getSkip()
+        classSlug: d.classSlug, maxLevel: highestSlotLevel(d.spellSlots), granted: grantedSpellKeys(character, d, getSpellsDb()), skip: getSkip()
     });
 
     function open(d) {

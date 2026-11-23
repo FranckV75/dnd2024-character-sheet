@@ -12,9 +12,18 @@
 //    manifestations…) : losange à cocher comme avant, pour ne compter que ceux qui sont préparés.
 //  - État affiché du losange d'une ligne : calcul d'affichage, jamais écrit dans la fiche (la clé
 //    v3 « prep » garde la valeur du joueur, qui reprend son sens s'il change de classe).
-//  - Sorts donnés (classe, sous-classe, dons, espèce) : hors du compte de la table.
+//  - Sorts donnés (classe, sous-classe, dons, espèce, sorts choisis d'une capacité : Maîtrise des
+//    sorts et Sorts de prédilection du Magicien, Découvertes magiques du Collège du Savoir,
+//    js/rules/spell-choices.js) : hors du compte de la table.
 //  - Lancer un sort : niveaux d'emplacement possibles (niveau du sort et au-dessus, emplacements
 //    de pacte compris) et emplacement coché.
+//  - Paladin et Rôdeur : un seul sort préparé remplacé par repos long (replacesOneSpell). La
+//    fenêtre « Préparer mes sorts » compare les sorts préparés à ceux de son ouverture
+//    (preparedSpellNames, preparationSwap) et le dit en clair ; plus d'un sort retiré : simple
+//    avertissement, rien n'est bloqué (premier remplissage, gain de niveau, erreur à corriger).
+//    Rien n'est écrit dans la fiche pour ce suivi : d'une ouverture à l'autre, la fenêtre ne sait
+//    pas si l'échange a déjà eu lieu. Elle ne dit « échange de ce repos long » qu'ouverte par le
+//    rappel de fin de repos long ; ouverte par le bouton du grimoire, elle rappelle la règle.
 //  - Fenêtre « Préparer mes sorts » (Clerc, Druide, Paladin, Rôdeur : préparation parmi toute la
 //    liste de classe, changée après un repos long) : sorts de la liste jusqu'au plus haut
 //    emplacement, cocher (prep à true, ou ligne ajoutée depuis la base), décocher (prep à false ;
@@ -35,10 +44,11 @@ import {
     rowLevel, spellNameKey, slotView, slotLevels, toggleSlotUsed, findSpellByName, spellToRow, spellNames,
     spellDisplayName, isPrepared, isSpellRowEmpty, normalizeText, plainText
 } from './spells.js';
-import { classAlwaysPreparedSpells } from './class-progression.js';
+import { classGrantedSpells } from './class-progression.js';
 import { featSpellGroups } from './feat-spells.js';
 import { subclassSpells } from './subclass-features.js';
 import { speciesSpellNames } from './species.js';
+import { chosenSpellKeys } from './spell-choices.js';
 
 /** Classes dont la liste de sorts préparés ne change qu'au passage de niveau */
 export const WHOLE_LIST_CLASSES = Object.freeze(['bard', 'sorcerer', 'warlock']);
@@ -63,8 +73,9 @@ const MAGICAL_SECRETS_LISTS = Object.freeze(['bard', 'cleric', 'druid', 'wizard'
  * niveau de sort préparable (plus haut emplacement de la table : emplacements de pacte pour
  * l'Occultiste ; ceux ajoutés à la main, Arcanum mystique ou multiclasse, ne comptent pas).
  * Collège du Savoir : ses deux Découvertes magiques viennent des mêmes listes que Secrets
- * magiques et ne comptent pas ; on ne peut pas les distinguer, ses sorts hors de la liste du
- * Barde restent donc à cocher.
+ * magiques et ne comptent pas ; tant qu'elles ne sont pas choisies dans les menus du grimoire
+ * (js/rules/spell-choices.js), on ne peut pas les distinguer : ses sorts hors de la liste du
+ * Barde restent donc à cocher (choisies, elles sont des sorts donnés : grantedSpellKeys).
  * @param {{ classSlug?: string, subclass?: string, level?: number, spellSlots?: Object }} derived - deriveCharacter()
  * @returns {{ lists: string[], maxLevel: number }|null} null : pas une classe à liste fixe
  */
@@ -109,16 +120,23 @@ export function fitsWholeList(row, source, spell = null) {
 }
 
 /**
- * Sorts déjà donnés à la fiche (toujours préparés par la classe, sorts de sous-classe atteints,
- * sorts de dons et d'espèce) : notés aussi au grimoire, ils ne comptent pas dans la table de la
- * classe. Cercle de la Terre sans terrain choisi : aucun terrain n'est préparé, ses sorts restent
- * des sorts de Druide ordinaires.
+ * Sorts donnés à la fiche sans choix dans le grimoire : toujours préparés par la classe, sorts de
+ * sous-classe atteints, sorts de dons et d'espèce. Chaque sort est reconnu sous son nom français
+ * et sous son nom anglais (ligne « Divine Smite » d'une fiche venue de la v3). Cercle de la Terre
+ * sans terrain choisi : aucun terrain n'est préparé, ses sorts restent des sorts de Druide
+ * ordinaires.
+ * Sans les sorts choisis d'une capacité (Maîtrise des sorts, Sorts de prédilection, Découvertes
+ * magiques) : les menus du Magicien s'en servent pour écarter ce qui n'est pas dans le livre
+ * (spellChoiceView de js/rules/spell-choices.js).
  * @param {Object} character
  * @param {Object} derived - deriveCharacter()
  * @returns {Set<string>} noms comparables (spellNameKey)
  */
-export function grantedSpellKeys(character, derived) {
-    const names = derived.classSlug ? classAlwaysPreparedSpells(derived.classSlug, derived.level) : [];
+export function givenSpellKeys(character, derived) {
+    const names = [];
+    for (const spell of derived.classSlug ? classGrantedSpells(derived.classSlug, derived.level) : []) {
+        names.push(spell.name, spell.vo);
+    }
     const { reached } = subclassSpells(derived);
     const landUnchosen = derived.subclass === 'circle_of_the_land' && new Set(reached.map(spell => spell.group)).size > 1;
     for (const spell of reached) {
@@ -129,7 +147,22 @@ export function grantedSpellKeys(character, derived) {
         for (const spell of group.spells) names.push(spell.name, spell.vo);
     }
     names.push(...speciesSpellNames(character, derived));
-    return new Set(names.filter(Boolean).map(spellNameKey));
+    return new Set(names.filter(Boolean).map(spellNameKey).filter(Boolean));
+}
+
+/**
+ * Sorts déjà donnés à la fiche (givenSpellKeys : classe, sous-classe, dons, espèce ; et sorts
+ * choisis d'une capacité : Maîtrise des sorts, Sorts de prédilection, Découvertes magiques) :
+ * notés aussi au grimoire, ils sont toujours préparés et ne comptent pas dans la table de la classe.
+ * @param {Object} character
+ * @param {Object} derived - deriveCharacter()
+ * @param {Array<Object>|null} [db] - base de sorts : un sort choisi est enregistré sous son nom
+ *        anglais, la base donne son nom français (celui de la ligne du grimoire) ; absente (base
+ *        pas encore chargée) : seul le nom enregistré est reconnu
+ * @returns {Set<string>} noms comparables (spellNameKey)
+ */
+export function grantedSpellKeys(character, derived, db = null) {
+    return new Set([...givenSpellKeys(character, derived), ...chosenSpellKeys(character, derived, db)]);
 }
 
 /**
@@ -275,10 +308,11 @@ export function isArcanumSpellLevel(spellLevel, arcanumLevel) {
 /**
  * Phrase de la fenêtre « Lancer » pour un sort d'Arcanum mystique sans emplacement de son niveau :
  * il se lance une fois sans emplacement, de nouveau après un repos long (PHB 2024, « Mystic
- * Arcanum »). La fiche n'a pas de case pour ce lancer : c'est au joueur de le retenir.
+ * Arcanum »). Le lancer est suivi par la case « Arcanum mystique (niveau N) » (CLASS_COUNTERS de
+ * js/rules/subclass-uses.js), que le bouton « Lancer gratuit » coche (js/rules/free-casts.js).
  */
 export function arcanumCastText(level) {
-    return `Arcanum mystique : ce sort de niveau ${level} se lance une fois sans emplacement, puis de nouveau après un repos long. La fiche n'a pas de case pour ce lancer : à vous de le retenir.`;
+    return `Arcanum mystique : votre sort d'Arcanum de niveau ${level} se lance une fois sans emplacement, puis de nouveau après un repos long. Sa case « Arcanum mystique (niveau ${level}) » se coche (grimoire, « Sorts de classe », et onglet Combat).`;
 }
 
 /**
@@ -353,8 +387,84 @@ export function longRestPreparation(classSlug) {
     if (!rule || rule.change !== 'long_rest') return null;
     if (rule.from === 'spellbook') return { text: 'Vous pouvez changer vos sorts préparés parmi ceux de votre grimoire.', window: false };
     return rule.count === 'one'
-        ? { text: 'Vous pouvez remplacer un de vos sorts préparés par un autre sort de votre liste de classe.', window: true }
+        ? { text: 'Vous pouvez remplacer un seul de vos sorts préparés par un autre sort de votre liste de classe (un échange par repos long).', window: true }
         : { text: 'Vous pouvez changer vos sorts préparés : autant que vous voulez, parmi toute la liste de votre classe.', window: true };
+}
+
+/**
+ * La classe ne remplace-t-elle qu'un seul sort préparé après un repos long (Paladin, Rôdeur :
+ * PHB 2024, « Changing Your Prepared Spells ») ? Le Clerc et le Druide en changent autant qu'ils
+ * veulent ; les classes à liste fixe ne changent rien au repos long.
+ * @param {string} classSlug
+ * @returns {boolean}
+ */
+export function replacesOneSpell(classSlug) {
+    const rule = SPELL_PREPARATION[classSlug];
+    return Boolean(rule && rule.change === 'long_rest' && rule.count === 'one');
+}
+
+/**
+ * Sorts préparés comptés dans la table de la classe : lignes de niveau 1 et plus au losange coché,
+ * hors sorts donnés (toujours préparés). Un sort noté deux fois ne compte qu'une fois.
+ * @param {Array<Object>} rows - dynamic_spells
+ * @param {Set<string>|null} [granted] - grantedSpellKeys()
+ * @returns {Map<string, string>} nom comparable (spellNameKey) → nom noté au grimoire
+ */
+export function preparedSpellNames(rows, granted = null) {
+    const names = new Map();
+    for (const row of Array.isArray(rows) ? rows : []) {
+        if (!row || typeof row !== 'object' || isSpellRowEmpty(row) || !isPrepared(row)) continue;
+        const key = spellNameKey(row.name);
+        if (!key || granted?.has(key) || names.has(key)) continue;
+        names.set(key, plainText(row.name).replace(/\s+/g, ' ').trim());
+    }
+    return names;
+}
+
+/**
+ * Suivi de la règle « un seul sort remplacé par repos long » (Paladin, Rôdeur) : ce qui a changé
+ * dans les sorts préparés depuis l'ouverture de la fenêtre « Préparer mes sorts », dit en une
+ * phrase. Un sort retiré puis recoché ne compte pas. Ajouter des sorts sans en retirer est normal
+ * (premier remplissage, gain de niveau : la liste se complète jusqu'au nombre de la table).
+ * L'échange n'est permis qu'à la fin d'un repos long, et la fiche ne retient pas d'une ouverture à
+ * l'autre s'il a déjà eu lieu : la phrase ne parle de « l'échange de ce repos long » que si la
+ * fenêtre est ouverte par le rappel de fin de repos long (afterLongRest) ; ouverte par le bouton
+ * du grimoire, elle rappelle que l'échange se fait à la fin d'un repos long, une seule fois.
+ * @param {Map<string, string>} before - preparedSpellNames() à l'ouverture de la fenêtre
+ * @param {Map<string, string>} after - preparedSpellNames() maintenant
+ * @param {{ afterLongRest?: boolean }} [options] - fenêtre ouverte par le rappel de fin de repos long
+ * @returns {{ removed: string[], added: string[], over: boolean, text: string }}
+ *   removed / added : noms des sorts retirés et ajoutés ; over : plus d'un sort retiré, ce que la
+ *   règle ne permet pas (simple avertissement : la fiche ne bloque et n'annule rien)
+ */
+export function preparationSwap(before, after, options = null) {
+    // Seul un vrai « true » compte : sans option (ou option abîmée), la phrase prudente
+    const afterLongRest = options?.afterLongRest === true;
+    const from = before instanceof Map ? before : new Map();
+    const to = after instanceof Map ? after : new Map();
+    const removed = [...from].filter(([key]) => !to.has(key)).map(([, name]) => name);
+    const added = [...to].filter(([key]) => !from.has(key)).map(([, name]) => name);
+    const quote = (names) => names.map(name => `« ${name} »`).join(', ');
+    const over = removed.length > 1;
+    // Devant un échange : celui de ce repos long, ou simple rappel de la règle hors du repos long
+    const swap = afterLongRest ? 'Échange de ce repos long' : "Échange (permis une seule fois, à la fin d'un repos long)";
+    let text;
+    if (over) {
+        text = `Attention : ${removed.length} sorts retirés (${quote(removed)}). La règle ne permet d'en remplacer qu'un seul par repos long : recochez ceux que vous gardez.`;
+    } else if (removed.length === 1 && added.length === 0) {
+        text = `${quote(removed)} retiré : cochez le sort qui le remplace.${afterLongRest ? '' : " Rappel : cet échange se fait à la fin d'un repos long, une seule fois."}`;
+    } else if (removed.length === 1 && added.length === 1) {
+        text = `${swap} : ${quote(removed)} remplacé par ${quote(added)}.`;
+    } else if (removed.length === 1) {
+        text = `${swap} : ${quote(removed)} retiré. Ajoutés : ${quote(added)} (un seul le remplace ; les autres complètent votre liste, après un gain de niveau).`;
+    } else if (added.length) {
+        text = `Aucun sort retiré. ${added.length > 1 ? 'Ajoutés' : 'Ajouté'} : ${quote(added)} (vous complétez votre liste : premier choix ou gain de niveau).`;
+    } else {
+        text = afterLongRest
+            ? "Un seul échange par repos long : aucun sort remplacé pour l'instant."
+            : "Un seul échange est permis, à la fin d'un repos long : aucun sort remplacé pour l'instant.";
+    }
+    return { removed, added, over, text };
 }
 
 /** Le sort de la base fait-il partie des sorts donnés (noms comparables de grantedSpellKeys) ? */

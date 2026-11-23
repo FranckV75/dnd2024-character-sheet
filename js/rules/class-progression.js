@@ -5,10 +5,14 @@
 //    personnage (Rages 4, Dégâts de Rage +2…) avec le prochain changement.
 //  - classSpellCounts : sorts mineurs et sorts préparés permis par la table (null si la classe n'en a pas).
 //  - featuresAtLevel : aptitudes gagnées à un niveau (assistant « Passer au niveau N »).
+//  - inSheet : pour une aptitude dont les sorts se choisissent dans le grimoire (Maîtrise des
+//    sorts, Sorts de prédilection : js/data/spell-choices.js), où sont ses menus (« Dans la
+//    fiche : … », comme pour les capacités de sous-classe).
 // Données : js/data/class-progression.js. Fonctions pures.
 // =============================================================================
 
 import { CLASS_PROGRESSION } from '../data/class-progression.js';
+import { SPELL_CHOICE_FEATURES } from '../data/spell-choices.js';
 
 /** Texte des lignes sans résumé propre (choix de la sous-classe, dons) */
 function genericText(feature) {
@@ -24,9 +28,31 @@ function genericText(feature) {
     return '';
 }
 
-/** Aptitude prête à afficher : identifiant stable (repli mémorisé) et texte */
+const COUNT_WORDS = Object.freeze(['', 'Un menu', 'Deux menus', 'Trois menus', 'Quatre menus']);
+
+/**
+ * Ce que la fiche fait d'une aptitude de classe dont les sorts se choisissent dans le grimoire
+ * (capacité de classe de SPELL_CHOICE_FEATURES, même classe, même niveau, même nom) : où sont ses
+ * menus et comment ses sorts se lancent ensuite. '' pour les autres aptitudes.
+ */
+function spellChoicePointer(classSlug, feature) {
+    const choice = SPELL_CHOICE_FEATURES.find(entry => !entry.subclass && entry.classSlug === classSlug
+        && entry.level === feature.level && entry.name === feature.name);
+    if (!choice) return '';
+    const menus = COUNT_WORDS[choice.fields.length] ?? `${choice.fields.length} menus`;
+    const cast = choice.cast === 'uses'
+        ? ' Leur bouton « Lancer » propose ensuite le lancer sans emplacement et coche sa case (onglet Caractéristiques & Combat).'
+        : choice.cast === 'atwill' ? ' Leur bouton « Lancer » propose ensuite le lancer sans emplacement.' : '';
+    return `${menus} dans le grimoire (onglet Magie, « Sorts de classe ») : les sorts choisis sont toujours préparés et ne comptent pas dans vos sorts préparés.${cast}`;
+}
+
+/** Aptitude prête à afficher : identifiant stable (repli mémorisé), texte, et ce que la fiche en fait (inSheet) */
 function withText(classSlug, feature, index) {
-    return { ...feature, id: `${classSlug}.${feature.level}.${index}`, text: feature.text ?? genericText(feature) };
+    const inSheet = spellChoicePointer(classSlug, feature);
+    return {
+        ...feature, id: `${classSlug}.${feature.level}.${index}`, text: feature.text ?? genericText(feature),
+        ...(inSheet ? { inSheet } : {})
+    };
 }
 
 /**
@@ -90,15 +116,27 @@ export function featuresAtLevel(classSlug, level) {
  * paladin (Châtiment divin, niveau 2), Fidèle destrier (Appel de destrier, niveau 5),
  * Communication avec le protecteur (Contact avec les plans, niveau 9), Verbe de la création
  * (Barde 20 : Mot de pouvoir guérisseur et Mot de pouvoir mortel).
- * Noms de data/spells.json.
+ * [niveau de classe, nom (data/spells.json), nom anglais, niveau du sort, capacité qui le donne,
+ *  rappel affiché sous le sort (facultatif)]
  */
+const SECOND_TARGET = 'Vous pouvez viser une seconde créature située à 3 m ou moins de la première cible.';
 const CLASS_ALWAYS_PREPARED = Object.freeze({
-    bard: [[20, 'Mot de pouvoir guérisseur'], [20, 'Mot de pouvoir mortel']],
-    druid: [[1, 'Communication avec les animaux']],
-    ranger: [[1, 'Marque du chasseur']],
-    paladin: [[2, 'Châtiment divin'], [5, 'Appel de destrier']],
-    warlock: [[9, 'Contact avec les plans']]
+    bard: [
+        [20, 'Mot de pouvoir guérisseur', 'Power Word Heal', 9, 'Verbe de la création', SECOND_TARGET],
+        [20, 'Mot de pouvoir mortel', 'Power Word Kill', 9, 'Verbe de la création', SECOND_TARGET]
+    ],
+    druid: [[1, 'Communication avec les animaux', 'Speak with Animals', 1, 'Druidique']],
+    ranger: [[1, 'Marque du chasseur', "Hunter's Mark", 1, 'Ennemi juré',
+        'Sans emplacement : cases « Ennemi juré » (onglet Caractéristiques & Combat), que le bouton « Lancer » propose.']],
+    paladin: [
+        [2, 'Châtiment divin', 'Divine Smite', 1, 'Châtiment de paladin'],
+        [5, 'Appel de destrier', 'Find Steed', 2, 'Fidèle destrier']
+    ],
+    warlock: [[9, 'Contact avec les plans', 'Contact Other Plane', 5, 'Communication avec le protecteur',
+        "Seul le lancer sans emplacement (une fois par repos long, case de cette ligne) a sa sauvegarde réussie d'office. Lancé avec un emplacement de pacte, le sort garde sa sauvegarde normale."]]
 });
+
+const classLevelOf = (level) => Math.min(20, Math.max(1, Math.trunc(Number(level)) || 1));
 
 /**
  * @param {string} classSlug
@@ -106,6 +144,21 @@ const CLASS_ALWAYS_PREPARED = Object.freeze({
  * @returns {string[]} noms des sorts
  */
 export function classAlwaysPreparedSpells(classSlug, level) {
-    const lvl = Math.min(20, Math.max(1, Math.trunc(Number(level)) || 1));
-    return (CLASS_ALWAYS_PREPARED[classSlug] ?? []).filter(([from]) => lvl >= from).map(([, name]) => name);
+    return classGrantedSpells(classSlug, level).map(spell => spell.name);
+}
+
+/**
+ * Les mêmes sorts, avec de quoi les afficher dans le bloc « Sorts de classe » du grimoire
+ * (js/ui/spells/granted.js) : nom anglais (infobulle, lancers gratuits), niveau du sort, capacité.
+ * @param {string} classSlug
+ * @param {number} level - niveau de classe
+ * @returns {Array<{ classLevel: number, name: string, vo: string, level: number, feature: string, note?: string }>}
+ */
+export function classGrantedSpells(classSlug, level) {
+    const lvl = classLevelOf(level);
+    const list = Object.hasOwn(CLASS_ALWAYS_PREPARED, classSlug) ? CLASS_ALWAYS_PREPARED[classSlug] : [];
+    return list.filter(([from]) => lvl >= from)
+        .map(([classLevel, name, vo, spellLevel, feature, note]) => ({
+            classLevel, name, vo, level: spellLevel, feature, ...(note ? { note } : {})
+        }));
 }

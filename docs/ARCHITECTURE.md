@@ -78,6 +78,9 @@ js/
 │   ├── subclass-features.js  Capacités des 60 sous-classes (48 du PHB 2024, 12 de l'Odyssée)
 │   ├── subclass-spells.js    Sorts toujours préparés donnés par une sous-classe
 │   ├── subclass-choices.js   Menus des choix de sous-classe à mémoriser (lot 7)
+│   ├── spell-choices.js  Capacités qui font choisir des sorts toujours préparés : Maîtrise des
+│   │                   sorts et Sorts de prédilection (Magicien), Découvertes magiques (Collège
+│   │                   du Savoir) ; d'où viennent les sorts, phrase d'explication de chaque menu
 │   ├── subclass-companions.js  Blocs constants des compagnons et familiers de sous-classe
 │   ├── maneuvers.js    Manœuvres du Maître de guerre, outils du Disciple martial
 │   └── spells.js       Chargement à la demande de data/spells.json
@@ -106,7 +109,18 @@ js/
 │   ├── spells.js       Grimoire (recherche, tri, filtres, emplacements de sorts)
 │   ├── spell-picker.js Liste des sorts à parcourir depuis la case du nom (par niveau, liste choisie)
 │   ├── spell-preparation.js  Sorts préparés (classes à liste fixe ou à toute la liste) et
-│   │                   lancement d'un sort (fenêtre « Lancer »)
+│   │                   lancement d'un sort (fenêtre « Lancer ») ; Paladin et Rôdeur : un seul
+│   │                   sort remplacé par repos long (replacesOneSpell, preparationSwap : ce qui
+│   │                   a changé depuis l'ouverture de « Préparer mes sorts », sans rien écrire ;
+│   │                   « échange de ce repos long » seulement si la fenêtre vient du rappel de
+│   │                   fin de repos long). Sorts donnés : givenSpellKeys (classe, sous-classe,
+│   │                   dons, espèce ; nom français et anglais), grantedSpellKeys (+ sorts choisis)
+│   ├── spell-choices.js  Sorts choisis d'une capacité (données : data/spell-choices.js) : menus
+│   │                   (spellChoiceOptions, spellChoiceView), choix enregistré dans la clé
+│   │                   existante « subclass_choices » (setSpellChoicePatch), sorts toujours
+│   │                   préparés hors du compte (chosenSpellKeys, repris par grantedSpellKeys).
+│   │                   Menus du Magicien : seulement les sorts du livre (ni sort donné par la
+│   │                   sous-classe, un don ou l'espèce, ni sort hors de la liste du Magicien)
 │   ├── spellbook.js    Livre de sorts du Magicien (sorts sans dépense, coût d'une copie)
 │   ├── feats.js · feat-effects.js · feat-uses.js · feat-choices.js
 │   │                   Dons : emplacements atteints, effets, usages dépensés, choix mémorisés
@@ -121,7 +135,10 @@ js/
 │   │   └── weapon-notes.js     Rappels sous chaque arme (weaponFeatNotes)
 │   ├── feat-spells.js  Sorts donnés par un don (lot 6) : DD du don, lancers gratuits
 │   ├── free-casts.js   Lancers gratuits proposés par « Lancer » : relie un sort aux cases
-│   │                   existantes (dons, espèce, Ennemi juré, quelques sous-classes)
+│   │                   existantes (dons, espèce, Ennemi juré, quelques sous-classes) et aux
+│   │                   cases de classe (Châtiment divin, Appel de destrier, Contact avec les
+│   │                   plans, Arcanum mystique par niveau de sort, Sorts de prédilection) ;
+│   │                   Maîtrise des sorts : lancer à volonté, sans case (kind 'atwill')
 │   ├── rest.js         Repos court et repos long
 │   ├── conditions.js   États cochés (clé facultative « conditions ») et rappel de leurs effets
 │   ├── species.js      Espèce : option choisie (clé facultative « species_choices »), Vision dans
@@ -129,9 +146,13 @@ js/
 │   ├── background.js   Historique : ce qu'il donne, ce qui manque (« À vérifier »), bouton Appliquer
 │   ├── tools.js        Case « Outils » (texte libre) : reconnaître, ajouter, retirer un outil du manuel
 │   ├── class-reminders.js  Rappels des capacités de classe près des valeurs (Sens du danger…)
+│   │                   et à la fin d'un repos (restKind 'short' : Mémorisation de sort ;
+│   │                   'long' : Maîtrise des sorts du Magicien)
 │   ├── concentration.js  Sort de concentration (clé facultative « concentration »), jet après dégâts
 │   ├── hit-points.js   PV en jeu : dégâts, soins, PV temporaires, boutons − / + (écran : ui/hit-points.js)
-│   ├── class-progression.js  Aptitudes atteintes / à venir, sorts mineurs et préparés permis
+│   ├── class-progression.js  Aptitudes atteintes / à venir, sorts mineurs et préparés permis ;
+│   │                   sorts toujours préparés par la classe (classGrantedSpells) ; inSheet : où
+│   │                   sont les menus d'une aptitude à sorts choisis (« Dans la fiche : … »)
 │   ├── experience.js   XP : seuils de niveau, XP restants, XP gagnés
 │   ├── counters.js     Compteurs − / + (Épuisement, Foi ou Inspiration, renommée) et pièces (Bourse).
 │   │                   readCounter : seule lecture d'une case « N » ou « N/M » (entier de 6 chiffres
@@ -145,7 +166,10 @@ js/
 │   ├── subclass-calcs.js  Petits calculs (Initiative, compétences, armes, critiques) et rappels
 │   │                   près des valeurs (zones de featEffects)
 │   ├── subclass-combat.js  Boutons de combat et dés des sous-classes, notes de CA et de défense
-│   ├── subclass-uses.js  Capacités à usages limités (clé facultative « subclass_uses »)
+│   ├── subclass-uses.js  Capacités à usages limités (clé facultative « subclass_uses ») : sous-
+│   │                   classes, espèce, et capacités de classe (CLASS_COUNTERS : Châtiment de
+│   │                   paladin, Fidèle destrier, Communication avec le protecteur, Arcanum
+│   │                   mystique, Sorts de prédilection)
 │   ├── subclass-choices.js  Choix de sous-classe mémorisés (clé facultative « subclass_choices »)
 │   ├── subclass-forms.js  Formes du Cercle de la Lune et du Cercle des Étoiles
 │   ├── subclass-companions.js  Cartes des compagnons (clé facultative « subclass_companions »)
@@ -214,7 +238,7 @@ js/
     │   │               quitter sans appliquer un changement demande confirmation (4.47.0)
     │   ├── config-extras.js  Rubrique « Dégâts en plus » de cette fenêtre (createExtrasEditor)
     │   └── mastery.js  Fenêtre de la règle d'une botte d'arme (openMastery), lecture seule
-    ├── spells.js       Grimoire, chef d'orchestre (452 lignes) : crée le contexte partagé,
+    ├── spells.js       Grimoire, chef d'orchestre (460 lignes) : crée le contexte partagé,
     │                   assemble les morceaux, décide quelles lignes afficher (renderRows), supprime
     │                   un sort (deleteRow), tient les abonnements ; seul export : initSpells
     ├── spells/         Morceaux du grimoire. Ceux du tableau (découpage de la 4.46.0) reçoivent le
@@ -234,8 +258,13 @@ js/
     │   ├── tooltip.js  Bulle d'un sort
     │   ├── filters.js  Barre de recherche et filtres
     │   ├── slots.js    Emplacements de sorts
-    │   ├── granted.js  Sorts donnés par les dons, la sous-classe et l'espèce
-    │   ├── prepare.js  Fenêtre « Préparer mes sorts »
+    │   ├── granted.js  Sorts donnés par la classe (bloc « Sorts de classe », cases des lancers
+    │   │               sans emplacement), les dons, la sous-classe et l'espèce
+    │   ├── choices.js  Menus des sorts choisis d'une capacité, dans ces blocs (Magicien : Sorts
+    │   │               de classe ; Collège du Savoir : Sorts de sous-classe)
+    │   ├── prepare.js  Fenêtre « Préparer mes sorts » (Clerc, Druide, Paladin, Rôdeur ; pour les
+    │   │               deux derniers, ligne « X remplacé par Y » : un seul échange par repos long ;
+    │   │               afterLongRest : ouverte par le rappel de fin de repos long, js/ui/rest.js)
     │   └── cleanup.js  Bouton « Retirer les sorts non préparés »
     ├── derived.js      deriveCharacter calculé une fois par version du personnage, partagé
     ├── fold.js         Blocs repliables (sous-classe, compagnons, sorts de sous-classe), retenus
@@ -411,6 +440,22 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   des clés `"idDuDon@niveau:partie"` (0 ou 1 ; `js/rules/feat-spells.js`) ; la fiche n'écrit jamais ces sorts
   dans `dynamic_spells`. En v3, cet état était gardé à part dans le navigateur (`combat_buffs`, `spell_slots`) :
   la v4 le reprend une fois, dans la fiche v3 du navigateur (`importV3DeviceState`).
+- Grimoire, suites (aucun nom de clé nouveau, seulement des entrées dans deux clés facultatives qui
+  existaient déjà ; rien n'est écrit tant que le joueur ne coche ou ne choisit rien) :
+  - `subclass_uses` reçoit les cases des capacités de classe (`CLASS_COUNTERS`, `js/rules/subclass-uses.js`),
+    sous des clés `"classe.capacité"` : `paladin.chatiment_de_paladin`, `paladin.fidele_destrier`,
+    `warlock.communication_avec_le_protecteur`, `warlock.arcanum_6` à `warlock.arcanum_9` (une case par
+    niveau de sort d'Arcanum), `wizard.sort_de_predilection_1` et `_2` (nombre d'usages dépensés ; les
+    deux dernières reviennent au repos court, les autres au repos long) ;
+  - `subclass_choices` reçoit les sorts choisis d'une capacité (`js/rules/spell-choices.js`) :
+    `{ wizard: { mastery1, mastery2, signature1, signature2 } }` pour le Magicien (le groupe porte le nom
+    de la classe, faute de sous-classe) et `{ college_of_lore: { discovery1, discovery2 } }` pour le Barde
+    du Collège du Savoir, à côté des autres choix de la sous-classe. La valeur est le nom anglais du sort
+    quand la base de sorts le connaît (comme `feat_choices`), sinon le nom noté au grimoire. Un choix
+    d'une capacité pas encore atteinte est ignoré, jamais effacé. Un sort remis sur « Choisir » retire sa
+    valeur, son groupe s'il est vide, et la clé elle-même s'il ne reste aucun choix (valeur `undefined`
+    dans le store, comme `odyssey_mode` : ni enregistrée ni comptée dans l'empreinte) : la fiche redevient
+    exactement celle d'avant le choix.
 - `odyssey_mode` : mode « Odyssée des Seigneurs Dragons » de la fiche (`js/rules/odyssey.js`). Facultative :
   absente, ou toute autre valeur que `"off"`, = mode actif. Elle n'est jamais dans la fiche vierge
   (`migrate.js` y ajoute les valeurs par défaut) et n'est écrite que quand le joueur décoche la case « Mode

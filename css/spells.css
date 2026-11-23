@@ -373,6 +373,24 @@
     color: var(--ko);
 }
 
+/* Paladin, Rôdeur : ce qui a changé depuis l'ouverture de la fenêtre (un seul sort remplacé par
+   repos long), sur sa propre ligne sous la recherche et le compteur, toujours en vue */
+.modal-body .prep-swap {
+    flex: 1 1 100%;
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--quiet-ink);
+}
+
+/* Plus d'un sort retiré : la règle n'en permet qu'un */
+.modal-body .prep-swap.is-over {
+    color: var(--ko);
+}
+
+.prep-swap[hidden] {
+    display: none;
+}
+
 .prep-group + .prep-group {
     margin-top: 12px;
 }
@@ -1600,6 +1618,28 @@ button.spell-no-slot {
 /* Impression (lot 7) : les sorts des terrains non choisis, repliés à l'écran, ne s'impriment pas */
 @media print {
     .subclass-spells-others {
+        display: none;
+    }
+}
+
+/* Sorts choisis d'une capacité (js/ui/spells/choices.js : Maîtrise des sorts et Sorts de
+   prédilection du Magicien, Découvertes magiques du Collège du Savoir). Les menus reprennent ceux
+   des choix de dons (feats.css) ; ce sont des réglages : retirés de la vue au combat et de
+   l'impression, où seuls restent la phrase de la capacité et les sorts choisis */
+.spell-choice-group + .spell-choice-group {
+    margin-top: 8px;
+}
+
+@media screen {
+    .spells-body.is-combat .spell-choices,
+    .spells-body.is-combat .spell-choice-group .feat-spells-warning {
+        display: none;
+    }
+}
+
+@media print {
+    .spell-choices,
+    .spell-choice-group .feat-spells-warning {
         display: none;
     }
 }

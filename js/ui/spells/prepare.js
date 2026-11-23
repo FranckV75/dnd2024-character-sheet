@@ -13,6 +13,12 @@
 //  - Sorts toujours préparés (domaine, cercle, serment, classe, don, espèce) : repère fixe, hors du
 //    compte. Autres sorts préparés du grimoire (autre liste, niveau sans emplacement) : en fin de
 //    liste, décochables (losange seulement).
+//  - Paladin, Rôdeur (un seul sort remplacé par repos long) : une ligne, sous le compteur, dit ce
+//    qui a changé depuis l'ouverture de la fenêtre (« X remplacé par Y ») et avertit si plus d'un
+//    sort a été retiré. Rien n'est bloqué ni écrit dans la fiche pour ce suivi (preparationSwap) :
+//    la fenêtre ne sait donc pas si l'échange du repos long a déjà eu lieu. Elle ne parle de
+//    « l'échange de ce repos long » qu'ouverte par le rappel de fin de repos long (afterLongRest) ;
+//    ouverte par le bouton du grimoire, elle rappelle que l'échange se fait à la fin d'un repos long.
 // Geste de JEU (après un repos long) : utilisable fiche verrouillée, comme le losange.
 // Ouverte par le bouton de la barre du grimoire et par le rappel de fin de repos long (rest.js).
 // =============================================================================
@@ -22,11 +28,12 @@ import { loadSpells } from '../../data/spells.js';
 import { derivedOf } from '../derived.js';
 import { el, icon } from '../dom.js';
 import { openModal } from '../modal.js';
+import { frenchSpaces } from '../help.js';
 import { SPELL_CLASS_OPTIONS, spellCounts, spellLimitWarnings, plainText } from '../../rules/spells.js';
 import { classSpellCounts } from '../../rules/class-progression.js';
 import {
-    SPELL_PREPARATION, preparesFromClassList, highestSlotLevel, grantedSpellKeys, preparationView,
-    prepareSpellRows, unprepareSpellRows, setRowPrepared, matchesSpellQuery
+    preparesFromClassList, replacesOneSpell, highestSlotLevel, grantedSpellKeys, preparationView,
+    prepareSpellRows, unprepareSpellRows, setRowPrepared, matchesSpellQuery, preparedSpellNames, preparationSwap
 } from '../../rules/spell-preparation.js';
 
 /**
@@ -61,7 +68,7 @@ function nameNode(name) {
 /** Règle de changement, en une phrase (PHB 2024, chap. 7) */
 function ruleText(slug, maxLevel) {
     const levels = maxLevel > 1 ? `des niveaux 1 à ${maxLevel}` : 'du niveau 1';
-    const change = SPELL_PREPARATION[slug]?.count === 'one'
+    const change = replacesOneSpell(slug)
         ? 'Après chaque repos long, vous pouvez remplacer un seul de vos sorts préparés ; en gagnant un niveau, complétez la liste jusqu\'au nombre de la table.'
         : 'Après chaque repos long, vous pouvez changer autant de sorts préparés que vous voulez.';
     return `${change} Seulement des sorts ${levels} (vos emplacements).`;
@@ -69,9 +76,11 @@ function ruleText(slug, maxLevel) {
 
 /**
  * Ouvre la fenêtre (rien si le personnage n'est pas concerné).
- * @param {{ store: Object, setStatus: (message: string) => void }} ctx
+ * @param {{ store: Object, setStatus: (message: string) => void, afterLongRest?: boolean }} ctx
+ *        afterLongRest : ouverte par le rappel de fin de repos long (js/ui/rest.js) ; sinon par le
+ *        bouton du grimoire, à tout moment (la ligne de suivi du Paladin et du Rôdeur le dit)
  */
-export async function openPrepareSpells({ store, setStatus }) {
+export async function openPrepareSpells({ store, setStatus, afterLongRest = false }) {
     const db = await loadSpells();
     if (!Array.isArray(db) || db.length === 0) {
         setStatus('⚠️ Base de sorts indisponible : la liste de votre classe ne peut pas s\'afficher.');
@@ -90,7 +99,7 @@ export async function openPrepareSpells({ store, setStatus }) {
 
     const viewOf = (character) => {
         const d = derivedOf(character);
-        const granted = grantedSpellKeys(character, d);
+        const granted = grantedSpellKeys(character, d, db);
         return { d, granted, view: preparationView(rowsOf(character), db, { classSlug, maxLevel: highestSlotLevel(d.spellSlots), granted }) };
     };
 
@@ -100,6 +109,11 @@ export async function openPrepareSpells({ store, setStatus }) {
         spellcheck: 'false', 'aria-label': 'Chercher un sort par son nom'
     });
     const counter = el('output', { class: 'prep-count', 'aria-live': 'polite' });
+    // Paladin, Rôdeur : un seul sort remplacé par repos long. Sorts préparés à l'ouverture, pour
+    // dire ce qui a changé depuis (simple repère : rien n'est bloqué, rien n'est écrit pour cela)
+    const opened = replacesOneSpell(classSlug)
+        ? preparedSpellNames(rowsOf(store.get()), grantedSpellKeys(store.get(), start, db)) : null;
+    const swap = el('p', { class: 'prep-swap', role: 'status', hidden: !opened });
     const listBox = el('div', { class: 'prep-list' });
     const noMatch = el('p', { class: 'prep-empty muted', hidden: true, text: 'Aucun sort ne correspond.' });
 
@@ -195,6 +209,11 @@ export async function openPrepareSpells({ store, setStatus }) {
         counter.textContent = limits.prepared != null ? `Préparés : ${counts.prepared} / ${limits.prepared}` : `Préparés : ${counts.prepared}`;
         counter.classList.toggle('is-over', warnings.length > 0);
         counter.title = warnings.join(' ');
+        if (opened) {
+            const status = preparationSwap(opened, preparedSpellNames(rows, granted), { afterLongRest });
+            swap.textContent = frenchSpaces(status.text);
+            swap.classList.toggle('is-over', status.over);
+        }
     }
 
     function applySearch() {
@@ -231,7 +250,7 @@ export async function openPrepareSpells({ store, setStatus }) {
         body: [
             el('p', { class: 'prep-rule', text: label ? `${label} : ${lowerFirst(rule)}` : rule }),
             el('p', { class: 'prep-hint muted', text: 'Cochez les sorts que vous préparez : ce sont ceux que vous pourrez lancer. Un sort coché absent du grimoire y est ajouté ; décoché, il y reste, non préparé. Les sorts mineurs ne se préparent pas.' }),
-            el('div', { class: 'prep-controls' }, search, counter),
+            el('div', { class: 'prep-controls' }, search, counter, swap),
             listBox,
             noMatch
         ],

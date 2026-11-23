@@ -63,6 +63,16 @@ describe('Fougue, Inflexible et Coup de chance', () => {
         const [luck] = counters({ char_class: 'Roublard', char_level: '20' });
         assert.deepEqual([luck.key, luck.max, luck.reset], ['rogue.coup_de_chance', 1, 'short']);
     });
+
+    test('Magicien : Sorts de prédilection au niveau 20, une case par sort, repos court ou long', () => {
+        assert.deepEqual(counters({ char_class: 'Magicien', char_level: '19' }), []);
+        assert.deepEqual(counters({ char_class: 'Magicien', char_level: '20' }).map((c) => [c.key, c.label, c.max, c.reset]), [
+            ['wizard.sort_de_predilection_1', 'Sort de prédilection 1', 1, 'short'],
+            ['wizard.sort_de_predilection_2', 'Sort de prédilection 2', 1, 'short']
+        ]);
+        const record = { char_class: 'Magicien', char_level: '20', subclass_uses: { 'wizard.sort_de_predilection_2': 1 } };
+        assert.deepEqual(restSubclassUses(record, deriveCharacter(record), 'short').patch.subclass_uses, { 'wizard.sort_de_predilection_2': 0 });
+    });
 });
 
 describe('Filtre « Magiques » des armes', () => {

@@ -11,7 +11,9 @@
 //  - buff 'rage' : rappel grisé (inactive) tant que le bouton Rage est éteint, ou qu'une armure
 //    lourde est équipée (Rage sans effet, js/rules/rage.js) ;
 //  - manual : la valeur saisie n'est jamais modifiée (« dont +4 ») ;
-//  - check : case de maîtrise à cocher (« À vérifier »).
+//  - check : case de maîtrise à cocher (« À vérifier ») ;
+//  - zone 'rest' avec restKind : rappel de fin de repos court ('short') ou long ('long') seulement
+//    (Mémorisation de sort et Maîtrise des sorts du Magicien, js/rules/rest.js).
 // Fonctions pures.
 // =============================================================================
 
@@ -99,6 +101,13 @@ const REMINDERS = Object.freeze([
         "Vous êtes immunisé contre l'état Charmé."],
     ['wizard', 'abjurer', 14, 'resistance_aux_sorts', 'Résistance aux sorts', ALL_SAVES, 'Avantage contre les sorts',
         'Avantage aux jets de sauvegarde contre les sorts (et Résistance à leurs dégâts).'],
+    // Magicien, fin de repos (PHB 2024, « Memorize Spell » et « Spell Mastery »)
+    ['wizard', null, 5, 'memorisation_de_sort', 'Mémorisation de sort', ['rest'], 'Mémorisation de sort',
+        "Vous pouvez remplacer un de vos sorts préparés de niveau 1 ou plus par un autre sort de votre grimoire (losange du sort, onglet Magie).",
+        { restKind: 'short' }],
+    ['wizard', null, 18, 'maitrise_des_sorts', 'Maîtrise des sorts', ['rest'], 'Maîtrise des sorts',
+        "Vous pouvez remplacer un de vos deux sorts de Maîtrise des sorts par un autre sort de votre grimoire, de même niveau (menus « Sorts de classe », onglet Magie).",
+        { restKind: 'long' }],
     ['monk', 'way_of_the_shield_dancer', 17, 'vaillance_inflexible', 'Vaillance inflexible', ['saves.wis'], 'Ni Effrayé ni Paralysé (TG+)',
         'Les sorts et capacités des créatures de taille Très Grande ou plus ne peuvent vous rendre ni Effrayé ni Paralysé.']
 ]);
@@ -128,7 +137,8 @@ export function classReminderNotes(derived, record = {}) {
         const note = {
             featId, featName, text: value(text, ctx), mention: value(mention, ctx), classFeature: true,
             ...(options.manual ? { manual: true, value: 4 } : {}),
-            ...(options.buff === 'rage' && !raging ? { inactive: true } : {})
+            ...(options.buff === 'rage' && !raging ? { inactive: true } : {}),
+            ...(options.restKind ? { restKind: options.restKind } : {})
         };
         for (const zone of value(where, ctx)) (zones[zone] ??= []).push({ ...note });
     }

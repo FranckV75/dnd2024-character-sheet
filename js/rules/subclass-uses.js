@@ -345,13 +345,49 @@ export const SUBCLASS_COUNTERS = Object.freeze({
     ]
 });
 
+/** Niveaux de sort de l'Arcanum mystique (Occultiste) et niveau de classe où chacun arrive */
+export const ARCANUM_LEVELS = Object.freeze([[6, 11], [7, 13], [8, 15], [9, 17]]);
+
+/** Phrase des cases d'un sort de classe lancé sans emplacement (le bouton « Lancer » les coche) */
+const freeCastUse = (spell, extra = '') => `${spell} lancé sans emplacement${extra}. Le bouton « Lancer » du sort (onglet Magie) coche cette case.`;
+
 /**
  * Capacités de base à cases (classe, pas sous-classe), même forme que SUBCLASS_COUNTERS avec le
  * niveau où elles arrivent ; enregistrées dans la même clé (« fighter.fougue »). Manuel des joueurs
  * français : Fougue (Guerrier 2, deux utilisations au niveau 17), Inflexible (Guerrier 9 : 1, 2 au
  * niveau 13, 3 au niveau 17), Coup de chance (Roublard 20).
+ * Sorts de classe lancés une fois sans emplacement, de nouveau après un Repos long (PHB 2024) :
+ * Châtiment de paladin (« Paladin's Smite », niveau 2 : Châtiment divin), Fidèle destrier
+ * (« Faithful Steed », niveau 5 : Appel de destrier), Communication avec le protecteur (« Contact
+ * Patron », Occultiste 9 : Contact avec les plans), Arcanum mystique (« Mystic Arcanum » : un sort
+ * de niveau 6 au niveau 11, puis de niveau 7, 8 et 9 aux niveaux 13, 15 et 17 ; une case par niveau
+ * de sort). Sorts de prédilection (« Signature Spells », Magicien 20) : deux sorts de niveau 3,
+ * chacun une fois au niveau 3 sans emplacement, de nouveau après un Repos court ou long. Le bouton
+ * « Lancer » du grimoire coche ces cases (js/rules/free-casts.js).
  */
 export const CLASS_COUNTERS = Object.freeze({
+    paladin: [
+        { feature: 'chatiment_de_paladin', name: 'Châtiment de paladin', level: 2, label: 'Châtiment de paladin', inText: 'Châtiment de paladin',
+            max: once, reset: 'long', use: freeCastUse('Châtiment divin') },
+        { feature: 'fidele_destrier', name: 'Fidèle destrier', level: 5, label: 'Fidèle destrier', inText: 'Fidèle destrier',
+            max: once, reset: 'long', use: freeCastUse('Appel de destrier') }
+    ],
+    warlock: [
+        { feature: 'communication_avec_le_protecteur', name: 'Communication avec le protecteur', level: 9,
+            label: 'Communication avec le protecteur', inText: 'Communication avec le protecteur',
+            max: once, reset: 'long', use: freeCastUse('Contact avec les plans', ", sauvegarde réussie d'office") },
+        ...ARCANUM_LEVELS.map(([spellLevel, classLevel]) => ({
+            feature: `arcanum_${spellLevel}`, name: 'Arcanum mystique', level: classLevel,
+            label: `Arcanum mystique (niveau ${spellLevel})`, inText: `Arcanum mystique de niveau ${spellLevel}`,
+            max: once, reset: 'long', use: freeCastUse(`Votre sort d'Arcanum de niveau ${spellLevel},`)
+        }))
+    ],
+    wizard: [1, 2].map(rank => ({
+        feature: `sort_de_predilection_${rank}`, name: 'Sorts de prédilection', level: 20,
+        label: `Sort de prédilection ${rank}`, inText: `Sort de prédilection ${rank}`,
+        max: once, reset: 'short',
+        use: `Votre ${rank === 1 ? 'premier' : 'second'} sort de prédilection (choisi dans l'onglet Magie), lancé au niveau 3 sans emplacement. Le bouton « Lancer » du sort coche cette case.`
+    })),
     fighter: [
         { feature: 'fougue', name: 'Fougue', level: 2, label: 'Fougue', inText: 'Fougue',
             max: ({ level }) => (level >= 17 ? 2 : 1), reset: 'short',

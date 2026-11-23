@@ -290,7 +290,7 @@ function afterLongRest(store, setStatus, preparation) {
         ],
         // La fenêtre s'ouvre une fois celle-ci fermée (le focus est d'abord rendu au bouton)
         onClose: () => {
-            if (prepare) setTimeout(() => { openPrepareSpells({ store, setStatus }); }, 0);
+            if (prepare) setTimeout(() => { openPrepareSpells({ store, setStatus, afterLongRest: true }); }, 0);
         }
     });
 }
