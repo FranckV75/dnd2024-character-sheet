@@ -439,7 +439,8 @@ export function inspirationCoin(record) {
 /**
  * Modification à enregistrer quand le joueur touche la pièce.
  *  - Mode actif : odysseyInspirationPatch (clé odyssey_inspiration "1", ou retirée).
- *  - Mode coupé : heroic_inspiration "1" ou "0" ; rien ({}) si la case contient du texte.
+ *  - Mode coupé : heroic_inspiration "1" ou "0" ; rien ({}) si la case contient du texte. Une case
+ *    écrite « N/M » (sauvegardes v3 de Korgul : « 0/3 ») garde sa forme : « 1/3 » ou « 0/3 ».
  * @param {Object} record
  * @param {boolean} lit - état voulu
  * @returns {Object}
@@ -447,7 +448,10 @@ export function inspirationCoin(record) {
 export function inspirationCoinPatch(record, lit) {
     const coin = inspirationCoin(record);
     if (!coin.readable) return {};
-    return coin.place === 'faith' ? odysseyInspirationPatch(lit) : { heroic_inspiration: lit ? '1' : '0' };
+    if (coin.place === 'faith') return odysseyInspirationPatch(lit);
+    const count = lit ? '1' : '0';
+    const { max } = readCounter(record.heroic_inspiration);
+    return { heroic_inspiration: max === null ? count : `${count}/${Math.max(1, max)}` };
 }
 
 /**

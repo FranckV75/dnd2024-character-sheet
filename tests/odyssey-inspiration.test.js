@@ -69,6 +69,18 @@ describe('Pièce « Inspiration héroïque » : où elle est, ce qu\'elle montre
         assert.ok(!('heroic_inspiration' in inspirationCoinPatch(sheet({ heroic_inspiration: '3/4' }), true)));
     });
 
+    test('Mode coupé, une case « N/M » (sauvegardes v3 de Korgul) garde sa forme', () => {
+        assert.deepEqual(inspirationCoinPatch(sheet({ ...OFF, heroic_inspiration: '0/3' }), true), { heroic_inspiration: '1/3' });
+        assert.deepEqual(inspirationCoinPatch(sheet({ ...OFF, heroic_inspiration: '1/3' }), false), { heroic_inspiration: '0/3' });
+        assert.deepEqual(inspirationCoinPatch(sheet({ ...OFF, heroic_inspiration: '3/3' }), false), { heroic_inspiration: '0/3' });
+        assert.deepEqual(inspirationCoinPatch(sheet({ ...OFF, heroic_inspiration: '1/1' }), false), { heroic_inspiration: '0/1' });
+        // « 0/0 » : la pièce doit pouvoir passer à « Disponible »
+        const zero = sheet({ ...OFF, heroic_inspiration: '0/0' });
+        const patch = inspirationCoinPatch(zero, true);
+        assert.deepEqual(patch, { heroic_inspiration: '1/1' });
+        assert.equal(inspirationCoin({ ...zero, ...patch }).lit, true);
+    });
+
     test('Mots sous la pièce : « Disponible » / « Non disponible » (ni oui / non)', () => {
         assert.deepEqual(INSPIRATION_STATES, { lit: 'Disponible', unlit: 'Non disponible' });
     });
@@ -240,12 +252,20 @@ describe('Pièce « Inspiration héroïque » : interface', () => {
         assert.match(stepperCss, /\.label-steps \.step-btn\.is-mini::after \{\s*inset: -10px -6px -4px;/);
         assert.match(feats, /\.inspiration-coin\[hidden\] \{\s*display: none;/);
         assert.match(ui, /step\.hidden = alone/);
-        assert.match(ui, /input\.hidden = alone && coin\.readable/);
+        assert.match(ui, /const typing = alone && document\.activeElement === input;/);
+        assert.match(ui, /input\.hidden = alone && coin\.readable && !typing;/);
+        assert.match(ui, /button\.hidden = !coin\.readable \|\| typing;/);
+    });
+
+    test('Mode coupé, texte libre : la case reste affichée pendant la saisie, la pièce vient au blur', () => {
+        assert.match(ui, /input\?\.addEventListener\('blur', \(\) => render\(store\.get\(\)\)\);/);
     });
 
     test('Imprimée comme à l\'écran, sans fond ni halo', () => {
         assert.doesNotMatch(print, /inspiration-coin[^{]*\{\s*display: none/);
         // Plus fort que le halo de la pièce disponible (css/feats.css)
         assert.match(print, /\.inspiration-coin\[aria-pressed\] \.inspiration-face \{\s*box-shadow: none;/);
+        // « Non disponible » à l'encre, pas en gris adouci (plus fort que css/feats.css)
+        assert.match(print, /\.inspiration-coin\[aria-pressed="false"\] \.inspiration-face,\s*\.inspiration-coin\[aria-pressed\] \.inspiration-state \{\s*color: var\(--text\);/);
     });
 });

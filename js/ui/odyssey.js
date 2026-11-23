@@ -163,6 +163,7 @@ function initInspiration(root, store, setStatus, compact) {
     const coin = initCoin(store, setStatus, compact);
     // Pastille puis pièce, l'une sous l'autre, sous la case (css/feats.css)
     cell?.append(mention, coin.button);
+    input?.addEventListener('blur', () => render(store.get()));
     let signature = '';
     const render = (character) => {
         coin.render(character, input);
@@ -208,12 +209,14 @@ function initCoin(store, setStatus, compact) {
     let signature = '';
     const render = (character, input) => {
         const coin = inspirationCoin(character);
-        // Mode coupé : la pièce remplace la case et ses boutons (sauf texte saisi à la main)
+        // Mode coupé : la pièce remplace la case et ses boutons (sauf texte saisi à la main). Une
+        // case en cours de saisie reste affichée jusqu'à ce qu'on la quitte (blur, plus bas)
         const alone = coin.place === 'alone';
-        input.hidden = alone && coin.readable;
+        const typing = alone && document.activeElement === input;
+        input.hidden = alone && coin.readable && !typing;
         const steppers = steppersOf(input);
         for (const step of [steppers?.minus, steppers?.plus]) if (step) step.hidden = alone;
-        button.hidden = !coin.readable;
+        button.hidden = !coin.readable || typing;
         button.classList.toggle('is-alone', alone);
         button.setAttribute('aria-pressed', String(coin.lit));
         const word = coin.lit ? INSPIRATION_STATES.lit : INSPIRATION_STATES.unlit;

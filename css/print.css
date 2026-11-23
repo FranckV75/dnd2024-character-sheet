@@ -796,7 +796,8 @@ tr[data-magic="3"] .magic-gem-face {
 }
 
 /* Pièce « Inspiration héroïque » : imprimée comme à l'écran (disponible ou non), sans fond ni
-   halo (souvent non imprimés) : disponible = cercle plein à l'encre, étoile pleine */
+   halo (souvent non imprimés) : disponible = cercle plein à l'encre, étoile pleine ; non
+   disponible = pointillés, étoile et mot à l'encre (pas en gris adouci) */
 .inspiration-coin[aria-pressed] .inspiration-face {
     box-shadow: none;
 }
@@ -807,7 +808,8 @@ tr[data-magic="3"] .magic-gem-face {
     color: var(--text);
 }
 
-.inspiration-coin .inspiration-state {
+.inspiration-coin[aria-pressed="false"] .inspiration-face,
+.inspiration-coin[aria-pressed] .inspiration-state {
     color: var(--text);
 }
 

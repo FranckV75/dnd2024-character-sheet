@@ -15,7 +15,12 @@ describe('Fenêtres : quitter sans agir (onDismiss)', () => {
     test('Les trois chemins passent par onDismiss : bouton dismiss, fond, touche Échap', () => {
         assert.match(modal, /if \(action\.dismiss\) \{\s*dismiss\(\);/);
         assert.match(modal, /if \(event\.target === dialog\) dismiss\(\);/);
-        assert.match(modal, /addEventListener\('cancel', \(event\) => \{\s*if \(!onDismiss\) return;\s*event\.preventDefault\(\);\s*dismiss\(\);/);
+        assert.match(modal, /addEventListener\('keydown', \(event\) => \{\s*if \(!onDismiss \|\| event\.key !== 'Escape' \|\| event\.defaultPrevented\) return;\s*event\.preventDefault\(\);\s*dismiss\(\);/);
+    });
+
+    test("Échap répété, geste retour : jamais de question seule à l'écran", () => {
+        // Chrome et Edge refusent d'annuler un 'cancel' répété : la fenêtre se ferme, sans question
+        assert.match(modal, /addEventListener\('cancel', \(event\) => \{\s*if \(!onDismiss \|\| !event\.cancelable\) return;\s*event\.preventDefault\(\);\s*dismiss\(\);/);
     });
 
     test('Sans onDismiss, rien ne change pour les autres fenêtres (Échap ferme comme avant)', () => {

@@ -91,9 +91,17 @@ export function openModal({ title, icon, body = [], actions = [{ label: 'Fermer'
         close();
     };
 
-    // Touche Échap : même chemin que « Annuler »
+    // Touche Échap : même chemin que « Annuler ». Elle est prise dès keydown : Chrome et Edge
+    // refusent d'annuler un 'cancel' répété sans autre geste (la fenêtre se fermerait quand même).
+    dialog.addEventListener('keydown', (event) => {
+        if (!onDismiss || event.key !== 'Escape' || event.defaultPrevented) return;
+        event.preventDefault();
+        dismiss();
+    });
+    // Geste retour (Android) : un 'cancel' non annulable ferme la fenêtre de toute façon, donc pas
+    // de question (elle resterait seule à l'écran)
     dialog.addEventListener('cancel', (event) => {
-        if (!onDismiss) return;
+        if (!onDismiss || !event.cancelable) return;
         event.preventDefault();
         dismiss();
     });
