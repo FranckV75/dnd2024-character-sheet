@@ -112,7 +112,7 @@
     "desc": "Vous touchez une créature et choisissez entre Force, Dextérité, Intelligence, Sagesse ou Charisme. Pendant toute la durée du sort, la cible obtient un Avantage aux jets de caractéristique utilisant la caractéristique choisie.<br><strong><em>Emplacement de niveau supérieur</em></strong>. Vous pouvez cibler une créature supplémentaire pour chaque niveau d'emplacement de sort supérieur à 2. Vous pouvez choisir une caractéristique différente pour chaque cible.<br>"
   },
   {
-    "name": "Amis|Faux amis",
+    "name": "Faux amis|Amis",
     "vo": "Friends",
     "level": 0,
     "school": "Enchantement",
@@ -354,7 +354,7 @@
     "desc": "Un givre magique protecteur vous enveloppe. Vous gagnez 5 points de vie temporaires. Si une créature vous touche avec un jet d'attaque au corps à corps avant la fin du sort, elle subit 5 dégâts de froid. Le sort prend fin prématurément si vous n'avez plus de points de vie temporaires.<br><strong><em>Emplacement de niveau supérieur</em></strong>. Les points de vie temporaires et les dégâts de froid augmentent de 5 pour chaque niveau d'emplacement de sort supérieur à 1.<br>"
   },
   {
-    "name": "Armure de mage",
+    "name": "Armure du mage|Armure de mage",
     "vo": "Mage Armor",
     "level": 1,
     "school": "Abjuration",
@@ -388,7 +388,7 @@
     "desc": "Vous mettez un bref coup d'arrêt à l'écoulement du temps, pour tout le monde sauf vous-même. Le temps s'arrête pour les autres créatures tandis que vous prenez 1d4 +1 tours d'affilée, durant lesquels vous pouvez entreprendre des actions et vous déplacer comme en temps normal.<br>Ce sort prend fin si l'une des actions que vous entreprenez durant l'intervalle, ou l'un des effets créés, affecte une créature autre que vous ou un objet porté par quelqu'un d'autre que vous. Il se termine également si vous vous déplacez en un lieu distant de plus de 300 m de l'endroit où vous l'avez lancé.<br>"
   },
   {
-    "name": "Aspersion d'acide",
+    "name": "Aspersion acide|Aspersion d'acide",
     "vo": "Acid Splash",
     "level": 0,
     "school": "Évocation",
@@ -4168,7 +4168,7 @@
     "desc": "Vous créez une main de taille G d'énergie magique scintillante dans un espace libre, que vous pouvez voir et à portée. La main reste active pendant toute la durée du sort et se déplace à votre guise, imitant les mouvements de votre propre main.<br>La main est un objet doté d'une CA de 20 et de points de vie égaux à votre maximum de points de vie. Si elle tombe à 0, le sort prend fin. La main n'occupe pas son espace.<br>Lorsque vous lancez le sort et par une action Bonus lors de vos tours suivants, vous pouvez déplacer la main jusqu'à 18 mètres et provoquer l'un des effets suivants :<br><strong>Poing serré</strong>. La main frappe une cible dans un rayon de 1,50 mètre. Effectuez une attaque de sort au corps à corps. Si l'attaque touche, la cible subit 5d8 dégâts de force.<br><strong>Main impérieuse</strong>. La main tente de pousser une créature de taille TG ou inférieure dans un rayon de 1,50 mètre. La cible doit réussir un jet de sauvegarde de Force, ou la main la pousse jusqu'à 1,50 mètre plus 1,5 fois votre modificateur de caractéristique d'incantation. La main se déplace avec la cible, restant dans un rayon de 1,50 mètre autour d'elle.<br><strong>Main agrippeuse</strong>. La main tente d'agripper une créature de taille TG ou inférieure dans un rayon de 1,50 mètre. La cible doit réussir un jet de sauvegarde de Dextérité, ou elle est agrippée, avec un DD d'évasion égal à votre DD de sauvegarde des sorts. Tant que la main agrippe la cible, vous pouvez prendre une action Bonus pour l'écraser, infligeant à la cible des dégâts contondants égaux à 4d6 plus votre modificateur de caractéristique d'incantation.<br><strong>Main interposée</strong>. La main vous confère un Abri partiel contre les attaques et autres effets provenant de son emplacement ou le traversant. De plus, son emplacement est considéré comme un Terrain difficile pour vos ennemis.<br>Utilisation d'un niveau supérieur. Les dégâts de Poing serré augmentent de 2d8 et les dégâts de Main agrippeuse augmentent de 2d6 pour chaque niveau d'emplacement de sort supérieur à 5.<br>"
   },
   {
-    "name": "Main de mage",
+    "name": "Main du mage|Main de mage",
     "vo": "Mage Hand",
     "level": 0,
     "school": "Invocation",
@@ -4901,7 +4901,7 @@
     "desc": "Des orbes embrasés s'abattent au sol en quatre points différents que vous voyez à portée. Toute créature prise dans une Sphère d'un rayon de 12 m centrée sur l'un des quatre points effectue un jet de sauvegarde de Dextérité. Une créature subit 20d6 dégâts de feu et 20d6 dégâts contondants en cas d'échec, la moitié en cas de réussite. Une créature prise dans les zones de plus d'une Sphère ardente n'est affectée qu'une fois.<br>Un objet non magique qui n'est porté par personne subit lui aussi les dégâts s'il est dans la zone d'effet du sort, et il s'embrase s'il est inflammable.<br>Le nuage s'éloigne de 3 m de vous au début de chacun de vos tours, dans la direction de votre choix.<br>"
   },
   {
-    "name": "Oeil du mage",
+    "name": "Œil du mage|Oeil du mage",
     "vo": "Arcane Eye",
     "level": 4,
     "school": "Divination",
@@ -5143,7 +5143,7 @@
     "desc": "Vous tentez de transformer en pierre une créature que vous voyez à portée. La cible effectue un jet de sauvegarde de Constitution. En cas d'échec, elle subit l'état Entravé pour toute la durée. En cas de réussite, sa vitesse tombe à 0 jusqu'au début de votre tour suivant. Les Artificiels réussissent automatiquement ce JdS.<br>Une créature ainsi Entravée réitère le jet de sauvegarde de Constitution à la fin de chacun de ses tours. Si elle se sauvegarde trois fois contre le sort, celui-ci prend fin. Si elle rate son JdS trois fois, elle se transforme en pierre et reste soumise à l'état Pétrifié pour toute la durée. Ces réussites et échecs n'ont pas besoin ce que la cible atteigne un total de trois pour l'un ou l'autre.<br>Si vous maintenez votre Concentration sur ce sort pendant toute la durée possible, la cible est Pétrifiée jusqu'à ce que l'état soit éliminé par <em><a href=\"./fr/restauration-supreme\">restauration suprême</a></em> ou une magie équivalente.<br>"
   },
   {
-    "name": "Peur|Terreur",
+    "name": "Terreur|Peur",
     "vo": "Fear",
     "level": 3,
     "school": "Illusion",
@@ -5305,7 +5305,7 @@
     "desc": "Vous touchez physiquement une créature consentante pour lui octroyer la faculté d'entrevoir l'avenir immédiat. Pour toute la durée, la cible a un Avantage aux jets de d20 et les autres créatures subissent un Désavantage aux jets d'attaque contre elle. Le sort prend fin prématurément si vous le relancez.<br>"
   },
   {
-    "name": "Présence royale de Yolande|Présence royale de Yolane",
+    "name": "Présence royale de Yolane|Présence royale de Yolande",
     "vo": "Yolande's Regal Presence",
     "level": 5,
     "school": "Enchantement",
@@ -6610,7 +6610,7 @@
     "desc": "Une muraille d'eau se matérialise en un point que vous choisissez à portée. Ce mur peut atteindre jusqu'à 90 m de longueur, 90 m de hauteur et 15 m d'épaisseur. Le mur persiste pour toute la durée.<br>Quand le mur apparaît, chaque créature prise dans sa zone effectue un jet de sauvegarde de Force et subit 6d10 dégâts contondants en cas d'échec, la moitié en cas de réussite.<br>Au début de chacun de vos tours suivant son apparition, le mur et toutes les créatures qu'il englobe s'éloignent de 15 m de vous. Toutes les créatures de taille TG ou inférieure qui occupent un espace dans lequel le mur se déplace doivent réussir un jet de sauvegarde de Force sous peine de subir 5d10 dégâts contondants. Une même créature ne peut subir ces dégâts qu'une fois par round. À la fin du tour, la hauteur du mur diminue de 15 m et les dégâts qu'il peut infliger aux rounds suivants diminuent de 1d10. Une fois que la hauteur du mur est de 0 m, le sort prend fin.<br>Une créature prise dans le mur ne peut se déplacer qu'en nageant. La force de la vague est toutefois telle que la créature doit pour ce faire réussir un jet de Force (Athlétisme) contre le DD de sauvegarde du sort. En cas d'échec, elle ne peut pas se déplacer. Une créature qui se déplace hors du mur tombe au sol.<br>"
   },
   {
-    "name": "Urne magique|Possession",
+    "name": "Possession|Urne magique",
     "vo": "Magic Jar",
     "level": 6,
     "school": "Nécromancie",
@@ -6677,7 +6677,7 @@
     "desc": "Vous et un maximum de dix créatures consentantes que vous choisissez à portée adoptez une forme gazeuse pour toute la durée et apparaissez comme autant de volutes. Tant qu'elle est sous cette forme brumeuse, une cible est dotée d'une Vitesse de vol de 90 m avec la faculté de vol stationnaire, de l'Immunité contre l'état À terre et de la Résistance aux dégâts contondants, perforants et tranchants. Les seules actions qu'elle peut entreprendre sous cette forme sont l'action Pointe et commencer à reprendre sa forme normale au prix de l'action Magie. Il lui faut 1 minute pour retrouver sa forme d'origine, intervalle durant lequel elle subit l'état Étourdi. Jusqu'à la fin du sort, la créature peut également reprendre une forme gazeuse, transformation qui lui demande aussi d'entreprendre l'action Magie et nécessite 1 minute.<br>Si une cible est sous forme gazeuse et en vol au moment où le sort prend fin, elle redescend au rythme de 18 m par round pendant 1 minute, jusqu'à atterrir sans heurt. Si cette minute ne lui a pas suffi à toucher le sol, la cible chute de la distance restante.<br>"
   },
   {
-    "name": "Verrou arcanique|Verrou magique",
+    "name": "Verrou magique|Verrou arcanique",
     "vo": "Arcane Lock",
     "level": 2,
     "school": "Abjuration",

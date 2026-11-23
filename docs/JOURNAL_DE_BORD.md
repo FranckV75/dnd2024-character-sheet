@@ -23,8 +23,10 @@ en fin de session :
 - **Prête, pas publiée** : version **4.47.0** sur la branche `v4` (maquettes validées par Franck
   le 23/11/2026) : pièce « Inspiration héroïque » (« Disponible » / « Non disponible ») dans les
   deux modes, petits − / + autour du titre des Points de Foi et de renommée, liste des armes à
-  parcourir (bouton ▾), confirmation avant de fermer « Configuration de l'arme ». Relue par deux
-  agents ; leurs 4 défauts corrigés. Attend « Publie ». Décisions en attente : point 1 de
+  parcourir (bouton ▾), confirmation avant de fermer « Configuration de l'arme », noms du manuel
+  français (« Bâton de combat » et 9 sorts du Magicien). Relue par deux agents ; leurs 4 défauts
+  corrigés. Attend « Publie ». Vérification des autres noms (sorts des 7 autres classes, puis le
+  reste) : proposée à Franck, voir « Détail des idées » de `docs/FEUILLE_DE_ROUTE.md`. Décisions en attente : point 1 de
   `docs/FEUILLE_DE_ROUTE.md` (4.47.0) ; sur la 4.44.0 et la 4.45.0 : point 3.
 - **Serveur de travail** : `npm run dev` n'écoute plus que l'ordinateur (127.0.0.1 et ::1) et ne
   sert jamais `.git` ; relancé le 22/11/2026 avec cette protection (vérifié avec netstat).
@@ -124,7 +126,7 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 
 ## Sessions
 
-### 23/11/2026 — Décisions sur la 4.46.0, puis 4.47.0 : pièce « Inspiration héroïque », petits − / +, liste des armes, confirmation de la fenêtre d'arme (pas encore publiée)
+### 23/11/2026 — Décisions sur la 4.46.0, puis 4.47.0 : pièce « Inspiration héroïque », petits − / +, liste des armes, confirmation de la fenêtre d'arme, noms du manuel (pas encore publiée)
 
 - Franck a tranché toutes les décisions de la 4.46.0 (tablette essayée) ; il a demandé
   l'Inspiration héroïque pour tous en mode Odyssée et une confirmation avant de fermer la fenêtre
@@ -135,6 +137,9 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 - Relecture par deux agents (code, affichage) : forme « 0/3 » perdue, Échap répété qui fermait la
   fenêtre de l'arme, case en texte libre qui disparaissait pendant la frappe, « Non disponible »
   gris à l'impression : corrigés et testés (1 809 tests).
+- Franck a vu « Bâton » au lieu de « Bâton de combat » : corrigé, avec 9 noms de sorts de la liste
+  du Magicien (« Main du mage », « Terreur »…). Anciens noms toujours reconnus, fiches non
+  réécrites. Comparaison des autres listes de sorts : proposée, pas faite.
 - Rien n'est publié : la 4.47.0 attend « Publie ».
 
 ### 22/11/2026 — Audit de santé, puis lots A à F : petites corrections, Inspiration héroïque en mode Odyssée, ménage, découpage du grimoire et des armes, « Dépenser » (4.46.0, publiée le 23/11/2026)

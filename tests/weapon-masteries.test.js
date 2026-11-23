@@ -270,7 +270,7 @@ describe('masteryDetails : valeurs calculées pour l\'arme', () => {
 
     test('Enchaînement d\'un Moine : dé d\'arts martiaux, comme computeWeapon', () => {
         const monk = { char_class: 'Moine', char_level: '5', str_score: '14', dex_score: '18' };
-        const staff = row('Bâton', { prof: 'Enchaînement' });
+        const staff = row('Bâton de combat', { prof: 'Enchaînement' });
         const [cleave] = values(staff, monk);
         assert.equal(cleave.value, `${getMartialArtsDie(5)} contondants`);
         // Même caractéristique et même modificateur que l'infobulle des dégâts du tableau

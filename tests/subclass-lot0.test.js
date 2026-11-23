@@ -43,7 +43,7 @@ describe('Moine, La Voie du bouclier (Odyssée) : Arts martiaux gardés avec un 
     });
 
     test('Bâton avec un bouclier : même attaque et mêmes dégâts (Dextérité, dé d\'Arts martiaux) que sans bouclier', () => {
-        const staff = weapon('Bâton');
+        const staff = weapon('Bâton de combat');
         const without = shown(staff, monk('La Voie du bouclier', 5, false));
         assert.deepEqual(shown(staff, monk('La Voie du bouclier', 5, true)), without);
         // Un autre Moine perd ses Arts martiaux avec un bouclier (PHB 2024)

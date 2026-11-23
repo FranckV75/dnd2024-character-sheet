@@ -19,7 +19,8 @@ export const WHATS_NEW = Object.freeze([
             'Mode Odyssée : la pièce est sous les « Points de Foi », pour tous les personnages. Mode décoché, elle remplace la case, sans boutons − et +.',
             'Les boutons − et + des « Points de Foi » et des « Points de renommée » sont plus petits, de part et d\'autre du titre.',
             'Armes : touchez le nom vide ou le bouton ▾ pour choisir dans la liste du manuel, rangée comme sa table des armes, avec les dégâts de chacune. Une ✓ marque les armes déjà dans votre tableau.',
-            'Dans « Configuration de l\'arme », fermer sans appliquer vos changements demande d\'abord confirmation : « Continuer à modifier » ou « Fermer sans appliquer ».'
+            'Dans « Configuration de l\'arme », fermer sans appliquer vos changements demande d\'abord confirmation : « Continuer à modifier » ou « Fermer sans appliquer ».',
+            'Noms du manuel français : « Bâton de combat », « Main du mage », « Armure du mage », « Faux amis », « Terreur »… Une arme ou un sort déjà noté sous l\'ancien nom reste reconnu.'
         ]
     },
     {

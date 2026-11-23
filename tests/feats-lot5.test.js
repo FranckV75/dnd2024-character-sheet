@@ -208,13 +208,13 @@ describe('Empoisonneur (Poisoner) et Maître d\'hast (Polearm Master)', () => {
     });
 
     test("armes d'hast : Bâton, Lance, armes Lourdes à Allonge", () => {
-        for (const name of ['Bâton', 'Lance', 'Coutille', 'Hallebarde', 'Pique', "Lance d'arçon"]) assert.ok(isPolearm(weapon(name)), name);
+        for (const name of ['Bâton de combat', 'Lance', 'Coutille', 'Hallebarde', 'Pique', "Lance d'arçon"]) assert.ok(isPolearm(weapon(name)), name);
         for (const name of ['Rapière', 'Hache à deux mains', 'Dague']) assert.ok(!isPolearm(weapon(name)), name);
-        assert.ok(isPolearm({ ...weapon('Bâton'), name: 'Bâton +1' }));
+        assert.ok(isPolearm({ ...weapon('Bâton de combat'), name: 'Bâton +1' }));
     });
 
     test('Frappe double calculée sur la ligne (d4 contondant, même attaque)', () => {
-        const character = hero({ feat_4: 'maitre_d_hast', dynamic_weapons: [weapon('Hallebarde'), weapon('Bâton')] });
+        const character = hero({ feat_4: 'maitre_d_hast', dynamic_weapons: [weapon('Hallebarde'), weapon('Bâton de combat')] });
         const [halberd, staff] = character.dynamic_weapons.map(w => weaponFeatNotes(w, character).find(n => n.featId === 'maitre_d_hast').text);
         assert.match(halberd, /attaque \+6 avec l'autre bout, 1d4 \+3 CONT/);
         assert.match(halberd, /allonge \(3 m\)/);
@@ -224,13 +224,13 @@ describe('Empoisonneur (Poisoner) et Maître d\'hast (Polearm Master)', () => {
 
     test("armes d'hast renommées : « Bâton de feu » oui, « Lance-pierre » non", () => {
         for (const name of ['Bâton de feu', 'Lance de foudre +1', 'Bâton dansant', 'Lance (magique)']) {
-            assert.ok(isPolearm({ ...weapon('Bâton'), name }), name);
+            assert.ok(isPolearm({ ...weapon('Bâton de combat'), name }), name);
         }
         assert.ok(!isPolearm({ ...weapon('Fronde'), name: 'Lance-pierre' }));
     });
 
     test("Frappe double : toujours 1d4 contondant, bonus magique gardé, dé et type réglés ignorés", () => {
-        const staff = { ...weapon('Bâton'), weaponConfig: JSON.stringify({ dmgDieOverride: '1d8', dmgTypeOverride: 'FEU', magicBonus: 1 }) };
+        const staff = { ...weapon('Bâton de combat'), weaponConfig: JSON.stringify({ dmgDieOverride: '1d8', dmgTypeOverride: 'FEU', magicBonus: 1 }) };
         const character = hero({ feat_4: 'maitre_d_hast', dynamic_weapons: [staff] });
         const text = weaponFeatNotes(staff, character).find(n => n.featId === 'maitre_d_hast').text;
         assert.match(text, /attaque \+7 avec l'autre bout, 1d4 \+4 CONT/);

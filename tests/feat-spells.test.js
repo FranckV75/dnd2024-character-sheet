@@ -139,7 +139,7 @@ describe('Sorts de dons', () => {
             ['Bénédiction', 1, 'any', 'affinite_feerique@4:spell'],
             ['Foulée brumeuse', 2, '2+', 'affinite_feerique@4:fixed']
         ]);
-        assert.equal(tk.spells[0].name, 'Main de mage');
+        assert.equal(tk.spells[0].name, 'Main du mage');
         assert.match(tk.spells[0].note, /18 m/);
         assert.match(tk.extras[0].text, /DD 15/);
     });

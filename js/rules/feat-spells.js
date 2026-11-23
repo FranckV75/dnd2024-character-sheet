@@ -19,7 +19,7 @@
 //    ces sorts se lancent aussi avec un emplacement du bon niveau (1+ pour un sort de niveau 1,
 //    2+ pour Foulée brumeuse, Invisibilité, Détection des pensées) ;
 //  - Magie rituelle : Rituel rapide (1 fois par Repos long, compteur de js/rules/feat-uses.js) ;
-//  - Télépathe : parole télépathique à 18 m ; Télékinésiste : Main de mage sans composantes, portée
+//  - Télépathe : parole télépathique à 18 m ; Télékinésiste : Main du mage sans composantes, portée
 //    18 m, main invisible au choix, et poussée télékinésique (action Bonus, 9 m, sauvegarde de
 //    Force, 1,50 m).
 //

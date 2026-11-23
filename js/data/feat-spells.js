@@ -81,8 +81,8 @@ export const MAGIC_INITIATE_LISTS = Object.freeze({
     }),
     wizard: Object.freeze({
         cantrips: [
-            ["Friends","Amis"],
-            ["Acid Splash","Aspersion d'acide"],
+            ["Friends","Faux amis"],
+            ["Acid Splash","Aspersion acide"],
             ["Poison Spray","Bouffée de poison"],
             ["Chill Touch","Contact glacial"],
             ["True Strike","Coup au but"],
@@ -92,7 +92,7 @@ export const MAGIC_INITIATE_LISTS = Object.freeze({
             ["Minor Illusion","Illusion mineure"],
             ["Light","Lumière"],
             ["Dancing Lights","Lumières dansantes"],
-            ["Mage Hand","Main de mage"],
+            ["Mage Hand","Main du mage"],
             ["Message","Message"],
             ["Mind Sliver","Piqûre mentale"],
             ["Shocking Grasp","Poigne électrique"],
@@ -105,7 +105,7 @@ export const MAGIC_INITIATE_LISTS = Object.freeze({
         level1: [
             ["Alarm","Alarme","R"],
             ["Find Familiar","Appel de familier","R"],
-            ["Mage Armor","Armure de mage"],
+            ["Mage Armor","Armure du mage"],
             ["Shield","Bouclier"],
             ["Charm Person","Charme-personne"],
             ["Comprehend Languages","Compréhension des langues","R"],
@@ -188,5 +188,5 @@ export const FIXED_FEAT_SPELLS = Object.freeze({
     misty: ["Misty Step","Foulée brumeuse",2],
     invisibility: ["Invisibility","Invisibilité",2],
     detectThoughts: ["Detect Thoughts","Détection des pensées",2],
-    mageHand: ["Mage Hand","Main de mage",0]
+    mageHand: ["Mage Hand","Main du mage",0]
 });

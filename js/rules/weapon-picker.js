@@ -14,6 +14,7 @@
 // =============================================================================
 
 import { weaponReach, isUnarmedStrike } from './weapons.js';
+import { RENAMED_WEAPONS } from '../data/dd-rules.js';
 import { plainText } from './plain-text.js';
 
 /** Groupes, dans l'ordre de la table des armes du manuel */
@@ -26,6 +27,10 @@ export const WEAPON_PICKER_GROUPS = [
 ];
 
 const fold = (value) => plainText(value).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+
+/** Ancien nom d'une ligne (« Bâton ») → nom actuel du catalogue (« Bâton de combat »), pour la ✓ */
+const RENAMED = new Map(Object.entries(RENAMED_WEAPONS).map(([old, now]) => [fold(old), fold(now)]));
+const currentName = (name) => RENAMED.get(fold(name)) ?? fold(name);
 
 /**
  * Groupe d'une arme du manuel (null : catégorie inconnue).
@@ -50,7 +55,7 @@ export function weaponPickerGroup(weapon) {
  */
 export function weaponPickerGroups(catalog, { query = '', rows = [] } = {}) {
     const q = fold(query);
-    const names = new Set((Array.isArray(rows) ? rows : []).map((row) => fold(row?.name)).filter(Boolean));
+    const names = new Set((Array.isArray(rows) ? rows : []).map((row) => currentName(row?.name)).filter(Boolean));
     const unarmedNoted = (Array.isArray(rows) ? rows : []).some((row) => row && isUnarmedStrike(row));
     return WEAPON_PICKER_GROUPS.map((group) => ({
         ...group,

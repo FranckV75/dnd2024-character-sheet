@@ -116,7 +116,7 @@ export const EXAMPLE_CHARACTERS = Object.freeze([
             feat_4: "amelioration_de_caracteristique",
             feat_choices: { "1": { initie_a_la_magie: { list: "wizard", castAbility: "int", cantrip1: "Message", cantrip2: "Minor Illusion", spell: "Mage Armor" } }, "4": { amelioration_de_caracteristique: { asi: "con,int" } } },
             dynamic_weapons: [
-                { name: "Bâton", prop: "Polyvalente (1d8)", prof: "", ammo: "", note: "", category: "Courante", atkKey: "FOR", baseDmg: "1d6 cont.", weaponConfig: "" },
+                { name: "Bâton de combat", prop: "Polyvalente (1d8)", prof: "", ammo: "", note: "", category: "Courante", atkKey: "FOR", baseDmg: "1d6 cont.", weaponConfig: "" },
                 { name: "Dague", prop: "Finesse, Légère, Lancer (6/18 m)", prof: "", ammo: "", note: "", category: "Courante", atkKey: "DEX", baseDmg: "1d4 perf.", weaponConfig: "" }
             ],
             dynamic_armors: [
@@ -124,7 +124,7 @@ export const EXAMPLE_CHARACTERS = Object.freeze([
             ],
             dynamic_spells: [
                 { lvl: "0", name: "Trait de feu", time: "Action", range: "36 m", note: "Fire Bolt", c: false, r: false, m: false, prep: false, school: "Évocation" },
-                { lvl: "0", name: "Main de mage", time: "Action", range: "9 m", note: "Mage Hand", c: false, r: false, m: false, prep: false, school: "Invocation" },
+                { lvl: "0", name: "Main du mage", time: "Action", range: "9 m", note: "Mage Hand", c: false, r: false, m: false, prep: false, school: "Invocation" },
                 { lvl: "0", name: "Prestidigitation", time: "Action", range: "3 m", note: "Prestidigitation", c: false, r: false, m: false, prep: false, school: "Transmutation" },
                 { lvl: "0", name: "Lumière", time: "Action", range: "Contact", note: "Light", c: false, r: false, m: true, prep: false, school: "Évocation" },
                 { lvl: "1", name: "Bouclier", time: "Réaction", range: "Perso", note: "Shield", c: false, r: false, m: false, prep: true, school: "Abjuration" },

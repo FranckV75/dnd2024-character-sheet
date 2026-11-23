@@ -511,7 +511,7 @@ const MANUAL_AUTOMATION = {
         incantation_caracteristique: { text: (d) => spellAbilityText(d), partial: true }
     },
     arcane_trickster: {
-        incantation: { text: (d) => `Emplacements de sorts calculés (onglet Magie). À respecter vous-même : ${thirdCasterPrepared(d.level)} sorts préparés de niveau 1+, Main de mage + ${d.level >= 10 ? 3 : 2} sorts mineurs (liste du Magicien). ${spellAbilityText(d)}`, partial: true }
+        incantation: { text: (d) => `Emplacements de sorts calculés (onglet Magie). À respecter vous-même : ${thirdCasterPrepared(d.level)} sorts préparés de niveau 1+, Main du mage + ${d.level >= 10 ? 3 : 2} sorts mineurs (liste du Magicien). ${spellAbilityText(d)}`, partial: true }
     },
     // Lot 7 : école choisie dans le menu (js/data/subclass-choices.js) ; les textes des écoles
     // s'affichent seulement sous l'école active (subclassFeatures)

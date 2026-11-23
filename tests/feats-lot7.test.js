@@ -73,12 +73,12 @@ describe('Attaque à mains nues (PHB 2024 p. 377)', () => {
     });
 
     test('Moine : ses armes utilisent aussi la Dextérité ; pas les autres classes ni les autres armes', () => {
-        assert.match(strike(weapon('Bâton'), monk()).damage.text, /^1d8 \+4 CONT/);
-        assert.match(strike(weapon('Bâton'), hero()).damage.text, /^1d6 \+3 CONT/);
+        assert.match(strike(weapon('Bâton de combat'), monk()).damage.text, /^1d8 \+4 CONT/);
+        assert.match(strike(weapon('Bâton de combat'), hero()).damage.text, /^1d6 \+3 CONT/);
         assert.match(strike(weapon('Épée longue'), monk()).damage.text, /^1d8 \+2 TRAN/);
         assert.equal(weaponStatOverride(weapon('Épée longue'), deriveCharacter(monk())), '');
         // Botte d'arme : même caractéristique que le tableau
-        const staff = { ...weapon('Bâton'), prof: 'Renversement' };
+        const staff = { ...weapon('Bâton de combat'), prof: 'Renversement' };
         const topple = masteryDetails(staff, monk()).values[0];
         assert.equal(topple.value, String(8 + 4 + 3));
     });
@@ -87,7 +87,7 @@ describe('Attaque à mains nues (PHB 2024 p. 377)', () => {
         for (const worn of ['Armure de cuir', 'Bouclier']) {
             const c = monk({ dynamic_armors: [armor(worn)] });
             assert.equal(strike(unarmed(), c).damage.text, '1 +2 CONT', worn);
-            assert.match(strike(weapon('Bâton'), c).damage.text, /^1d6 \+2 CONT/, worn);
+            assert.match(strike(weapon('Bâton de combat'), c).damage.text, /^1d6 \+2 CONT/, worn);
             assert.equal(grappleDC(deriveCharacter(c)), 8 + 2 + 3, worn);
         }
     });

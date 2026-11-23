@@ -28,6 +28,13 @@ oui / non ni case ronde ; boutons autour du titre, sa proposition 1).
   « 1/3 ») ; une case en texte libre reste affichée, sans pièce, et ne se cache pas pendant la
   saisie (la pièce revient quand on quitte la case). Imprimée « Non disponible » à l'encre. Imprimée
   comme à l'écran, sans fond ni halo. Phrases de la barre du haut et infobulle revues.
+- Noms du Manuel des joueurs français (photos de Franck) : arme « Bâton de combat » (et non « Bâton »),
+  Lance d'arçon « Deux mains (sauf à cheval) » ; sorts « Main du mage », « Armure du mage »,
+  « Aspersion acide », « Faux amis », « Verrou magique », « Terreur », « Présence royale de Yolane »,
+  « Possession », « Œil du mage » (listes du Magicien p. 118-120 ; base des sorts : nom du manuel en
+  premier, ancien nom d'AideDD gardé derrière « | »). Une fiche déjà remplie garde l'ancien nom,
+  toujours reconnu (`RENAMED_WEAPONS` déplacé dans `js/data/dd-rules.js`, ✓ de la liste des armes,
+  `findSpellByName`) ; aucune conversion des sauvegardes. Tests : `tests/book-names.test.js`.
 - Points de Foi et Points de renommée : petits boutons − / + ronds de part et d'autre du titre au
   lieu des gros boutons autour de la valeur (option `around` de `wrapWithSteppers`, `steppersOf`,
   `js/ui/stepper.js` ; zone de toucher élargie au doigt).

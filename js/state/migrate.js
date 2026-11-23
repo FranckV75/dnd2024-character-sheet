@@ -10,7 +10,7 @@
 // Elle est pure et idempotente : migrer deux fois donne le même résultat.
 // =============================================================================
 
-import { DD_RULES } from '../data/dd-rules.js';
+import { DD_RULES, RENAMED_WEAPONS } from '../data/dd-rules.js';
 import { EQUIPMENT_DATA } from '../data/equipment.js';
 import { ABILITY_IDS } from '../data/constants.js';
 import { deriveCharacter, hitDieForClass } from '../rules/character.js';
@@ -130,11 +130,6 @@ function normalizeWeaponName(name) {
 /** Forme sans « s » final de chaque mot : "hachettes" → "hachette", "maillet d'armes" → "maillet d'arme" */
 const singular = (text) => text.split(' ').map(word => (word.length > 3 ? word.replace(/s$/, '') : word)).join(' ');
 
-/**
- * Anciens noms d'entrées du catalogue → nom actuel (normalisés). « Frappe à mains nues » s'appelle
- * « Attaque à mains nues » depuis qu'elle suit le Manuel des joueurs français.
- */
-const RENAMED_WEAPONS = { 'frappe à mains nues': 'attaque à mains nues', 'frappes à mains nues': 'attaque à mains nues' };
 
 /**
  * Retrouve une arme du manuel à partir du nom saisi

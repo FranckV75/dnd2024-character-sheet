@@ -183,7 +183,7 @@ describe('Armes et armures', () => {
 
     // Table des armes du Manuel des joueurs 2024 (p. 215) : nom → dégâts | propriétés | botte | catégorie
     const PHB_WEAPONS = {
-        'Bâton': '1d6 cont. | Polyvalente (1d8) | Renversement | Courante',
+        'Bâton de combat': '1d6 cont. | Polyvalente (1d8) | Renversement | Courante',
         'Dague': '1d4 perf. | Finesse, Légère, Lancer (6/18 m) | Coup double | Courante',
         'Gourdin': '1d4 cont. | Légère | Ralentissement | Courante',
         'Hachette': '1d6 tran. | Légère, Lancer (6/18 m) | Ouverture | Courante',
@@ -207,7 +207,7 @@ describe('Armes et armures', () => {
         "Hache d'armes": '1d8 tran. | Polyvalente (1d10) | Renversement | Guerre',
         'Hache à deux mains': '1d12 tran. | Lourde, Deux mains | Enchaînement | Guerre',
         'Hallebarde': '1d10 tran. | Lourde, Allonge, Deux mains | Enchaînement | Guerre',
-        "Lance d'arçon": '1d10 perf. | Lourde, Allonge, Deux mains (sauf si monté) | Renversement | Guerre',
+        "Lance d'arçon": '1d10 perf. | Lourde, Allonge, Deux mains (sauf à cheval) | Renversement | Guerre',
         "Maillet d'armes": '2d6 cont. | Lourde, Deux mains | Renversement | Guerre',
         'Marteau de guerre': '1d8 cont. | Polyvalente (1d10) | Poussée | Guerre',
         'Morgenstern': '1d8 perf. | - | Sape | Guerre',

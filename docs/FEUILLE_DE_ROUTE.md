@@ -154,9 +154,7 @@ Décisions de Franck en attente sur la 4.47.0 :
 - « Configuration de l'arme » est la seule fenêtre qui demande avant de fermer ; la fenêtre de
   l'armure (roue dentée des armures) ferme toujours sans demander. La faire pareil ?
 
-Petits restes de la 4.47.0 (pas urgents) : l'arme « Bâton » s'appelle « Bâton de combat » dans le
-manuel français (déjà noté dans les restes de la 4.41.0, avec conversion des fiches) ; sur
-ordinateur, la phrase du bouton ▾ des armes est coupée dans la colonne étroite des messages (comme
+Petits restes de la 4.47.0 (pas urgents) : sur ordinateur, la phrase du bouton ▾ des armes est coupée dans la colonne étroite des messages (comme
 celle du grimoire ; texte entier au toucher) ; toucher le titre « Points de Foi » ou « Points de
 renommée », entre ses petits boutons, ouvre le clavier de la case (comme avant) ; sur Android, un
 geste retour répété dans « Configuration de l'arme » finit par la fermer sans question (Chrome
@@ -197,9 +195,8 @@ gratuit » seulement si Marque du chasseur est notée au tableau ; phrase pâle 
 « Pas d'emplacement » et « Lançable en rituel » ; plan de retrait recalculé à chaque rendu du
 grimoire (à mesurer sur tablette) ; pas de test automatique du cas « état non gardé ».
 
-Petits restes de la 4.41.0 (pas urgents) : anciens noms « Main de mage », « Armure de mage » (don
-Initié à la magie) et arme « Bâton » à renommer d'après le manuel 2024, avec conversion testée des
-fiches (chantier à part) ; outils propres à l'Odyssée absents de la liste ; dons qui donnent des
+Petits restes de la 4.41.0 (pas urgents) : ~~anciens noms « Main de mage », « Armure de mage » et
+arme « Bâton »~~ (renommés en 4.47.0, voir « Noms du manuel » plus bas) ; outils propres à l'Odyssée absents de la liste ; dons qui donnent des
 outils (Façonneur…) pas reliés à la fenêtre ; champ « Chercher… » de 38 px de haut (partagé avec
 « Préparer mes sorts ») ; textes de « Revenir à… » sans espaces insécables ; impression de la
 notice non essayée sur une vraie tablette.
@@ -235,7 +232,15 @@ Détail des idées :
 - Journal de campagne : notes datées par séance, suivi propre à l'Odyssée (serments, quêtes).
 - Poids porté : total du matériel comparé à la capacité de charge (gardé en tête, pas utile pour
   le moment).
-- Vérification des noms français, classe par classe, d'après les photos du manuel.
+- Vérification des noms français, classe par classe, d'après les photos du manuel. Commencée en
+  4.47.0 (demande de Franck) : table des armes (« Bâton de combat », « sauf à cheval ») et liste
+  des sorts du Magicien, niveaux 0 à 7 (9 sorts affichés sous leur nom du manuel : Main du mage,
+  Armure du mage, Aspersion acide, Faux amis, Verrou magique, Terreur, Présence royale de Yolane,
+  Possession, Œil du mage). Une fiche déjà remplie garde l'ancien nom, toujours reconnu (pas de
+  conversion : rien ne change dans les sauvegardes). Reste : la liste du Magicien niveaux 8 et 9,
+  celles des autres classes (Barde, Clerc, Druide, Ensorceleur, Occultiste, Paladin, Rôdeur ; 17
+  photos), où sont par exemple « Hérissement » (affiché « Invocation de projectiles ») et « Marche
+  sur l'onde » (affiché « Marche sur l'eau ») ; puis dons, espèces, aptitudes, armures, outils.
 - Mode consultation sur téléphone (lecture seule).
 - Connexion par lien magique (courriel), en plus du mot de passe.
 

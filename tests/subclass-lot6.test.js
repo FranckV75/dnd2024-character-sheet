@@ -73,6 +73,6 @@ describe('Liste de sorts et textes', () => {
         assert.match(ek.reached.find(f => f.id === 'incantation_sorts_mineurs_et_sorts_prepares').automation.text, /7 sorts préparés de niveau 1\+, 3 sorts mineurs/);
         assert.match(ek.reached.find(f => f.id === 'incantation_caracteristique').automation.text, /DD des sorts 15, attaque \+7/);
         const at = subclassFeatures(deriveCharacter(record('Roublard', 'Escroc Arcanique', 3)));
-        assert.match(at.reached.find(f => f.id === 'incantation').automation.text, /3 sorts préparés.*Main de mage \+ 2 sorts mineurs.*choisissez Intelligence/);
+        assert.match(at.reached.find(f => f.id === 'incantation').automation.text, /3 sorts préparés.*Main du mage \+ 2 sorts mineurs.*choisissez Intelligence/);
     });
 });

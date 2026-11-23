@@ -786,7 +786,7 @@ const DD_RULES = {
         // par computeWeapon (Arts martiaux du Moine, Bagarreur de tavernes, Combat à mains nues)
         { name: "Attaque à mains nues", atk: "FOR", dmg: "1 cont.", prop: "-", prof: "-", ammo: "-", category: "Mains nues" },
         // ARMES COURANTES DE CORPS À CORPS
-        { name: "Bâton", atk: "FOR", dmg: "1d6 cont.", prop: "Polyvalente (1d8)", prof: "Renversement", ammo: "-", category: "Courante" },
+        { name: "Bâton de combat", atk: "FOR", dmg: "1d6 cont.", prop: "Polyvalente (1d8)", prof: "Renversement", ammo: "-", category: "Courante" },
         { name: "Dague", atk: "DEX", dmg: "1d4 perf.", prop: "Finesse, Légère, Lancer (6/18 m)", prof: "Coup double", ammo: "-", category: "Courante" },
         { name: "Gourdin", atk: "FOR", dmg: "1d4 cont.", prop: "Légère", prof: "Ralentissement", ammo: "-", category: "Courante" },
         { name: "Hachette", atk: "FOR", dmg: "1d6 tran.", prop: "Légère, Lancer (6/18 m)", prof: "Ouverture", ammo: "-", category: "Courante" },
@@ -814,7 +814,7 @@ const DD_RULES = {
         { name: "Hache d'armes", atk: "FOR", dmg: "1d8 tran.", prop: "Polyvalente (1d10)", prof: "Renversement", ammo: "-", category: "Guerre" },
         { name: "Hache à deux mains", atk: "FOR", dmg: "1d12 tran.", prop: "Lourde, Deux mains", prof: "Enchaînement", ammo: "-", category: "Guerre" },
         { name: "Hallebarde", atk: "FOR", dmg: "1d10 tran.", prop: "Lourde, Allonge, Deux mains", prof: "Enchaînement", ammo: "-", category: "Guerre" },
-        { name: "Lance d'arçon", atk: "FOR", dmg: "1d10 perf.", prop: "Lourde, Allonge, Deux mains (sauf si monté)", prof: "Renversement", ammo: "-", category: "Guerre" },
+        { name: "Lance d'arçon", atk: "FOR", dmg: "1d10 perf.", prop: "Lourde, Allonge, Deux mains (sauf à cheval)", prof: "Renversement", ammo: "-", category: "Guerre" },
         { name: "Maillet d'armes", atk: "FOR", dmg: "2d6 cont.", prop: "Lourde, Deux mains", prof: "Renversement", ammo: "-", category: "Guerre" },
         { name: "Marteau de guerre", atk: "FOR", dmg: "1d8 cont.", prop: "Polyvalente (1d10)", prof: "Poussée", ammo: "-", category: "Guerre" },
         { name: "Morgenstern", atk: "FOR", dmg: "1d8 perf.", prop: "-", prof: "Sape", ammo: "-", category: "Guerre" },
@@ -834,5 +834,18 @@ const DD_RULES = {
         { name: "Pistolet", atk: "DEX", dmg: "1d10 perf.", prop: "Munitions (9/27 m), Chargement", prof: "Ouverture", ammo: "-", category: "Guerre" }
     ]
 };
+
+/**
+ * Anciens noms d'armes du catalogue → nom actuel (minuscules). Une ligne déjà enregistrée garde son
+ * nom ; ces anciens noms restent reconnus (calcul, liste des armes, ✓). « Frappe à mains nues » →
+ * « Attaque à mains nues » (4.37.0) ; « Bâton » → « Bâton de combat » (4.47.0, nom du Manuel des
+ * joueurs français, table des armes p. 215).
+ */
+export const RENAMED_WEAPONS = Object.freeze({
+    'frappe à mains nues': 'attaque à mains nues',
+    'frappes à mains nues': 'attaque à mains nues',
+    'bâton': 'bâton de combat',
+    'bâtons': 'bâton de combat'
+});
 
 export { DD_RULES };

@@ -364,6 +364,6 @@ export const SUBCLASS_SPELLS = Object.freeze({
     // Philosophe de l'Académie (Odyssée, p. 46) : Amis donné par l'école du Sophisme (group = libellé
     // de l'école, PHILOSOPHER_SCHOOLS) ; seulement si cette école est choisie
     academy_philosopher: [
-        [3, 'Friends', 'Amis', 0, '', { group: 'Sophisme', note: 'Sort mineur du Sophisme, hors du nombre de sorts mineurs (Intelligence).' }]
+        [3, 'Friends', 'Amis', 0, '', { group: 'Sophisme', aka: ['Faux amis'], note: 'Sort mineur du Sophisme, hors du nombre de sorts mineurs (Intelligence).' }]
     ]
 });

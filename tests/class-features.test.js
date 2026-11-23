@@ -236,7 +236,7 @@ describe('Maîtrise des armes : bonus de maîtrise seulement avec une arme maît
         assert.equal(weaponProficiency(weapon('Épée courte'), stats).proficient, true);
         assert.equal(weaponProficiency(weapon('Cimeterre'), stats).proficient, true);
         assert.equal(weaponProficiency(weapon('Rapière'), stats).proficient, false);
-        assert.equal(weaponProficiency(weapon('Bâton'), stats).proficient, true);
+        assert.equal(weaponProficiency(weapon('Bâton de combat'), stats).proficient, true);
     });
 
     test('Roublard : armes de guerre Finesse ou Légères', () => {
