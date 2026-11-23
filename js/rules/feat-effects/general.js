@@ -5,7 +5,7 @@
 // =============================================================================
 
 import { hitDieForClass, parseNumber } from '../character.js';
-import { shieldBashDC, toughHitPoints, armorTrainingNotes, toolNote, hasProperty, isPolearm } from './helpers.js';
+import { shieldBashDC, toughHitPoints, armorTrainingNotes, toolNote, hasProperty, isPolearm, TOOLS_BOX_HINT } from './helpers.js';
 import { signed } from '../numbers.js';
 import { plainText } from '../plain-text.js';
 
@@ -134,6 +134,7 @@ export const GENERAL_FEAT_RULES = {
 
     // Musicien — PHB 2024 « Musician », p. 201
     musicien: ({ derived: { pb }, add }) => {
+        add('featSlot', `Trois instruments de musique au choix : ${TOOLS_BOX_HINT}.`);
         add('rest', `Chant d'encouragement : à la fin du repos, jouez d'un instrument que vous maîtrisez pour donner l'Inspiration héroïque à au plus ${pb} alliés qui vous entendent.`,
             { value: pb });
         add('featSlot', `Rappel à la fin des repos : Inspiration héroïque pour au plus ${pb} alliés.`, { value: pb });

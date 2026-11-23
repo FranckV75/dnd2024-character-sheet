@@ -461,7 +461,7 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   compétences…) et par emplacement (`featSlot:<niveau>`). Une zone affiche un repère « dont +X grâce à… »
   (bouton `data-feat-zone` d'`index.html`) ; la valeur saisie n'est jamais modifiée. Une note marquée
   `restKind: 'short'` n'apparaît que dans la fenêtre du repos court (Repas reconstituant du Chef cuisinier),
-  une note `restKind: 'long'` que dans celle du repos long (Fabrication rapide du Façonneur).
+  une note `restKind: 'long'` que dans celle du repos long (Façonnage rapide du Façonneur).
 - Faveurs épiques (lot 8) : leur +1 (jusqu'à 30) et leurs autres choix sont dans `feat_choices`
   (`ability`, `expertise` pour Faveur de compétence, `energy1` / `energy2` pour Faveur de résistance
   aux énergies) ; leurs cases dans `feat_uses` (`faveur_de_recuperation` : dés dépensés sur 10,

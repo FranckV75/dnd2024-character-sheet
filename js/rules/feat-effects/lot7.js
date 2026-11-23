@@ -4,7 +4,7 @@
 // d'élite… (Attaque à mains nues, armes et rappels).
 // =============================================================================
 
-import { actorDC, grappleDC, unarmedRowHint } from './helpers.js';
+import { actorDC, grappleDC, unarmedRowHint, TOOLS_BOX_HINT } from './helpers.js';
 
 export const LOT7_FEAT_RULES = {
     // ----- Lot 7 — règles vérifiées dans le PHB 2024 anglais (le +1 : js/rules/feat-choices.js) -----
@@ -63,10 +63,10 @@ export const LOT7_FEAT_RULES = {
 
     // Façonneur — PHB 2024 « Crafter », p. 200
     faconneur: ({ add }) => {
-        add('featSlot', "Trois outils d'artisan au choix de la table Fabrication rapide : à noter vous-même dans Outils.");
+        add('featSlot', `Trois outils d'artisan différents de la table Façonnage rapide : ${TOOLS_BOX_HINT}.`);
         add('featSlot', '−20 % sur le prix des objets non magiques que vous achetez.');
-        add('featSlot', "Fin d'un repos long : vous fabriquez un objet de la table Fabrication rapide (outil maîtrisé en main) ; il tombe en morceaux à la fin du repos long suivant.");
-        add('rest', "Fabrication rapide : un objet de la table (outil d'artisan maîtrisé), qui dure jusqu'à la fin du prochain repos long.", { restKind: 'long' });
+        add('featSlot', "Fin d'un repos long : vous fabriquez un objet de la table Façonnage rapide (outil maîtrisé en main) ; il tombe en morceaux à la fin du repos long suivant.");
+        add('rest', "Façonnage rapide : un objet de la table (outil d'artisan maîtrisé), qui dure jusqu'à la fin du prochain repos long.", { restKind: 'long' });
     },
 
     // Formation aux armes de guerre — PHB 2024 « Martial Weapon Training », p. 205

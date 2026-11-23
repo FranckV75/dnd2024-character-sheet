@@ -64,10 +64,17 @@ export function armorTrainingNotes(kinds, prerequisite, { derived, record, add }
     }
 }
 
-/** Maîtrise d'outil donnée par un don : notée ou non dans le champ Outils (onglet Compétences & Histoire) */
+/**
+ * Où noter les outils donnés par un don : la case Outils, que la fenêtre « Outils maîtrisés » aide à
+ * remplir (elle présente en tête les outils du don, js/rules/tool-sources.js). La fiche ne les écrit
+ * jamais elle-même.
+ */
+export const TOOLS_BOX_HINT = 'à noter dans la case Outils (onglet Compétences & Histoire, bouton « Choisir dans la liste »)';
+
+/** Maîtrise d'outil donnée par un don : notée ou non dans la case Outils (onglet Compétences & Histoire) */
 export function toolNote(record, pattern, label, add) {
-    if (pattern.test(fold(record.profs_tools))) add('featSlot', `${label} : maîtrise notée dans le champ Outils.`, { ticked: true });
-    else add('featSlot', `${label} : maîtrise à noter dans le champ Outils (onglet Compétences & Histoire).`, { check: true });
+    if (pattern.test(fold(record.profs_tools))) add('featSlot', `${label} : maîtrise notée dans la case Outils.`, { ticked: true });
+    else add('featSlot', `${label} : maîtrise ${TOOLS_BOX_HINT}.`, { check: true });
 }
 
 /** Arme du tableau qui a une propriété (« finesse », « allonge »...) */

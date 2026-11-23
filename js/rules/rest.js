@@ -265,7 +265,7 @@ export function planShortRest(character, { diceSpent = 0, healing = 0, sorcerous
             slotRecovery: slotRecoveryFeature(character, d),
             featUsesRestored: featUses.restored,
             subclassChoicesCleared: subclassChoices.cleared,
-            // Rappels propres au repos long (Fabrication rapide du Façonneur) : pas ici
+            // Rappels propres au repos long (Façonnage rapide du Façonneur) : pas ici
             featNotes: restFeatNotes(character, d).filter(note => note.restKind !== 'long'),
             canStart: canStartRest(character)
         }

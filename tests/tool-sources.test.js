@@ -6,6 +6,8 @@ import { TOOLS, TOOL_CATEGORIES, FEAT_TOOLS, FAST_CRAFTING_TOOLS } from '../js/d
 import { FEATS_DATA } from '../js/data/feats.js';
 import { DD_RULES } from '../js/data/dd-rules.js';
 import { toolsInText, addToolToText } from '../js/rules/tools.js';
+import { featEffects } from '../js/rules/feat-effects.js';
+import { createDefaultCharacter } from '../js/state/schema.js';
 import {
     toolSources, toolSourceProgress, featuredToolSections, sectionProgress, toolProgressText
 } from '../js/rules/tool-sources.js';
@@ -291,5 +293,49 @@ describe('Encadrés du haut de la fenêtre', () => {
         const [section] = featuredToolSections(sources);
         assert.deepEqual(sectionProgress(section, toolSourceProgress(sources, record)), { done: true, status: 'Noté' });
         assert.deepEqual(sectionProgress(section, toolSourceProgress(sources, { char_background: 'Criminel' })), { done: false, status: 'À noter' });
+    });
+});
+
+describe('Rappels sous les dons : où noter leurs outils', () => {
+    const hero = (extra = {}) => ({
+        ...createDefaultCharacter(), char_class: 'Guerrier', char_level: '5', str_score: '16', dex_score: '14', con_score: '14', ...extra
+    });
+    const slotNotes = (character, level) => featEffects(character)[`featSlot:${level}`] ?? [];
+    const pointsToWindow = (note) => note.text.includes('à noter dans la case Outils (onglet Compétences & Histoire, bouton « Choisir dans la liste »)');
+
+    test('Chaque don qui donne des outils renvoie à la case Outils et à son bouton', () => {
+        for (const id of Object.keys(FEAT_TOOLS)) {
+            const level = FEATS_DATA[id].type === 'Général' ? 4 : 1;
+            const character = hero({
+                [`feat_${level}`]: id,
+                ...(id === 'doue' ? { feat_choices: { [level]: { doue: { pick1: 'tool' } } } } : {})
+            });
+            assert.ok(slotNotes(character, level).some(pointsToWindow), id);
+        }
+    });
+
+    test('Façonneur et Musicien : trois outils, dans les mots de la fenêtre', () => {
+        assert.ok(slotNotes(hero({ feat_1: 'faconneur' }), 1)
+            .some((note) => note.text.startsWith("Trois outils d'artisan différents de la table Façonnage rapide :")));
+        assert.ok(slotNotes(hero({ feat_1: 'musicien' }), 1).some((note) => note.text.startsWith('Trois instruments de musique au choix :')));
+    });
+
+    test('Chef cuisinier et Empoisonneur : « À vérifier » tant que l\'outil n\'est pas noté, sous le nom du manuel', () => {
+        const poisoner = slotNotes(hero({ feat_4: 'empoisonneur' }), 4).find(pointsToWindow);
+        assert.equal(poisoner.check, true);
+        assert.ok(poisoner.text.startsWith("Matériel d'empoisonneur : maîtrise"));
+        const noted = slotNotes(hero({ feat_4: 'empoisonneur', profs_tools: "Matériel d'empoisonneur" }), 4);
+        assert.ok(noted.some((note) => note.ticked && note.text === "Matériel d'empoisonneur : maîtrise notée dans la case Outils."));
+        assert.ok(!noted.some(pointsToWindow));
+        assert.ok(slotNotes(hero({ feat_4: 'chef_cuisinier' }), 4).some((note) => note.check && pointsToWindow(note)));
+    });
+
+    test('Table du Façonneur : « Façonnage rapide », nom du manuel français, partout', () => {
+        assert.ok(FEATS_DATA.faconneur.desc.includes('de la table Façonnage rapide'));
+        assert.ok(!Object.values(FEATS_DATA).some((feat) => feat.desc.includes('Fabrication rapide')));
+        const effects = featEffects(hero({ feat_1: 'faconneur' }));
+        const texts = [...effects['featSlot:1'], ...effects.rest].map((note) => note.text);
+        assert.ok(texts.some((text) => text.includes('Façonnage rapide')));
+        assert.ok(!texts.some((text) => text.includes('Fabrication rapide')));
     });
 });
