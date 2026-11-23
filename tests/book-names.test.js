@@ -81,6 +81,15 @@ describe('Sorts : noms du manuel affichés, anciens noms reconnus', () => {
         assert.equal(findSpellByName(db, "Sphère résiliente d'Otiluke").school, 'Abjuration');
     });
 
+    // Choix de Franck (23/11/2026) : là où le manuel se contredit, Évocation pour les deux
+    test("École de la Sphère de feu : Évocation (listes de classe ; errata officiel d'octobre 2026)", () => {
+        assert.equal(findSpellByName(db, 'Sphère de feu').school, 'Évocation');
+    });
+
+    test("École de l'Aura du croisé : Évocation (description du sort, pas la liste du Paladin)", () => {
+        assert.equal(findSpellByName(db, 'Aura du croisé').school, 'Évocation');
+    });
+
     test('Sort donné par un don (Télékinésiste) : nom du manuel', () => {
         assert.equal(FIXED_FEAT_SPELLS.mageHand[1], 'Main du mage');
         assert.ok(findSpellByName(db, FIXED_FEAT_SPELLS.mageHand[1]));

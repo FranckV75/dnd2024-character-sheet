@@ -6145,7 +6145,7 @@
     "name": "Sphère de feu",
     "vo": "Flaming Sphere",
     "level": 2,
-    "school": "Invocation",
+    "school": "Évocation",
     "castTime": "Action",
     "range": "18 m",
     "duration": "1 minute",
