@@ -84,8 +84,8 @@ Sagesse par niveau, remis par « Passer au niveau »), fenêtre des faveurs à 1
 (toucher la pastille) avec le rappel des dieux de Thyléa et Inspiration héroïque limitée à 1 mode
 coupé~~. Faite le 21/11/2026 : ~~étude du multiclassage~~ (`docs/etudes/MULTICLASSAGE.md`). Faits en
 4.46.0 (22/11/2026, publiée le 23/11/2026) : ~~bouton « Dépenser » des points de Foi~~ et ~~Inspiration
-héroïque en mode Odyssée~~ (point 1, audit du 22/11/2026). Faits en 4.47.0 (23/11/2026, pas encore
-publiée) : ~~pièce « Inspiration héroïque » « Disponible / Non disponible » dans les deux modes~~,
+héroïque en mode Odyssée~~ (point 1, audit du 22/11/2026). Faits en 4.47.0 (23/11/2026, publiée le
+23/11/2026) : ~~pièce « Inspiration héroïque » « Disponible / Non disponible » dans les deux modes~~,
 ~~petits − / + autour du titre (Points de Foi, renommée)~~, ~~liste des armes à parcourir (bouton ▾)~~,
 ~~confirmation avant de fermer « Configuration de l'arme »~~ (maquettes validées par Franck),
 ~~liste des armures à parcourir (bouton ▾, armures et bouclier du manuel seulement)~~, ~~noms des

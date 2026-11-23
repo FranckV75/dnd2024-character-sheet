@@ -12,24 +12,15 @@ en fin de session :
 
 ## En ce moment
 
-- **En ligne** : version **4.46.0**, publiée le 23/11/2026 avec l'accord de Franck (« Publie ») :
-  corrections de l'audit de santé du 22/11/2026 (lots A, B, C, D, F ; lot E clos par la décision
-  de Franck sur les textes AideDD). Pour le joueur : bouton « Inspiration héroïque » en mode
-  Odyssée, boutons « Dépenser » de la fenêtre « Points de Foi », message coupé de la barre du haut
-  lisible au toucher, Rage sans effet en armure lourde, titres gardés avec leur texte à
-  l'impression, pastille magique en thème sombre, groupe « Bonus de maîtrise / Points de Foi /
-  Vitesse » aligné. Le reste est du ménage invisible (découpage du grimoire et des armes).
-  Décisions sur la 4.46.0 : toutes prises par Franck le 23/11/2026.
-- **Prête, pas publiée** : version **4.47.0** sur la branche `v4` (maquettes validées par Franck
-  le 23/11/2026) : pièce « Inspiration héroïque » (« Disponible » / « Non disponible ») dans les
-  deux modes, petits − / + autour du titre des Points de Foi et de renommée, liste des armes à
-  parcourir (bouton ▾), confirmation avant de fermer « Configuration de l'arme », noms du manuel
-  français (« Bâton de combat », 11 sorts : toutes les listes de classe comparées), liste des
-  armures à parcourir (bouton ▾) et confirmation avant de fermer ses réglages, « Sphère de feu »
-  en Évocation. Relue par des agents ; défauts corrigés. Attend « Publie » (tout en une fois, choix
-  de Franck). Reste à vérifier sur photos : dons, espèces, aptitudes, outils (« Détail des idées »
-  de `docs/FEUILLE_DE_ROUTE.md`). Décisions sur la 4.47.0 : toutes prises le 23/11/2026. En
-  attente : sur la 4.44.0 et la 4.45.0, point 3 de `docs/FEUILLE_DE_ROUTE.md`.
+- **En ligne** : version **4.47.0**, publiée le 23/11/2026 avec l'accord de Franck (« Publie ») :
+  pièce « Inspiration héroïque » (« Disponible » / « Non disponible ») dans les deux modes, petits
+  − / + autour du titre des Points de Foi et de renommée, listes des armes et des armures à
+  parcourir (bouton ▾), confirmation avant de fermer les réglages d'une arme ou d'une armure, noms
+  du manuel français (« Bâton de combat », 11 sorts : toutes les listes de classe comparées),
+  « Sphère de feu » en Évocation. Décisions sur la 4.46.0 et la 4.47.0 : toutes prises par Franck
+  le 23/11/2026. En attente : sur la 4.44.0 et la 4.45.0, point 3 de `docs/FEUILLE_DE_ROUTE.md`.
+- **Suite** : vérifier sur photos les noms français des dons, espèces, aptitudes et outils
+  (« Détail des idées » de `docs/FEUILLE_DE_ROUTE.md`).
 - **Serveur de travail** : `npm run dev` n'écoute plus que l'ordinateur (127.0.0.1 et ::1) et ne
   sert jamais `.git` ; relancé le 22/11/2026 avec cette protection (vérifié avec netstat).
 - **Multiclassage** : étude faite et contre-vérifiée (`docs/etudes/MULTICLASSAGE.md`). Rien de
@@ -52,7 +43,7 @@ en fin de session :
 
 ### À vérifier par Franck (reste : l'iPad de Patricia)
 
-À voir sur tablette quand la 4.47.0 sera en ligne (Android, PC, et iPad de Patricia) :
+À voir sur tablette maintenant que la 4.47.0 est en ligne (Android, PC, et iPad de Patricia) :
 - Onglet Combat, mode Odyssée : la pièce « Inspiration héroïque » sous la pastille des Points de
   Foi passe de « Non disponible » (vide, pointillés) à « Disponible » (dorée) au toucher, aussi
   fiche verrouillée. Mode décoché : la pièce seule à la place de la case, sans − / +.
@@ -63,6 +54,8 @@ en fin de session :
   sur l'iPad, le ▾ reste-t-il doré après le toucher (comme au grimoire) ?
 - « Configuration de l'arme » : changer un réglage puis « Annuler » pose la question ; « Continuer
   à modifier » garde les réglages. Android : le geste retour pose aussi la question.
+- Armures : toucher le nom vide ou le bouton ▾ ouvre la liste (4 groupes, CA, ✓) sans clavier ;
+  la roue dentée d'une armure pose la même question qu'une arme quand on la ferme sans appliquer.
 - iPad : « Non disponible » se coupe proprement sur deux lignes sous la pièce.
 
 À voir sur tablette maintenant que la 4.46.0 est en ligne (Android, PC, et iPad de Patricia) :
@@ -128,7 +121,7 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 
 ## Sessions
 
-### 23/11/2026 — Décisions sur la 4.46.0, puis 4.47.0 : pièce « Inspiration héroïque », petits − / +, listes des armes et des armures, confirmation des fenêtres d'arme et d'armure, noms du manuel (pas encore publiée)
+### 23/11/2026 — Décisions sur la 4.46.0, puis 4.47.0 : pièce « Inspiration héroïque », petits − / +, listes des armes et des armures, confirmation des fenêtres d'arme et d'armure, noms du manuel (publiée le 23/11/2026)
 
 - Franck a tranché toutes les décisions de la 4.46.0 (tablette essayée) ; il a demandé
   l'Inspiration héroïque pour tous en mode Odyssée et une confirmation avant de fermer la fenêtre
@@ -153,7 +146,7 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
   confirmation pour les réglages de l'armure. Écoles : Évocation pour les deux sorts, avec ses
   raisons (Sphère de feu : errata officiel d'octobre 2026 ; Aura du croisé : la description du sort
   prime sur la liste du Paladin, sans errata).
-- Rien n'est publié : Franck veut tout publier en même temps, sur son « Publie ».
+- Tout publié en une fois, sur le « Publie » de Franck : 4.47.0 en ligne le 23/11/2026.
 
 ### 22/11/2026 — Audit de santé, puis lots A à F : petites corrections, Inspiration héroïque en mode Odyssée, ménage, découpage du grimoire et des armes, « Dépenser » (4.46.0, publiée le 23/11/2026)
 

@@ -3,6 +3,7 @@
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ## [4.47.0] - 2026-11-23 (pièce « Inspiration héroïque », petits − / +, listes des armes et des armures)
+Publiée le 23/11/2026.
 Maquettes validées par Franck le 23/11/2026 (version 3 : « Disponible » / « Non disponible », ni
 oui / non ni case ronde ; boutons autour du titre, sa proposition 1).
 ### Added
