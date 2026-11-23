@@ -91,7 +91,7 @@ héroïque en mode Odyssée~~ (point 1, audit du 22/11/2026). Faits en 4.47.0 (2
 ~~liste des armures à parcourir (bouton ▾, armures et bouclier du manuel seulement)~~, ~~noms des
 sorts de toutes les listes de classe~~, ~~confirmation avant de fermer les réglages de l'armure~~,
 ~~« Sphère de feu » en Évocation~~ (décisions de Franck du 23/11/2026). Fait en 4.47.1
-(23/11/2026, pas encore publiée) : ~~noms du manuel pour les dons, espèces, aptitudes et outils~~.
+(23/11/2026, publiée le 23/11/2026) : ~~noms du manuel pour les dons, espèces, aptitudes et outils~~.
 Reste :
 
 1. **Multiclassage** : l'étude est faite et contre-vérifiée, rien n'est construit. Elle conseille

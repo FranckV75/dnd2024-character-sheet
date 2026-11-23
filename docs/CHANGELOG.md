@@ -3,7 +3,7 @@
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ## [4.47.1] - 2026-11-23 (noms du manuel : dons, espèces, aptitudes, outils)
-Non publiée (attend l'accord de Franck).
+Publiée le 23/11/2026 (« Publie » de Franck).
 Vérification sur les photos du Manuel des joueurs français, demandée par Franck : dons (p. 199-211),
 espèces (p. 186-197), outils (p. 220-221), historiques (p. 177-185) et aptitudes des douze classes
 et de leurs 48 sous-classes (tables de progression comprises). Chaque photo lue par un agent, puis

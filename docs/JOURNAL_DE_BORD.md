@@ -12,16 +12,13 @@ en fin de session :
 
 ## En ce moment
 
-- **En ligne** : version **4.47.0**, publiée le 23/11/2026 avec l'accord de Franck (« Publie ») :
-  pièce « Inspiration héroïque » (« Disponible » / « Non disponible ») dans les deux modes, petits
-  − / + autour du titre des Points de Foi et de renommée, listes des armes et des armures à
-  parcourir (bouton ▾), confirmation avant de fermer les réglages d'une arme ou d'une armure, noms
-  du manuel français (« Bâton de combat », 11 sorts : toutes les listes de classe comparées),
-  « Sphère de feu » en Évocation. Décisions sur la 4.46.0 et la 4.47.0 : toutes prises par Franck
-  le 23/11/2026. En attente : sur la 4.44.0 et la 4.45.0, point 3 de `docs/FEUILLE_DE_ROUTE.md`.
-- **Prête, pas publiée** : **4.47.1** (branche `v4`, commits locaux, rien de poussé) : noms du
-  manuel français pour les dons, espèces, aptitudes et outils, vérifiés sur toutes les photos ;
-  les 7 décisions de Franck appliquées (point 3 de la feuille de route). Attend son « Publie ».
+- **En ligne** : version **4.47.1**, publiée le 23/11/2026 avec l'accord de Franck (« Publie »),
+  version en ligne vérifiée (0 erreur console) : noms du manuel français pour les dons, espèces,
+  aptitudes et outils, vérifiés sur toutes les photos ; plus de prérequis affiché pour les dons
+  d'origines. Avant elle, la 4.47.0 (même jour) : pièce « Inspiration héroïque », petits − / +,
+  listes des armes et des armures, confirmation des fenêtres d'arme et d'armure, noms des sorts.
+  Décisions sur la 4.46.0, la 4.47.0 et la 4.47.1 : toutes prises par Franck le 23/11/2026. En
+  attente : sur la 4.44.0 et la 4.45.0, point 3 de `docs/FEUILLE_DE_ROUTE.md`.
 - **Suite** : multiclassage (attend les réponses de Franck), ou une idée du point 3.
 - **Serveur de travail** : `npm run dev` n'écoute plus que l'ordinateur (127.0.0.1 et ::1) et ne
   sert jamais `.git` ; relancé le 22/11/2026 avec cette protection (vérifié avec netstat).
@@ -44,6 +41,10 @@ en fin de session :
   jamais le texte du livre (le dépôt est public).
 
 ### À vérifier par Franck (reste : l'iPad de Patricia)
+
+À voir sur tablette maintenant que la 4.47.1 est en ligne (Android, PC, et iPad de Patricia) :
+- La fenêtre « Nouveautés de la version 4.47.1 » s'affiche une fois et se lit en entier.
+- Fiche déjà remplie : le don d'origines (Vigilant, Chanceux…) se lit sans ligne « Prérequis ».
 
 À voir sur tablette maintenant que la 4.47.0 est en ligne (Android, PC, et iPad de Patricia) :
 - Onglet Combat, mode Odyssée : la pièce « Inspiration héroïque » sous la pastille des Points de
@@ -123,7 +124,7 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 
 ## Sessions
 
-### 23/11/2026 (soir) — Noms du manuel : dons, espèces, aptitudes et outils (4.47.1, non publiée)
+### 23/11/2026 (soir) — Noms du manuel : dons, espèces, aptitudes et outils (4.47.1, publiée le 23/11/2026)
 
 - Demande de Franck : vérifier sur les photos les noms français des dons, espèces, aptitudes et
   outils. Six agents en parallèle (lecture seule) ont lu toutes les photos utiles (dons, espèces,
@@ -143,6 +144,8 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
   l'ordre) ». Le reste gardé tel quel.
 - Pour mémoire : le script de remplacement maison coupait au premier « => » (deux tests cassés,
   remis depuis le commit puis refaits à la main).
+- Publiée le 23/11/2026 sur le « Publie » de Franck (`v4` et `master` = même commit), version en
+  ligne vérifiée.
 
 ### 23/11/2026 — Décisions sur la 4.46.0, puis 4.47.0 : pièce « Inspiration héroïque », petits − / +, listes des armes et des armures, confirmation des fenêtres d'arme et d'armure, noms du manuel (publiée le 23/11/2026)
 
