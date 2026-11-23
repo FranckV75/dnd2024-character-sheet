@@ -1,7 +1,7 @@
 /**
  * TESTS — NOMS DU MANUEL DES JOUEURS FRANÇAIS (4.47.0)
  * Les photos du manuel français font foi pour les noms (table des armes p. 215, listes de sorts du
- * Magicien p. 118-120). Une fiche déjà remplie avec l'ancien nom n'est pas réécrite : l'ancien nom
+ * Magicien p. 118-121, puis des sept autres classes). Une fiche déjà remplie avec l'ancien nom n'est pas réécrite : l'ancien nom
  * reste reconnu (calcul de l'arme, ✓ de la liste, sort retrouvé dans la base).
  */
 import { test, describe } from 'node:test';
@@ -61,7 +61,11 @@ describe('Sorts : noms du manuel affichés, anciens noms reconnus', () => {
         ['Terreur', 'Peur'],
         ['Présence royale de Yolane', 'Présence royale de Yolande'],
         ['Possession', 'Urne magique'],
-        ['Œil du mage', 'Oeil du mage']
+        ['Œil du mage', 'Oeil du mage'],
+        // Listes des autres classes (photos du ch. 3, comparées le 23/11/2026)
+        ['Hérissement de projectiles', 'Invocation de projectiles'],
+        ['Hérissement de projectiles', 'Hérissement'],
+        ["Marche sur l'onde", "Marche sur l'eau"]
     ];
 
     for (const [book, old] of RENAMED) {
@@ -72,6 +76,10 @@ describe('Sorts : noms du manuel affichés, anciens noms reconnus', () => {
             assert.equal(findSpellByName(db, old), spell, old);
         });
     }
+
+    test("École de la Sphère résiliente d'Otiluke : Abjuration (listes et description du manuel)", () => {
+        assert.equal(findSpellByName(db, "Sphère résiliente d'Otiluke").school, 'Abjuration');
+    });
 
     test('Sort donné par un don (Télékinésiste) : nom du manuel', () => {
         assert.equal(FIXED_FEAT_SPELLS.mageHand[1], 'Main du mage');
