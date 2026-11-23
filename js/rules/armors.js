@@ -2,11 +2,15 @@
 // ARMORS.JS - Règles des armures (D&D 2024, Player's Handbook ch. 6 « Armor »)
 // Fonctions pures : ligne d'armure à partir du catalogue, recherche dans le
 // catalogue, avertissements sur les armures équipées.
+// Groupe « Autres » de la liste (js/data/armor-others.js : anneau, cape, sort…) : une entrée
+// choisie devient une ligne ordinaire (armorRowFromOther), avec les mêmes clés qu'une ligne
+// saisie à la main ; sa condition (« sans armure ni bouclier »…) est écrite en commentaire.
 // =============================================================================
 
 import { EQUIPMENT_DATA } from '../data/equipment.js';
+import { ARMOR_OTHERS } from '../data/armor-others.js';
 import { EMPTY_ARMOR } from '../state/schema.js';
-import { armorCategory, armorMagicBonus, parseNumber } from './character.js';
+import { armorCategory, armorMagicBonus, armorCanBeMagic, parseNumber } from './character.js';
 import { plainText } from './plain-text.js';
 export { armorMagicBonus, armorCanBeMagic, ARMOR_MAGIC_MAX, armorLine, catalogueArmor } from './character.js';
 
@@ -81,14 +85,27 @@ export function catalogueArmorClass(entry) {
 }
 
 /**
+ * Le commentaire est-il celui qu'une entrée du groupe « Autres » a écrit (et non un texte du joueur) ?
+ * @param {*} comment
+ * @param {Array<Object>} [others]
+ * @returns {boolean}
+ */
+export function isArmorListComment(comment, others = ARMOR_OTHERS) {
+    const text = plainText(comment);
+    return text !== '' && others.some(entry => entry?.comment === text);
+}
+
+/**
  * Ligne d'armure remplie à partir d'une entrée du catalogue.
- * Conserve le commentaire, l'état « équipée » et toute clé inconnue de la ligne existante.
+ * Conserve le commentaire, l'état « équipée » et toute clé inconnue de la ligne existante ; seul
+ * un commentaire écrit par le groupe « Autres » (condition d'un objet ou d'un sort choisi avant
+ * sur la même ligne) est retiré : il ne parlerait plus de cette armure.
  * @param {Object} entry - élément de EQUIPMENT_DATA.armors
  * @param {Object} [row] - ligne existante
  * @returns {Object}
  */
 export function armorRowFromCatalogue(entry, row = {}) {
-    return {
+    const next = {
         ...EMPTY_ARMOR,
         ...row,
         name: entry.name,
@@ -99,6 +116,63 @@ export function armorRowFromCatalogue(entry, row = {}) {
         weight: entry.weight || '',
         price: entry.price || ''
     };
+    if (isArmorListComment(next.comment)) next.comment = '';
+    return next;
+}
+
+/** L'entrée vient-elle du groupe « Autres » (js/data/armor-others.js) ? */
+export function isArmorOther(entry, others = ARMOR_OTHERS) {
+    return Boolean(entry) && others.includes(entry);
+}
+
+/**
+ * Ligne remplie à partir d'une entrée du groupe « Autres » (anneau, cape, sort…) : exactement les
+ * clés d'une ligne saisie à la main (aucune clé nouvelle). Le type et la valeur de base sont ceux
+ * de l'entrée, comme si le joueur les avait réglés avec l'engrenage ; Force, Discrétion, poids et
+ * prix sont ceux de l'entrée (vides en général).
+ * Commentaire : celui de l'entrée (sa condition, ce que la fiche ne compte pas), sauf si le joueur
+ * a déjà écrit le sien, qui est gardé. État « équipée » et clés inconnues conservés ; un bonus
+ * magique d'armure (clé facultative « magic ») laissé sur la ligne est retiré s'il ne peut plus
+ * servir (type Bonus, Maîtrise ou aucun), comme le fait l'engrenage.
+ * @param {{ name: string, type?: string, value?: string, comment?: string }} entry - élément de ARMOR_OTHERS
+ * @param {Object} [row] - ligne existante
+ * @returns {Object}
+ */
+export function armorRowFromOther(entry, row = {}) {
+    const own = plainText(row?.comment) !== '' && !isArmorListComment(row?.comment);
+    const next = {
+        ...EMPTY_ARMOR,
+        ...row,
+        name: entry.name,
+        type: entry.type || 'none',
+        ca: entry.value || '',
+        str: entry.str || '',
+        stealth: entry.stealth === true,
+        weight: entry.weight || '',
+        price: entry.price || '',
+        comment: own ? row.comment : (entry.comment || '')
+    };
+    return armorCanBeMagic(next) ? next : withArmorMagic(next, 0);
+}
+
+/**
+ * Ligne remplie à partir d'un choix de la liste : armure du manuel ou entrée du groupe « Autres ».
+ * @param {Object} entry - élément de EQUIPMENT_DATA.armors ou de ARMOR_OTHERS
+ * @param {Object} [row] - ligne existante
+ * @returns {Object}
+ */
+export function armorRowFromChoice(entry, row = {}) {
+    return isArmorOther(entry) ? armorRowFromOther(entry, row) : armorRowFromCatalogue(entry, row);
+}
+
+/**
+ * Suggestions pendant la saisie d'un nom : armures du manuel puis entrées du groupe « Autres »
+ * dont le nom contient la recherche ; les noms qui commencent par la recherche d'abord.
+ * @param {string} query
+ * @returns {Array<Object>}
+ */
+export function searchArmorChoices(query) {
+    return searchArmorCatalogue(query, [...EQUIPMENT_DATA.armors, ...ARMOR_OTHERS]);
 }
 
 /**
