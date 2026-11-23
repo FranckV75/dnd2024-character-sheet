@@ -197,12 +197,15 @@
 
 /* Points de Foi et Points de renommée : petits boutons ronds de part et d'autre du TITRE de la
    case (choix de Franck, 23/11/2026) ; le titre passe sur deux lignes entre eux si la cellule est
-   étroite (101 px au plus juste, ordinateur). La case reste seule dessous, sur toute la largeur. */
+   étroite. La case reste seule dessous, sur toute la largeur. Les boutons ne touchent jamais les
+   traits pointillés entre les cellules : à la souris, 22 px et 2 px d'écart (cellule de 101 px
+   au-delà de 1280 px : 5 à 6 px de marge de chaque côté) ; au doigt, 26 px et 4 px d'écart
+   (cellules de 115 px et plus : 6 à 7 px de marge). */
 .label-steps {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 2px;
     min-width: 0;
 }
 
@@ -217,27 +220,39 @@
 }
 
 .step-btn.is-mini {
-    width: 26px;
-    height: 26px;
+    width: 22px;
+    height: 22px;
     min-width: 0;
     min-height: 0;
 }
 
 .step-btn.is-mini .icon {
-    width: 13px;
-    height: 13px;
+    width: 12px;
+    height: 12px;
 }
 
-/* Au doigt : le bouton reste petit à l'œil, sa zone de toucher fait 44 × 40 px (26 + 2 × 9 de
-   large ; 26 + 10 au-dessus + 4 en dessous, pour ne pas mordre sur la case juste dessous) */
+/* Au doigt : le bouton reste petit à l'œil, sa zone de toucher fait 38 × 40 px (26 + 2 × 6 de
+   large, sans passer le trait pointillé de la cellule voisine ; 26 + 10 au-dessus + 4 en dessous,
+   pour ne pas mordre sur la case juste dessous) */
 @media (pointer: coarse) {
+    .label-steps {
+        gap: 4px;
+    }
+
     .label-steps .step-btn.is-mini {
+        width: 26px;
+        height: 26px;
         min-width: 0;
         min-height: 0;
     }
 
+    .label-steps .step-btn.is-mini .icon {
+        width: 13px;
+        height: 13px;
+    }
+
     .label-steps .step-btn.is-mini::after {
-        inset: -10px -9px -4px;
+        inset: -10px -6px -4px;
     }
 }
 

@@ -233,6 +233,11 @@ describe('Pièce « Inspiration héroïque » : interface', () => {
         assert.doesNotMatch(counters, /key: 'fatigue_level'[^\n]*aroundLabel/);
         // .btn-icon et .inspiration-coin imposent leur display : l'attribut hidden seul ne suffit pas
         assert.match(stepperCss, /\.label-steps > \.step-btn\[hidden\] \{\s*display: none;/);
+        // Jamais sur les traits pointillés entre cellules (101 px au plus juste, mesuré le 23/11/2026) :
+        // 22 px à la souris, 26 px au doigt, zone de toucher qui ne passe pas le trait (6 px)
+        assert.match(stepperCss, /\.step-btn\.is-mini \{\s*width: 22px;\s*height: 22px;/);
+        assert.match(stepperCss, /\.label-steps \.step-btn\.is-mini \{\s*width: 26px;\s*height: 26px;/);
+        assert.match(stepperCss, /\.label-steps \.step-btn\.is-mini::after \{\s*inset: -10px -6px -4px;/);
         assert.match(feats, /\.inspiration-coin\[hidden\] \{\s*display: none;/);
         assert.match(ui, /step\.hidden = alone/);
         assert.match(ui, /input\.hidden = alone && coin\.readable/);
