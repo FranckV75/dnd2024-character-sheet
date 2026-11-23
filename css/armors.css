@@ -273,6 +273,13 @@
     font-style: normal;
 }
 
+/* Détail d'une entrée du groupe « Autres » (conditions, ce que la fiche ne compte pas) */
+.armor-ca-detail {
+    margin: 6px 0 0;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+}
+
 /* Aperçu du calcul dans la fenêtre de réglages */
 .armor-config-preview {
     padding: 8px 10px;

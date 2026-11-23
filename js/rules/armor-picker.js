@@ -9,6 +9,9 @@
 // changent la CA (anneau, cape, Armure du mage…), lus dans une liste de données facile à
 // compléter (js/data/armor-others.js). Tout le reste s'écrit toujours à la main.
 // Une armure déjà dans le tableau est marquée (✓) mais reste choisissable (armure de rechange).
+// Pareil pour une entrée « Autres » : la noter deux fois n'est pas empêché, mais les deux lignes
+// actives sont signalées (armorWarnings, js/rules/armors.js : un même sort ou un même objet ne se
+// cumule pas avec lui-même).
 // Fonction pure. Testé : tests/armor-picker.test.js, tests/armor-others.test.js.
 // =============================================================================
 

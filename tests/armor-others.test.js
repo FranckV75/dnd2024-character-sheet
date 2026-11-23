@@ -7,14 +7,15 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { ARMOR_OTHERS } from '../js/data/armor-others.js';
+import { ARMOR_OTHERS, ARMOR_OTHER_COMMENT_MAX, ARMOR_OTHER_CA_MAX } from '../js/data/armor-others.js';
 import { EQUIPMENT_DATA } from '../js/data/equipment.js';
 import { EMPTY_ARMOR } from '../js/state/schema.js';
 import { migrateCharacter } from '../js/state/migrate.js';
 import { deriveCharacter, armorCategory, catalogueArmor } from '../js/rules/character.js';
 import {
     ARMOR_TYPES, armorRowFromOther, armorRowFromChoice, armorRowFromCatalogue, isArmorOther, isArmorListComment,
-    searchArmorChoices, searchArmorCatalogue, armorWarnings, isBlankArmor
+    searchArmorChoices, searchArmorCatalogue, armorWarnings, isBlankArmor,
+    armorBaseText, armorOtherOfRow, armorBubbleText, ARMOR_REMINDER_FORMULA, ARMOR_TWICE_SPELL, ARMOR_TWICE_ITEM
 } from '../js/rules/armors.js';
 import { ARMOR_PICKER_GROUPS, ARMOR_PICKER_OTHER, armorPickerGroups } from '../js/rules/armor-picker.js';
 
@@ -32,6 +33,32 @@ function armorClass(armors, { className = 'Magicien', dex = 14, level = 5, ...re
     }).armorClass;
 }
 
+/**
+ * Ce qui ne va pas dans une entrée, d'après le mode d'emploi en tête de js/data/armor-others.js
+ * (liste vide : entrée valable). Les types et la forme de la valeur sont ceux de l'engrenage.
+ */
+function entryProblems(entry) {
+    const problems = [];
+    const text = (value) => typeof value === 'string' && value !== '' && value.trim() === value;
+    if (!text(entry.name)) problems.push('name : texte sans espace autour');
+    else if (catalogueArmor({ name: entry.name })) problems.push('name : nom d\'une armure du manuel');
+    if (!ARMOR_TYPES.some(([value]) => value === entry.type)) problems.push(`type : ${entry.type} n'est pas un type de l'engrenage`);
+    else if (entry.type === 'none' || entry.type === 'Maîtrise') {
+        if (entry.value !== '') problems.push('value : vide pour ce type');
+    } else if (typeof entry.value !== 'string' || !/^[+-]?\d+$/.test(entry.value) || armorBaseText(entry.value, entry.type) !== entry.value) {
+        problems.push(`value : à écrire comme l'engrenage (« ${armorBaseText(entry.value, entry.type) || 'un nombre entier'} »)`);
+    }
+    if (!text(entry.ca) || entry.ca.length > ARMOR_OTHER_CA_MAX) problems.push(`ca : 1 à ${ARMOR_OTHER_CA_MAX} caractères`);
+    if (!text(entry.comment) || entry.comment.length > ARMOR_OTHER_COMMENT_MAX) problems.push(`comment : 1 à ${ARMOR_OTHER_COMMENT_MAX} caractères`);
+    if ('detail' in entry && !text(entry.detail)) problems.push('detail : texte, ou champ absent');
+    if ('oldComments' in entry && !(Array.isArray(entry.oldComments) && entry.oldComments.every(text) && !entry.oldComments.includes(entry.comment))) {
+        problems.push('oldComments : liste d\'anciens textes, différents du commentaire actuel');
+    }
+    if (!['objet', 'sort'].includes(entry.kind)) problems.push('kind : objet ou sort');
+    if (!text(entry.vo)) problems.push('vo : nom anglais');
+    return problems;
+}
+
 describe('Groupe « Autres » : la liste de données', () => {
     test('Liste de départ, dans cet ordre : objets magiques puis sorts', () => {
         assert.deepEqual(ARMOR_OTHERS.map((entry) => entry.name), [
@@ -42,23 +69,55 @@ describe('Groupe « Autres » : la liste de données', () => {
             ['objet', 'objet', 'objet', 'objet', 'objet', 'sort', 'sort', 'sort']);
     });
 
-    test('Chaque entrée : nom unique, type de l\'engrenage, valeur écrite comme l\'engrenage, texte de liste court, commentaire', () => {
-        const types = new Set(ARMOR_TYPES.map(([value]) => value));
+    test('Chaque entrée suit le mode d\'emploi du fichier (nom unique, type et valeur de l\'engrenage, textes courts)', () => {
         const names = new Set();
         for (const entry of ARMOR_OTHERS) {
-            assert.equal(typeof entry.name, 'string');
-            assert.ok(entry.name.trim() === entry.name && entry.name !== '', entry.name);
+            assert.deepEqual(entryProblems(entry), [], entry.name);
             assert.ok(!names.has(entry.name.toLowerCase()), `doublon : ${entry.name}`);
             names.add(entry.name.toLowerCase());
-            assert.ok(types.has(entry.type), `${entry.name} : type ${entry.type}`);
-            // Bonus : « +1 », « +2 »… (forme écrite par la fenêtre de réglages) ; sinon vide
-            if (entry.type === 'Bonus') assert.match(entry.value, /^\+\d+$/, entry.name);
-            else assert.equal(entry.value, '', entry.name);
-            // Le texte de la liste ne passe pas à la ligne : pas plus long que « 15 + Dex (max 2) »
-            assert.ok(entry.ca.length > 0 && entry.ca.length <= '15 + Dex (max 2)'.length, `${entry.name} : ${entry.ca}`);
-            assert.ok(entry.comment.length > 0, entry.name);
-            assert.ok(['objet', 'sort'].includes(entry.kind), entry.name);
-            assert.ok(entry.vo.length > 0, entry.name);
+        }
+    });
+
+    test('Longueurs : le commentaire tient dans la colonne (80), le texte de la liste sur une ligne (16)', () => {
+        assert.equal(ARMOR_OTHER_COMMENT_MAX, 80);
+        assert.equal(ARMOR_OTHER_CA_MAX, '15 + Dex (max 2)'.length);
+        const long = { ...other('Anneau de protection'), comment: 'x'.repeat(81) };
+        assert.deepEqual(entryProblems(long), ['comment : 1 à 80 caractères']);
+        assert.deepEqual(entryProblems({ ...other('Anneau de protection'), ca: '+1 (sans armure ni bouclier)' }), ['ca : 1 à 16 caractères']);
+        assert.deepEqual(entryProblems({ ...other('Anneau de protection'), comment: '' }), ['comment : 1 à 80 caractères']);
+    });
+
+    test('Le contrôle accepte tout ce que le mode d\'emploi permet (bouclier, bonus négatif, maîtrise, détail, anciens textes)', () => {
+        const base = { kind: 'objet', vo: 'Example', ca: '+2', comment: 'Objet magique.' };
+        assert.deepEqual(entryProblems({ ...base, name: 'Bouclier sentinelle', type: 'Bouclier', value: '+2' }), []);
+        assert.deepEqual(entryProblems({ ...base, name: 'Anneau maudit', type: 'Bonus', value: '-1', ca: '-1' }), []);
+        assert.deepEqual(entryProblems({ ...base, name: 'Cuir elfique', type: 'Légère', value: '13', ca: '13 + Dex' }), []);
+        assert.deepEqual(entryProblems({ ...base, name: 'Garde', type: 'Maîtrise', value: '', ca: '+ maîtrise' }), []);
+        assert.deepEqual(entryProblems({ ...base, name: 'Amulette', type: 'Bonus', value: '+1', detail: 'Précision.', oldComments: ['Ancien texte.'] }), []);
+        // Et il dit ce qui ne va pas, dans les mots du mode d'emploi
+        assert.deepEqual(entryProblems({ ...base, name: 'Amulette', type: 'Bonus', value: '1' }), ['value : à écrire comme l\'engrenage (« +1 »)']);
+        assert.deepEqual(entryProblems({ ...base, name: 'Cuir elfique', type: 'Légère', value: '+13' }), ['value : à écrire comme l\'engrenage (« 13 »)']);
+        assert.deepEqual(entryProblems({ ...base, name: 'Amulette', type: 'Bonus', value: '' }), ['value : à écrire comme l\'engrenage (« un nombre entier »)']);
+        assert.deepEqual(entryProblems({ ...base, name: 'Garde', type: 'Maîtrise', value: '+2' }), ['value : vide pour ce type']);
+        assert.deepEqual(entryProblems({ ...base, name: 'Amulette', type: 'Magique', value: '+1' }), ['type : Magique n\'est pas un type de l\'engrenage']);
+        assert.deepEqual(entryProblems({ ...base, name: 'Harnois', type: 'Bonus', value: '+1' }), ['name : nom d\'une armure du manuel']);
+        assert.deepEqual(entryProblems({ ...base, name: 'Amulette', type: 'Bonus', value: '+1', oldComments: ['Objet magique.'] }),
+            ['oldComments : liste d\'anciens textes, différents du commentaire actuel']);
+    });
+
+    test('armorBaseText : la valeur telle que l\'engrenage l\'enregistre', () => {
+        assert.equal(armorBaseText('1', 'Bonus'), '+1');
+        assert.equal(armorBaseText('+2', 'Bouclier'), '+2');
+        assert.equal(armorBaseText('-1', 'Bonus'), '-1');
+        assert.equal(armorBaseText('0', 'Bonus'), '0');
+        assert.equal(armorBaseText('+13', 'Légère'), '13');
+        assert.equal(armorBaseText(' 16 ', 'Lourde'), '16');
+        assert.equal(armorBaseText('', 'Bonus'), '');
+        assert.equal(armorBaseText('abc', 'Bonus'), '');
+        assert.equal(armorBaseText(undefined, 'Bonus'), '');
+        // Les entrées de la liste sont écrites sous cette forme
+        for (const entry of ARMOR_OTHERS.filter((item) => item.value !== '')) {
+            assert.equal(armorBaseText(entry.value, entry.type), entry.value, entry.name);
         }
     });
 
@@ -87,16 +146,34 @@ describe('Groupe « Autres » : la liste de données', () => {
         assert.doesNotMatch(other("Peau d'écorce").comment, /concentration/);
     });
 
-    test('Ce que la fiche ne calcule pas est écrit dans le commentaire', () => {
-        assert.match(other('Bracelets de défense').comment, /sans armure ni bouclier/);
-        assert.match(other("Robe de l'archimage").comment, /15 \+ Dex sans armure, notée \+5/);
-        assert.match(other("Robe de l'archimage").comment, /Défense sans armure/);
-        assert.match(other('Armure du mage').comment, /13 \+ Dex sans armure, notée \+3/);
-        assert.match(other('Armure du mage').comment, /Défense sans armure/);
+    test('Ce que la fiche ne calcule pas : l\'essentiel dans le commentaire, le reste dans la bulle (detail)', () => {
+        assert.match(other('Bracelets de défense').comment, /Sans armure ni bouclier : à décocher sinon/);
+        assert.match(other("Robe de l'archimage").comment, /CA 15 \+ Dex, notée \+5 : à décocher en armure/);
+        assert.match(other("Robe de l'archimage").detail, /Défense sans armure/);
+        assert.match(other("Robe de l'archimage").detail, /Armure du mage/);
+        assert.match(other('Armure du mage').comment, /CA 13 \+ Dex, notée \+3 : à décocher en armure/);
+        assert.match(other('Armure du mage').detail, /Défense sans armure/);
+        assert.match(other('Armure du mage').detail, /Robe de l'archimage/);
         assert.match(other("Peau d'écorce").comment, /17/);
         assert.match(other("Peau d'écorce").comment, /non calculé/);
+        assert.match(other("Peau d'écorce").detail, /rappel, la cocher ne change pas la CA/);
         // Anneau et cape : le +1 aux jets de sauvegarde n'est pas compté
         for (const name of ['Anneau de protection', 'Cape de protection']) assert.match(other(name).comment, /jets de sauvegarde, non compté/);
+    });
+
+    test('Robe de l\'archimage (DMG 2024) : les effets hors CA sont rappelés, comme pour l\'anneau et la cape', () => {
+        const { detail } = other("Robe de l'archimage");
+        // Harmonisation réservée à trois classes ; « War Mage » ; « Magic Resistance »
+        assert.match(detail, /Ensorceleur, un Occultiste ou un Magicien/);
+        assert.match(detail, /\+2 au DD de sauvegarde et au bonus d'attaque des sorts/);
+        assert.match(detail, /Avantage aux jets de sauvegarde contre les sorts et les effets magiques/);
+        assert.match(detail, /non comptés ici/);
+    });
+
+    test('Sorts : la bulle dit que la fiche ne décoche pas la ligne à la fin du sort ni au repos', () => {
+        for (const entry of ARMOR_OTHERS.filter((item) => item.kind === 'sort')) {
+            assert.match(entry.detail, /ne décoche pas la ligne quand le sort finit \(durée, repos\)/, entry.name);
+        }
     });
 });
 
@@ -191,6 +268,54 @@ describe('Groupe « Autres » : la ligne écrite dans le tableau', () => {
         assert.equal(armorRowFromCatalogue(manual('Harnois'), { comment: 'Blason' }).comment, 'Blason');
     });
 
+    test('Texte d\'un commentaire changé plus tard : l\'ancien (oldComments) reste reconnu sur les fiches déjà enregistrées', () => {
+        const before = [{ name: 'Armure du mage', kind: 'sort', type: 'Bonus', value: '+3', comment: 'Sort, 8 heures. Ancien texte long.' }];
+        const after = [{ ...before[0], comment: 'Sort, 8 heures.', oldComments: ['Sort, 8 heures. Ancien texte long.', '  '] }];
+        const saved = { ...armorRowFromOther(before[0]), equipped: true };
+        // Sans oldComments, l'ancien texte passerait pour un commentaire du joueur
+        assert.equal(isArmorListComment(saved.comment, [{ ...after[0], oldComments: undefined }]), false);
+        assert.equal(isArmorListComment(saved.comment, after), true);
+        assert.equal(isArmorListComment('Sort, 8 heures.', after), true);
+        assert.equal(isArmorListComment('  ', after), false);
+        assert.equal(isArmorListComment('Cadeau de Vallus', after), false);
+        assert.equal(armorOtherOfRow(saved, after), after[0]);
+        // Liste mal complétée : oldComments qui n'est pas une liste est ignoré
+        assert.equal(isArmorListComment('abc', [{ name: 'X', comment: 'Texte.', oldComments: 'abc' }]), false);
+    });
+
+    test('Ancien texte de la liste réelle : remplacé par une armure du manuel ou par un autre choix', () => {
+        const entry = other('Armure du mage');
+        const old = 'Sort, 8 heures. Texte d\'une version précédente.';
+        entry.oldComments = [old];
+        try {
+            const saved = { ...armorRowFromOther(entry), comment: old, equipped: true };
+            assert.equal(armorRowFromCatalogue(manual('Armure de cuir'), saved).comment, '');
+            assert.equal(armorRowFromOther(other('Bouclier de la foi'), saved).comment, other('Bouclier de la foi').comment);
+            // Rechoisir la même entrée met le commentaire à jour
+            assert.equal(armorRowFromOther(entry, saved).comment, entry.comment);
+            assert.equal(armorOtherOfRow(saved), entry);
+        } finally {
+            delete entry.oldComments;
+        }
+        assert.equal(isArmorListComment(old), false);
+    });
+
+    test('armorOtherOfRow : une ligne de la liste est reconnue à son nom ET à son commentaire', () => {
+        for (const entry of ARMOR_OTHERS) assert.equal(armorOtherOfRow(armorRowFromOther(entry)), entry, entry.name);
+        const ring = armorRowFromOther(other('Anneau de protection'));
+        // Anneau et cape ont le même commentaire : le nom les départage
+        assert.equal(armorOtherOfRow({ ...ring, name: 'Cape de protection' }), other('Cape de protection'));
+        assert.equal(armorOtherOfRow({ ...ring, name: ' ANNEAU DE PROTECTION<br>' }), other('Anneau de protection'));
+        // Tapée à la main, renommée, ou commentée par le joueur : pas reconnue
+        assert.equal(armorOtherOfRow({ name: 'Anneau de protection', type: 'Bonus', ca: '+1' }), null);
+        assert.equal(armorOtherOfRow({ ...ring, name: 'Anneau de Vallus' }), null);
+        assert.equal(armorOtherOfRow({ ...ring, comment: 'Cadeau de Vallus' }), null);
+        assert.equal(armorOtherOfRow({ ...ring, comment: '' }), null);
+        assert.equal(armorOtherOfRow(armorRowFromCatalogue(manual('Harnois'))), null);
+        assert.equal(armorOtherOfRow(null), null);
+        assert.equal(armorOtherOfRow({}), null);
+    });
+
     test('Efface Force, Discrétion, poids, prix et bonus magique d\'une armure remplacée', () => {
         const plate = { ...armorRowFromCatalogue(manual('Harnois')), magic: 2, equipped: true };
         const row = armorRowFromOther(other('Anneau de protection'), plate);
@@ -212,6 +337,88 @@ describe('Groupe « Autres » : la ligne écrite dans le tableau', () => {
         // Ni armure ni bouclier « portés » : Arts martiaux, Rage, styles de combat inchangés
         assert.deepEqual(deriveCharacter({ char_class: 'Moine', dynamic_armors: rows }).wornArmor,
             { light: false, medium: false, heavy: false, shield: false, shieldTrained: false });
+    });
+});
+
+describe('Groupe « Autres » : la même entrée active deux fois', () => {
+    test('Même sort deux fois (PHB 2024, « Combining Spell Effects ») : les deux lignes sont signalées', () => {
+        const rows = [active('Bouclier de la foi'), worn('Cotte de mailles'), active('Bouclier de la foi')];
+        const training = { light: true, medium: true, heavy: true, shield: true };
+        assert.deepEqual(armorWarnings(rows, training, 15), [[ARMOR_TWICE_SPELL], [], [ARMOR_TWICE_SPELL]]);
+        assert.match(ARMOR_TWICE_SPELL, /ne se cumulent pas/);
+        // Le calcul n'est pas changé (les deux bonus s'ajoutent toujours) : c'est l'avertissement qui prévient
+        assert.equal(armorClass(rows, { className: 'Guerrier' }).value, 20);
+    });
+
+    test('Même objet deux fois (un seul exemplaire harmonisé) : signalé', () => {
+        const rows = [active('Anneau de protection'), active('Anneau de protection'), active('Cape de protection')];
+        assert.deepEqual(armorWarnings(rows, {}, 10), [[ARMOR_TWICE_ITEM], [ARMOR_TWICE_ITEM], []]);
+        assert.match(ARMOR_TWICE_ITEM, /harmonise/);
+    });
+
+    test('Une seule des deux lignes active, ou ligne de rappel en double : rien', () => {
+        const ring = armorRowFromOther(other('Anneau de protection'));
+        assert.deepEqual(armorWarnings([{ ...ring, equipped: true }, ring], {}, 10), [[], []]);
+        assert.deepEqual(armorWarnings([active("Peau d'écorce"), active("Peau d'écorce")], {}, 10), [[], []]);
+    });
+
+    test('Deux lignes tapées à la main (sans le commentaire de la liste) : jamais signalées, comme avant', () => {
+        const byHand = { name: 'Anneau de protection', type: 'Bonus', ca: '+1', equipped: true };
+        assert.deepEqual(armorWarnings([byHand, { ...byHand }], {}, 10), [[], []]);
+        assert.deepEqual(armorWarnings([byHand, active('Anneau de protection')], {}, 10), [[], []]);
+        const own = { ...active('Anneau de protection'), comment: 'Cadeau de Vallus' };
+        assert.deepEqual(armorWarnings([own, active('Anneau de protection')], {}, 10), [[], []]);
+    });
+});
+
+describe('Groupe « Autres » : bulle de la CA d\'une ligne (armorBubbleText)', () => {
+    const lineOf = (row) => armorClass([row]).rows[0].line;
+    const GENERIC = /choisissez son type avec l'engrenage/;
+
+    test('Peau d\'écorce (ligne de rappel) : la bulle dit que c\'est un rappel, sans inviter à choisir un type', () => {
+        const row = active("Peau d'écorce");
+        const line = lineOf(row);
+        assert.match(line.formula, GENERIC);
+        const bubble = armorBubbleText(row, line);
+        assert.equal(bubble.formula, ARMOR_REMINDER_FORMULA);
+        assert.doesNotMatch(bubble.formula, GENERIC);
+        assert.equal(bubble.detail, other("Peau d'écorce").detail);
+        assert.match(bubble.detail, /17/);
+        // Mise en garde contre le réglage « Bonus 17 » (CA 29 au lieu de 17)
+        assert.match(bubble.detail, /ne lui donnez pas le type « Bonus »/);
+    });
+
+    test('Entrée de rappel sans détail : la bulle reprend son commentaire', () => {
+        const list = [{ name: 'Rappel', type: 'none', value: '', comment: 'À lire.' }];
+        const row = armorRowFromOther(list[0]);
+        assert.deepEqual(armorBubbleText(row, { kind: 'none', formula: 'x' }, list), { formula: ARMOR_REMINDER_FORMULA, detail: 'À lire.' });
+    });
+
+    test('Ligne qui compte : le calcul tel quel, suivi du détail de l\'entrée', () => {
+        const robe = active("Robe de l'archimage");
+        assert.deepEqual(armorBubbleText(robe, lineOf(robe)),
+            { formula: '+5 à la CA (bonus fixe)', detail: other("Robe de l'archimage").detail });
+        const ring = active('Anneau de protection');
+        assert.deepEqual(armorBubbleText(ring, lineOf(ring)), { formula: '+1 à la CA (bonus fixe)', detail: '' });
+    });
+
+    test('Ligne tapée à la main ou commentée par le joueur : la bulle d\'avant, sans détail', () => {
+        const byHand = { name: "Peau d'écorce", equipped: true };
+        const line = lineOf(byHand);
+        assert.deepEqual(armorBubbleText(byHand, line), { formula: line.formula, detail: '' });
+        assert.match(armorBubbleText(byHand, line).formula, GENERIC);
+        const own = { ...active("Peau d'écorce"), comment: 'Lancé par Iria' };
+        assert.match(armorBubbleText(own, lineOf(own)).formula, GENERIC);
+        const plate = worn('Harnois');
+        assert.deepEqual(armorBubbleText(plate, lineOf(plate)), { formula: lineOf(plate).formula, detail: '' });
+        assert.deepEqual(armorBubbleText(null, null), { formula: '', detail: '' });
+    });
+
+    test('Entrée « Bonus » passée à « Standard / Aucun » avec l\'engrenage : le conseil de choisir un type reste', () => {
+        const ring = { ...active('Anneau de protection'), type: 'none' };
+        const line = lineOf(ring);
+        assert.equal(line.kind, 'none');
+        assert.match(armorBubbleText(ring, line).formula, GENERIC);
     });
 });
 
@@ -293,6 +500,19 @@ describe('Groupe « Autres » : interface (js/ui/armors.js)', () => {
         assert.match(ui, /armorPickerGroups\(EQUIPMENT_DATA\.armors, \{ query, rows: noted, others: ARMOR_OTHERS \}\)/);
         assert.match(ui, /replaceRow\(index, row => armorRowFromChoice\(item\.value, row\)\)/);
         assert.match(ui, /searchArmorChoices\(query\)/);
+    });
+
+    test('La bulle de la CA affiche le texte de armorBubbleText (rappel, détail de l\'entrée)', () => {
+        assert.match(ui, /const bubble = armorBubbleText\(row, line\);/);
+        assert.match(ui, /formula: bubble\.formula, detail: bubble\.detail,/);
+        assert.match(ui, /info\.detail \? el\('p', \{ class: 'armor-ca-detail', text: info\.detail \}\) : null/);
+        const css = readFileSync(new URL('../css/armors.css', import.meta.url), 'utf8');
+        assert.match(css, /\.armor-ca-detail \{[^}]*color: var\(--text-muted\);/);
+    });
+
+    test('L\'engrenage enregistre la valeur de base avec armorBaseText (règle testée)', () => {
+        assert.match(ui, /next\.ca = armorBaseText\(baseInput\.value, type\)/);
+        assert.doesNotMatch(ui, /function baseText/);
     });
 
     test('Nom tapé en entier : seules les armures du manuel sont complétées toutes seules', () => {

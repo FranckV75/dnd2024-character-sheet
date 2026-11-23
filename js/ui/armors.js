@@ -13,7 +13,9 @@
 // vide touché, ou bouton ▾ ; js/rules/armor-picker.js) : les quatre groupes de la table des
 // armures du manuel, puis le groupe « Autres » (anneau, cape, sort… : js/data/armor-others.js).
 // Une entrée « Autres » choisie devient une ligne ordinaire (type, valeur de base, commentaire
-// qui dit sa condition), réglable ensuite avec l'engrenage comme une ligne saisie à la main.
+// qui dit sa condition), réglable ensuite avec l'engrenage comme une ligne saisie à la main ;
+// la bulle de sa CA ajoute le détail de l'entrée (armorBubbleText), et la même entrée active deux
+// fois est signalée par l'avertissement de la ligne (armorWarnings).
 // Réglages (engrenage) : quitter sans appliquer après un changement demande d'abord si l'on
 // abandonne ces changements, comme « Configuration de l'arme » (choix de Franck, 23/11/2026).
 // =============================================================================
@@ -25,7 +27,7 @@ import { parseNumber, armorCategory, mediumArmorDexMax } from '../rules/characte
 import { derivedOf } from './derived.js';
 import {
     ARMOR_TYPES, searchArmorCatalogue, searchArmorChoices, armorRowFromCatalogue, armorRowFromChoice, isArmorOther,
-    armorWarnings, armorTraining, isBlankArmor,
+    armorWarnings, armorTraining, isBlankArmor, armorBaseText, armorBubbleText,
     armorMagicBonus, armorCanBeMagic, withArmorMagic, ARMOR_MAGIC_MAX, armorLine, catalogueArmor, catalogueArmorClass
 } from '../rules/armors.js';
 import { armorPickerGroups, ARMOR_PICKER_OTHER } from '../rules/armor-picker.js';
@@ -80,19 +82,6 @@ const textOf = (value) => stripHTML(safeText(value));
 const armorsOf = (character) => (Array.isArray(character.dynamic_armors) ? character.dynamic_armors : []);
 const asObject = (row) => (row && typeof row === 'object' ? row : {});
 const typeOf = (row) => textOf(row.type) || 'none';
-
-/**
- * Valeur de base à enregistrer (clé « ca ») : le nombre saisi, précédé de « + » pour un bouclier
- * ou un bonus positif, comme les valeurs du manuel ; sans nombre : vide.
- * @param {string} raw
- * @param {string} type - valeur de ARMOR_TYPES
- * @returns {string}
- */
-function baseText(raw, type) {
-    const value = parseNumber(String(raw ?? ''), Number.NaN);
-    if (!Number.isFinite(value)) return '';
-    return (type === 'Bouclier' || type === 'Bonus') && value > 0 ? `+${value}` : String(value);
-}
 
 /** Contexte du calcul de CA d'une ligne (modificateurs, maîtrise, Dex max des armures intermédiaires) */
 function armorContext(derived) {
@@ -246,7 +235,7 @@ export function initArmors({ root, store, setStatus }) {
             if (!manual) {
                 const type = typeSelect.value;
                 if (type !== initialType) next.type = type;
-                if (baseInput.value.trim() !== initialBase.trim() || type !== initialType) next.ca = baseText(baseInput.value, type);
+                if (baseInput.value.trim() !== initialBase.trim() || type !== initialType) next.ca = armorBaseText(baseInput.value, type);
             }
             const canMagic = armorCanBeMagic(next);
             return withArmorMagic(next, canMagic ? Number(magicSelect.value) : 0);
@@ -375,7 +364,9 @@ export function initArmors({ root, store, setStatus }) {
                 el('strong', { class: 'spell-tooltip-name', text: info.name || 'Sans nom' }),
                 info.category ? el('span', { class: 'spell-tooltip-level', text: info.category }) : null),
             el('p', { class: 'armor-ca-formula', text: info.formula }),
-            info.note ? el('p', { class: 'armor-ca-note', 'data-counted': String(info.counted), text: info.note }) : null
+            info.note ? el('p', { class: 'armor-ca-note', 'data-counted': String(info.counted), text: info.note }) : null,
+            // Ligne choisie dans le groupe « Autres » : ce que l'entrée précise (conditions, non compté)
+            info.detail ? el('p', { class: 'armor-ca-detail', text: info.detail }) : null
         ];
     }
 
@@ -395,7 +386,8 @@ export function initArmors({ root, store, setStatus }) {
     /**
      * Liste à parcourir (nom vide touché, ou bouton ▾) : les armures du manuel par groupe, puis le
      * groupe « Autres » (anneau, cape, sort…), avec leur CA ; ✓ : déjà dans le tableau, toujours
-     * choisissable (armure de rechange).
+     * choisissable (armure de rechange ; une entrée « Autres » active deux fois est signalée sur
+     * la ligne, armorWarnings).
      * @param {number} index - ligne qu'on remplit (exclue des armures « déjà notées »)
      * @param {string} query
      */
@@ -570,9 +562,12 @@ export function initArmors({ root, store, setStatus }) {
             controls.ca.textContent = line.display;
             controls.ca.dataset.status = status;
             const note = status === 'counted' ? STATUS_COUNTED : result.note;
+            // Ligne venue du groupe « Autres » : détail de l'entrée ; ligne de rappel (Peau d'écorce) :
+            // la bulle dit que c'est un rappel au lieu d'inviter à choisir un type
+            const bubble = armorBubbleText(row, line);
             details[i] = {
                 name: label, category: CATEGORY_NAMES[line.category] || '',
-                formula: line.formula, note, counted: status === 'counted'
+                formula: bubble.formula, detail: bubble.detail, note, counted: status === 'counted'
             };
             controls.ca.setAttribute('aria-label',
                 `CA de ${label ? `« ${label} »` : `la ligne ${i + 1}`} : ${line.kind === 'none' ? 'ne compte pas' : line.display}`);
