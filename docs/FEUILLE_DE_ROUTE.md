@@ -164,21 +164,15 @@ renommée », entre ses petits boutons, ouvre le clavier de la case (comme avant
 geste retour répété dans « Configuration de l'arme » finit par la fermer sans question (Chrome
 l'impose ; Échap au clavier, lui, pose toujours la question).
 
-Décisions de Franck en attente sur la 4.47.1 (noms du manuel ; corrigé aujourd'hui = ce que dit
-le livre, rien n'est changé pour ces points) :
-- Garder la correction « Formes du cercle améliorées » (le livre imprime « améliorés ») ?
-- « Tempérée » / « Tropicale » (Cercle de la Terre) : le livre écrit « tempéré » dans le texte et
-  « Terres tempérées » dans les titres ; garder ?
-- Dons d'origines : la fiche affiche « Prérequis : Niv 1+ », le livre n'en met aucun ; retirer ?
-- « Présents de Féerie » (Vagabond féerique) et « Manifestations de l'ordre » (Sorcellerie
-  mécanique) sont présentés comme des aptitudes ; dans le livre, ce sont des tables rattachées à
-  une aptitude. Garder ainsi ?
-- Lames psychiques (Âme acérée) : le livre imprime une portée de 12/36 m, sans doute une coquille
-  (60/120 pieds = 18/36 m) ; la fiche garde 18/36 m.
-- Outils : « Boîtes de jeux » et « Instruments de musique » en catégories à part dans la fenêtre
-  (le livre les range dans « Autres outils ») ; garder ?
-- Ordre des options du Cœur sauvage : celui de la fiche (Ours, Aigle, Loup…) ou celui du livre
-  (ordre alphabétique) ?
+~~Décisions de Franck sur la 4.47.1~~ : toutes prises le 23/11/2026 (« C'est ok pour moi », et
+trois réponses données dans des conversations annexes). Gardés tels quels : « Formes du cercle
+améliorées » (le livre imprime « améliorés », coquille) ; « Tempérée » / « Tropicale » au Cercle
+de la Terre ; Lames psychiques à 18/36 m (le livre imprime 12/36 m, sans doute une coquille :
+60/120 pieds) ; « Boîtes de jeux » et « Instruments de musique » en groupes à part dans la fenêtre
+des outils (plus clair) ; ordre des options du Cœur sauvage de la fiche. Faits en 4.47.1 : plus de
+prérequis affiché pour les dons d'origines (le livre n'en met aucun) ; « Sorts de Vagabond
+féerique (Présents de Féerie) » et « Sorts mécaniques (Manifestations de l'ordre) », les deux
+tables du livre gardées en lignes à part sous le nom de leur aptitude (identifiants inchangés).
 
 **À chaque version, désormais** : ajouter l'entrée de la version en tête de `js/data/whats-new.js`
 (sinon `npm run check` échoue) et mettre à jour la notice `js/data/help.js`.

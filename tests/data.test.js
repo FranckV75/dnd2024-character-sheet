@@ -42,11 +42,12 @@ describe('Dons', () => {
     const feats = Object.entries(FEATS_DATA);
     const TYPES = new Set(['Origine', 'Général', 'Style de combat', 'Épique']);
 
-    test('Chaque don a un nom, un type connu et des prérequis', () => {
+    test("Chaque don a un nom, un type connu et des prérequis (aucun pour les dons d'origines)", () => {
         for (const [key, f] of feats) {
             assert.ok(f.name, key);
             assert.ok(TYPES.has(f.type), `${key} : type « ${f.type} »`);
-            assert.ok(f.prereq, key);
+            // Manuel français p. 200-202 : les dons d'origines n'ont pas de prérequis (4.47.1)
+            assert.equal(Boolean(f.prereq), f.type !== 'Origine', key);
         }
     });
 
@@ -78,6 +79,7 @@ describe('Dons', () => {
         for (const [key, f] of feats) {
             for (const field of ['name', 'type', 'prereq', 'asi', 'desc']) {
                 assert.equal(typeof f[field], 'string', `${key}.${field}`);
+                if (field === 'prereq' && f.type === 'Origine') continue;
                 assert.ok(f[field].trim(), `${key}.${field} vide`);
             }
         }

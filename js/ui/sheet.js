@@ -628,7 +628,9 @@ function renderFeats(root, character, d, effects, counters) {
         if (feat) {
             // Réécrite seulement si le don change (pas à chaque frappe ailleurs dans la fiche), ou si
             // la mise en forme devient disponible (DOMPurify chargé tardivement)
-            const source = `<strong>Prérequis :</strong> ${feat.prereq}<br>${feat.desc || '<em>Description à compléter.</em>'}`;
+            // Dons d'origines : aucun prérequis dans le manuel (prereq vide), pas de ligne « Prérequis »
+            const prereq = feat.prereq?.trim() ? `<strong>Prérequis :</strong> ${feat.prereq}<br>` : '';
+            const source = `${prereq}${feat.desc || '<em>Description à compléter.</em>'}`;
             const signature = `${richTextAvailable()}|${source}`;
             if (renderedSignatures.get(box) !== signature) {
                 renderedSignatures.set(box, signature);

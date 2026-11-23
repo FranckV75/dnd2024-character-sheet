@@ -31,18 +31,22 @@ libellés changent ; les clés enregistrées (`owl`, `ram`, `rev_see`, `rev_worm
 - Devin, Troisième œil : « Compréhension supérieure (toutes les langues) » et « Détection de
   l'invisibilité » (et non « Lire toutes les langues », « Voir l'invisible »).
 - Commentaires du code : anciens noms « Maître des bêtes », « bête primordiale » remplacés.
+- Dons d'origines : plus de « Prérequis : Niv 1+ » (le manuel n'en imprime aucun ; `prereq` vide,
+  la description n'affiche alors pas de ligne « Prérequis »). Décision de Franck.
+- Vagabond féerique et Sorcellerie mécanique : les tables du livre, gardées en lignes à part,
+  prennent le nom de leur aptitude selon la convention de découpage : « Sorts de Vagabond féerique
+  (Présents de Féerie) », « Sorts mécaniques (Manifestations de l'ordre) » (identifiants
+  inchangés). Décision de Franck.
 ### Notes
-- Laissés tels quels, à décider par Franck : « Formes du cercle améliorées » (le livre imprime
-  « améliorés », coquille) ; types de terre « Tempérée » / « Tropicale » (le livre écrit les deux) ;
-  « Niv 1+ » affiché en prérequis des dons d'origines (le livre n'en met pas) ; « Présents de
-  Féerie » et « Manifestations de l'ordre » présentés comme aptitudes (ce sont des tables du livre) ;
-  « Dés psioniques » de l'Âme acérée (le livre : dés d'Énergie psionique) ; Lames psychiques à
-  18/36 m (le livre imprime 12/36 m, sans doute une coquille : 60/120 pieds) ; outils « Boîtes de
-  jeux » et « Instruments de musique » en catégories à part (le livre les range dans « Autres
-  outils ») ; ordre des options du Cœur sauvage (le livre suit l'ordre alphabétique).
+- Gardés tels quels (décisions de Franck du 23/11/2026) : « Formes du cercle améliorées » (le livre
+  imprime « améliorés », coquille) ; types de terre « Tempérée » / « Tropicale » ; Lames psychiques
+  à 18/36 m (le livre imprime 12/36 m, sans doute une coquille : 60/120 pieds) ; outils « Boîtes de
+  jeux » et « Instruments de musique » en groupes à part ; ordre des options du Cœur sauvage.
+  Libellé court « Dés psioniques » de l'Âme acérée (le livre : dés d'Énergie psionique) gardé.
 - Vérifié à l'écran (navigateur intégré, fiche de test) : menus du Cœur sauvage, carte du
   compagnon du Belluaire, Révélation incarnée, Troisième œil, compteur de Sorcellerie, groupes de
-  la liste des dons ; 0 erreur console. 1 844 tests.
+  la liste des dons, description d'un don d'origines sans prérequis, aptitude du Vagabond
+  féerique ; 0 erreur console. 1 845 tests.
 
 ## [4.47.0] - 2026-11-23 (pièce « Inspiration héroïque », petits − / +, listes des armes et des armures)
 Publiée le 23/11/2026.

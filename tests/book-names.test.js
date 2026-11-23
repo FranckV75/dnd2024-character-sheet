@@ -112,6 +112,14 @@ describe('Dons et aptitudes : noms du manuel (4.47.1)', () => {
         assert.ok(FEATS_DATA.mage_de_guerre.desc.includes('<strong>Composante somatique</strong>'));
         assert.ok(FEATS_DATA.trancheur.desc.includes('<strong>Critique renforcé</strong>'));
         assert.ok(Object.values(FEATS_DATA).every(f => !/capacité (Sorts|Style)/.test(f.prereq ?? '')));
+        // Dons d'origines : aucun prérequis dans le manuel (décision de Franck du 23/11/2026)
+        assert.ok(Object.values(FEATS_DATA).filter(f => f.type === 'Origine').every(f => f.prereq === ''));
+    });
+
+    test("Tables présentées comme des aptitudes : nom de l'aptitude du livre, puis la table (décision de Franck)", () => {
+        const name = (subclass, id) => SUBCLASS_FEATURES[subclass].find(f => f.id === id).name;
+        assert.equal(name('fey_wanderer', 'don_de_la_feerie'), 'Sorts de Vagabond féerique (Présents de Féerie)');
+        assert.equal(name('clockwork_sorcery', 'manifestations_de_l_ordre'), "Sorts mécaniques (Manifestations de l'ordre)");
     });
 
     test('Voie du Cœur sauvage : « Chouette » et « Coup de bélier »', () => {

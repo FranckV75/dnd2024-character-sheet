@@ -18,7 +18,7 @@ export const WHATS_NEW = Object.freeze([
             'Noms du manuel français, relus sur le livre : Voie du Cœur sauvage « Chouette » et « Coup de bélier » ; Belluaire « bête primitive » et « Frappe de la Bête ».',
             'Révélation incarnée « Perception de l\'invisible » et « Déplacement sinueux » ; Troisième œil du Devin « Compréhension supérieure » et « Détection de l\'invisibilité ».',
             'Dons : « Faveur de Résistance aux énergies », « Soigneur de bataille » (Guérisseur), « Critique renforcé » (Trancheur), et le groupe « Dons : Origines » dans la liste.',
-            'Ensorceleur : on écrit « points de Sorcellerie », comme dans le manuel.',
+            'Ensorceleur : on écrit « points de Sorcellerie », comme dans le manuel. Les dons d\'origines n\'affichent plus de prérequis : le manuel n\'en met pas.',
             'Vos choix déjà faits sont gardés : seuls les noms affichés changent.'
         ]
     },

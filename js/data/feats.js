@@ -63,7 +63,7 @@ const FEATS_DATA = {
     "bagarreur_de_tavernes": {
         "name": "Bagarreur de tavernes",
         "type": "Origine",
-        "prereq": "Niv 1+",
+        "prereq": "",
         "asi": "Aucune",
         "desc": "Vous bénéficiez des avantages suivants. <br><strong>Attaque à mains nues améliorée</strong>. Lorsque vous touchez avec votre attaque à mains nues et infligez des dégâts, vous pouvez infliger des dégâts contondants égaux à 1d4 plus votre modificateur de Force au lieu des dégâts normaux d'une attaque à mains nues. <br><strong>Relancer des dégâts</strong>. Chaque fois que vous lancez un dé de dégâts pour votre attaque à mains nues, vous pouvez relancer le dé si vous avez obtenu un 1, et devez utiliser le nouveau résultat. <br><strong>Armement improvisé</strong>. Vous maîtrisez les armes improvisées. <br><strong>Bourrade</strong>. Lorsque vous touchez une créature avec une attaque à mains nues lors d'une action Attaque à votre tour, vous pouvez infliger des dégâts à la cible et la repousser à 1,50 m de vous. Vous ne pouvez utiliser cet avantage qu'une seule fois par tour."
     },
@@ -77,7 +77,7 @@ const FEATS_DATA = {
     "chanceux": {
         "name": "Chanceux",
         "type": "Origine",
-        "prereq": "Niv 1+",
+        "prereq": "",
         "asi": "Aucune",
         "desc": "Vous bénéficiez des avantages suivants. <br><strong>Points de chance</strong>. Vous disposez d'un nombre de points de Chance égal à votre bonus de maîtrise et pouvez les dépenser pour les avantages ci-dessous. Vous récupérez vos points de Chance dépensés à la fin d'un Repos long. <br><strong>Avantage</strong>. Lorsque vous lancez un d20 pour un Test d20, vous pouvez dépenser 1 point de Chance pour vous donner un Avantage. <br><strong>Désavantage</strong>. Lorsqu'une créature lance un d20 pour un jet d'attaque contre vous, vous pouvez dépenser 1 point de Chance pour lui imposer un Désavantage."
     },
@@ -147,7 +147,7 @@ const FEATS_DATA = {
     "doue": {
         "name": "Doué",
         "type": "Origine",
-        "prereq": "Niv 1+",
+        "prereq": "",
         "asi": "Aucune",
         "desc": "Vous maîtrisez n'importe quelle combinaison de trois compétences ou outils de votre choix. <br><strong>Répétable</strong>. Vous pouvez prendre ce don plusieurs fois."
     },
@@ -211,7 +211,7 @@ const FEATS_DATA = {
     "faconneur": {
         "name": "Façonneur",
         "type": "Origine",
-        "prereq": "Niv 1+",
+        "prereq": "",
         "asi": "Aucune",
         "desc": "Vous bénéficiez des avantages suivants. <br><strong>Maîtrise d'outils</strong>. Vous maîtrisez trois outils d'artisan différents de votre choix de la table Fabrication rapide. <br><strong>Ristourne</strong>. Chaque fois que vous achetez un objet non magique, vous bénéficiez d'une réduction de 20 %. <br><strong>Façonnage rapide</strong>. À la fin d'un Repos long, vous pouvez fabriquer une pièce d'équipement de la table Fabrication rapide, à condition de posséder les outils d'artisan associés et de maîtriser ces outils. L'objet dure jusqu'à ce que vous finissiez un autre Repos long, après quoi il se désagrège. <br><table><tr><th>Outils d'artisan</th><th>Équipement fabriqué</th></tr><tr><td>Outils de bricoleur</td><td>Boîte à amadou, cloche, pelle</td></tr><tr><td>Outils de charpentier</td><td>Échelle, torche</td></tr><tr><td>Outils de forgeron</td><td>Billes, chausse-trappes, grappin, pot en fer, seau</td></tr><tr><td>Outils de maçon</td><td>Palan</td></tr><tr><td>Outils de menuisier</td><td>Gourdin, massue, bâton de combat</td></tr><tr><td>Outils de potier</td><td>Cruche, lampe</td></tr><tr><td>Outils de tanneur</td><td>Étui, sacoche</td></tr><tr><td>Outils de tisserand</td><td>Corde, filet, panier, tente</td></tr></table>"
     },
@@ -324,7 +324,7 @@ const FEATS_DATA = {
     "guerisseur": {
         "name": "Guérisseur",
         "type": "Origine",
-        "prereq": "Niv 1+",
+        "prereq": "",
         "asi": "Aucune",
         "desc": "Vous bénéficiez des avantages suivants. <br><strong>Soigneur de bataille</strong>. Si vous possédez une trousse de soins, vous pouvez dépenser une utilisation et soigner une créature à 1,50 m ou moins de vous par une action Utilisation. Cette créature peut dépenser un de ses Dés de vie, puis vous lancez ce dé. La créature récupère un nombre de points de vie égal au résultat du jet plus votre bonus de maîtrise. <br><strong>Retirage des soins</strong>. Chaque fois que vous lancez un dé pour déterminer le nombre de points de vie que vous restaurez avec un sort ou avec l'avantage Soigneur de bataille de ce don, vous pouvez relancer le dé si vous avez obtenu un 1, et devez utiliser le nouveau résultat."
     },
@@ -346,7 +346,7 @@ const FEATS_DATA = {
     "initie_a_la_magie": {
         "name": "Initié à la magie",
         "type": "Origine",
-        "prereq": "Niv 1+",
+        "prereq": "",
         "asi": "Aucune",
         "desc": "Vous bénéficiez des avantages suivants. <br><strong>Deux sorts mineurs</strong>. Vous apprenez deux sorts mineurs de votre choix parmi la liste de sorts de Clerc, Druide ou Magicien. L'Intelligence, la Sagesse ou le Charisme est votre caractéristique d'incantation pour les sorts de ce don (à choisir lors de la sélection de ce don). <br><strong>Sort du 1er niveau</strong>. Choisissez un sort de niveau 1 dans la liste que vous avez sélectionnée pour les sorts mineurs de ce don. Ce sort est toujours prêt. Vous pouvez le lancer une fois sans emplacement de sort, et vous récupérez la possibilité de le lancer de cette manière à la fin d'un Repos long. Vous pouvez également lancer le sort en utilisant un emplacement de sort que vous possédez. <br><strong>Changement de sort</strong>. Chaque fois que vous gagnez un niveau, vous pouvez remplacer l'un des sorts choisis pour ce don par un autre sort de même niveau, choisi dans la liste de sorts choisis. <br><strong>Répétable</strong>. Vous pouvez prendre ce don plusieurs fois, mais vous devez choisir une liste de sorts différente à chaque fois."
     },
@@ -431,7 +431,7 @@ const FEATS_DATA = {
     "musicien": {
         "name": "Musicien",
         "type": "Origine",
-        "prereq": "Niv 1+",
+        "prereq": "",
         "asi": "Aucune",
         "desc": "Vous bénéficiez des avantages suivants. <br><strong>Formation aux instruments</strong>. Vous maîtrisez trois instruments de musique de votre choix. <br><strong>Chant d'encouragement</strong>. À la fin d'un Repos court ou long, vous pouvez jouer une chanson avec un instrument de musique que vous maîtrisez et donner une Inspiration héroïque aux alliés qui l'entendent. Le nombre d'alliés que vous pouvez affecter de cette manière est égal à votre bonus de maîtrise."
     },
@@ -480,14 +480,14 @@ const FEATS_DATA = {
     "robuste": {
         "name": "Robuste",
         "type": "Origine",
-        "prereq": "Niv 1+",
+        "prereq": "",
         "asi": "Aucune",
         "desc": "Vos points de vie maximum augmentent d'un montant égal à deux fois votre niveau de personnage lorsque vous obtenez ce don. Chaque fois que vous gagnez un niveau de personnage par la suite, vos points de vie maximum augmentent de 2 points de vie supplémentaires."
     },
     "sauvagerie_martiale": {
         "name": "Sauvagerie martiale",
         "type": "Origine",
-        "prereq": "Niv 1+",
+        "prereq": "",
         "asi": "Aucune",
         "desc": "Vous avez été formé à infliger des coups particulièrement dévastateurs. Une fois par tour, lorsque vous touchez une cible avec une arme, vous pouvez lancer deux fois les dés de dégâts de l'arme et utiliser le résultat que vous souhaitez contre la cible."
     },
@@ -539,7 +539,7 @@ const FEATS_DATA = {
     "vigilant": {
         "name": "Vigilant",
         "type": "Origine",
-        "prereq": "Niv 1+",
+        "prereq": "",
         "asi": "Aucune",
         "desc": "Vous bénéficiez des avantages suivants. <br><strong>Maîtrise de l'Initiative</strong>. Lorsque vous lancez l'Initiative, vous pouvez ajouter votre bonus de maîtrise à votre jet. <br><strong>Échange d'Initiative</strong>. Immédiatement après avoir lancé une Initiative, vous pouvez échanger votre Initiative avec celle d'un allié consentant au cours du même combat. Cet échange est impossible si vous ou l'allié êtes Incapable d'agir."
     }
