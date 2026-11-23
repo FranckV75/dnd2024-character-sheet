@@ -968,8 +968,8 @@
     min-width: 0;
 }
 
-/* Bouton ▾ : le même pour le grimoire et le tableau des armes (js/ui/weapons/rows.js) */
-:is(.spell-pick, .weapons-pick) {
+/* Bouton ▾ : le même pour le grimoire et les tableaux des armes et des armures */
+:is(.spell-pick, .weapons-pick, .armors-pick) {
     display: inline-flex;
     flex: none;
     align-items: center;
@@ -984,22 +984,22 @@
     cursor: pointer;
 }
 
-:is(.spell-pick, .weapons-pick)[hidden] {
+:is(.spell-pick, .weapons-pick, .armors-pick)[hidden] {
     display: none;
 }
 
-:is(.spell-pick, .weapons-pick) .icon {
+:is(.spell-pick, .weapons-pick, .armors-pick) .icon {
     width: 13px;
     height: 13px;
 }
 
-:is(.spell-pick, .weapons-pick):hover,
-:is(.spell-pick, .weapons-pick)[aria-expanded="true"] {
+:is(.spell-pick, .weapons-pick, .armors-pick):hover,
+:is(.spell-pick, .weapons-pick, .armors-pick)[aria-expanded="true"] {
     color: var(--accent);
     background: color-mix(in srgb, var(--gold-glow) 35%, transparent);
 }
 
-:is(.spell-pick, .weapons-pick):focus-visible {
+:is(.spell-pick, .weapons-pick, .armors-pick):focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: -2px;
 }
@@ -1249,8 +1249,8 @@ button.spell-no-slot {
         min-height: 36px;
     }
 
-    /* ▾ (sorts et armes) : 26 px de large, 44 px de haut sous le doigt (ligne de saisie : 44 px) */
-    :is(.spell-pick, .weapons-pick) {
+    /* ▾ (sorts, armes, armures) : 26 px de large, 44 px de haut sous le doigt (ligne de saisie : 44 px) */
+    :is(.spell-pick, .weapons-pick, .armors-pick) {
         width: 26px;
         min-height: 44px;
         margin-block: -8px;

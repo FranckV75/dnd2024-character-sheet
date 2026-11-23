@@ -8,7 +8,7 @@
 //   });
 // Clavier : ↑ ↓ pour naviguer, Entrée pour choisir, Échap pour fermer.
 //
-// Mode « parcourir » (option browse : grimoire, tableau des armes) : toucher le champ vide, ou le bouton browse.trigger
+// Mode « parcourir » (option browse : grimoire, tableaux des armes et des armures) : toucher le champ vide, ou le bouton browse.trigger
 // (qui ouvre la liste sans donner le focus au champ : pas de clavier virtuel sur tablette), montre
 // toute la liste ; la saisie la resserre, sans minimum de lettres ni nombre maximal. getItems reçoit
 // alors { browse: true } et peut rendre des intertitres ({ header: 'Niveau 1' }) et des choix

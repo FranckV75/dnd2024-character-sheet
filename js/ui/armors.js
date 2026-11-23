@@ -9,6 +9,8 @@
 // le calcul s'affiche dans une bulle au toucher ou au survol. Le type, la valeur de base (clé
 // « ca ») et le bonus magique se règlent avec l'engrenage ; pour une armure du manuel, type et
 // base viennent du manuel. La CA de la fiche est recalculée par sheet.js à chaque changement.
+// Nom : saisie libre (anneau, cape, sort…), suggestions du manuel, ou liste à parcourir sans
+// clavier (nom vide touché, ou bouton ▾ ; groupes de la table des armures, js/rules/armor-picker.js).
 // =============================================================================
 
 import { EMPTY_ARMOR } from '../state/schema.js';
@@ -20,6 +22,8 @@ import {
     ARMOR_TYPES, searchArmorCatalogue, armorRowFromCatalogue, armorWarnings, armorTraining, isBlankArmor,
     armorMagicBonus, armorCanBeMagic, withArmorMagic, ARMOR_MAGIC_MAX, armorLine, catalogueArmor, catalogueArmorClass
 } from '../rules/armors.js';
+import { armorPickerGroups } from '../rules/armor-picker.js';
+import { EQUIPMENT_DATA } from '../data/equipment.js';
 import { el, icon, setIconLabel } from './dom.js';
 import { cellText } from './cell-text.js';
 import { attachAutocomplete } from './autocomplete.js';
@@ -57,6 +61,11 @@ const CATEGORY_NAMES = {
     bonus: 'Bonus fixe à la CA', proficiency: 'Bonus de maîtrise à la CA'
 };
 const STATUS_COUNTED = 'Comptée dans la CA de la fiche.';
+
+/** Bouton ▾ (liste des armures sans clavier virtuel) : infobulle (souris), puis phrase courte dans
+ *  la barre du haut quand on le touche (tablette) */
+const PICK_TITLE = 'Choisir dans la liste des armures (sans ouvrir le clavier)';
+const PICK_HELP = 'Liste des armures : touchez-en une pour remplir la ligne (✓ : déjà dans le tableau).';
 
 const textOf = (value) => stripHTML(safeText(value));
 const armorsOf = (character) => (Array.isArray(character.dynamic_armors) ? character.dynamic_armors : []);
@@ -349,6 +358,25 @@ export function initArmors({ root, store, setStatus }) {
         });
     }
 
+    /**
+     * Liste à parcourir (nom vide touché, ou bouton ▾) : les armures du manuel par groupe, avec leur
+     * CA ; ✓ : déjà dans le tableau, toujours choisissable (armure de rechange).
+     * @param {number} index - ligne qu'on remplit (exclue des armures « déjà notées »)
+     * @param {string} query
+     */
+    function browseItems(index, query) {
+        const others = armorsOf(store.get()).filter((_, i) => i !== index);
+        return armorPickerGroups(EQUIPMENT_DATA.armors, { query, rows: others }).flatMap((group) => [
+            { header: group.title },
+            ...group.items.map((item) => ({
+                label: item.armor.name,
+                detail: `CA ${item.armor.ca}`,
+                mark: item.noted ? '✓' : '',
+                value: item.armor
+            }))
+        ]);
+    }
+
     function buildRow(index) {
         const controls = {};
         for (const key of Object.keys(TEXT_COLUMNS)) controls[key] = textInput(index, key);
@@ -399,22 +427,38 @@ export function initArmors({ root, store, setStatus }) {
             if (entry) replaceRow(index, current => armorRowFromCatalogue(entry, current));
         });
 
-        detachers.push(attachAutocomplete(controls.name, {
+        // Bouton ▾ après le nom (ligne sans nom) : la liste des armures sans ouvrir le clavier
+        let detach = null;
+        controls.pick = el('button', {
+            type: 'button', class: 'armors-pick', title: PICK_TITLE, 'aria-label': 'Choisir dans la liste des armures', hidden: true,
+            on: {
+                mousedown: (event) => event.preventDefault(),
+                click: () => {
+                    detach?.open();
+                    if (controls.pick.getAttribute('aria-expanded') === 'true') setStatus(PICK_HELP);
+                }
+            }
+        }, icon('chevron'));
+        detach = attachAutocomplete(controls.name, {
             minChars: 1,
-            getItems: (query) => searchArmorCatalogue(query).map(a => ({
+            getItems: (query, { browse = false } = {}) => (browse ? browseItems(index, query) : searchArmorCatalogue(query).map(a => ({
                 label: a.name, detail: `CA ${a.ca} · ${a.type}`, value: a
-            })),
+            }))),
+            // Nom vide touché, ou bouton ▾ : toutes les armures du manuel, par groupe
+            browse: { enabled: () => !isLocked(), trigger: controls.pick, empty: 'Aucune armure du manuel ne correspond' },
             onSelect: (item) => {
                 controls.name.value = item.value.name;
                 replaceRow(index, row => armorRowFromCatalogue(item.value, row));
             }
-        }));
+        });
+        detachers.push(detach);
 
         // Armure ou bouclier magique : pastille après le nom et décors de la ligne (magic.js)
         const magic = createMagicParts(controls.name, (parts) => {
             enchant(parts, tr);
             setStatus(parts.message);
         });
+        magic.name.append(controls.pick);
 
         const tr = el('tr', {},
             el('td', { class: 'col-name magic-cell' }, magic.name, magic.fx),
@@ -471,6 +515,7 @@ export function initArmors({ root, store, setStatus }) {
             tr.hidden = !shown;
             tr.classList.toggle('is-entry', blank);
             controls.name.placeholder = blank ? 'Nouvelle armure…' : 'Nom…';
+            controls.pick.hidden = locked || textOf(row.name).trim() !== '';
             for (const key of Object.keys(TEXT_COLUMNS)) setText(controls[key], textOf(row[key]));
             controls.comment.title = textOf(row.comment);
             controls.stealth.checked = row.stealth === true;
