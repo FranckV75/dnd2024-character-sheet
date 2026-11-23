@@ -17,6 +17,11 @@
 //    js/rules/spell-choices.js) : hors du compte de la table.
 //  - Lancer un sort : niveaux d'emplacement possibles (niveau du sort et au-dessus, emplacements
 //    de pacte compris) et emplacement coché.
+//  - Paladin et Rôdeur : un seul sort préparé remplacé par repos long (replacesOneSpell). La
+//    fenêtre « Préparer mes sorts » compare les sorts préparés à ceux de son ouverture
+//    (preparedSpellNames, preparationSwap) et le dit en clair ; plus d'un sort retiré : simple
+//    avertissement, rien n'est bloqué (premier remplissage, gain de niveau, erreur à corriger).
+//    Rien n'est écrit dans la fiche pour ce suivi.
 //  - Fenêtre « Préparer mes sorts » (Clerc, Druide, Paladin, Rôdeur : préparation parmi toute la
 //    liste de classe, changée après un repos long) : sorts de la liste jusqu'au plus haut
 //    emplacement, cocher (prep à true, ou ligne ajoutée depuis la base), décocher (prep à false ;
@@ -362,8 +367,73 @@ export function longRestPreparation(classSlug) {
     if (!rule || rule.change !== 'long_rest') return null;
     if (rule.from === 'spellbook') return { text: 'Vous pouvez changer vos sorts préparés parmi ceux de votre grimoire.', window: false };
     return rule.count === 'one'
-        ? { text: 'Vous pouvez remplacer un de vos sorts préparés par un autre sort de votre liste de classe.', window: true }
+        ? { text: 'Vous pouvez remplacer un seul de vos sorts préparés par un autre sort de votre liste de classe (un échange par repos long).', window: true }
         : { text: 'Vous pouvez changer vos sorts préparés : autant que vous voulez, parmi toute la liste de votre classe.', window: true };
+}
+
+/**
+ * La classe ne remplace-t-elle qu'un seul sort préparé après un repos long (Paladin, Rôdeur :
+ * PHB 2024, « Changing Your Prepared Spells ») ? Le Clerc et le Druide en changent autant qu'ils
+ * veulent ; les classes à liste fixe ne changent rien au repos long.
+ * @param {string} classSlug
+ * @returns {boolean}
+ */
+export function replacesOneSpell(classSlug) {
+    const rule = SPELL_PREPARATION[classSlug];
+    return Boolean(rule && rule.change === 'long_rest' && rule.count === 'one');
+}
+
+/**
+ * Sorts préparés comptés dans la table de la classe : lignes de niveau 1 et plus au losange coché,
+ * hors sorts donnés (toujours préparés). Un sort noté deux fois ne compte qu'une fois.
+ * @param {Array<Object>} rows - dynamic_spells
+ * @param {Set<string>|null} [granted] - grantedSpellKeys()
+ * @returns {Map<string, string>} nom comparable (spellNameKey) → nom noté au grimoire
+ */
+export function preparedSpellNames(rows, granted = null) {
+    const names = new Map();
+    for (const row of Array.isArray(rows) ? rows : []) {
+        if (!row || typeof row !== 'object' || isSpellRowEmpty(row) || !isPrepared(row)) continue;
+        const key = spellNameKey(row.name);
+        if (!key || granted?.has(key) || names.has(key)) continue;
+        names.set(key, plainText(row.name).replace(/\s+/g, ' ').trim());
+    }
+    return names;
+}
+
+/**
+ * Suivi de la règle « un seul sort remplacé par repos long » (Paladin, Rôdeur) : ce qui a changé
+ * dans les sorts préparés depuis l'ouverture de la fenêtre « Préparer mes sorts », dit en une
+ * phrase. Un sort retiré puis recoché ne compte pas. Ajouter des sorts sans en retirer est normal
+ * (premier remplissage, gain de niveau : la liste se complète jusqu'au nombre de la table).
+ * @param {Map<string, string>} before - preparedSpellNames() à l'ouverture de la fenêtre
+ * @param {Map<string, string>} after - preparedSpellNames() maintenant
+ * @returns {{ removed: string[], added: string[], over: boolean, text: string }}
+ *   removed / added : noms des sorts retirés et ajoutés ; over : plus d'un sort retiré, ce que la
+ *   règle ne permet pas (simple avertissement : la fiche ne bloque et n'annule rien)
+ */
+export function preparationSwap(before, after) {
+    const from = before instanceof Map ? before : new Map();
+    const to = after instanceof Map ? after : new Map();
+    const removed = [...from].filter(([key]) => !to.has(key)).map(([, name]) => name);
+    const added = [...to].filter(([key]) => !from.has(key)).map(([, name]) => name);
+    const quote = (names) => names.map(name => `« ${name} »`).join(', ');
+    const over = removed.length > 1;
+    let text;
+    if (over) {
+        text = `Attention : ${removed.length} sorts retirés (${quote(removed)}). La règle ne permet d'en remplacer qu'un seul par repos long : recochez ceux que vous gardez.`;
+    } else if (removed.length === 1 && added.length === 0) {
+        text = `${quote(removed)} retiré : cochez le sort qui le remplace.`;
+    } else if (removed.length === 1 && added.length === 1) {
+        text = `Échange de ce repos long : ${quote(removed)} remplacé par ${quote(added)}.`;
+    } else if (removed.length === 1) {
+        text = `Échange de ce repos long : ${quote(removed)} retiré. Ajoutés : ${quote(added)} (un seul le remplace ; les autres complètent votre liste, après un gain de niveau).`;
+    } else if (added.length) {
+        text = `Aucun sort retiré. ${added.length > 1 ? 'Ajoutés' : 'Ajouté'} : ${quote(added)} (vous complétez votre liste : premier choix ou gain de niveau).`;
+    } else {
+        text = "Un seul échange par repos long : aucun sort remplacé pour l'instant.";
+    }
+    return { removed, added, over, text };
 }
 
 /** Le sort de la base fait-il partie des sorts donnés (noms comparables de grantedSpellKeys) ? */

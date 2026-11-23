@@ -373,6 +373,24 @@
     color: var(--ko);
 }
 
+/* Paladin, Rôdeur : ce qui a changé depuis l'ouverture de la fenêtre (un seul sort remplacé par
+   repos long), sur sa propre ligne sous la recherche et le compteur, toujours en vue */
+.modal-body .prep-swap {
+    flex: 1 1 100%;
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--quiet-ink);
+}
+
+/* Plus d'un sort retiré : la règle n'en permet qu'un */
+.modal-body .prep-swap.is-over {
+    color: var(--ko);
+}
+
+.prep-swap[hidden] {
+    display: none;
+}
+
 .prep-group + .prep-group {
     margin-top: 12px;
 }

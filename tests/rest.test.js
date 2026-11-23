@@ -245,7 +245,10 @@ describe('Repos long', () => {
         // Clerc, Druide : autant que voulu ; Paladin, Rôdeur : un seul ; fenêtre « Préparer mes sorts »
         for (const name of ['Clerc', 'Druide', 'Paladin', 'Rôdeur']) assert.equal(preparation(name).window, true, name);
         assert.match(preparation('Clerc').text, /autant que vous voulez/);
-        assert.match(preparation('Paladin').text, /un de vos sorts préparés/);
+        for (const name of ['Paladin', 'Rôdeur']) {
+            assert.match(preparation(name).text, /un seul de vos sorts préparés/, name);
+            assert.match(preparation(name).text, /un échange par repos long/, name);
+        }
         // Magicien : depuis son grimoire, rappel sans fenêtre
         assert.deepEqual(preparation('Magicien'), { text: 'Vous pouvez changer vos sorts préparés parmi ceux de votre grimoire.', window: false });
         // Liste fixe (changée en gagnant un niveau) ou pas de sorts préparés : aucun rappel
