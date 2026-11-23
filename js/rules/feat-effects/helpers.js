@@ -11,6 +11,7 @@ import { DD_RULES } from '../../data/dd-rules.js';
 import { abilityName, slotChoice, ENERGY_TYPES } from '../feat-choices.js';
 import { shieldKeepsMartialArts } from '../class-features.js';
 import { plainText } from '../plain-text.js';
+import { toolsInText } from '../tools.js';
 
 /** Note prête à ranger (featName ajouté, champs facultatifs absents s'ils ne sont pas fournis) */
 export function note(featId, text, extra = {}) {
@@ -64,10 +65,22 @@ export function armorTrainingNotes(kinds, prerequisite, { derived, record, add }
     }
 }
 
-/** Maîtrise d'outil donnée par un don : notée ou non dans le champ Outils (onglet Compétences & Histoire) */
-export function toolNote(record, pattern, label, add) {
-    if (pattern.test(fold(record.profs_tools))) add('featSlot', `${label} : maîtrise notée dans le champ Outils.`, { ticked: true });
-    else add('featSlot', `${label} : maîtrise à noter dans le champ Outils (onglet Compétences & Histoire).`, { check: true });
+/**
+ * Où noter les outils donnés par un don : la case Outils, que la fenêtre « Outils maîtrisés » aide à
+ * remplir (elle présente en tête les outils du don, js/rules/tool-sources.js). La fiche ne les écrit
+ * jamais elle-même.
+ */
+export const TOOLS_BOX_HINT = 'à noter dans la case Outils (onglet Compétences & Histoire, bouton « Choisir dans la liste »)';
+
+/**
+ * Maîtrise d'outil donnée par un don : notée ou non dans la case Outils (onglet Compétences & Histoire).
+ * Notée : un mot de l'outil écrit à la main (pattern), ou l'un de ses noms reconnus par la fenêtre
+ * des outils (toolId : nom du manuel, ancien nom, nom anglais), pour dire comme elle.
+ */
+export function toolNote(record, pattern, label, add, toolId = null) {
+    const noted = pattern.test(fold(record.profs_tools)) || (toolId !== null && toolsInText(record.profs_tools).includes(toolId));
+    if (noted) add('featSlot', `${label} : maîtrise notée dans la case Outils.`, { ticked: true });
+    else add('featSlot', `${label} : maîtrise ${TOOLS_BOX_HINT}.`, { check: true });
 }
 
 /** Arme du tableau qui a une propriété (« finesse », « allonge »...) */

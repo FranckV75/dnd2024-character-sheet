@@ -9,7 +9,7 @@ import { FEATS_DATA } from '../../data/feats.js';
 import { DD_RULES } from '../../data/dd-rules.js';
 import { abilityName, skillName, elementWord } from '../feat-choices.js';
 import { FEAT_SPELL_FEATS, featSpellGroups, featSpellSummary } from '../feat-spells.js';
-import { toolNote } from './helpers.js';
+import { toolNote, TOOLS_BOX_HINT } from './helpers.js';
 import { signed } from '../numbers.js';
 
 // -----------------------------------------------------------------------------
@@ -142,7 +142,7 @@ export function choiceNotes(grant, { derived, grants, record, add }) {
         add(`skills.${skill}`, text, extra);
     }
     if (grant.tools) {
-        add('featSlot', `${grant.tools === 1 ? "1 maîtrise d'outil" : `${grant.tools} maîtrises d'outils`} : à noter dans le champ Outils (onglet Compétences & Histoire).`);
+        add('featSlot', `${grant.tools === 1 ? "1 maîtrise d'outil" : `${grant.tools} maîtrises d'outils`} : ${TOOLS_BOX_HINT}.`);
     }
 
     // Figure de proue — PHB 2024 « Inspiring Leader », p. 204 : niveau + modificateur de la
@@ -173,7 +173,7 @@ export function choiceNotes(grant, { derived, grants, record, add }) {
         }
         add('featSlot', `Préparation : 1 heure et 50 po de matériaux pour ${derived.pb} doses ; action Bonus pour enduire une arme ou une munition (1 minute, ou jusqu'à ce qu'elle touche).`, { value: derived.pb });
         add('featSlot', 'Poison virulent : vos jets de dégâts de poison ignorent la Résistance au poison.');
-        toolNote(record, /empoison/, "Kit d'empoisonneur", add);
+        toolNote(record, /empoison/, "Matériel d'empoisonneur", add, 'poisoner');
     }
 
     // Rappels propres au don (noms des actions : ceux de js/data/feats.js)

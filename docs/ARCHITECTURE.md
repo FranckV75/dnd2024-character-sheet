@@ -61,7 +61,9 @@ js/
 │   │                   changent la CA (anneau, cape, Armure du mage…) ; une entrée = un objet
 │   │                   { name, type, value, ca, comment (80 caractères au plus), detail et
 │   │                   oldComments facultatifs }, mode d'emploi en tête du fichier
-│   ├── tools.js        Outils du manuel (37, par catégorie, caractéristique) ; outil de chaque historique
+│   ├── tools.js        Outils du manuel (37, par catégorie, caractéristique) ; outil de chaque historique ;
+│   │                   dons qui donnent des outils (FEAT_TOOLS), table Façonnage rapide. L'Odyssée
+│   │                   n'introduit aucun outil (guide du joueur relu le 23/11/2026)
 │   ├── help.js         Textes du mode d'emploi (rubriques → entrées { title, text }) ; tout libellé
 │   │                   cité entre « » doit exister dans l'interface (tests/help.test.js)
 │   ├── whats-new.js    « Nouveautés » : 3 à 6 lignes par version, la plus récente d'abord ; une
@@ -153,7 +155,10 @@ js/
 │   ├── species.js      Espèce : option choisie (clé facultative « species_choices »), Vision dans
 │   │                   le noir, Résistances, Souffle, sorts d'espèce, cases des traits limités
 │   ├── background.js   Historique : ce qu'il donne, ce qui manque (« À vérifier »), bouton Appliquer
+│   │                   (compétences, don de niveau 1, outil précis ajouté à la case Outils)
 │   ├── tools.js        Case « Outils » (texte libre) : reconnaître, ajouter, retirer un outil du manuel
+│   ├── tool-sources.js D'où viennent les outils (historique, dons Façonneur, Musicien, Doué, Chef
+│   │                   cuisinier, Empoisonneur) et où le joueur en est ; n'écrit jamais rien
 │   ├── class-reminders.js  Rappels des capacités de classe près des valeurs (Sens du danger…)
 │   │                   et à la fin d'un repos (restKind 'short' : Mémorisation de sort ;
 │   │                   'long' : Maîtrise des sorts du Magicien)
@@ -286,7 +291,8 @@ js/
     ├── calc-bubble.js  Bulle de calcul : détail d'une valeur calculée (CA d'une armure, écusson CA)
     ├── class-progression.js · experience.js · counters.js · companions.js · subclass.js
     ├── species.js · background.js   Encadré « Espèce & historique » (css/origins.css)
-    ├── tools.js        Fenêtre « Choisir dans la liste » de la case Outils (css/tab-skills.css)
+    ├── tools.js        Fenêtre « Choisir dans la liste » de la case Outils (css/tab-skills.css) : en tête,
+    │                   « D'où viennent vos outils » et un encadré par outil donné (historique, dons)
     ├── help.js         Fenêtre « Mode d'emploi » (sommaire, rubriques, impression de la notice)
     ├── whats-new.js    Fenêtre « Nouveautés de la version X » après une mise à jour (annoncée
     │                   par update.js ; jamais par-dessus une autre fenêtre)
@@ -509,7 +515,7 @@ Dictionnaire « à plat », identique à la v3 (voir `js/state/schema.js`) : une
   compétences…) et par emplacement (`featSlot:<niveau>`). Une zone affiche un repère « dont +X grâce à… »
   (bouton `data-feat-zone` d'`index.html`) ; la valeur saisie n'est jamais modifiée. Une note marquée
   `restKind: 'short'` n'apparaît que dans la fenêtre du repos court (Repas reconstituant du Chef cuisinier),
-  une note `restKind: 'long'` que dans celle du repos long (Fabrication rapide du Façonneur).
+  une note `restKind: 'long'` que dans celle du repos long (Façonnage rapide du Façonneur).
 - Faveurs épiques (lot 8) : leur +1 (jusqu'à 30) et leurs autres choix sont dans `feat_choices`
   (`ability`, `expertise` pour Faveur de compétence, `energy1` / `energy2` pour Faveur de résistance
   aux énergies) ; leurs cases dans `feat_uses` (`faveur_de_recuperation` : dés dépensés sur 10,

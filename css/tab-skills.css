@@ -184,6 +184,88 @@
     background: var(--box);
 }
 
+/* Titre d'un encadré du haut : « Donné par… », puis où le joueur en est (« 2 sur 3 ») */
+.modal-tools .tools-featured .prep-level {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+}
+
+/* « D'où viennent vos outils » : ce que donnent l'historique et les dons (js/rules/tool-sources.js),
+   une ligne par origine, avec où le joueur en est */
+.modal-tools .tools-sources {
+    margin: 0 0 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+}
+
+.modal-tools .modal-body .tools-source-list {
+    margin: 0 0 6px;
+    padding: 0;
+    list-style: none;
+}
+
+.modal-tools .tools-source {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 8px;
+    padding: 3px 0;
+    font-family: var(--font-text);
+    font-size: 0.95rem;
+    line-height: 1.35;
+    color: var(--text);
+}
+
+.modal-tools .tools-source-title {
+    font-weight: 700;
+}
+
+.modal-tools .tools-source-title::after {
+    content: " :";
+}
+
+.modal-tools .tools-source-text {
+    flex: 1 1 14rem;
+}
+
+.modal-tools .tools-sources .prep-hint {
+    margin: 0;
+}
+
+/* Seconde phrase (le compte prend aussi les outils de la classe) : un peu d'air */
+.modal-tools .tools-sources .prep-hint + .prep-hint {
+    margin-top: 4px;
+}
+
+/* Avancement : pointillé tant qu'il reste des outils à noter, trait plein une fois tout noté
+   (même dessin que les étiquettes des dons, css/feats.css) */
+.modal-tools .tools-source-state {
+    flex: none;
+    padding: 0 8px;
+    border: 1px dashed var(--gold-soft);
+    border-radius: 8px;
+    font-family: var(--font-title);
+    font-size: var(--label-min);
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+    white-space: nowrap;
+    color: var(--quiet-ink);
+}
+
+.modal-tools .tools-source-state[data-done="true"] {
+    border-style: solid;
+    color: var(--accent-ink);
+}
+
+.modal-tools .tools-source-state[hidden] {
+    display: none;
+}
+
 /* Ce qui vient de changer (« Ajouté à la case Outils : Viole. ») : sous la recherche, toujours en
    vue, car la barre du haut est derrière la fenêtre */
 .modal-tools .tools-said {
