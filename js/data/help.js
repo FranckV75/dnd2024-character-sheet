@@ -262,7 +262,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "La pièce « Inspiration héroïque »",
-                text: "Touchez la pièce quand vous gagnez l'Inspiration héroïque : elle devient dorée et affiche « Disponible ». Retouchez-la une fois dépensée : elle affiche « Non disponible ». Mode Odyssée coché, elle est sous les « Points de Foi », qui ne la remplacent pas ; décoché, elle prend la place de la case. Elle marche aussi fiche verrouillée.",
+                text: "Touchez la pièce quand vous gagnez l'Inspiration héroïque : elle devient dorée et affiche « Disponible ». Retouchez-la une fois dépensée : elle affiche « Non disponible ». Mode Odyssée coché, elle a sa propre colonne à côté des « Points de Foi », qui ne la remplacent pas ; décoché, elle prend la place de la case. Elle marche aussi fiche verrouillée.",
                 files: ["js/ui/odyssey.js", "js/rules/odyssey.js"]
             },
             {
@@ -272,7 +272,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Les points de vie",
-                text: "Les boutons − et + changent les PV actuels ou les PV temporaires d'un point ; gardez le doigt appuyé pour aller plus vite. Le bouton « Dégâts / Soins » ouvre un pavé de chiffres : tapez un nombre, puis « Dégâts », « Soins » ou « PV temp. ».",
+                text: "Les petits − et + autour des titres « PV actuels » et « PV temp. » changent les PV d'un point ; gardez le doigt appuyé pour aller plus vite. Le bouton « Dégâts / Soins » ouvre un pavé de chiffres : tapez un nombre, puis « Dégâts », « Soins » ou « PV temp. ».",
                 files: ["js/ui/hit-points.js", "js/ui/stepper.js", "js/ui/number-pad.js"]
             },
             {
@@ -353,7 +353,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "« Compagnons & familiers »",
-                text: "Un encadré pour noter une monture, un familier ou un compagnon. Certaines sous-classes y affichent leur compagnon tout prêt : suivez ses points de vie avec − et +, même fiche verrouillée.",
+                text: "Un encadré pour noter une monture, un familier ou un compagnon. Certaines sous-classes y affichent leur compagnon tout prêt : suivez ses points de vie avec les petits − et + autour de leur titre, même fiche verrouillée.",
                 files: ["js/ui/companions.js", "index.html"]
             },
             {

@@ -28,9 +28,11 @@
 //  - Pièce « Inspiration héroïque » (4.47.0, maquette validée par Franck le 23/11/2026) : on l'a
 //    ou on ne l'a pas. Dorée, étoile pleine, « Disponible » ; vide, en pointillés, « Non
 //    disponible ». Un toucher la retourne et la barre du haut le dit (inspirationCoin).
-//    Mode actif : sous la pastille, avec son titre, pour tous les personnages (les points de Foi
-//    ne remplacent pas l'Inspiration héroïque) ; clé facultative odyssey_inspiration ("1" ;
-//    non disponible : clé retirée). Mode coupé : la cellule s'appelle « Inspiration héroïque » et
+//    Mode actif : dans sa propre colonne du groupe, entre les Points de Foi et la Vitesse
+//    (.inspiration-cell ; choix de Franck, 25/11/2026 : la rangée du haut reste basse), pour tous
+//    les personnages (les points de Foi ne remplacent pas l'Inspiration héroïque) ; clé facultative
+//    odyssey_inspiration ("1" ; non disponible : clé retirée). Mode coupé : cette colonne est
+//    cachée, la cellule des Points de Foi s'appelle « Inspiration héroïque » et
 //    la pièce prend la place de la case et de ses boutons (heroic_inspiration "1" ou "0") ; une
 //    case qui contient du texte reste affichée, sans pièce, pour être corrigée à la main.
 //    Champ de jeu : utilisable fiche verrouillée. Imprimée comme à l'écran (css/print.css).
@@ -152,6 +154,8 @@ function initInspiration(root, store, setStatus, compact) {
     const label = root.querySelector('label[for="f-heroic_inspiration"]');
     if (!input || !label) return;
     const cell = input.closest('.stat-cell');
+    // Colonne de la pièce en mode actif (index.html) ; mode coupé, la pièce va dans la cellule de la case
+    const ownCell = root.querySelector('.inspiration-cell');
     // Même pastille dorée que « Vitesse 12 m (Centaure) » : un toucher ouvre la fenêtre des faveurs
     const text = el('span');
     const mention = el('button', { type: 'button', class: 'feat-mention faith-mention', hidden: true, 'aria-haspopup': 'dialog' },
@@ -160,9 +164,9 @@ function initInspiration(root, store, setStatus, compact) {
         const character = store.get();
         if (odysseyActive(character)) openFaithFavors(store, setStatus, compact);
     });
-    const coin = initCoin(store, setStatus, compact);
-    // Pastille puis pièce, l'une sous l'autre, sous la case (css/feats.css)
-    cell?.append(mention, coin.button);
+    const coin = initCoin(store, setStatus, compact, { faithCell: cell, ownCell });
+    // Pastille sous la case (css/feats.css) ; la pièce trouve sa place à chaque affichage
+    cell?.append(mention);
     input?.addEventListener('blur', () => render(store.get()));
     let signature = '';
     const render = (character) => {
@@ -185,17 +189,18 @@ function initInspiration(root, store, setStatus, compact) {
 }
 
 /**
- * Pièce « Inspiration héroïque » : bouton bascule (aria-pressed), titre (mode actif), pièce et
- * mot « Disponible » / « Non disponible ».
+ * Pièce « Inspiration héroïque » : bouton bascule (aria-pressed), pièce et mot « Disponible » /
+ * « Non disponible ». Sa colonne porte le titre (mode actif) ; mode coupé, la cellule de la case.
  * @param {Object} store
  * @param {(message: string) => void} setStatus
  * @param {MediaQueryList} compact
+ * @param {{ faithCell: HTMLElement|null, ownCell: HTMLElement|null }} cells - cellule de la case,
+ *   colonne de la pièce (mode actif)
  * @returns {{ button: HTMLButtonElement, render: (character: Object, input: HTMLElement) => void }}
  */
-function initCoin(store, setStatus, compact) {
+function initCoin(store, setStatus, compact, { faithCell, ownCell }) {
     const state = el('span', { class: 'inspiration-state' });
     const button = el('button', { type: 'button', class: 'inspiration-coin', hidden: true, 'aria-pressed': 'false', 'aria-label': ODYSSEY_INSPIRATION_LABEL },
-        el('span', { class: 'label inspiration-caption', text: ODYSSEY_INSPIRATION_LABEL }),
         el('span', { class: 'inspiration-face', 'aria-hidden': 'true' }, icon('star')),
         state);
     button.addEventListener('click', () => {
@@ -212,6 +217,9 @@ function initCoin(store, setStatus, compact) {
         // Mode coupé : la pièce remplace la case et ses boutons (sauf texte saisi à la main). Une
         // case en cours de saisie reste affichée jusqu'à ce qu'on la quitte (blur, plus bas)
         const alone = coin.place === 'alone';
+        const home = alone ? faithCell : ownCell;
+        if (home && button.parentElement !== home) home.append(button);
+        if (ownCell) ownCell.hidden = alone;
         const typing = alone && document.activeElement === input;
         input.hidden = alone && coin.readable && !typing;
         const steppers = steppersOf(input);

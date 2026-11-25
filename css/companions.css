@@ -111,6 +111,13 @@
     color: var(--quiet-ink);
 }
 
+/* Titre « PV » entre ses petits boutons − / + (css/stepper.css), calé à gauche comme les
+   titres voisins (Initiative, Vitesse) */
+.companion-stat > .label-steps {
+    justify-content: flex-start;
+    gap: 6px;
+}
+
 /* PV actuels : saisie modifiable même fiche verrouillée, puis « / max » */
 .companion-hp {
     display: flex;

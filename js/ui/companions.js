@@ -22,7 +22,8 @@ function stat(label, value, detail, extraClass = '') {
         detail ? el('span', { class: 'companion-stat-detail', text: detail }) : null);
 }
 
-/** PV : boutons − / + autour de la saisie des PV actuels (0 à max), puis « / max » */
+/** PV : saisie des PV actuels (0 à max), puis « / max » ; petits boutons − / + autour du titre
+ *  « PV », comme les PV du personnage (choix de Franck, 25/11/2026) */
 function hpStat(card, stepHp) {
     const id = `companion-hp-${card.key.replace(/[^a-z0-9]+/gi, '-')}`;
     const input = el('input', {
@@ -32,8 +33,11 @@ function hpStat(card, stepHp) {
     });
     const value = el('span', { class: 'companion-stat-value companion-hp' }, input,
         el('span', { class: 'companion-hp-max', text: `/ ${card.hp.max}` }));
-    wrapWithSteppers(input, { noun: `PV (${card.name})`, rowClass: 'companion-hp-stepper', onStep: (delta) => stepHp(card.key, delta) });
-    return stat('PV', value, card.hp.dice, ' is-hp');
+    const cell = stat('PV', value, card.hp.dice, ' is-hp');
+    wrapWithSteppers(input, {
+        noun: `PV (${card.name})`, onStep: (delta) => stepHp(card.key, delta), around: cell.querySelector('.companion-stat-label')
+    });
+    return cell;
 }
 
 /** Caractéristiques : score (modificateur) et sauvegarde */

@@ -18,6 +18,25 @@
     max-width: 5em;
 }
 
+/* Case de nombre qui a ses boutons − / + : sans les petites flèches du navigateur, qui gardaient
+   leur place à droite et décalaient la valeur vers le bouton − (Épuisement, remarque de Franck) */
+.stepper input[type="number"],
+.label-steps ~ input[type="number"],
+.label-steps ~ * input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.stepper input[type="number"]::-webkit-inner-spin-button,
+.stepper input[type="number"]::-webkit-outer-spin-button,
+.label-steps ~ input[type="number"]::-webkit-inner-spin-button,
+.label-steps ~ input[type="number"]::-webkit-outer-spin-button,
+.label-steps ~ * input[type="number"]::-webkit-inner-spin-button,
+.label-steps ~ * input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 .step-btn {
     flex: 0 0 auto;
     padding: 0;
@@ -189,18 +208,20 @@
     box-shadow: 0 0 0 3px var(--gold-glow);
 }
 
-/* ---------- Compteurs (Épuisement, Points de Foi, renommée) et PV des compagnons ---------- */
+/* ---------- Compteurs (Épuisement, Points de Foi, renommée), PV et PV des compagnons ---------- */
 
 .counter-stepper .input {
     max-width: 4em;
 }
 
-/* Points de Foi et Points de renommée : petits boutons ronds de part et d'autre du TITRE de la
-   case (choix de Franck, 23/11/2026) ; le titre passe sur deux lignes entre eux si la cellule est
-   étroite. La case reste seule dessous, sur toute la largeur. Les boutons ne touchent jamais les
-   traits pointillés entre les cellules : à la souris, 22 px et 2 px d'écart (cellule de 101 px
-   au-delà de 1280 px : 5 à 6 px de marge de chaque côté) ; au doigt, 26 px et 4 px d'écart
-   (cellules de 115 px et plus : 6 à 7 px de marge). */
+/* Points de Foi, Points de renommée, PV actuels, PV temp. et PV des compagnons : petits boutons
+   ronds de part et d'autre du TITRE de la case (choix de Franck, 23/11/2026 ; PV et compagnons le
+   25/11/2026) ; le titre passe sur deux lignes entre eux si la case est étroite. La case reste
+   seule dessous. Plus d'air (6 à 10 px) là où la case est large (PV, renommée). Dans le groupe du
+   haut, les boutons ne touchent jamais les traits pointillés entre les cellules : à la souris,
+   22 px et 2 px d'écart ; au doigt, 26 px et 4 px d'écart ; la colonne des Points de Foi garde
+   6 px de marge de chaque côté (sa largeur minimale : css/tab-combat.css ; mesuré le 25/11/2026
+   de 768 à 1920 px). */
 .label-steps {
     display: flex;
     align-items: center;
@@ -217,6 +238,15 @@
    .btn-icon impose son display, plus fort que l'attribut hidden seul */
 .label-steps > .step-btn[hidden] {
     display: none;
+}
+
+/* Cases larges : le titre respire entre ses boutons (renommée : remarque de Franck, 25/11/2026) */
+.stat-tile > .label-steps {
+    gap: 6px;
+}
+
+.odyssey-grid .label-steps {
+    gap: 10px;
 }
 
 .step-btn.is-mini {
@@ -254,14 +284,7 @@
     .label-steps .step-btn.is-mini::after {
         inset: -10px -6px -4px;
     }
-}
 
-.companion-hp .stepper {
-    gap: 6px;
-}
-
-.companion-hp .stepper .input {
-    max-width: 4.5em;
 }
 
 /* ---------- Bourse ---------- */

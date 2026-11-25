@@ -1,8 +1,9 @@
 // =============================================================================
 // HIT-POINTS.JS (interface) - PV en jeu : boutons − / + et pavé « Dégâts / Soins »
 //
-//  - PV actuels et PV temporaires : un bouton − et un bouton + de chaque côté de la case ;
-//    un appui long répète, de plus en plus vite (js/ui/stepper.js ; règle : stepHitPoints).
+//  - PV actuels et PV temporaires : petits boutons − et + de part et d'autre du TITRE de la case,
+//    comme les Points de Foi (choix de Franck, 25/11/2026) ; un appui long répète, de plus en plus
+//    vite (js/ui/stepper.js ; règle : stepHitPoints).
 //  - Bouton « Dégâts / Soins » sous les PV actuels : un pavé de chiffres (js/ui/number-pad.js),
 //    puis Dégâts, Soins ou PV temporaires (applyDamage, applyHealing, applyTemporary). Chaque
 //    résultat rappelle ce qui en découle (concentration : jet chiffré sur le sort noté dans « États »,
@@ -35,10 +36,11 @@ export function initHitPoints({ root, store }) {
         store.update(patch);
         return true;
     };
-    if (temp) wrapWithSteppers(temp, { noun: 'PV temporaire', onStep: step('hp_temp'), rowClass: 'hp-stepper' });
+    const titleOf = (input) => root.querySelector(`label[for="${input.id}"]`);
+    if (temp) wrapWithSteppers(temp, { noun: 'PV temporaire', onStep: step('hp_temp'), around: titleOf(temp) });
     if (current) {
-        const { row } = wrapWithSteppers(current, { noun: 'PV', onStep: step('hp_current'), rowClass: 'hp-stepper' });
-        row.after(el('button', {
+        wrapWithSteppers(current, { noun: 'PV', onStep: step('hp_current'), around: titleOf(current) });
+        current.after(el('button', {
             type: 'button', class: 'btn-chip hp-pad-btn', 'aria-haspopup': 'dialog',
             on: { click: () => openPad(store) }
         }, icon('swords'), el('span', { text: 'Dégâts / Soins' })));

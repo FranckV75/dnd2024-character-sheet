@@ -122,21 +122,40 @@
     text-align: center;
 }
 
-/* Cases d'un même groupe (« Bonus de maîtrise / Points de Foi / Vitesse », « Dés de vie / Dés
-   utilisés ») : des colonnes égales qui partagent les mêmes rangées (subgrid), pour que les
-   libellés soient sur une même ligne et les valeurs sur une autre, quoi qu'il y ait dessous.
-   Rangées : marge, libellé (ou libellé entre petits boutons − / +), valeur (calée sur la ligne
-   de base du texte ; mode Odyssée coupé, la pièce « Inspiration héroïque » à la place de la case,
-   sur deux rangées), pastille « +N par niveau », pièce « Inspiration héroïque » (mode Odyssée,
-   js/ui/odyssey.js), marge. La pastille de la Vitesse (« dont +3 m », parfois sur 3 lignes)
-   s'étend sur les deux rangées du dessous : elle ne repousse pas la pièce de la case voisine.
-   Les deux marges égales centrent l'ensemble ; une rangée vide ne prend aucune place (pas
-   d'écart entre rangées : chaque élément sous le libellé porte son propre écart de 6 px). */
+/* Cases d'un même groupe (« Bonus de maîtrise / Points de Foi / Inspiration héroïque / Vitesse »,
+   « Dés de vie / Dés utilisés ») : des colonnes égales qui partagent les mêmes rangées (subgrid),
+   pour que les libellés soient sur une même ligne et les valeurs sur une autre, quoi qu'il y ait
+   dessous. Rangées : marge, libellé (ou libellé entre petits boutons − / +), valeur (calée sur la
+   ligne de base du texte), pastilles « +N par niveau » et « dont +3 m », marge. La pièce
+   « Inspiration héroïque » (css/feats.css) occupe la valeur et la pastille de sa colonne : en mode
+   Odyssée elle a sa propre colonne (choix de Franck, 25/11/2026), et la rangée du haut garde une
+   hauteur raisonnable. Les deux marges égales centrent l'ensemble ; une rangée vide ne prend aucune
+   place (pas d'écart entre rangées : chaque élément sous le libellé porte son propre écart de 6 px). */
 .stat-group {
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: minmax(0, 1fr);
-    grid-template-rows: 1fr repeat(4, auto) 1fr;
+    grid-template-rows: 1fr repeat(3, auto) 1fr;
+}
+
+/* Mode Odyssée : quatre colonnes. Celle des Points de Foi est la plus large : son titre et ses
+   petits boutons − / + (90 px à la souris, 102 px au doigt) gardent 6 px de marge avant les traits
+   pointillés. Sur ordinateur, le groupe prend la place qu'il lui faut (la case de la CA et
+   l'Initiative se resserrent un peu) ; sur tablette, il a déjà deux colonnes de la rangée. */
+.stat-group:has(> .inspiration-cell:not([hidden])) {
+    grid-template-columns: minmax(0, 1fr) minmax(102px, 1.35fr) minmax(0, 1fr) minmax(0, 1fr);
+}
+
+@media (pointer: coarse) {
+    .stat-group:has(> .inspiration-cell:not([hidden])) {
+        grid-template-columns: minmax(0, 1fr) minmax(114px, 1.35fr) minmax(0, 1fr) minmax(0, 1fr);
+    }
+}
+
+@media (min-width: 1101px) {
+    .vitals-1:has(.inspiration-cell:not([hidden])) {
+        grid-template-columns: 120px minmax(0, 0.85fr) minmax(0, 1fr) minmax(0, 3.5fr) minmax(0, 1.25fr);
+    }
 }
 
 .stat-cell {
@@ -147,6 +166,10 @@
     align-content: center;
     padding: 0 6px;
     text-align: center;
+}
+
+.stat-cell[hidden] {
+    display: none;
 }
 
 .stat-cell > * {
@@ -162,13 +185,9 @@
 }
 
 .stat-cell > .feat-mention {
-    grid-row: 4 / span 2;
+    grid-row: 4;
     align-self: start;
     margin-top: 6px;
-}
-
-.stat-cell > .faith-mention {
-    grid-row: 4;
 }
 
 .stat-cell > .label-steps {

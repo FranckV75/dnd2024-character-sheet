@@ -299,16 +299,19 @@
     font-size: 0.74rem;
 }
 
-/* Sous le bouclier de la CA (case étroite) : le bouclier garde toute la hauteur restante */
+/* Sous le bouclier de la CA (case étroite) : le bouclier garde toute la hauteur restante, sans
+   dépasser 165 px (il ne s'allonge pas quand la rangée est haute : centré dans sa case) */
 .ac-cell {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 6px;
     min-width: 0;
 }
 
 .ac-cell > .ac-hex {
     flex: 1 1 auto;
+    max-height: 165px;
 }
 
 .ac-cell > .feat-mention {
@@ -326,9 +329,10 @@
 
 /* Pièce « Inspiration héroïque » (js/ui/odyssey.js, maquette validée par Franck le 23/11/2026) :
    on l'a ou on ne l'a pas. Disponible : pièce dorée, étoile pleine, mot « Disponible » en gras ;
-   non disponible : rond en pointillés, étoile vide, mot en encre adoucie. La même dans les deux
-   modes : sous les points de Foi avec son titre (mode Odyssée), ou seule à la place de la case
-   (mode coupé, .is-alone : le titre de la cellule suffit). Toute la pièce se touche (70 px de haut). */
+   non disponible : rond en pointillés, étoile vide, mot en encre adoucie. Le titre est celui de sa
+   cellule : sa propre colonne, entre les Points de Foi et la Vitesse (mode Odyssée, choix de Franck
+   le 25/11/2026), ou la cellule de la case, qu'elle remplace (mode coupé, .is-alone). Elle occupe
+   les rangées de la valeur et de la pastille (css/tab-combat.css). Toute la pièce se touche. */
 .inspiration-coin {
     display: flex;
     flex-direction: column;
@@ -348,31 +352,9 @@
 }
 
 .stat-cell > .inspiration-coin {
-    grid-row: 5;
-    align-self: start;
-    justify-self: stretch;
-    margin: 8px 4px 0;
-    padding: 8px 2px 2px;
-    border-top: 1px dashed var(--border-soft);
-}
-
-.stat-cell > .inspiration-coin.is-alone {
     grid-row: 3 / span 2;
     justify-self: center;
     margin: 6px 0 0;
-    padding: 0;
-    border-top: 0;
-}
-
-/* Titre : celui des cases voisines (.label), sans la hauteur réservée aux titres de la rangée */
-.stat-group .stat-cell .inspiration-coin .label {
-    display: block;
-    min-height: 0;
-    text-align: center;
-}
-
-.stat-group .stat-cell .inspiration-coin.is-alone .inspiration-caption {
-    display: none;
 }
 
 .inspiration-face {

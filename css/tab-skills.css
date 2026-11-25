@@ -290,7 +290,9 @@
 
 .odyssey-grid {
     display: grid;
-    grid-template-columns: 1.8fr 0.8fr 1.4fr;
+    /* Colonne de la renommée assez large pour « − Points de renommée + » sur une ligne
+       (ordinateur ; deux lignes sur tablette) */
+    grid-template-columns: 1.6fr 1fr 1.3fr;
     /* Deux rangées communes à toutes les cases : les titres sur la première (calés en bas,
        même si l'un passe sur deux lignes), les valeurs sur la seconde */
     grid-template-rows: auto auto;
