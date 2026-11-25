@@ -710,7 +710,7 @@ export const EXAMPLE_CHARACTERS = Object.freeze([
             ],
             class_features: "Manifestations occultes (9) : Pacte de la chaîne (familier : sphinx merveilleux nommé Nyx), Engagement du maître des chaînes, Décharge déchirante, Décharge répulsive et Lance occulte (sur Décharge occulte), Vision du diable, Mille visages, Royaumes lointains, Vision sorcière.",
             profs_tools: "Matériel d'herboriste",
-            langs: "Commun, infernal, céleste",
+            langs: "Commun, elfique, géant",
             equipment: "Armure de cuir, bâton de combat taillé en fuseau (focaliseur), dague, matériel d'herboriste, trousse de soins, sac de couchage, couverture, sac d'osselets divinatoires, robe noire brodée de fils d'argent.",
             gp: "980",
             sp: "40",

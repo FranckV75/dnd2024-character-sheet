@@ -454,7 +454,7 @@ describe('Personnages d\'exemple : cohérence avec les règles de 2024', () => {
         const computed = computeWeapon(chakram, d, {});
         assert.equal(computed.proficiency.proficient, true);
         assert.equal(computed.attack.text, 'DEX : +7', 'Dextérité +4, maîtrise +3');
-        assert.equal(computed.damage.text, '1d6 +4 TRAN');
+        assert.equal(computed.damage.text, '1d6 +4 TRAN +2 (Armes de lancer)', 'style Armes de lancer : toujours à distance');
     });
 
     test('Occultiste 15 : trois sorts d\'Arcanum mystique (niveaux 6, 7 et 8), hors des préparés', () => {
