@@ -64,7 +64,8 @@ js/
 │   ├── tools.js        Outils du manuel (37, par catégorie, caractéristique) ; outil de chaque historique ;
 │   │                   dons qui donnent des outils (FEAT_TOOLS), table Façonnage rapide. L'Odyssée
 │   │                   n'introduit aucun outil (guide du joueur relu le 23/11/2026)
-│   ├── help.js         Textes du mode d'emploi (rubriques → entrées { title, text }) ; tout libellé
+│   ├── help.js         Textes du mode d'emploi (rubriques → entrées { title, text, files } ;
+│   │                   files = fichiers de l'interface décrits, lus par npm run notice) ; tout libellé
 │   │                   cité entre « » doit exister dans l'interface (tests/help.test.js)
 │   ├── whats-new.js    « Nouveautés » : 3 à 6 lignes par version, la plus récente d'abord ; une
 │   │                   entrée par version publiée (testé pour la version de version.js)
@@ -322,6 +323,9 @@ dev/validation.html     Ancienne page de validation des étapes 0 à 2 (lecture 
 dev/polices.html        Échantillons de polices pour les textes longs (choix fait : Alegreya)
 scripts/serve.js        Serveur local (npm run dev) : n'écoute que cet ordinateur (127.0.0.1, ::1),
                         ne sert jamais .git (tests/serve.test.js)
+scripts/notice.js       Liste de relecture (npm run notice) : entrées du mode d'emploi dont un
+                        fichier cité a changé depuis la version en ligne (origin/master), et
+                        rappel des « Nouveautés » de la version ; ne modifie rien
 scripts/check.js        Garde-fous (npm run check) : syntaxe, imports, HTML sans gestionnaire inline,
                         pas de !important, encodage, serveur réservé à l'ordinateur (contrôle 5,
                         forme listen(port, hôte) ou listen({ host })), aucune couleur en dur dans

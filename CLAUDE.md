@@ -38,6 +38,12 @@ ne jamais publier (push, déploiement) sans son accord explicite.
 - `npm run check` → syntaxe + imports + règles HTML + encodage + tests. **Doit passer avant tout commit.**
 - Nouvelle version : changer ensemble `package.json` et `js/version.js` (testé) ; c'est ce numéro
   qui fait installer la mise à jour sur les tablettes (`js/ui/update.js`).
+- **Mode d'emploi à chaque version** (demande de Franck, 25/11/2026) : avant de proposer de publier,
+  lancer `npm run notice` et relire chaque entrée listée face à la fiche (`js/data/help.js`) :
+  rien de faux, rester court (retirer un détail rare plutôt que l'expliquer), n'ajouter que ce
+  qu'un joueur cherchera. Écrire aussi l'entrée « Nouveautés » (`js/data/whats-new.js`). Un
+  nouveau fichier de `js/ui/` doit être cité dans le `files` d'une entrée, ou déclaré dans
+  `HELP_INTERNAL_FILES` (testé).
 
 ## Règles d'architecture
 
