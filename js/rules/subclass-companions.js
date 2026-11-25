@@ -317,7 +317,7 @@ function steedCard(derived) {
     const cast = derived.spellcasting ?? { attack: pb + wis, dc: 8 + pb + wis };
     const card = emptyCard(COMPANION_KEYS.steed, 'magie_des_amazones',
         type ? `Monture d'Outremonde (${type[1]})` : "Monture d'Outremonde",
-        `${type ? type[1] : 'Céleste, Fée ou Fiélon'} de taille ${OTHERWORLDLY_STEED.size.toLowerCase()}, ${OTHERWORLDLY_STEED.alignment} ; sort Trouver une monture de niveau ${level}`,
+        `${type ? type[1] : 'Céleste, Fée ou Fiélon'} de taille ${OTHERWORLDLY_STEED.size.toLowerCase()}, ${OTHERWORLDLY_STEED.alignment} ; sort Appel de destrier de niveau ${level}`,
         'monture');
     if (!type) {
         card.missing = 'Choisissez le type de la monture (Céleste, Fée ou Fiélon) dans le menu « Monture : type » du bloc Sous-classe (onglet Aptitudes & Traits) : il donne les dégâts de son Coup et son action bonus.';

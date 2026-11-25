@@ -230,11 +230,11 @@ export const SUBCLASS_CHOICE_FIELDS = {
             key: 'foe', feature: 'cri_de_guerre', label: 'Monstres visés', inPlay: true,
             when: 'Choisi à chaque Cri de guerre.', options: CREATURE_TYPES
         },
-        // Magie des Amazones, niveau 5 : Trouver une monture (Find Steed, PHB 2024 p. 272) ; type et
+        // Magie des Amazones, niveau 5 : Appel de destrier (Find Steed, PHB 2024 p. 272) ; type et
         // niveau du sort choisis à chaque lancement (nouvelle monture : PV pleins, subclass-companions.js)
         {
             key: 'steed', feature: 'magie_des_amazones', fromLevel: 5, label: 'Monture : type', inPlay: true,
-            when: 'Choisi à chaque lancement de Trouver une monture.', options: STEED_TYPES.map(([id, label]) => [id, label])
+            when: 'Choisi à chaque lancement d\'Appel de destrier.', options: STEED_TYPES.map(([id, label]) => [id, label])
         },
         {
             key: 'steed_level', feature: 'magie_des_amazones', fromLevel: 5, label: 'Monture : niveau du sort', inPlay: true,

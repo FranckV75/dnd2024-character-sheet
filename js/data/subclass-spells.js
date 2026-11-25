@@ -11,7 +11,7 @@
 // Sources : Player's Handbook 2024 anglais, tables de sorts des sous-classes (« … Spells ») et
 // capacités qui donnent un sort ; Odyssée des Seigneurs Dragons : Serment des Seigneurs Dragons
 // (« Lien télépathique » : sort de Rary), Domaine de la Prophétie (sorts des niveaux 1 et 3 du livre
-// ramenés au niveau 3, décision de Franck), Cercle du Sacrifice.
+// ramenés au niveau 3, décision de Franck), Cercle du Sacrifice, Conclave des Amazones.
 // Pas ici : sorts au choix du joueur (Découvertes magiques du Savoir, Arnaqueur arcanique, Chevalier
 // occulte) et sorts ajoutés à une liste sans être préparés (patron des Destinées).
 // =============================================================================
@@ -237,6 +237,15 @@ export const SUBCLASS_SPELLS = Object.freeze({
         [9, 'Fear', 'Terreur', 3, '', { aka: ['Peur'] }],
         [13, 'Greater Invisibility', 'Invisibilité suprême', 4],
         [17, 'Seeming', 'Apparence trompeuse', 5]
+    ],
+    // Conclave des Amazones (Odyssée, p. 49, Magie des Amazones) : « trouver une monture » et
+    // « tromperie » du guide sont Appel de destrier et Double illusoire du Manuel des joueurs
+    amazon_warrior: [
+        [3, 'Command', 'Injonction', 1],
+        [5, 'Find Steed', 'Appel de destrier', 2, '', { note: 'Monture : carte dans « Compagnons & familiers » (onglet Aptitudes & Traits).' }],
+        [9, 'Haste', 'Hâte', 3],
+        [13, 'Confusion', 'Confusion', 4],
+        [17, 'Mislead', 'Double illusoire', 5]
     ],
     // Ensorceleur
     aberrant_sorcery: [

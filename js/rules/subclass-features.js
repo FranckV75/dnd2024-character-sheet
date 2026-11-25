@@ -167,11 +167,12 @@ const MANUAL_AUTOMATION = {
         partage_des_sorts: { text: `${cardOf('du compagnon')} : rappel.`, partial: true }
     },
     amazon_warrior: {
-        // Trouver une monture (niveau 5) : carte de la monture d'Outremonde (subclass-companions.js)
+        // Sorts du bloc « Sorts de sous-classe » (js/data/subclass-spells.js) ; Appel de destrier
+        // (« trouver une monture », niveau 5) : carte de la monture d'Outremonde (subclass-companions.js)
         magie_des_amazones: {
-            text: (d) => (d.level >= 5
-                ? `Trouver une monture : ${cardOf("de la monture d'Outremonde")}, selon le type et le niveau du sort choisis ci-dessous ; PV actuels à suivre sur la carte. Les sorts eux-mêmes sont à noter au grimoire.`
-                : "Trouver une monture au niveau 5 : la carte de la monture s'affichera alors dans « Compagnons & familiers ». Les sorts eux-mêmes sont à noter au grimoire."),
+            text: (d) => `${SPELLS_TEXT} ${d.level >= 5
+                ? `Appel de destrier : ${cardOf("de la monture d'Outremonde")}, selon le type et le niveau du sort choisis ci-dessous ; PV actuels à suivre sur la carte.`
+                : "Appel de destrier au niveau 5 : la carte de la monture s'affichera alors dans « Compagnons & familiers »."}`,
             partial: true
         },
         compagnon_stimfee: {
@@ -599,6 +600,7 @@ const SPELL_FEATURES = {
     warrior_of_the_elements: { manipulation_des_elements: true },
     fey_wanderer: { sorts_de_l_errant_feerique: true },
     gloom_stalker: { sorts_du_traqueur_d_ombre: true },
+    amazon_warrior: { magie_des_amazones: true },
     aberrant_sorcery: { sorts_psioniques: true },
     clockwork_sorcery: { sorts_mecaniques: true },
     draconic_sorcery: { sorts_draconiques: true },

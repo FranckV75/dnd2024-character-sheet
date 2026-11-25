@@ -68,7 +68,8 @@ sous-classes). Restent des décisions de Franck :
   du pacte de l'Odyssée (une fois par repos) ? Noms des actions pris chez AideDD (Saignée…).
 - Monté sur le dragon : remplacer vraiment la Perception passive par celle du dragon ?
 - Monture d'Outremonde (Amazone) : case pour l'action bonus (une fois par repos long) ; noms
-  français des actions à vérifier dans le livre ; sorts de la Magie des Amazones pas dans le grimoire.
+  français des actions à vérifier dans le livre ; ~~sorts de la Magie des Amazones pas dans le
+  grimoire~~ (faits, version pas encore publiée : bloc « Sorts de sous-classe », toujours préparés).
 
 ### 3. Idées : ordre validé par Franck le 18/11/2026
 

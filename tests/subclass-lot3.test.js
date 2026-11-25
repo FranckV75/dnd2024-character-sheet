@@ -19,9 +19,9 @@ const hero = (cls, subclass, level, extra = {}) => deriveCharacter({
 });
 
 describe('Données des sorts de sous-classe', () => {
-    test('33 sous-classes, chaque sort dans la base de sorts (nom, niveau, rituel)', () => {
-        // 33e : Philosophe de l'Académie (Amis du Sophisme, lot 7)
-        assert.equal(Object.keys(SUBCLASS_SPELLS).length, 33);
+    test('34 sous-classes, chaque sort dans la base de sorts (nom, niveau, rituel)', () => {
+        // 33e : Philosophe de l'Académie (Amis du Sophisme, lot 7) ; 34e : Conclave des Amazones
+        assert.equal(Object.keys(SUBCLASS_SPELLS).length, 34);
         for (const [subclass, rows] of Object.entries(SUBCLASS_SPELLS)) {
             assert.ok(DD_RULES.subclasses[subclass], subclass);
             for (const [classLevel, vo, name, level, flag = '', options] of rows) {
