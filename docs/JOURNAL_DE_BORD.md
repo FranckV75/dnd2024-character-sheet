@@ -12,16 +12,15 @@ en fin de session :
 
 ## En ce moment
 
-- **En ligne** : version **4.48.0**, publiée le 25/11/2026 avec l'accord de Franck (« Publie »),
-  version en ligne vérifiée (0 erreur console) : suites du grimoire (Paladin et Rôdeur, cases des
+- **En ligne** : version **4.48.1**, publiée le 25/11/2026 avec l'accord de Franck (« Publie »),
+  version en ligne vérifiée (0 erreur console) : mode d'emploi relu en entier et corrigé,
+  relecture systématique à chaque version (`npm run notice`). Avant elle, la **4.48.0**
+  (25/11/2026) : suites du grimoire (Paladin et Rôdeur, cases des
   lancers gratuits de classe, Magicien 5 / 18 / 20, Découvertes magiques du Barde du Savoir),
-  groupe « Autres » de la liste des armures, outils des dons et de l'historique. Avant elle, la
-  4.47.1 (23/11/2026) : noms du manuel français pour les dons, espèces, aptitudes et outils.
+  groupe « Autres » de la liste des armures, outils des dons et de l'historique.
   En attente : les décisions sur la 4.48.0 (choix prudents faits sans Franck), la 4.44.0 et la
   4.45.0, point 3 de `docs/FEUILLE_DE_ROUTE.md`. Étude `docs/etudes/EXPLICATIONS.md` à lire
   par Franck (rien de déployé).
-- **Prête, pas publiée** : version **4.48.1** (25/11/2026) : mode d'emploi relu en entier et
-  corrigé, relecture systématique (`npm run notice`). Attend le « Publie » de Franck.
 - **Suite** : multiclassage (attend les réponses de Franck), ou une idée du point 3. Laissés de
   côté par Franck le 23/11/2026 : suites du mode Odyssée, bilans des autres joueurs.
 - **Serveur de travail** : `npm run dev` n'écoute plus que l'ordinateur (127.0.0.1 et ::1) et ne
@@ -141,7 +140,7 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 
 ## Sessions
 
-### 25/11/2026 — Mode d'emploi relu en entier, relecture à chaque version (4.48.1, pas publiée)
+### 25/11/2026 — Mode d'emploi relu en entier, relecture à chaque version (4.48.1, publiée le 25/11/2026)
 
 - Question de Franck : le mode d'emploi est-il mis à jour à chaque version ? Oui, mais rien ne
   forçait à relire une rubrique devenue fausse. Demande : le relire en entier et que ce soit

@@ -95,7 +95,7 @@ sorts de toutes les listes de classe~~, ~~confirmation avant de fermer les régl
 Faits en 4.48.0 (23/11/2026, publiée le 25/11/2026) : ~~suites du grimoire~~ (Paladin et Rôdeur,
 cases des lancers gratuits de classe, Magicien 5 / 18 / 20, Découvertes magiques du Barde du
 Savoir), ~~groupe « Autres » de la liste des armures~~, ~~outils des dons et de l'historique~~.
-Fait en 4.48.1 (25/11/2026, pas encore publiée) : ~~mode d'emploi relu en entier face à la fiche~~
+Fait en 4.48.1 (publiée le 25/11/2026) : ~~mode d'emploi relu en entier face à la fiche~~
 et relecture systématique à chaque version (`npm run notice`, demande de Franck).
 Étude faite le 23/11/2026 : ~~explications des options~~ (`docs/etudes/EXPLICATIONS.md`,
 proposition, rien n'est déployé ; Franck choisit ce qui est utile). Laissés de côté par Franck

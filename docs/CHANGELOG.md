@@ -3,7 +3,7 @@
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ## [4.48.1] - 2026-11-25 (mode d'emploi relu, relecture à chaque version)
-Pas encore publiée. Demande de Franck : vérifier que le mode d'emploi suit la fiche, sans le
+Publiée le 25/11/2026 avec l'accord de Franck. Demande de Franck : vérifier que le mode d'emploi suit la fiche, sans le
 compliquer ni rien y laisser de faux, et que ce soit fait systématiquement.
 ### Changed
 - Mode d'emploi (`js/data/help.js`) relu entrée par entrée face au code (86 entrées : 54 justes,
