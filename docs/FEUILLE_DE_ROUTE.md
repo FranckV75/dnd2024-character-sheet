@@ -112,9 +112,10 @@ mode coupé) et bilans des autres joueurs (trop tôt). Reste :
    tableau des armures, seules une armure et un bouclier peuvent recevoir un bonus magique (+1 à
    +3, engrenage, `armorCanBeMagic`) avec la pastille et les décors. Une ligne d'un autre type
    (Cape ou Anneau de protection, Robe de l'archimage, ligne « Bonus » saisie à la main) ne le
-   peut pas, alors que ces objets sont souvent magiques. Aujourd'hui leur +1 est compté comme
-   « Valeur de base ». À voir avec Franck avant de construire : marquer la ligne magique
-   (pastille, décors) sans changer la CA, ou ajouter un vrai bonus en plus, et pour quels types.
+   peut pas. Or ces objets sont magiques par nature (DMG 2024, précision de Franck du
+   25/11/2026) : leur bonus à la CA est leur magie, déjà compté comme « Valeur de base ».
+   Ajouter un bonus en plus compterait la magie deux fois : ce serait faux. À faire : reconnaître
+   ces lignes comme magiques (pastille, décors) sans changer la CA, qui est déjà juste.
 
 Décisions de Franck en attente sur la 4.44.0 (mode Odyssée) :
 - Toucher la case coupe le mode tout de suite et la barre du haut explique aussitôt (pas de
