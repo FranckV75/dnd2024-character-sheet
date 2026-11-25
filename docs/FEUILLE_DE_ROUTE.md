@@ -108,6 +108,13 @@ mode coupé) et bilans des autres joueurs (trop tôt). Reste :
    publiés en 3 versions, en commençant par un socle invisible. Avant de construire : les
    14 questions de l'étude (section 8) et les photos du chapitre 2 du manuel français
    (section 9, sans doute p. 41-45).
+2. **Objets « Autres » magiques** (demande de Franck, 25/11/2026, à faire plus tard) : dans le
+   tableau des armures, seules une armure et un bouclier peuvent recevoir un bonus magique (+1 à
+   +3, engrenage, `armorCanBeMagic`) avec la pastille et les décors. Une ligne d'un autre type
+   (Cape ou Anneau de protection, Robe de l'archimage, ligne « Bonus » saisie à la main) ne le
+   peut pas, alors que ces objets sont souvent magiques. Aujourd'hui leur +1 est compté comme
+   « Valeur de base ». À voir avec Franck avant de construire : marquer la ligne magique
+   (pastille, décors) sans changer la CA, ou ajouter un vrai bonus en plus, et pour quels types.
 
 Décisions de Franck en attente sur la 4.44.0 (mode Odyssée) :
 - Toucher la case coupe le mode tout de suite et la barre du haut explique aussitôt (pas de

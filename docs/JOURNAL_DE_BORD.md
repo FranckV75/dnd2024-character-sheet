@@ -21,7 +21,8 @@ en fin de session :
   En attente : les décisions sur la 4.48.0 (choix prudents faits sans Franck), la 4.44.0 et la
   4.45.0, point 3 de `docs/FEUILLE_DE_ROUTE.md`. Étude `docs/etudes/EXPLICATIONS.md` à lire
   par Franck (rien de déployé).
-- **Suite** : multiclassage (attend les réponses de Franck), ou une idée du point 3. Laissés de
+- **Suite** : multiclassage (attend les réponses de Franck), ou une idée du point 3. Noté le
+  25/11/2026 pour plus tard : objets « Autres » magiques (cape, anneau… : point 3, idée 2). Laissés de
   côté par Franck le 23/11/2026 : suites du mode Odyssée, bilans des autres joueurs.
 - **Serveur de travail** : `npm run dev` n'écoute plus que l'ordinateur (127.0.0.1 et ::1) et ne
   sert jamais `.git` ; relancé le 22/11/2026 avec cette protection (vérifié avec netstat).
