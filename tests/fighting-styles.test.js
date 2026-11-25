@@ -148,6 +148,20 @@ describe('Styles sur les armes', () => {
         assert.ok(!weaponFeatNotes(weapon('Épée longue'), c).some(n => n.featId === 'arme_de_lancer'));
     });
 
+    test('Armes de lancer : arme de Lancer seulement à distance (Fléchette, Chakram), +2 toujours compté', () => {
+        const c = hero({ feat_2: 'arme_de_lancer' });
+        const d = deriveCharacter(c);
+        for (const name of ['Fléchette', 'Chakram']) {
+            assert.match(computeWeapon(weapon(name), d).damage.text, /\+2 \(Armes de lancer\)$/, name);
+            assert.equal(weaponFeatNotes(weapon(name), c).find(n => n.featId === 'arme_de_lancer').text, '+2 aux dégâts, déjà compté.');
+        }
+        // Une seule fois, même quand le rappel recalcule l'attaque lancée
+        assert.equal(computeWeapon(weapon('Chakram'), d, { thrownWeapon: true }).damage.text.match(/Armes de lancer/g).length, 1);
+        // Sans le style : rien ; Dague (corps à corps aussi) : rappel, pas dans la ligne
+        assert.doesNotMatch(computeWeapon(weapon('Chakram'), deriveCharacter(hero())).damage.text, /Armes de lancer/);
+        assert.doesNotMatch(computeWeapon(weapon('Dague'), d).damage.text, /Armes de lancer/);
+    });
+
     test('Combat à deux armes : rappel sur les armes Légères, avec les dégâts', () => {
         const c = hero({ feat_2: 'combat_a_deux_armes' });
         const shortsword = weaponFeatNotes(weapon('Épée courte'), c).find(n => n.featId === 'combat_a_deux_armes');

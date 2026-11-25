@@ -512,8 +512,12 @@ export function computeWeapon(weapon, stats, buffs = {}) {
     // (l'attaque à mains nues n'est pas une arme : pas de Duel)
     if (buffs.dueling && reach.melee && !unarmed && !prop.toLowerCase().includes('deux mains')) extraDmg.push({ die: '2', type: 'Duel' });
     // Style Armes de lancer (Manuel des joueurs français p. 209) : +2 aux dégâts d'une attaque à distance avec une arme de
-    // Lancer (rappel sous l'arme, featEffects)
-    if (buffs.thrownWeapon) extraDmg.push({ die: '2', type: 'Armes de lancer' });
+    // Lancer. Arme de corps à corps qu'on peut lancer (Dague, Javeline) : rappel sous l'arme (featEffects) ;
+    // arme de Lancer seulement à distance (Fléchette, Chakram de l'Odyssée) : toujours compté
+    const thrownOnly = reach.ranged && !reach.melee && /(^|[,;]\s*)lancer/i.test(prop);
+    if (buffs.thrownWeapon || (thrownOnly && (stats.feats ?? []).includes('arme_de_lancer'))) {
+        extraDmg.push({ die: '2', type: 'Armes de lancer' });
+    }
     // Dégâts en plus écrits par le joueur dans le réglage de l'arme (« +2d6 contre les dragons ») :
     // les « Toujours », puis les « À allumer » allumés, toujours à la fin du texte (weapon-extras.js)
     extraDmg.push(...activeExtraDamage(config).map(({ die, type }) => ({ die, type })));

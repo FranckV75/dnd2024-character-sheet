@@ -96,6 +96,9 @@ const WEAPON_RULES = [
         } },
     { featId: 'arme_de_lancer', applies: ({ weapon }) => hasProperty(weapon, 'lancer'),
         text: ({ weapon, derived, buffs }) => {
+            // Arme seulement à distance (Fléchette, Chakram) : le +2 est déjà dans la ligne (computeWeapon)
+            const reach = weaponReach(weapon);
+            if (reach.ranged && !reach.melee) return '+2 aux dégâts, déjà compté.';
             // Lancée : attaque à distance (ni Duel, ni Charge, réservés au corps à corps) ; le +2 est
             // un bonus nommé de computeWeapon (un ancien dé libre, « 2d4 + 1 », reste juste)
             const strike = computeWeapon(weapon, derived, { ...buffs, dueling: false, charger: false, thrownWeapon: true });
