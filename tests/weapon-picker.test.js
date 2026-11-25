@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { DD_RULES } from '../js/data/dd-rules.js';
 import { WEAPON_PICKER_GROUPS, weaponPickerGroup, weaponPickerGroups } from '../js/rules/weapon-picker.js';
+import { proposedWeapons, ODYSSEY_MODE_KEY } from '../js/rules/odyssey.js';
 
 const names = (groups, id) => groups.find((group) => group.id === id)?.items.map((item) => item.weapon.name) ?? [];
 const all = weaponPickerGroups(DD_RULES.weapons);
@@ -27,8 +28,8 @@ describe('Liste des armes : groupes du manuel', () => {
         for (const weapon of DD_RULES.weapons) assert.notEqual(weaponPickerGroup(weapon), null, weapon.name);
     });
 
-    test('Effectifs du manuel : 10, 4, 18 et 6 armes, puis l\'Attaque à mains nues', () => {
-        assert.deepEqual(all.map((group) => group.items.length), [10, 4, 18, 6, 1]);
+    test('Effectifs du manuel : 10, 4, 18 et 6 armes (7 avec le Chakram de l\'Odyssée), puis l\'Attaque à mains nues', () => {
+        assert.deepEqual(all.map((group) => group.items.length), [10, 4, 18, 7, 1]);
     });
 
     test('Armes qu\'on peut lancer : au corps à corps, comme dans le manuel ; la Fléchette à distance', () => {
@@ -36,7 +37,7 @@ describe('Liste des armes : groupes du manuel', () => {
         assert.ok(names(all, 'martial-melee').includes('Trident'));
         assert.deepEqual(names(all, 'simple-ranged'), ['Arbalète légère', 'Arc court', 'Fléchette', 'Fronde']);
         assert.deepEqual([...names(all, 'martial-ranged')].sort(),
-            ['Arbalète de poing', 'Arbalète lourde', 'Arc long', 'Mousquet', 'Pistolet', 'Sarbacane']);
+            ['Arbalète de poing', 'Arbalète lourde', 'Arc long', 'Chakram', 'Mousquet', 'Pistolet', 'Sarbacane']);
         assert.deepEqual(names(all, 'unarmed'), ['Attaque à mains nues']);
     });
 
@@ -77,6 +78,38 @@ describe('Liste des armes : saisie et armes déjà notées', () => {
     });
 });
 
+describe('Liste des armes : le Chakram et le mode Odyssée (proposedWeapons, js/rules/odyssey.js)', () => {
+    const OFF = { [ODYSSEY_MODE_KEY]: 'off' };
+    const listed = (record) => weaponPickerGroups(proposedWeapons(record)).flatMap((group) => group.items.map((item) => item.weapon.name));
+
+    test('Mode actif (clé absente) : le Chakram est proposé, parmi les armes de guerre à distance', () => {
+        assert.deepEqual(proposedWeapons({}), DD_RULES.weapons);
+        assert.deepEqual(proposedWeapons({ dynamic_weapons: [] }).map((w) => w.name), DD_RULES.weapons.map((w) => w.name));
+        assert.equal(weaponPickerGroup(DD_RULES.weapons.find((w) => w.name === 'Chakram')), 'martial-ranged');
+        assert.deepEqual(names(weaponPickerGroups(proposedWeapons({}), { query: 'chak' }), 'martial-ranged'), ['Chakram']);
+    });
+
+    test('Mode coupé : le Chakram n\'est plus proposé ; toutes les armes du manuel le restent', () => {
+        assert.ok(!listed(OFF).includes('Chakram'));
+        assert.equal(listed(OFF).length, DD_RULES.weapons.length - 1);
+        assert.deepEqual(weaponPickerGroups(proposedWeapons(OFF), { query: 'chakram' }), []);
+    });
+
+    test('Mode coupé, Chakram déjà noté (nom retouché, pluriel, HTML hérité) : il reste proposé, marqué ✓', () => {
+        for (const name of ['Chakram', 'chakrams', '<b>Chakram +1</b>', 'Chakram de Penthésilée']) {
+            const record = { ...OFF, dynamic_weapons: [{ name: 'Dague' }, { name }] };
+            assert.ok(listed(record).includes('Chakram'), name);
+        }
+        const record = { ...OFF, dynamic_weapons: [{ name: 'Chakram' }] };
+        const item = weaponPickerGroups(proposedWeapons(record), { rows: record.dynamic_weapons })
+            .find((group) => group.id === 'martial-ranged').items.find((entry) => entry.weapon.name === 'Chakram');
+        assert.equal(item.noted, true);
+        // Une autre arme dont le nom contient le mot ne suffit pas ; lignes de forme inattendue lues sans erreur
+        assert.ok(!listed({ ...OFF, dynamic_weapons: [{ name: 'Lame-chakram' }, null, 'abc'] }).includes('Chakram'));
+        assert.ok(!listed({ ...OFF, dynamic_weapons: 'abc' }).includes('Chakram'));
+    });
+});
+
 describe('Liste des armes : interface (js/ui/weapons/rows.js)', () => {
     const rows = readFileSync(new URL('../js/ui/weapons/rows.js', import.meta.url), 'utf8');
 
@@ -85,6 +118,12 @@ describe('Liste des armes : interface (js/ui/weapons/rows.js)', () => {
         assert.match(rows, /title: PICK_TITLE/);
         assert.match(rows, /ctx\.setStatus\(PICK_HELP\)/);
         assert.match(rows, /row\.pick\.hidden = locked \|\| name !== ''/);
+    });
+
+    test('Liste et saisie du nom : armes proposées selon le mode Odyssée', () => {
+        assert.match(rows, /weaponPickerGroups\(proposedWeapons\(ctx\.store\.get\(\)\), \{ query, rows \}\)/);
+        assert.match(rows, /return proposedWeapons\(ctx\.store\.get\(\)\)\s+\.filter/);
+        assert.doesNotMatch(rows, /DD_RULES\.weapons/);
     });
 
     test('Dégâts affichés pour chaque arme ; ✓ sans griser', () => {

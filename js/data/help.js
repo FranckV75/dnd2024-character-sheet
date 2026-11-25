@@ -57,7 +57,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "La case « Mode Odyssée »",
-                text: "Dans le menu « Gestion », fiche modifiable, cette case dit si le personnage joue la campagne de L'Odyssée des Seigneurs Dragons. Elle est cochée au départ. Décochez-la pour une autre campagne : les espèces, les sous-classes et le style de combat de l'Odyssée ne sont plus proposés dans les listes. Recochez-la pour tout retrouver. Ce réglage est enregistré avec le personnage.",
+                text: "Dans le menu « Gestion », fiche modifiable, cette case dit si le personnage joue la campagne de L'Odyssée des Seigneurs Dragons. Elle est cochée au départ. Décochez-la pour une autre campagne : les espèces, les sous-classes, le style de combat et le chakram de l'Odyssée ne sont plus proposés dans les listes. Recochez-la pour tout retrouver. Ce réglage est enregistré avec le personnage.",
                 files: ["js/ui/odyssey.js", "js/ui/sheet.js"]
             },
             {

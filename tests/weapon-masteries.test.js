@@ -110,13 +110,17 @@ describe('Données : les huit bottes du manuel', () => {
 
 describe('findMastery : botte écrite dans la colonne « Botte d\'arme »', () => {
     test('chaque botte du tableau des armes du manuel est retrouvée', () => {
-        // (l'attaque à mains nues n'a pas de botte)
-        for (const weapon of DD_RULES.weapons.filter(w => w.category !== 'Mains nues')) {
+        // (l'attaque à mains nues n'a pas de botte, ni le Chakram de l'Odyssée : guide écrit pour la 5e
+        // édition de 2014, qui n'en donne pas ; colonne « - », aucune pastille)
+        const book = DD_RULES.weapons.filter(w => w.category !== 'Mains nues' && w.source !== 'Odyssée');
+        assert.deepEqual(DD_RULES.weapons.filter(w => !book.includes(w)).map(w => [w.name, w.prof, findMastery(w.prof)]),
+            [['Attaque à mains nues', '-', null], ['Chakram', '-', null]]);
+        for (const weapon of book) {
             const mastery = findMastery(weapon.prof);
             assert.ok(mastery, `${weapon.name} : ${weapon.prof}`);
             assert.equal(mastery.name, weapon.prof);
         }
-        const used = new Set(DD_RULES.weapons.filter(w => w.category !== 'Mains nues').map(w => findMastery(w.prof).id));
+        const used = new Set(book.map(w => findMastery(w.prof).id));
         assert.equal(used.size, 8);
     });
 

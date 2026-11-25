@@ -226,7 +226,8 @@ describe('Armes et armures', () => {
     };
 
     test('Chaque arme correspond à la table du Manuel (dégâts, propriétés, botte, catégorie)', () => {
-        const weapons = DD_RULES.weapons.filter(w => w.category !== 'Mains nues');
+        // Hors table du Manuel : l'Attaque à mains nues et les armes de l'Odyssée (le Chakram)
+        const weapons = DD_RULES.weapons.filter(w => w.category !== 'Mains nues' && w.source !== 'Odyssée');
         assert.deepEqual(weapons.map(w => w.name).sort(), Object.keys(PHB_WEAPONS).sort());
         for (const w of weapons) {
             assert.equal([w.dmg, w.prop, w.prof, w.category].join(' | '), PHB_WEAPONS[w.name], w.name);
@@ -236,6 +237,20 @@ describe('Armes et armures', () => {
     test('Attaque à mains nues (PHB 2024 p. 377) : seule entrée hors table, 1 contondant, Force', () => {
         const extra = DD_RULES.weapons.filter(w => w.category === 'Mains nues');
         assert.deepEqual(extra, [{ name: 'Attaque à mains nues', atk: 'FOR', dmg: '1 cont.', prop: '-', prof: '-', ammo: '-', category: 'Mains nues' }]);
+    });
+
+    test('Chakram (Odyssée, guide du joueur p. 51) : seule arme hors du Manuel, valeurs du guide, sans botte', () => {
+        assert.deepEqual(DD_RULES.weapons.filter(w => w.source === 'Odyssée'), [{
+            name: 'Chakram', atk: 'DEX', dmg: '1d6 tran.', prop: 'Finesse, Légère, Lancer (18/36 m)',
+            prof: '-', ammo: '-', category: 'Guerre', source: 'Odyssée'
+        }]);
+        // Nom saisi à la main (singulier ou pluriel) : rattaché au guide pour le calcul
+        assert.equal(findRulebookWeapon('chakram')?.name, 'Chakram');
+        assert.equal(findRulebookWeapon('Chakrams')?.name, 'Chakram');
+        const typed = completeRowFromRulebook({ ...EMPTY_WEAPON, name: 'chakram' }, findRulebookWeapon('chakram'));
+        assert.equal(typed.category, 'Guerre');
+        assert.equal(typed.baseDmg, '1d6 tran.');
+        assert.equal(typed.prof, '-');
     });
 
     test('Coutille : arme de guerre lourde à allonge, reconnue par les filtres, Cogneur lourd et le manuel', () => {

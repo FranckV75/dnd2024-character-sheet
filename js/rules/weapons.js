@@ -94,20 +94,26 @@ function fold(value) {
     return plainText(value).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
+/** Armes de Lancer qui sont des armes à distance (début du nom, sans accents) : voir weaponReach */
+const RANGED_THROWN = ['flechette', 'chakram'];
+
 /**
  * Portée d'une arme d'après ses propriétés (règles D&D 2024, PHB « Weapons ») :
  *  - Munitions : arme à distance uniquement ;
  *  - Lancer : arme de corps à corps qui peut aussi être lancée (attaque à distance),
  *    elle apparaît donc dans les deux filtres (Dague, Hachette, Javeline...) ;
  *  - la Fléchette est classée par le manuel parmi les « armes courantes à distance »
- *    alors qu'elle n'a que la propriété Lancer : elle est à distance uniquement.
+ *    alors qu'elle n'a que la propriété Lancer : elle est à distance uniquement ;
+ *  - de même le Chakram (Odyssée, guide du joueur p. 20 et 51) : « arme de jet », que le Maniement
+ *    du chakram de l'Amazone utilise en attaque à distance.
  * @param {{ name?: string, prop?: string }} weapon
  * @returns {{ melee: boolean, ranged: boolean }}
  */
 export function weaponReach(weapon) {
     const prop = fold(weapon?.prop);
     if (prop.includes('munitions')) return { melee: false, ranged: true };
-    if (fold(weapon?.name).startsWith('flechette')) return { melee: false, ranged: true };
+    const name = fold(weapon?.name);
+    if (RANGED_THROWN.some((prefix) => name.startsWith(prefix))) return { melee: false, ranged: true };
     if (prop.includes('lancer')) return { melee: true, ranged: true };
     return { melee: true, ranged: false };
 }

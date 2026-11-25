@@ -248,6 +248,35 @@ describe('Maîtrise des armes : bonus de maîtrise seulement avec une arme maît
         assert.equal(weaponProficiency(weapon('Arc long'), stats).proficient, false);
     });
 
+    test('Chakram (Odyssée, arme de guerre Finesse et Légère) : Rôdeur, Roublard, Moine oui ; Magicien non', () => {
+        const chakram = weapon('Chakram');
+        assert.equal(weaponCategory(chakram), 'martial');
+        // Conclave des Amazones : Rôdeur, qui maîtrise déjà les armes de guerre (aucune capacité en plus)
+        assert.deepEqual(weaponProficiency(chakram, { classSlug: 'ranger', subclass: 'amazon_warrior', level: 7 }),
+            { proficient: true, source: 'class', text: '' });
+        assert.equal(weaponProficiency(chakram, { classSlug: 'rogue', level: 1 }).proficient, true);
+        assert.equal(weaponProficiency(chakram, { classSlug: 'monk', level: 1 }).proficient, true);
+        assert.equal(weaponProficiency(chakram, { classSlug: 'wizard', level: 1 }).proficient, false);
+        assert.equal(weaponProficiency(chakram, { classSlug: 'wizard', level: 1, feats: ['formation_aux_armes_de_guerre'] }).source, 'feat');
+    });
+
+    test('Chakram : meilleure de Force ou Dextérité (Finesse), Archerie, pas d\'Arts martiaux', () => {
+        const ranger = hero({ char_class: 'Rôdeur', char_subclass: 'Conclave des Amazones', char_level: '7', str_score: '10', dex_score: '16' });
+        const derived = deriveCharacter(ranger);
+        const strike = computeWeapon(weapon('Chakram'), derived);
+        assert.equal(strike.proficiency.proficient, true);
+        assert.equal(strike.attack.text, 'DEX : +6');
+        assert.equal(strike.damage.text, '1d6 +3 TRAN');
+        // Force meilleure : la Finesse la garde
+        const strong = deriveCharacter(hero({ char_class: 'Rôdeur', char_level: '7', str_score: '18', dex_score: '12' }));
+        assert.equal(computeWeapon(weapon('Chakram'), strong).damage.text, '1d6 +4 TRAN');
+        // Style Archerie : +2 à l'attaque (arme à distance)
+        assert.equal(computeWeapon(weapon('Chakram'), { ...derived, feats: ['archerie'] }).attack.text, 'DEX : +8');
+        // Moine : arme à distance, pas une arme de moine (dé de l'arme gardé)
+        const monk = deriveCharacter(hero({ char_class: 'Moine', char_level: '11', dex_score: '16' }));
+        assert.match(computeWeapon(weapon('Chakram'), monk).damage.text, /^1d6 /);
+    });
+
     test('Magicien, Ensorceleur, Barde : armes courantes seulement', () => {
         for (const classSlug of ['wizard', 'sorcerer', 'bard']) {
             assert.equal(weaponProficiency(weapon('Épée longue'), { classSlug, level: 5 }).proficient, false, classSlug);

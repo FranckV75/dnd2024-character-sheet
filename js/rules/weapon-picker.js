@@ -7,7 +7,9 @@
 // courantes à distance, armes de guerre de corps à corps, armes de guerre à distance ; puis
 // l'Attaque à mains nues (pas une arme), à part. Une arme de corps à corps qu'on peut lancer
 // (Dague, Javeline…) reste au corps à corps, comme dans le manuel ; la Fléchette est à distance
-// (weaponReach, js/rules/weapons.js).
+// (weaponReach, js/rules/weapons.js). Le Chakram (Odyssée, « arme de jet ») est aussi à distance :
+// il rejoint les armes de guerre à distance ; mode Odyssée coupé, l'interface ne le propose que s'il
+// est déjà noté (proposedWeapons, js/rules/odyssey.js).
 // Une arme déjà dans le tableau est marquée (✓) mais reste choisissable : on peut porter deux
 // dagues ou deux épées courtes.
 // Fonction pure. Testé : tests/weapon-picker.test.js.

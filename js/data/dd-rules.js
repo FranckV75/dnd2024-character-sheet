@@ -831,7 +831,16 @@ const DD_RULES = {
 
         // ARMES À FEU (table des armes du Manuel des joueurs 2024, p. 215)
         { name: "Mousquet", atk: "DEX", dmg: "1d12 perf.", prop: "Munitions (12/36 m), Chargement, Deux mains", prof: "Ralentissement", ammo: "-", category: "Guerre" },
-        { name: "Pistolet", atk: "DEX", dmg: "1d10 perf.", prop: "Munitions (9/27 m), Chargement", prof: "Ouverture", ammo: "-", category: "Guerre" }
+        { name: "Pistolet", atk: "DEX", dmg: "1d10 perf.", prop: "Munitions (9/27 m), Chargement", prof: "Ouverture", ammo: "-", category: "Guerre" },
+
+        // ARME THYLÉENNE DE L'ODYSSÉE (guide du joueur de L'Odyssée des Seigneurs Dragons, p. 51,
+        // Conclave des Amazones, encadré « Arme thyléenne : chakram » ; présentation p. 20) : arme de
+        // guerre, 1d6 tranchants, lancer (18/36 m), finesse, légère ; elle revient dans la main après
+        // le lancer, sauf sur un 1 naturel ; 1 kg, 10 po. « Arme de jet » : à distance, comme la
+        // Fléchette (weaponReach, js/rules/weapons.js). Guide écrit pour la 5e édition de 2014 : aucune
+        // botte d'arme (« - », comme l'Attaque à mains nues). Mode Odyssée coupé : retirée de la liste
+        // des armes, sauf si le tableau en a déjà une (proposedWeapons, js/rules/odyssey.js).
+        { name: "Chakram", atk: "DEX", dmg: "1d6 tran.", prop: "Finesse, Légère, Lancer (18/36 m)", prof: "-", ammo: "-", category: "Guerre", source: "Odyssée" }
     ]
 };
 

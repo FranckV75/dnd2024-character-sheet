@@ -8,7 +8,6 @@
 // (dynamic_weapons, par ctx.updateRow) ; l'affichage ne réécrit jamais la sauvegarde.
 // =============================================================================
 
-import { DD_RULES } from '../../data/dd-rules.js';
 import { findRulebookWeapon } from '../../state/migrate.js';
 import { computeWeapon } from '../../rules/character.js';
 import { parseWeaponConfig } from '../../rules/logic.js';
@@ -16,6 +15,7 @@ import { weaponFeatNotes } from '../../rules/feat-effects.js';
 import { findMastery } from '../../rules/weapon-masteries.js';
 import { matchesWeaponFilter, rowFromRulebookWeapon, completeRowFromRulebook, isBlankWeapon } from '../../rules/weapons.js';
 import { weaponPickerGroups } from '../../rules/weapon-picker.js';
+import { proposedWeapons } from '../../rules/odyssey.js';
 import { el, icon } from '../dom.js';
 import { cellText } from '../cell-text.js';
 import { attachAutocomplete } from '../autocomplete.js';
@@ -31,9 +31,10 @@ let notesCounter = 0;
 
 const fold = (text) => text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
-function weaponItems(query) {
+/** Saisie du nom : armes proposées (mode Odyssée coupé, sans le chakram s'il n'est pas déjà noté) */
+function weaponItems(ctx, query) {
     const q = fold(query.trim());
-    return DD_RULES.weapons
+    return proposedWeapons(ctx.store.get())
         .filter(w => fold(w.name).includes(q))
         .map(w => ({ label: w.name, detail: `${w.dmg} · ${w.category}`, value: w }));
 }
@@ -46,13 +47,14 @@ const PICK_HELP = 'Liste des armes : touchez-en une pour remplir la ligne (✓ :
 /**
  * Liste à parcourir (nom vide touché, ou bouton ▾) : les armes du manuel par groupe, avec leurs
  * dégâts ; ✓ : déjà dans le tableau, toujours choisissable (deux dagues). js/rules/weapon-picker.js.
+ * Le chakram de l'Odyssée n'y est que si le mode Odyssée est actif ou s'il est déjà noté (proposedWeapons).
  * @param {import('./shared.js').WeaponsContext} ctx
  * @param {number} index - ligne qu'on remplit (exclue des armes « déjà notées »)
  * @param {string} query
  */
 function weaponBrowseItems(ctx, index, query) {
     const rows = ctx.weapons().filter((_, i) => i !== index);
-    return weaponPickerGroups(DD_RULES.weapons, { query, rows }).flatMap((group) => [
+    return weaponPickerGroups(proposedWeapons(ctx.store.get()), { query, rows }).flatMap((group) => [
         { header: group.title },
         ...group.items.map((item) => ({
             label: item.weapon.name,
@@ -99,7 +101,7 @@ export function buildRow(ctx, index) {
         }
     }, icon('chevron'));
     detach = attachAutocomplete(inputs.name, {
-        getItems: (query, { browse = false } = {}) => (browse ? weaponBrowseItems(ctx, index, query) : weaponItems(query)),
+        getItems: (query, { browse = false } = {}) => (browse ? weaponBrowseItems(ctx, index, query) : weaponItems(ctx, query)),
         minChars: 1,
         // Nom vide touché, ou bouton ▾ : toutes les armes du manuel, par groupe
         browse: { enabled: () => !isLocked(), trigger: pick, empty: 'Aucune arme du manuel ne correspond' },

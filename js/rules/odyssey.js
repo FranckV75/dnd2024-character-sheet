@@ -9,9 +9,9 @@
 // au compte). Elle n'est jamais dans la fiche vierge (js/state/schema.js : migrate.js l'ajouterait
 // à toutes les fiches). L'ancien site (v3) l'ignore (V4_ONLY_KEYS, js/cloud/sync.js).
 //
-// Mode coupé : les 6 espèces, les 12 sous-classes et le style de combat de l'Odyssée ne sont plus
-// PROPOSÉS dans les listes. Ce que la fiche utilise déjà reste proposé, affiché et calculé : aucune
-// règle de calcul ne lit ce mode. L'encadré « Odyssée » de l'onglet 3 n'est caché que s'il est vide.
+// Mode coupé : les 6 espèces, les 12 sous-classes, le style de combat et l'arme (le chakram) de
+// l'Odyssée ne sont plus PROPOSÉS dans les listes. Ce que la fiche utilise déjà reste proposé,
+// affiché et calculé : aucune règle de calcul ne lit ce mode. L'encadré « Odyssée » de l'onglet 3 n'est caché que s'il est vide.
 // Case heroic_inspiration (onglet Combat) : « Points de Foi » mode actif (maîtrise + Sagesse à chaque
 // niveau, remis par « Passer au niveau » ; la fenêtre des faveurs les dépense : spendFaith),
 // « Inspiration héroïque » mode coupé (une seule à la fois : la case devient une pièce, 0 ou 1).
@@ -20,7 +20,7 @@
 // « odyssey_inspiration » : "1" = disponible ; absente = non disponible, jamais dans la fiche vierge,
 // comme odyssey_mode ; V4_ONLY_KEYS). inspirationCoin dit où est la pièce et ce qu'elle montre.
 // Repère de l'Odyssée dans les données : champ source = "Odyssée" (js/data/dd-rules.js pour les
-// espèces et les sous-classes, js/data/feats.js pour le style Hoplite).
+// espèces, les sous-classes et le chakram, js/data/feats.js pour le style Hoplite).
 // Fonctions pures. Testé : tests/odyssey.test.js.
 // =============================================================================
 
@@ -129,6 +129,25 @@ export function proposedSubclasses(record, slug) {
     if (odysseyActive(record)) return all.map(([, entry]) => entry);
     const used = odysseyUse(record).subclass;
     return all.filter(([id, entry]) => !fromOdyssey(entry) || id === used).map(([, entry]) => entry);
+}
+
+/** Nom d'arme comparable : sans HTML, accents ni majuscules */
+const foldWeapon = (value) => plainText(value).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+
+/**
+ * Armes proposées par le tableau des armes (bouton ▾ et saisie du nom) : toutes quand le mode est
+ * actif ; sinon celles du manuel, plus celle de l'Odyssée (le chakram) qu'une ligne du tableau
+ * nomme déjà (« Chakram », « Chakrams », « Chakram +1 »…). Une arme déjà notée reste calculée dans
+ * tous les cas (findRulebookWeapon, js/state/migrate.js, ne lit pas ce mode).
+ * @param {Object} record
+ * @returns {Object[]} entrées de DD_RULES.weapons, dans l'ordre des données
+ */
+export function proposedWeapons(record) {
+    if (odysseyActive(record)) return [...DD_RULES.weapons];
+    const rows = Array.isArray(record?.dynamic_weapons) ? record.dynamic_weapons : [];
+    const noted = rows.map((row) => foldWeapon(row?.name)).filter(Boolean);
+    return DD_RULES.weapons.filter((weapon) => !fromOdyssey(weapon)
+        || noted.some((name) => name.startsWith(foldWeapon(weapon.name))));
 }
 
 /**
@@ -513,7 +532,7 @@ function keptSentence(record) {
  */
 export function odysseyModeHint(record) {
     const hint = "Campagne de L'Odyssée des Seigneurs Dragons. Décochez pour jouer une autre campagne : les espèces, "
-        + "les sous-classes et le style de combat de l'Odyssée ne sont plus proposés. Ce que votre fiche utilise déjà "
+        + "les sous-classes, le style de combat et le chakram de l'Odyssée ne sont plus proposés. Ce que votre fiche utilise déjà "
         + 'reste en place. Recochez pour tout retrouver.';
     const kept = odysseyActive(record) ? '' : keptSentence(record);
     return kept ? `${hint} ${kept}` : hint;

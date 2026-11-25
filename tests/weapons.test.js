@@ -59,6 +59,15 @@ describe('weaponReach', () => {
         assert.deepEqual(weaponReach(row('Fléchette')), { melee: false, ranged: true });
         assert.deepEqual(weaponReach({ name: 'Fléchettes (10)', prop: 'Finesse, Lancer' }), { melee: false, ranged: true });
     });
+    test('chakram (Odyssée) : « arme de jet », à distance comme la fléchette', () => {
+        assert.deepEqual(weaponReach(row('Chakram')), { melee: false, ranged: true });
+        assert.deepEqual(weaponReach({ name: 'Chakram +1', prop: 'Finesse, Légère, Lancer (18/36 m)' }), { melee: false, ranged: true });
+        assert.ok(matchesWeaponFilter(row('Chakram'), 'martial'));
+        assert.ok(matchesWeaponFilter(row('Chakram'), 'ranged'));
+        assert.ok(!matchesWeaponFilter(row('Chakram'), 'melee'));
+        assert.ok(!matchesWeaponFilter(row('Chakram'), 'simple'));
+        assert.equal(weaponDamageType(row('Chakram')), 'TRAN');
+    });
     test('sans propriété de portée : corps à corps', () => {
         assert.deepEqual(weaponReach(row('Épée longue')), { melee: true, ranged: false });
         assert.deepEqual(weaponReach({}), { melee: true, ranged: false });
