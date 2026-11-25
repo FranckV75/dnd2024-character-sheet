@@ -13,6 +13,15 @@
 /** @type {ReadonlyArray<{ version: string, items: ReadonlyArray<string> }>} */
 export const WHATS_NEW = Object.freeze([
     {
+        version: '4.49.0',
+        items: [
+            "Mode Odyssée : la pièce « Inspiration héroïque » a sa propre colonne, à côté des « Points de Foi ». Le haut de l'onglet Combat est moins haut, et le « Bonus de maîtrise » est bien au milieu de sa case.",
+            "Points de vie : les petits − et + sont maintenant autour des titres « PV actuels » et « PV temp. », comme pour les Points de Foi. Les PV des compagnons ont les mêmes.",
+            "Épuisement : le chiffre est bien au milieu, entre ses deux boutons.",
+            "Le titre « Points de renommée » a plus de place entre ses boutons, et le bouclier de la classe d'armure ne s'allonge plus sur tablette."
+        ]
+    },
+    {
         version: '4.48.1',
         items: [
             "Le « Mode d'emploi » a été relu en entier et comparé à la fiche : une dizaine de rubriques fausses ou dépassées sont corrigées (dés de vie, menu « Gestion », bouton « Lancer », sorts donnés…).",

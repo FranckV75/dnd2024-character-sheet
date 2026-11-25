@@ -2,6 +2,19 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.49.0] - 2026-11-25 (onglet Combat : − / + des PV, Inspiration héroïque en colonne)
+Pas encore publiée. Remarques de Franck sur captures ; choix sur maquettes (« A · 4 colonnes »,
+Épuisement « option 1 »).
+### Changed
+- PV actuels et PV temp. : petits boutons − / + autour du titre (`around`, js/ui/stepper.js),
+  comme les Points de Foi ; « Dégâts / Soins » sous la valeur. PV des compagnons de même.
+- Mode Odyssée : la pièce « Inspiration héroïque » a sa propre colonne (`.inspiration-cell`,
+  index.html, js/ui/odyssey.js) ; rangée du haut de 220 à 120 px à 1366 px. Colonne des Points
+  de Foi élargie (102 px souris, 114 px doigt) pour que ses boutons ne touchent pas les pointillés.
+- Épuisement : flèches du navigateur retirées des cases à boutons − / +, valeur centrée.
+- Points de renommée : colonne du titre élargie ; bouclier de la CA plafonné à 165 px.
+- Mode d'emploi : pièce, PV et compagnons ; entrée « Nouveautés ».
+
 ## [4.48.1] - 2026-11-25 (mode d'emploi relu, relecture à chaque version)
 Publiée le 25/11/2026 avec l'accord de Franck. Demande de Franck : vérifier que le mode d'emploi suit la fiche, sans le
 compliquer ni rien y laisser de faux, et que ce soit fait systématiquement.

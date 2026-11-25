@@ -97,6 +97,10 @@ cases des lancers gratuits de classe, Magicien 5 / 18 / 20, Découvertes magique
 Savoir), ~~groupe « Autres » de la liste des armures~~, ~~outils des dons et de l'historique~~.
 Fait en 4.48.1 (publiée le 25/11/2026) : ~~mode d'emploi relu en entier face à la fiche~~
 et relecture systématique à chaque version (`npm run notice`, demande de Franck).
+Faits en 4.49.0 (25/11/2026, pas encore publiée) : ~~petits − / + autour du titre des PV (et des
+PV des compagnons)~~, ~~Inspiration héroïque dans sa propre colonne en mode Odyssée~~ (rangée du
+haut moins haute), ~~Épuisement centré~~, ~~titre de la renommée aéré~~ (choix de Franck sur
+maquettes, 25/11/2026).
 Étude faite le 23/11/2026 : ~~explications des options~~ (`docs/etudes/EXPLICATIONS.md`,
 proposition, rien n'est déployé ; Franck choisit ce qui est utile). Laissés de côté par Franck
 le 23/11/2026 : suites du mode Odyssée (choix de la campagne dans « Nouvelle fiche », exemples
@@ -195,8 +199,8 @@ Décisions de Franck en attente sur la 4.48.0 (choix prudents faits sans lui) :
   pas de groupe Odyssée dans la liste.
 
 Petits restes de la 4.47.0 (pas urgents) : sur ordinateur, la phrase du bouton ▾ des armes et des armures est coupée dans la colonne étroite des messages (comme
-celle du grimoire ; texte entier au toucher) ; toucher le titre « Points de Foi » ou « Points de
-renommée », entre ses petits boutons, ouvre le clavier de la case (comme avant) ; sur Android, un
+celle du grimoire ; texte entier au toucher) ; toucher le titre « Points de Foi », « Points de
+renommée » ou « PV actuels », entre ses petits boutons, ouvre le clavier de la case (comme avant) ; sur Android, un
 geste retour répété dans « Configuration de l'arme » finit par la fermer sans question (Chrome
 l'impose ; Échap au clavier, lui, pose toujours la question).
 

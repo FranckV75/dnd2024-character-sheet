@@ -12,6 +12,12 @@ en fin de session :
 
 ## En ce moment
 
+- **Prête, pas publiée** : version **4.49.0** (25/11/2026), commitée sur `v4`, rien de poussé :
+  remarques de Franck sur l'onglet Combat, d'après ses choix sur maquettes (« A · 4 colonnes »,
+  Épuisement « option 1 »). Pièce « Inspiration héroïque » dans sa propre colonne en mode
+  Odyssée, petits − / + autour du titre des PV (aussi ceux des compagnons), Épuisement centré,
+  renommée aérée, bouclier de la CA plafonné. Nouveautés écrites, mode d'emploi relu
+  (`npm run notice`). Attend le « Publie » de Franck.
 - **En ligne** : version **4.48.1**, publiée le 25/11/2026 avec l'accord de Franck (« Publie »),
   version en ligne vérifiée (0 erreur console) : mode d'emploi relu en entier et corrigé,
   relecture systématique à chaque version (`npm run notice`). Avant elle, la **4.48.0**
@@ -45,6 +51,15 @@ en fin de session :
   jamais le texte du livre (le dépôt est public).
 
 ### À vérifier par Franck (reste : l'iPad de Patricia)
+
+À voir sur tablette quand la 4.49.0 sera en ligne (Android, PC, et iPad de Patricia) :
+- Onglet Combat, mode Odyssée : quatre colonnes (Bonus de maîtrise, Points de Foi, Inspiration
+  héroïque, Vitesse) ; la rangée n'est plus trop haute, le bouclier de la CA ne s'allonge plus.
+  Mode décoché : la colonne disparaît, la pièce reprend la place des Points de Foi.
+- Petits − / + autour de « PV actuels » et « PV temp. », et du titre « PV » des compagnons :
+  faciles à toucher ? Le bouton « Dégâts / Soins » reste sous la valeur.
+- Épuisement : le chiffre bien au milieu de ses deux boutons, sans petites flèches.
+- La fenêtre « Nouveautés de la version 4.49.0 » s'affiche une fois et se lit en entier.
 
 À voir sur tablette maintenant que la 4.48.0 est en ligne (Android, PC, et iPad de Patricia) :
 - Paladin 5 : cases « Châtiment de paladin » et « Fidèle destrier » dans le bandeau de l'onglet
@@ -140,6 +155,20 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
    `docs/FEUILLE_DE_ROUTE.md`.
 
 ## Sessions
+
+### 25/11/2026 (soir) — Onglet Combat : petits − / + des PV, Inspiration héroïque en colonne, Épuisement centré (4.49.0, pas publiée)
+
+- Remarques de Franck (captures) : − / + au titre partout comme les Points de Foi, Épuisement mal
+  centré, titre de la renommée à l'étroit, rangée du haut trop haute en mode Odyssée (bouclier
+  allongé, Bonus de maîtrise décentré). Maquettes faites dans une session annexe (planches dans
+  le dossier de notes partagé, pages de maquettes supprimées).
+- Choix de Franck : « A · 4 colonnes » (l'Inspiration a sa colonne ; rangée de 220 à 120 px à
+  1366 px) et Épuisement « option 1 » (en ligne, 0 centré : les flèches du navigateur retirées).
+  Puis « fais le » pour les PV des compagnons, les Nouveautés, la version et ces notes.
+- Colonne des Points de Foi plus large (102 px souris, 114 px doigt) : ses petits boutons ne
+  touchent plus les traits pointillés (marges mesurées de 768 à 1920 px).
+- Vérifié à 768, 820, 1101, 1366 et 1920 px, clair et sombre, Odyssée oui et non, 0 erreur
+  console ; impression seulement simulée à l'écran (le PDF d'Edge sans fenêtre bloquait).
 
 ### 25/11/2026 — Mode d'emploi relu en entier, relecture à chaque version (4.48.1, publiée le 25/11/2026)
 
