@@ -704,10 +704,13 @@ describe('Sort préparé au-dessus des emplacements (simple avertissement)', () 
         // Sort donné qui a son propre lancer gratuit (don, espèce…)
         assert.equal(missingSlotLevel({ lvl: '3', name: 'Vol' }, 'granted', { ...options, freeCast: true }), 0);
         assert.equal(missingSlotLevel({ lvl: '3', name: 'Vol' }, 'granted', options), 3);
-        // Occultiste 13 : emplacements de pacte de niveau 5, Arcanum de niveau 6 et 7
-        const warlock = { topSlot: 5, arcanumLevel: 7 };
-        assert.equal(missingSlotLevel({ lvl: '6', name: 'Œil magique', prep: true }, 'prepared', warlock), 0);
-        assert.equal(missingSlotLevel({ lvl: '7', name: 'Doigt de mort', prep: true }, 'prepared', warlock), 0);
+        // Occultiste 13 : emplacements de pacte de niveau 5. La ligne d'Arcanum (état 'arcanum') n'est
+        // jamais signalée ; un autre sort coché d'un niveau d'Arcanum l'est (il ne se lance pas : PHB
+        // 2024, un sort préparé de l'Occultiste ne dépasse pas le niveau de ses emplacements)
+        const warlock = { topSlot: 5 };
+        assert.equal(missingSlotLevel({ lvl: '6', name: 'Cercle de mort' }, 'arcanum', warlock), 0);
+        assert.equal(missingSlotLevel({ lvl: '7', name: 'Doigt de mort', prep: true }, 'arcanum', warlock), 0);
+        assert.equal(missingSlotLevel({ lvl: '6', name: 'Œil magique', prep: true }, 'prepared', warlock), 6);
         assert.equal(missingSlotLevel({ lvl: '8', name: 'Domination de monstre', prep: true }, 'prepared', warlock), 8);
         // Personnage sans aucun emplacement (sort d'objet noté à la main) : la fiche ne dit rien
         assert.equal(missingSlotLevel({ lvl: '2', name: 'Invisibilité', prep: true }, 'prepared', { topSlot: 0 }), 0);
@@ -815,6 +818,8 @@ describe('Arcanum mystique : sorts toujours disponibles, hors des sorts prépar�
         assert.equal(arcanumSpareRows(rows, warlock(10), db).size, 0);
         assert.match(arcanumSpareText(6, 'Cercle de mort'), /^Arcanum de niveau 6 : déjà « Cercle de mort »/);
         assert.match(arcanumSpareText(6, ''), /déjà un autre sort/);
+        assert.match(arcanumSpareText(6, 'Cercle de mort'), /ne se lance pas/);
+        assert.doesNotMatch(arcanumSpareText(6, 'Cercle de mort'), /compte dans vos préparés/);
     });
 
     test("Cocher B puis A (même niveau) : rien ne bascule, chaque losange à cocher s'annule", () => {

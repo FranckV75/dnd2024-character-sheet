@@ -86,7 +86,7 @@ import { adeptElements } from '../rules/feat-choices.js';
 import { classSpellCounts } from '../rules/class-progression.js';
 import {
     wholeListSource, fitsWholeList, grantedSpellKeys, spellPrepState, combatPlace,
-    highestUsableSlot, mysticArcanumLevel, missingSlotLevel, arcanumRows, arcanumSpareRows, arcanumSpareText
+    highestUsableSlot, missingSlotLevel, arcanumRows, arcanumSpareRows, arcanumSpareText
 } from '../rules/spell-preparation.js';
 import { castsRitualsFromBook, isRitualSpell } from '../rules/spellbook.js';
 import { allFreeCasts } from '../rules/free-casts.js';
@@ -169,7 +169,6 @@ function rowStates(g, character, derivedNow, rows) {
     // Sort préparé au-dessus des emplacements : simple avertissement (jamais pour un sort qui a
     // son lancer gratuit, ni pour un Arcanum mystique)
     const topSlot = highestUsableSlot(derivedNow.spellSlots, derivedNow.classSlug, slotStateOf(character));
-    const arcanumLevel = mysticArcanumLevel(derivedNow.classSlug, derivedNow.level);
     let freeNames = null;
     const hasFreeCast = (row) => {
         freeNames ??= new Set(allFreeCasts(character, derivedNow).flatMap(cast => cast.names));
@@ -177,8 +176,8 @@ function rowStates(g, character, derivedNow, rows) {
         const known = findSpellByName(g.spellsDb, row.name);
         return [row.name, ...spellNames(known), known?.vo].some(name => name && freeNames.has(spellNameKey(name)));
     };
-    const noSlots = rows.map((row, i) => (missingSlotLevel(row, states[i], { topSlot, arcanumLevel })
-        ? missingSlotLevel(row, states[i], { topSlot, arcanumLevel, freeCast: hasFreeCast(row) }) : 0));
+    const noSlots = rows.map((row, i) => (missingSlotLevel(row, states[i], { topSlot })
+        ? missingSlotLevel(row, states[i], { topSlot, freeCast: hasFreeCast(row) }) : 0));
     return { granted, wholeList, fits, states, noSlots, arcanum, prepNotes };
 }
 

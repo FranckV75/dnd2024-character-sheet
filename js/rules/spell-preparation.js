@@ -389,7 +389,7 @@ export function arcanumSpareRows(rows, derived, db = null, granted = null) {
  */
 export function arcanumSpareText(level, arcanumName) {
     const name = plainText(arcanumName).trim();
-    return `Arcanum de niveau ${level} : déjà ${name ? `« ${name} »` : 'un autre sort'} (supprimez-le pour le remplacer) ; coché, celui-ci compte dans vos préparés.`;
+    return `Arcanum de niveau ${level} : déjà ${name ? `« ${name} »` : 'un autre sort'}. Celui-ci ne se lance pas (aucun emplacement de ce niveau) ; pour changer d'Arcanum, supprimez l'ancien.`;
 }
 
 /**
@@ -406,20 +406,21 @@ export function arcanumCastText(level) {
  * Sort préparé (losange coché ou fixe) d'un niveau plus haut que le plus haut emplacement : il ne
  * peut pas être lancé. Simple avertissement : rien n'est décoché.
  * Jamais pour un sort mineur, un sort non préparé (même un rituel du livre, lancé en rituel), un
- * sort qui a son propre lancer gratuit (don, espèce…), un Arcanum mystique, ni pour un personnage
+ * sort qui a son propre lancer gratuit (don, espèce…), la ligne d'Arcanum mystique (état 'arcanum' :
+ * un autre sort coché du même niveau est bien signalé, il ne se lance pas), ni pour un personnage
  * sans aucun emplacement (la fiche ne sait pas d'où il tient ses sorts : objet, don noté à la main).
  * @param {Object} row - ligne de dynamic_spells
  * @param {string} state - spellPrepState()
- * @param {{ topSlot?: number, arcanumLevel?: number, freeCast?: boolean }} [options]
- *        topSlot : highestUsableSlot() ; arcanumLevel : mysticArcanumLevel() ;
+ * @param {{ topSlot?: number, freeCast?: boolean }} [options]
+ *        topSlot : highestUsableSlot() ;
  *        freeCast : le sort a un lancer gratuit suivi par la fiche (js/rules/free-casts.js)
  * @returns {number} niveau du sort à signaler, ou 0
  */
-export function missingSlotLevel(row, state, { topSlot = 0, arcanumLevel = 0, freeCast = false } = {}) {
+export function missingSlotLevel(row, state, { topSlot = 0, freeCast = false } = {}) {
     if (state !== 'prepared' && state !== 'list' && state !== 'granted') return 0;
     const level = Number(rowLevel(row));
     if (!(level >= 1) || !(topSlot > 0) || level <= topSlot) return 0;
-    if (freeCast || isArcanumSpellLevel(level, arcanumLevel)) return 0;
+    if (freeCast) return 0;
     return level;
 }
 

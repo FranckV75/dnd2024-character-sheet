@@ -73,10 +73,10 @@ export function castSpell({ store, setStatus }, { name: spellName, level, concen
     const d = derivedOf(character);
     const name = spellName || 'ce sort';
     const options = ritualOnly || arcanumRow ? [] : castSlotOptions(level, d.spellSlots, d.classSlug, slotStateOf(character));
-    // Arcanum mystique (Occultiste) : sort de niveau 6+ sans emplacement de son niveau, lancé une
-    // fois par repos long sans emplacement. Sa case (une par niveau de sort) est proposée comme un
-    // lancer gratuit ; la fenêtre le dit, au lieu de « Aucun emplacement »
-    const arcanumCast = !ritualOnly && options.length === 0 ? arcanumFreeCast(character, d, level) : null;
+    // Arcanum mystique (Occultiste) : la ligne d'Arcanum (une par niveau 6+, arcanumRows) se lance
+    // une fois par repos long sans emplacement. Sa case est proposée comme un lancer gratuit ; la
+    // fenêtre le dit, au lieu de « Aucun emplacement ». Un autre sort du même niveau ne l'utilise pas
+    const arcanumCast = arcanumRow && !ritualOnly ? arcanumFreeCast(character, d, level) : null;
     const arcanum = arcanumCast !== null;
     // Lancers gratuits suivis par la fiche (don, espèce, Ennemi juré…), proposés en premier
     const free = ritualOnly ? [] : [...freeCastsFor(character, d, [spellName, ...names]), ...(arcanumCast ? [arcanumCast] : [])];
