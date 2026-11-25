@@ -95,6 +95,8 @@ sorts de toutes les listes de classe~~, ~~confirmation avant de fermer les régl
 Faits en 4.48.0 (23/11/2026, publiée le 25/11/2026) : ~~suites du grimoire~~ (Paladin et Rôdeur,
 cases des lancers gratuits de classe, Magicien 5 / 18 / 20, Découvertes magiques du Barde du
 Savoir), ~~groupe « Autres » de la liste des armures~~, ~~outils des dons et de l'historique~~.
+Fait en 4.48.1 (25/11/2026, pas encore publiée) : ~~mode d'emploi relu en entier face à la fiche~~
+et relecture systématique à chaque version (`npm run notice`, demande de Franck).
 Étude faite le 23/11/2026 : ~~explications des options~~ (`docs/etudes/EXPLICATIONS.md`,
 proposition, rien n'est déployé ; Franck choisit ce qui est utile). Laissés de côté par Franck
 le 23/11/2026 : suites du mode Odyssée (choix de la campagne dans « Nouvelle fiche », exemples
@@ -201,7 +203,8 @@ féerique (Présents de Féerie) » et « Sorts mécaniques (Manifestations de l
 tables du livre gardées en lignes à part sous le nom de leur aptitude (identifiants inchangés).
 
 **À chaque version, désormais** : ajouter l'entrée de la version en tête de `js/data/whats-new.js`
-(sinon `npm run check` échoue) et mettre à jour la notice `js/data/help.js`.
+(sinon `npm run check` échoue), puis lancer `npm run notice` et relire face à la fiche chaque entrée
+du mode d'emploi qu'il liste : rien de faux, rester court (décision de Franck du 25/11/2026).
 
 Décisions de Franck en attente sur la 4.41.0 :
 - ~~« Appliquer à la fiche » (historique) écrit aussi l'outil précis (Sage, Criminel…)~~ : fait

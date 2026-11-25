@@ -2,6 +2,26 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.48.1] - 2026-11-25 (mode d'emploi relu, relecture à chaque version)
+Pas encore publiée. Demande de Franck : vérifier que le mode d'emploi suit la fiche, sans le
+compliquer ni rien y laisser de faux, et que ce soit fait systématiquement.
+### Changed
+- Mode d'emploi (`js/data/help.js`) relu entrée par entrée face au code (86 entrées : 54 justes,
+  32 réécrites après contre-vérification). Faux corrigés : « Gestion » (aucun bouton
+  « enregistrer »), dés de vie (à côté des PV, pas dans l'encadré Repos), « Lancer » (pas de
+  bouton « Arcanum mystique » : l'Arcanum passe par « Lancer gratuit »), sorts donnés (bloc
+  « Sorts de classe »), « Ensuite » (le repère « À choisir » ne vaut que pour l'espèce et les
+  outils), « Ajouter un sort » (seul le bouton ▾ ouvre la liste sans clavier), réglages qui
+  suivent le personnage, « Espèce & historique ». Libellés invisibles à l'écran (noms réservés
+  aux lecteurs d'écran) retirés. Treize entrées raccourcies.
+### Added
+- Entrées « Les mises à jour », « Les dés de vie », « Les repères dorés » ; − / + des emplacements
+  de sorts expliqués.
+- Relecture systématique : chaque entrée cite les fichiers de l'interface qu'elle décrit
+  (`files`) ; `npm run notice` liste les entrées dont un fichier a changé depuis la version en
+  ligne ; un test exige que chaque fichier de `js/ui/` soit cité ou déclaré interne
+  (`HELP_INTERNAL_FILES`). Règle écrite dans CLAUDE.md.
+
 ## [4.48.0] - 2026-11-23 (suites du grimoire, armures « Autres », outils des dons)
 Publiée le 25/11/2026 (« Publie » de Franck). Trois chantiers demandés par Franck, réalisés chacun dans sa copie de travail
 puis relus (code et sauvegarde ; règles et interface) et corrigés avant la fusion. Aucune nouvelle

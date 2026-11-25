@@ -20,6 +20,8 @@ en fin de session :
   En attente : les décisions sur la 4.48.0 (choix prudents faits sans Franck), la 4.44.0 et la
   4.45.0, point 3 de `docs/FEUILLE_DE_ROUTE.md`. Étude `docs/etudes/EXPLICATIONS.md` à lire
   par Franck (rien de déployé).
+- **Prête, pas publiée** : version **4.48.1** (25/11/2026) : mode d'emploi relu en entier et
+  corrigé, relecture systématique (`npm run notice`). Attend le « Publie » de Franck.
 - **Suite** : multiclassage (attend les réponses de Franck), ou une idée du point 3. Laissés de
   côté par Franck le 23/11/2026 : suites du mode Odyssée, bilans des autres joueurs.
 - **Serveur de travail** : `npm run dev` n'écoute plus que l'ordinateur (127.0.0.1 et ::1) et ne
@@ -29,8 +31,8 @@ en fin de session :
   du manuel français (section 9).
 - **Vérifications sur tablette** : faites par Franck le 21/11/2026 sur Android et PC, et la
   4.44.0 sur tablette le 22/11/2026 : tout est bon ; reste l'iPad de Patricia (liste ci-dessous, elle fait foi et s'allonge à chaque version).
-- **À chaque version** : entrée en tête de `js/data/whats-new.js` et notice `js/data/help.js`
-  à jour.
+- **À chaque version** : entrée en tête de `js/data/whats-new.js`, puis `npm run notice` et
+  relecture des entrées du mode d'emploi qu'il liste (rien de faux, rester court).
 - **Petits champs sur iPad** : ne rien changer tant que Franck n'a pas d'info sur le zoom.
 - **GitHub** : anciens commits (PDF, vieilles sauvegardes, adresse Gmail) purgés par le support
   le 12/11/2026 (ticket 4978665) ; vérifié le 18/11 : 404 partout. Dossier clos.
@@ -138,6 +140,19 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
    `docs/FEUILLE_DE_ROUTE.md`.
 
 ## Sessions
+
+### 25/11/2026 — Mode d'emploi relu en entier, relecture à chaque version (4.48.1, pas publiée)
+
+- Question de Franck : le mode d'emploi est-il mis à jour à chaque version ? Oui, mais rien ne
+  forçait à relire une rubrique devenue fausse. Demande : le relire en entier et que ce soit
+  systématique, sans le compliquer ni rien y laisser de faux.
+- Workflow : quatre relecteurs Opus 5.5 (un par groupe de rubriques) ont vérifié chaque phrase
+  dans le code, puis un contre-vérificateur par groupe a revérifié chaque réécriture. 86 entrées :
+  54 justes, 32 réécrites (une dizaine fausses, 13 trop compliquées). Trois entrées ajoutées.
+- Systématique : champ `files` sur chaque entrée, `npm run notice` (liste de relecture avant
+  publication), test qui exige que tout fichier de `js/ui/` soit cité ou déclaré interne, règle
+  dans CLAUDE.md. Essayée sur la 4.48.0 : elle aurait listé 23 entrées, dont celle des armures.
+- Rappel : le français, toujours, dans les messages à Franck (noté en mémoire le 23/11).
 
 ### 23/11/2026 (nuit) — Suites du grimoire, armures « Autres », outils des dons, étude des explications (4.48.0, publiée le 25/11/2026)
 

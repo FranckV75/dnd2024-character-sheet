@@ -13,6 +13,15 @@
 /** @type {ReadonlyArray<{ version: string, items: ReadonlyArray<string> }>} */
 export const WHATS_NEW = Object.freeze([
     {
+        version: '4.48.1',
+        items: [
+            "Le « Mode d'emploi » a été relu en entier et comparé à la fiche : une dizaine de rubriques fausses ou dépassées sont corrigées (dés de vie, menu « Gestion », bouton « Lancer », sorts donnés…).",
+            "D'autres rubriques sont plus courtes : les détails rares sont retirés, la fiche les explique déjà à l'écran.",
+            "Nouvelles rubriques : les mises à jour, les dés de vie, les repères dorés des dons, et les boutons − et + des emplacements de sorts (ils changent le nombre, ils ne dépensent rien).",
+            "Désormais, le mode d'emploi est relu à chaque nouvelle version."
+        ]
+    },
+    {
         version: '4.48.0',
         items: [
             "Grimoire : nouveau bloc « Sorts de classe » avec une case pour les lancers gratuits du Paladin (Châtiment divin, Appel de destrier) et de l'Occultiste (Arcanum mystique, Contact avec les plans).",
