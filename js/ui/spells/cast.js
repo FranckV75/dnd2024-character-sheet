@@ -7,7 +7,9 @@
 // Rôdeur, sorts de classe du Paladin et de l'Occultiste, quelques sous-classes :
 // js/rules/free-casts.js) propose d'abord « Lancer gratuit », qui coche la case de la capacité au
 // lieu d'un emplacement. Arcanum mystique (Occultiste) : sort de niveau 6+ sans emplacement de son
-// niveau, « Lancer gratuit » coche la case de l'Arcanum de ce niveau. Maîtrise des sorts
+// niveau, « Lancer gratuit » coche la case de l'Arcanum de ce niveau ; la ligne d'Arcanum elle-même
+// (état 'arcanum') ne propose jamais d'emplacement (PHB 2024 : il se lance sans emplacement, ceux
+// de pacte sont de niveau 5 au plus). Maîtrise des sorts
 // (Magicien 18) : « Lancer sans emplacement », à volonté, rien à cocher.
 // Contrôle de JEU : utilisable fiche verrouillée.
 //  - Lit : la fiche (emplacements, concentration en cours, lancers gratuits), la base de sorts
@@ -47,11 +49,11 @@ export function castRowAt(g, index, state) {
     if (!row || !isCastable(state)) return;
     // Rituel : case R cochée ou base de sorts, préparé ou non (même règle que le losange)
     const known = findSpellByName(g.spellsDb, row.name);
-    const { ritual, ritualOnly } = castModes(state, isRitualSpell(row, known));
+    const { ritual, ritualOnly, arcanum } = castModes(state, isRitualSpell(row, known));
     castSpell(g, {
         name: plainText(row.name), level: Number(rowLevel(row)), concentration: row.c === true,
         names: [plainText(row.name), ...spellNames(known), known?.vo],
-        ritual, ritualOnly,
+        ritual, ritualOnly, arcanum,
         ritualOnlyText: ritualOnly ? 'Sort non préparé : depuis votre livre, il se lance seulement en rituel (Savoir rituel).' : ''
     });
 }
@@ -63,13 +65,14 @@ export function castRowAt(g, index, state) {
  * @param {{ name: string, level: number, concentration?: boolean, ritual?: boolean, ritualOnly?: boolean, ritualOnlyText?: string, names?: string[] }} spell
  *        names : tous les noms du sort (noté, français, anglais), pour retrouver ses lancers gratuits
  *        ritualOnly : sort qui ne se lance qu'en rituel (sort donné par la Voie du Cœur sauvage,
- *        rituel du livre non préparé du Magicien) ; ritualOnlyText : la raison, dite dans la fenêtre
+ *        rituel du livre non préparé du Magicien) ; ritualOnlyText : la raison, dite dans la fenêtre ;
+ *        arcanum : ligne d'Arcanum mystique, lancée seulement par sa case (aucun emplacement)
  */
-export function castSpell({ store, setStatus }, { name: spellName, level, concentration: needsConcentration = false, ritual = false, ritualOnly = false, ritualOnlyText = '', names = [] }) {
+export function castSpell({ store, setStatus }, { name: spellName, level, concentration: needsConcentration = false, ritual = false, ritualOnly = false, ritualOnlyText = '', names = [], arcanum: arcanumRow = false }) {
     const character = store.get();
     const d = derivedOf(character);
     const name = spellName || 'ce sort';
-    const options = ritualOnly ? [] : castSlotOptions(level, d.spellSlots, d.classSlug, slotStateOf(character));
+    const options = ritualOnly || arcanumRow ? [] : castSlotOptions(level, d.spellSlots, d.classSlug, slotStateOf(character));
     // Arcanum mystique (Occultiste) : sort de niveau 6+ sans emplacement de son niveau, lancé une
     // fois par repos long sans emplacement. Sa case (une par niveau de sort) est proposée comme un
     // lancer gratuit ; la fenêtre le dit, au lieu de « Aucun emplacement »

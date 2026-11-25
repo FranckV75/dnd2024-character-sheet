@@ -11,7 +11,9 @@
 //    Magicien change à chaque repos long) ; les boutons + / − du nombre d'emplacements sont
 //    réservés à l'édition. Barde, Ensorceleur, Occultiste (liste fixe) et sorts donnés par la
 //    classe, la sous-classe, un don ou l'espèce : losange plein fixe « toujours préparé », calculé
-//    à l'affichage (js/rules/spell-preparation.js), jamais écrit dans la fiche.
+//    à l'affichage (js/rules/spell-preparation.js), jamais écrit dans la fiche. Sort d'Arcanum
+//    mystique de l'Occultiste (un par niveau, arcanumRows) : même losange fixe, hors du compte
+//    « Préparés : x / y », lancé seulement par sa case d'Arcanum.
 //  - Fenêtre « Préparer mes sorts » (bouton de la barre, Clerc, Druide, Paladin, Rôdeur ;
 //    spells/prepare.js) : cases à cocher sur toute la liste de la classe, utilisable verrouillé.
 //  - Vue « au combat » (bouton de la barre, retenu sur l'appareil) : seulement les sorts mineurs,
@@ -84,7 +86,7 @@ import { adeptElements } from '../rules/feat-choices.js';
 import { classSpellCounts } from '../rules/class-progression.js';
 import {
     wholeListSource, fitsWholeList, grantedSpellKeys, spellPrepState, combatPlace,
-    highestUsableSlot, mysticArcanumLevel, missingSlotLevel
+    highestUsableSlot, mysticArcanumLevel, missingSlotLevel, arcanumRows
 } from '../rules/spell-preparation.js';
 import { castsRitualsFromBook, isRitualSpell } from '../rules/spellbook.js';
 import { allFreeCasts } from '../rules/free-casts.js';
@@ -139,11 +141,12 @@ const COMBAT_VIEW_HELP = {
  * @param {Object} character
  * @param {Object} derivedNow - valeurs calculées (derivedOf)
  * @param {Object[]} rows - dynamic_spells
- * @returns {{ granted: Set<string>, wholeList: boolean, fits: (row: Object) => boolean, states: string[], noSlots: number[] }}
+ * @returns {{ granted: Set<string>, wholeList: boolean, fits: (row: Object) => boolean, states: string[], noSlots: number[],
+ *   arcanum: Set<number> }} arcanum : indices des lignes d'Arcanum mystique (hors du compte des préparés)
  */
 function rowStates(g, character, derivedNow, rows) {
     // Losange : liste fixe (Barde, Ensorceleur, Occultiste) et sorts donnés, toujours préparés ;
-    // un sort noté hors de la liste fixe (Arcanum mystique…) garde son losange à cocher. Les sorts
+    // un sort noté hors de la liste fixe (Découvertes magiques…) garde son losange à cocher. Les sorts
     // choisis d'une capacité (Maîtrise des sorts, Sorts de prédilection, Découvertes magiques) sont
     // des sorts donnés : la base de sorts relie leur nom enregistré (anglais) au nom de la ligne
     const granted = grantedSpellKeys(character, derivedNow, g.spellsDb);
@@ -154,7 +157,9 @@ function rowStates(g, character, derivedNow, rows) {
     const bookRitual = castsRitualsFromBook(derivedNow.classSlug)
         ? (row) => isRitualSpell(row, findSpellByName(g.spellsDb, row.name))
         : null;
-    const states = rows.map(row => spellPrepState(row, { wholeList, granted, fits, bookRitual }));
+    // Arcanum mystique (Occultiste 11+) : un sort par niveau, toujours disponible, hors du compte
+    const arcanum = arcanumRows(rows, derivedNow, g.spellsDb, granted);
+    const states = rows.map((row, i) => spellPrepState(row, { wholeList, granted, fits, bookRitual, arcanum: arcanum.has(i) }));
 
     // Sort préparé au-dessus des emplacements : simple avertissement (jamais pour un sort qui a
     // son lancer gratuit, ni pour un Arcanum mystique)
@@ -169,7 +174,7 @@ function rowStates(g, character, derivedNow, rows) {
     };
     const noSlots = rows.map((row, i) => (missingSlotLevel(row, states[i], { topSlot, arcanumLevel })
         ? missingSlotLevel(row, states[i], { topSlot, arcanumLevel, freeCast: hasFreeCast(row) }) : 0));
-    return { granted, wholeList, fits, states, noSlots };
+    return { granted, wholeList, fits, states, noSlots, arcanum };
 }
 
 /**
@@ -206,7 +211,7 @@ function renderRows(g, ui, character, force, structural) {
     const elements = adeptElements(character);
     const derivedNow = derivedOf(character);
     const affinity = elementalAffinity(derivedNow);
-    const { granted, wholeList, fits, states, noSlots } = rowStates(g, character, derivedNow, rows);
+    const { granted, wholeList, fits, states, noSlots, arcanum } = rowStates(g, character, derivedNow, rows);
 
     // Vue « au combat » : les sorts de niveau 1+ non préparés se retirent de l'écran (classe
     // CSS, l'impression garde tout) ; pas la ligne en cours de saisie, qui ne disparaît pas
@@ -243,7 +248,7 @@ function renderRows(g, ui, character, force, structural) {
         table.tbody.append(...trs.filter(tr => tr.parentNode !== table.tbody));
     }
 
-    const counts = spellCounts(rows, view.level, granted, (row) => wholeList && fits(row));
+    const counts = spellCounts(rows, view.level, granted, (row) => wholeList && fits(row), arcanum);
     const anySpell = rows.some(hasSpellContent);
     const anyShown = [...shown].some(i => !outOfCombat(i));
     // Sorts affichés, mais tous retirés par la vue au combat

@@ -7,9 +7,16 @@
 //    Chevalier occulte et l'Arnaqueur arcanique (« Whenever you gain a Fighter / Rogue level, you
 //    can replace one spell on your list »). Le Paladin et le Rôdeur changent un sort après chaque
 //    repos long : leur losange reste à cocher, comme pour le Clerc, le Druide et le Magicien.
-//    Sorts notés hors de cette liste fixe (Arcanum mystique au-dessus des emplacements de pacte,
-//    Découvertes magiques du Collège du Savoir, rituels du Pacte du grimoire, sorts des
-//    manifestations…) : losange à cocher comme avant, pour ne compter que ceux qui sont préparés.
+//    Sorts notés hors de cette liste fixe (Découvertes magiques du Collège du Savoir, rituels du
+//    Pacte du grimoire, sorts des manifestations…) : losange à cocher comme avant, pour ne compter
+//    que ceux qui sont préparés.
+//  - Arcanum mystique (Occultiste 11+, PHB 2024 « Mystic Arcanum ») : un sort d'Occultiste de
+//    niveau 6 (puis 7, 8, 9) lancé une fois par repos long sans emplacement. Ce n'est pas un sort
+//    préparé de la table (Pact Magic : sorts de niveau 5 au plus) : la ligne qui le porte
+//    (arcanumRows, une par niveau) a un losange plein fixe, état 'arcanum', toujours disponible,
+//    hors du compte des préparés, et se lance seulement par sa case « Arcanum mystique (niveau N) »
+//    (aucun emplacement : ceux de pacte sont de niveau 5 au plus, et un emplacement de multiclasse
+//    ne lance que des sorts préparés, PHB 2024 chap. 2 « Multiclassing », « Pact Magic »).
 //  - État affiché du losange d'une ligne : calcul d'affichage, jamais écrit dans la fiche (la clé
 //    v3 « prep » garde la valeur du joueur, qui reprend son sens s'il change de classe).
 //  - Sorts donnés (classe, sous-classe, dons, espèce, sorts choisis d'une capacité : Maîtrise des
@@ -169,6 +176,8 @@ export function grantedSpellKeys(character, derived, db = null) {
  * État du losange d'une ligne du grimoire :
  *  - 'cantrip'    : sort mineur, toujours disponible (∞) ;
  *  - 'granted'    : donné par la classe, la sous-classe, un don ou l'espèce (toujours préparé, hors du compte) ;
+ *  - 'arcanum'    : sort d'Arcanum mystique de l'Occultiste (arcanumRows) : toujours disponible,
+ *    hors du compte, lancé seulement par sa case d'Arcanum (losange plein fixe, « prep » ignoré) ;
  *  - 'list'       : classe à liste fixe (toujours préparé, compté) ;
  *  - 'prepared' / 'unprepared' : losange coché ou non par le joueur (aussi, dans une classe à
  *    liste fixe, pour un sort hors de cette liste : voir fitsWholeList) ;
@@ -176,14 +185,16 @@ export function grantedSpellKeys(character, derived, db = null) {
  *    Magicien : js/rules/spellbook.js) ; losange à cocher comme 'unprepared'.
  * @param {Object} row - ligne de dynamic_spells
  * @param {{ wholeList?: boolean, granted?: Set<string>|null, fits?: ((row: Object) => boolean)|null,
- *   bookRitual?: ((row: Object) => boolean)|null }} [options]
+ *   bookRitual?: ((row: Object) => boolean)|null, arcanum?: boolean }} [options]
  *        fits : le sort fait-il partie de la liste fixe (fitsWholeList) ? Absent : oui ;
- *        bookRitual : le sort non préparé se lance-t-il en rituel depuis le livre ? Absent : non
- * @returns {'cantrip'|'granted'|'list'|'prepared'|'unprepared'|'ritual'}
+ *        bookRitual : le sort non préparé se lance-t-il en rituel depuis le livre ? Absent : non ;
+ *        arcanum : la ligne est-elle un sort d'Arcanum mystique (arcanumRows) ? Absent : non
+ * @returns {'cantrip'|'granted'|'arcanum'|'list'|'prepared'|'unprepared'|'ritual'}
  */
-export function spellPrepState(row, { wholeList = false, granted = null, fits = null, bookRitual = null } = {}) {
+export function spellPrepState(row, { wholeList = false, granted = null, fits = null, bookRitual = null, arcanum = false } = {}) {
     if (rowLevel(row) === '0') return 'cantrip';
     if (granted?.has(spellNameKey(row?.name))) return 'granted';
+    if (arcanum === true) return 'arcanum';
     if (wholeList && (!fits || fits(row))) return 'list';
     if (row?.prep === true) return 'prepared';
     return bookRitual?.(row) ? 'ritual' : 'unprepared';
@@ -208,10 +219,10 @@ export function combatPlace(state) {
 
 /**
  * Sort de niveau 1+ qui a un bouton « Lancer » : préparé (même d'office), avec un emplacement ;
- * rituel du livre non préparé, seulement en rituel (isRitualOnly)
+ * Arcanum mystique, par sa case ; rituel du livre non préparé, seulement en rituel (isRitualOnly)
  */
 export function isCastable(state) {
-    return state === 'prepared' || state === 'list' || state === 'granted' || state === 'ritual';
+    return state === 'prepared' || state === 'list' || state === 'granted' || state === 'arcanum' || state === 'ritual';
 }
 
 /** Sort qui ne peut se lancer qu'en rituel (rituel du livre non préparé) */
@@ -223,15 +234,17 @@ export function isRitualOnly(state) {
  * Façons de lancer une ligne du grimoire (fenêtre « Lancer ») : avec un emplacement si le sort
  * est préparé (même d'office), en rituel s'il est rituel (case R ou base de sorts : isRitualSpell
  * de js/rules/spellbook.js), quel que soit l'état du losange ; un rituel du livre non préparé
- * (Savoir rituel) se lance seulement en rituel.
+ * (Savoir rituel) se lance seulement en rituel. Arcanum mystique : jamais avec un emplacement
+ * (seulement par sa case, arcanum : true ; voir arcanumRows).
  * @param {string} state - spellPrepState()
  * @param {boolean} ritual - le sort est-il rituel ?
- * @returns {{ slots: boolean, ritual: boolean, ritualOnly: boolean }}
+ * @returns {{ slots: boolean, ritual: boolean, ritualOnly: boolean, arcanum: boolean }}
  */
 export function castModes(state, ritual) {
-    if (!isCastable(state)) return { slots: false, ritual: false, ritualOnly: false };
+    if (!isCastable(state)) return { slots: false, ritual: false, ritualOnly: false, arcanum: false };
     const ritualOnly = isRitualOnly(state);
-    return { slots: !ritualOnly, ritual: ritualOnly || ritual === true, ritualOnly };
+    const arcanum = state === 'arcanum';
+    return { slots: !ritualOnly && !arcanum, ritual: ritualOnly || ritual === true, ritualOnly, arcanum };
 }
 
 /**
@@ -303,6 +316,39 @@ export function mysticArcanumLevel(classSlug, level) {
 export function isArcanumSpellLevel(spellLevel, arcanumLevel) {
     const level = Number(spellLevel);
     return level >= 6 && level <= arcanumLevel;
+}
+
+/**
+ * Lignes du grimoire qui portent un sort d'Arcanum mystique (Occultiste 11+) : sort nommé, noté à
+ * un niveau d'Arcanum atteint (isArcanumSpellLevel), de la liste de l'Occultiste et de ce niveau
+ * dans la base (sort absent de la base : on fait confiance au joueur, comme fitsWholeList), qui
+ * n'est pas un sort donné. Une seule par niveau de sort (un arcanum par niveau) : la première
+ * au losange coché (fiches où le joueur l'a coché pour pouvoir le lancer), sinon la première
+ * notée. Les autres lignes de ce niveau restent des sorts ordinaires (losange à cocher).
+ * Calcul d'affichage : rien n'est écrit dans la fiche.
+ * @param {Array<Object>} rows - dynamic_spells
+ * @param {{ classSlug?: string, level?: number }} derived - deriveCharacter()
+ * @param {Array<Object>|null} [db] - base de sorts (absente : tout sort nommé est accepté)
+ * @param {Set<string>|null} [granted] - grantedSpellKeys()
+ * @returns {Set<number>} indices des lignes d'Arcanum dans dynamic_spells
+ */
+export function arcanumRows(rows, derived, db = null, granted = null) {
+    const picked = new Set();
+    const top = mysticArcanumLevel(derived?.classSlug, derived?.level);
+    if (!top) return picked;
+    const spells = Array.isArray(db) ? db : [];
+    const byLevel = new Map();
+    (Array.isArray(rows) ? rows : []).forEach((row, index) => {
+        if (!row || typeof row !== 'object' || isSpellRowEmpty(row) || !plainText(row.name).trim()) return;
+        const level = Number(rowLevel(row));
+        if (!isArcanumSpellLevel(level, top) || granted?.has(spellNameKey(row.name))) return;
+        const spell = findSpellByName(spells, row.name);
+        if (spell && (Number(spell.level) !== level || !(spell.classes || []).includes('warlock'))) return;
+        const current = byLevel.get(level);
+        if (current === undefined || (rows[current].prep !== true && row.prep === true)) byLevel.set(level, index);
+    });
+    for (const index of byLevel.values()) picked.add(index);
+    return picked;
 }
 
 /**

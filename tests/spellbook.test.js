@@ -137,17 +137,17 @@ describe('Savoir rituel : rituel du livre lancé sans être préparé', () => {
         const row = { lvl: '1', name: 'Compréhension des langues', r: false, prep: true };
         const ritual = isRitualSpell(row, findSpellByName(db, row.name));
         assert.equal(ritual, true);
-        assert.deepEqual(castModes(spellPrepState(row, { bookRitual }), ritual), { slots: true, ritual: true, ritualOnly: false });
+        assert.deepEqual(castModes(spellPrepState(row, { bookRitual }), ritual), { slots: true, ritual: true, ritualOnly: false, arcanum: false });
         // Même sort non préparé : seulement en rituel (Savoir rituel)
         assert.deepEqual(castModes(spellPrepState({ ...row, prep: false }, { bookRitual }), ritual),
-            { slots: false, ritual: true, ritualOnly: true });
+            { slots: false, ritual: true, ritualOnly: true, arcanum: false });
         // Sort préparé non rituel : emplacements seulement ; sort donné ou liste fixe rituel : les deux
-        assert.deepEqual(castModes('prepared', false), { slots: true, ritual: false, ritualOnly: false });
-        assert.deepEqual(castModes('granted', true), { slots: true, ritual: true, ritualOnly: false });
-        assert.deepEqual(castModes('list', true), { slots: true, ritual: true, ritualOnly: false });
+        assert.deepEqual(castModes('prepared', false), { slots: true, ritual: false, ritualOnly: false, arcanum: false });
+        assert.deepEqual(castModes('granted', true), { slots: true, ritual: true, ritualOnly: false, arcanum: false });
+        assert.deepEqual(castModes('list', true), { slots: true, ritual: true, ritualOnly: false, arcanum: false });
         // Sort non préparé (sans Savoir rituel) ou sort mineur : pas de fenêtre Lancer
         for (const state of ['unprepared', 'cantrip']) {
-            assert.deepEqual(castModes(state, true), { slots: false, ritual: false, ritualOnly: false }, state);
+            assert.deepEqual(castModes(state, true), { slots: false, ritual: false, ritualOnly: false, arcanum: false }, state);
         }
     });
 

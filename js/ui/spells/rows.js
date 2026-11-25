@@ -6,7 +6,8 @@
 // affichage (valeurs, losange « préparé », repères « Adepte », « Lançable en rituel », « Pas
 // d'emplacement », libellés pour les lecteurs d'écran) ; applyRowLock pose le verrou.
 // Le losange « préparé » est un contrôle de JEU (utilisable verrouillé) ; toujours préparé
-// (liste fixe, sort donné) : losange plein fixe, expliqué au toucher.
+// (liste fixe, sort donné) et sort d'Arcanum mystique (toujours disponible, hors du compte) :
+// losange plein fixe, expliqué au toucher.
 //  - Lit : la base de sorts (g.spellsDb), le niveau de la ligne de saisie (g.entryLevel,
 //    g.view.level), le verrou de la fiche.
 //  - Écrit : la fiche, par editRow (entry.js) ; rien d'autre que ses propres éléments.
@@ -35,8 +36,11 @@ const FLAG_COLUMNS = [
  *  barre du haut (#save-status) tient sur une ligne, ces phrases y tiennent dès 768 px */
 const PREP_HELP = {
     list: "Toujours préparé : votre classe ne change sa liste qu'en gagnant un niveau (un sort à la fois).",
-    granted: 'Toujours préparé : sort donné (classe, sous-classe, don, espèce), hors du compte des préparés.'
+    granted: 'Toujours préparé : sort donné (classe, sous-classe, don, espèce), hors du compte des préparés.',
+    arcanum: 'Arcanum mystique : toujours disponible, une fois par repos long, hors du compte des préparés.'
 };
+/** Losange plein fixe : pas un interrupteur (liste fixe, sort donné, Arcanum mystique) */
+const FIXED_STATES = new Set(Object.keys(PREP_HELP));
 /** Savoir rituel (Magicien) : sort rituel du livre, non préparé. Infobulle (souris), puis version
  *  courte affichée dans la barre du haut quand on touche le repère (tablette) */
 const BOOK_RITUAL_HELP = 'Savoir rituel : ce sort de votre livre se lance en rituel sans être préparé (10 minutes de plus, sans emplacement), en lisant le livre.';
@@ -90,7 +94,7 @@ export function createRow(g, { onCast, onDelete }) {
                 const row = g.spellsOf()[r.index];
                 if (!row || rowLevel(row) === '0') return;
                 // Toujours préparé : rien à cocher, le toucher (tablette) dit pourquoi
-                if (r.state === 'list' || r.state === 'granted') {
+                if (FIXED_STATES.has(r.state)) {
                     setStatus(PREP_HELP[r.state]);
                     return;
                 }
@@ -262,13 +266,13 @@ function writePrep(r, { entry, cantrip, always, prepared, state, wholeList, what
         r.prep.textContent = '◆';
         r.prep.removeAttribute('aria-pressed');
         r.prep.title = PREP_HELP[state];
-        r.prep.setAttribute('aria-label', `Sort ${what} : toujours préparé`);
+        r.prep.setAttribute('aria-label', state === 'arcanum' ? `Sort ${what} : Arcanum mystique, toujours disponible` : `Sort ${what} : toujours préparé`);
     } else {
         r.prep.textContent = prepared ? '◆' : '◇';
         r.prep.setAttribute('aria-pressed', String(prepared));
         // Classe à liste fixe : sort noté hors de cette liste (niveau trop haut, autre liste)
         r.prep.title = wholeList
-            ? (prepared ? 'Coché : compté dans vos sorts préparés' : "Hors de votre liste fixe (Arcanum, Découvertes magiques…) : cochez-le seulement s'il compte dans vos sorts préparés")
+            ? (prepared ? 'Coché : compté dans vos sorts préparés' : "Hors de votre liste fixe (Découvertes magiques, autre liste…) : cochez-le seulement s'il compte dans vos sorts préparés")
             : prepared ? 'Sort préparé'
                 : state === 'ritual' ? 'Sort non préparé : lançable en rituel depuis votre livre (Savoir rituel)' : 'Sort non préparé';
         r.prep.setAttribute('aria-label', `Sort ${what} préparé`);
@@ -304,7 +308,7 @@ export function writeRow(g, r, row, { force, locked, entry, line, elements = [],
         const text = missingSlotText(noSlot);
         if (r.noSlot.title !== text) r.noSlot.title = text;
     }
-    const always = state === 'list' || state === 'granted';
+    const always = FIXED_STATES.has(state);
     const prepared = state === 'prepared' || always;
     const cantrip = level === '0';
 

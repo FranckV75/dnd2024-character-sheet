@@ -233,7 +233,7 @@ export function createGrantedSpells({ store, tooltip, getSpellsDb, onCast = null
             };
             const arcanumGroup = arcana.length ? el('div', { class: 'feat-spells-group' },
                 el('div', { class: 'feat-spells-head' }, el('strong', { class: 'feat-spells-name', text: 'Arcanum mystique' })),
-                el('p', { class: 'feat-spells-extra', text: "Notez vos sorts d'Arcanum dans le tableau des sorts. Chacun se lance une fois sans emplacement, de nouveau après un repos long : son bouton « Lancer » coche la case de son niveau." }),
+                el('p', { class: 'feat-spells-extra', text: "Notez vos sorts d'Arcanum dans le tableau des sorts (un par niveau) : toujours disponibles, ils ne comptent pas dans vos sorts préparés. Chacun se lance une fois sans emplacement, de nouveau après un repos long : son bouton « Lancer » coche la case de son niveau." }),
                 el('ul', { class: 'feat-spells-list' }, arcana.map(counter => el('li', { class: 'feat-spell' },
                     el('span', { class: 'feat-spell-level', text: `Sort de niveau ${counter.key.at(-1)}` }), freeBoxes(counter))))) : null;
             // Choisir un sort reconstruit le bloc : le menu utilisé garde le focus

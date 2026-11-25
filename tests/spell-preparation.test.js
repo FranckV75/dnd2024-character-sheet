@@ -10,7 +10,8 @@ import {
     SPELL_PREPARATION, WHOLE_LIST_CLASSES, preparesFromClassList, longRestPreparation, preparationView,
     prepareSpellRows, unprepareSpellRows, setRowPrepared, matchesSpellQuery,
     replacesOneSpell, preparedSpellNames, preparationSwap,
-    highestUsableSlot, mysticArcanumLevel, missingSlotLevel, missingSlotText, combatPlace, isArcanumSpellLevel, arcanumCastText
+    highestUsableSlot, mysticArcanumLevel, missingSlotLevel, missingSlotText, combatPlace, isArcanumSpellLevel, arcanumCastText,
+    arcanumRows, castModes
 } from '../js/rules/spell-preparation.js';
 import { EMPTY_SPELL } from '../js/state/schema.js';
 import { spellCounts, spellNameKey, spellLimitWarnings, findSpellByName } from '../js/rules/spells.js';
@@ -58,8 +59,8 @@ describe('Classes à liste fixe (préparation au passage de niveau)', () => {
     });
 
     test('Vue au combat et bouton « Lancer »', () => {
-        assert.deepEqual(['cantrip', 'granted', 'list', 'prepared', 'unprepared'].map(inCombatView), [true, true, true, true, false]);
-        assert.deepEqual(['cantrip', 'granted', 'list', 'prepared', 'unprepared'].map(isCastable), [false, true, true, true, false]);
+        assert.deepEqual(['cantrip', 'granted', 'list', 'prepared', 'unprepared', 'arcanum'].map(inCombatView), [true, true, true, true, false, true]);
+        assert.deepEqual(['cantrip', 'granted', 'list', 'prepared', 'unprepared', 'arcanum'].map(isCastable), [false, true, true, true, false, true]);
     });
 });
 
@@ -77,9 +78,10 @@ describe('Sorts notés hors de la liste fixe (losange à cocher, comme avant)', 
         const source = wholeListSource(derived);
         const fits = (r) => fitsWholeList(r, source, findSpellByName(db, r.name));
         const granted = grantedSpellKeys(record, derived);
-        const counts = spellCounts(rows, '', granted, (r) => fits(r));
+        const arcanum = arcanumRows(rows, derived, db, granted);
+        const counts = spellCounts(rows, '', granted, (r) => fits(r), arcanum);
         return {
-            states: rows.map(r => spellPrepState(r, { wholeList: source !== null, granted, fits })),
+            states: rows.map((r, i) => spellPrepState(r, { wholeList: source !== null, granted, fits, arcanum: arcanum.has(i) })),
             prepared: counts.prepared,
             warnings: spellLimitWarnings(counts, classSpellCounts(derived.classSlug, derived.level))
         };
@@ -106,17 +108,19 @@ describe('Sorts notés hors de la liste fixe (losange à cocher, comme avant)', 
         assert.equal(fitsWholeList({ lvl: '1', name: 'Maléfice' }, null, null), false);
     });
 
-    test('Occultiste 11 : Arcanum mystique noté ne fait plus dépasser la table', () => {
+    test('Occultiste 11 : Arcanum mystique noté ne fait plus dépasser la table, losange coché ou non', () => {
         const names = ['Maléfice', 'Trait ensorcelé', 'Bouclier', 'Ténèbres', 'Foulée brumeuse', 'Contresort',
             'Voracité de Hadar', 'Vol', 'Bannissement', 'Porte dimensionnelle', 'Scrutation'];
         const rows = [...names.map(name => row(name, true)), row('Cercle de mort')];
         const result = grimoire({ char_class: 'Occultiste', char_level: '11' }, rows);
         assert.equal(result.prepared, 11);
         assert.deepEqual(result.warnings, []);
-        assert.equal(result.states.at(-1), 'unprepared');
-        // Coché par le joueur : compté, comme avant
+        assert.equal(result.states.at(-1), 'arcanum');
+        // Coché par le joueur (anciennes fiches : il fallait le cocher pour le lancer) : toujours hors du compte
         rows[rows.length - 1] = row('Cercle de mort', true);
-        assert.equal(grimoire({ char_class: 'Occultiste', char_level: '11' }, rows).prepared, 12);
+        const checked = grimoire({ char_class: 'Occultiste', char_level: '11' }, rows);
+        assert.equal(checked.prepared, 11);
+        assert.equal(checked.states.at(-1), 'arcanum');
     });
 
     test('Barde du Savoir 6 : les Découvertes magiques non cochées ne comptent pas', () => {
@@ -716,5 +720,97 @@ describe('Sort préparé au-dessus des emplacements (simple avertissement)', () 
         assert.equal(missingSlotLevel(row, 'prepared', { topSlot: 3 }), 4);
         assert.deepEqual(row, { lvl: '4', name: 'Bannissement', prep: true });
         assert.match(missingSlotText(4), /^Niveau 4 : vous n'avez pas encore d'emplacement de ce niveau/);
+    });
+});
+
+describe('Arcanum mystique : sorts toujours disponibles, hors des sorts préparés (PHB 2024)', () => {
+    const base = JSON.parse(readFileSync(new URL('../data/spells.json', import.meta.url), 'utf8'));
+    const db = Array.isArray(base) ? base : Object.values(base);
+    const row = (name, prep = false) => {
+        const spell = findSpellByName(db, name);
+        assert.ok(spell, name);
+        return { ...EMPTY_SPELL, lvl: String(spell.level), name: spell.name, prep };
+    };
+    const warlock = (level) => deriveCharacter({ char_class: 'Occultiste', char_level: String(level) });
+    const indices = (rows, level, data = db) => [...arcanumRows(rows, warlock(level), data)].sort((a, b) => a - b);
+
+    test('Occultiste 15 : 13 sorts de la table + 3 Arcanum cochés → « Préparés : 13 / 13 »', () => {
+        const names = ['Maléfice', "Armure d'Agathys", 'Charme-personne', 'Foulée brumeuse', 'Image miroir', 'Invisibilité',
+            'Contresort', 'Dissipation de la magie', 'Bannissement', 'Porte dimensionnelle', 'Scrutation', 'Songe',
+            'Immobilisation de monstre'];
+        const rows = [...names.map(name => row(name, true)), row('Cercle de mort', true), row('Doigt de mort', true), row('Demi-plan', true)];
+        const derived = warlock(15);
+        const granted = grantedSpellKeys({ char_class: 'Occultiste', char_level: '15' }, derived);
+        const arcanum = arcanumRows(rows, derived, db, granted);
+        assert.deepEqual([...arcanum], [13, 14, 15]);
+        const source = wholeListSource(derived);
+        const fits = (r) => fitsWholeList(r, source, findSpellByName(db, r.name));
+        const counts = spellCounts(rows, '', granted, fits, arcanum);
+        assert.equal(counts.prepared, 13);
+        assert.equal(counts.total, 16);
+        assert.deepEqual(spellLimitWarnings(counts, classSpellCounts('warlock', 15)), []);
+        // Sans le repérage de l'Arcanum, l'ancien compte : 16 / 13
+        assert.equal(spellCounts(rows, '', granted, fits).prepared, 16);
+        // Décochés : même compte (le losange d'une ligne d'Arcanum est ignoré)
+        const unchecked = rows.map((r, i) => (i >= 13 ? { ...r, prep: false } : r));
+        assert.equal(spellCounts(unchecked, '', granted, fits, arcanumRows(unchecked, derived, db, granted)).prepared, 13);
+    });
+
+    test('État « arcanum » : losange fixe, vue « Au combat », bouton « Lancer » sans emplacement', () => {
+        const r = row('Cercle de mort', false);
+        // Prend le pas sur le losange et sur la liste fixe ; un sort donné reste un sort donné
+        assert.equal(spellPrepState(r, { wholeList: true, fits: () => false, arcanum: true }), 'arcanum');
+        assert.equal(spellPrepState({ ...r, prep: true }, { arcanum: true }), 'arcanum');
+        assert.equal(spellPrepState(r, { granted: new Set([spellNameKey('Cercle de mort')]), arcanum: true }), 'granted');
+        assert.equal(spellPrepState({ lvl: '0', name: 'Décharge occulte' }, { arcanum: true }), 'cantrip');
+        assert.equal(spellPrepState(r, {}), 'unprepared');
+        assert.equal(inCombatView('arcanum'), true);
+        assert.equal(combatPlace('arcanum'), 'table');
+        assert.equal(isCastable('arcanum'), true);
+        // Jamais d'emplacement (pacte : niveau 5 au plus ; multiclasse : sorts préparés seulement)
+        assert.deepEqual(castModes('arcanum', false), { slots: false, ritual: false, ritualOnly: false, arcanum: true });
+        assert.deepEqual(castModes('arcanum', true), { slots: false, ritual: true, ritualOnly: false, arcanum: true });
+        // Jamais l'avertissement « Pas d'emplacement »
+        assert.equal(missingSlotLevel(r, 'arcanum', { topSlot: 5 }), 0);
+    });
+
+    test("Une ligne par niveau d'Arcanum atteint, sort de l'Occultiste noté à son niveau", () => {
+        const rows = [
+            row('Maléfice', true), row('Cercle de mort'), row('Doigt de mort'), row('Demi-plan'), row('Emprisonnement'),
+            row('Barrière de lames'), { ...EMPTY_SPELL, lvl: '6', name: 'Sort maison' }, { ...EMPTY_SPELL, lvl: '6', name: '', note: 'à choisir' }
+        ];
+        // Occultiste 11 : niveau 6 seulement ; 13 : 6 et 7 ; 17 : 6 à 9
+        assert.deepEqual(indices(rows, 11), [1]);
+        assert.deepEqual(indices(rows, 13), [1, 2]);
+        assert.deepEqual(indices(rows, 17), [1, 2, 3, 4]);
+        // Pas d'Arcanum avant le niveau 11, ni pour une autre classe
+        assert.deepEqual(indices(rows, 10), []);
+        assert.equal(arcanumRows(rows, deriveCharacter({ char_class: 'Magicien', char_level: '20' }), db).size, 0);
+        // Sort d'une autre liste (Barrière de lames : Clerc) : jamais ; sort inconnu de la base : accepté
+        assert.deepEqual(indices([row('Barrière de lames'), { ...EMPTY_SPELL, lvl: '6', name: 'Sort maison' }], 11), [1]);
+        // Niveau noté différent de celui de la base : pas un Arcanum
+        assert.deepEqual(indices([{ ...row('Doigt de mort'), lvl: '6' }], 13), []);
+        // Base pas encore chargée : tout sort nommé du bon niveau
+        assert.deepEqual(indices([row('Barrière de lames')], 11, null), [0]);
+        // Sort donné : reste un sort donné
+        assert.equal(arcanumRows([row('Cercle de mort')], warlock(11), db, new Set([spellNameKey('Cercle de mort')])).size, 0);
+        assert.equal(arcanumRows(null, warlock(11), db).size, 0);
+    });
+
+    test('Deux sorts notés au même niveau : celui au losange coché, sinon le premier ; les autres restent ordinaires', () => {
+        const rows = [row('Cercle de mort'), row('Mauvais oeil', true), row('Portail arcanique', true)];
+        assert.deepEqual(indices(rows, 11), [1]);
+        assert.deepEqual(indices([row('Cercle de mort'), row('Mauvais oeil')], 11), [0]);
+        // Le troisième, coché, compte comme un sort préparé ordinaire (au-delà de la table de l'Occultiste)
+        const arcanum = arcanumRows(rows, warlock(11), db);
+        assert.deepEqual(rows.map((r, i) => spellPrepState(r, { wholeList: true, fits: () => false, arcanum: arcanum.has(i) })),
+            ['unprepared', 'arcanum', 'prepared']);
+        assert.equal(spellCounts(rows, '', null, false, arcanum).prepared, 1);
+    });
+
+    test("Rien n'est écrit dans la fiche : la valeur « prep » enregistrée est gardée", () => {
+        const rows = Object.freeze([Object.freeze(row('Cercle de mort', true))]);
+        assert.deepEqual([...arcanumRows(rows, warlock(11), db)], [0]);
+        assert.equal(rows[0].prep, true);
     });
 });

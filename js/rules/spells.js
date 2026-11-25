@@ -390,23 +390,26 @@ export function nextSort(current, col) {
  *          Occultiste : voir js/rules/spell-preparation.js) : chaque sort de niveau 1+ noté compte
  *          comme préparé, losange coché ou non ; fonction : seulement les sorts pour lesquels elle
  *          répond oui (fitsWholeList), les autres suivent leur losange
+ * @param {Set<number>|null} [outside] - indices des lignes hors du compte des préparés, losange
+ *          coché ou non (sorts d'Arcanum mystique : arcanumRows de js/rules/spell-preparation.js)
  */
-export function spellCounts(rows, levelFilter = '', granted = null, wholeList = false) {
+export function spellCounts(rows, levelFilter = '', granted = null, wholeList = false, outside = null) {
     const listed = typeof wholeList === 'function' ? wholeList : () => wholeList === true;
     let total = 0;
     let visible = 0;
     let prepared = 0;
     let cantrips = 0;
-    for (const row of rows || []) {
-        if (isSpellRowEmpty(row)) continue;
+    (rows || []).forEach((row, index) => {
+        if (isSpellRowEmpty(row)) return;
         total++;
         if (matchesLevelFilter(row, levelFilter)) visible++;
-        // Sort déjà donné par la classe, la sous-classe ou un don : hors du compte de la table
-        if (granted?.has(spellNameKey(row.name))) continue;
+        // Sort déjà donné par la classe, la sous-classe ou un don, ou sort d'Arcanum mystique :
+        // hors du compte de la table
+        if (granted?.has(spellNameKey(row.name)) || outside?.has(index)) return;
         if (isPrepared(row) || (rowLevel(row) !== '0' && listed(row))) prepared++;
         // Sort mineur : niveau 0 écrit (une case de niveau vide ne compte pas)
         if (parseInt(plainText(row?.lvl), 10) === 0) cantrips++;
-    }
+    });
     return { total, visible, prepared, cantrips };
 }
 
