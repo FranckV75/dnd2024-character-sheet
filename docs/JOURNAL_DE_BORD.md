@@ -14,8 +14,10 @@ en fin de session :
 
 - **Commité, pas publié** : un personnage d'exemple par classe (demande de Franck, 25-26/11/2026),
   douze en tout, du niveau 3 au niveau 15, rangés par classe ; dont un Paladin 10 du Serment du
-  Seigneur Dragon avec ses deux dragons et cinq sous-classes de l'Odyssée. À annoncer dans les
-  « Nouveautés » de la prochaine version (rien de changé au numéro).
+  Seigneur Dragon avec ses deux dragons et cinq sous-classes de l'Odyssée. Puis les trois manques
+  corrigés (26/11/2026) : Magie des Amazones donnée, Arcanum mystique hors du compte, chakram dans
+  la liste des armes. À annoncer dans les « Nouveautés » de la prochaine version (4.50.0 ; rien de
+  changé au numéro, `npm run notice` à relire).
 - **En ligne** : version **4.49.0**, publiée le 25/11/2026 avec l'accord de Franck (« Publie »),
   version en ligne vérifiée (0 erreur console, fenêtre « Nouveautés » affichée) : remarques de
   Franck sur l'onglet Combat, d'après ses choix sur maquettes (« A · 4 colonnes », Épuisement
@@ -157,6 +159,20 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
    `docs/FEUILLE_DE_ROUTE.md`.
 
 ## Sessions
+
+### 26/11/2026 — Les trois manques de la fiche : Amazones, Arcanum, chakram (pas publié)
+
+- Demande de Franck : corriger les trois manques vus en faisant les exemples. Trois agents en
+  parallèle (un par correction, chacun relu), puis intégrés dans `v4` ; la Rôdeuse 8 et
+  l'Occultiste 15 d'exemple s'en servent.
+- Vérification par cinq relecteurs indépendants (règles des manuels, anciennes sauvegardes, code,
+  interface, exemples), chaque défaut contre-vérifié : quatre petits défauts confirmés et corrigés
+  (un 2e sort du niveau d'un Arcanum pouvait prendre sa case ; noms du guide « Trouver une
+  monture » / « Tromperie » pas reconnus ; +2 du style Armes de lancer pas compté pour le chakram
+  et la fléchette ; langues rares de l'Occultiste d'exemple). Vérifié dans la fiche (tablette,
+  clair et sombre, 0 erreur console).
+- Choix à confirmer par Franck : « tromperie » = Double illusoire ; chakram sans botte et seulement
+  lancé ; un sort d'Arcanum ne se lance jamais avec un emplacement.
 
 ### 26/11/2026 — Un personnage d'exemple par classe (pas publié)
 

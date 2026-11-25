@@ -103,10 +103,13 @@ PV des compagnons)~~, ~~Inspiration héroïque dans sa propre colonne en mode Od
 haut moins haute), ~~Épuisement centré~~, ~~titre de la renommée aéré~~ (choix de Franck sur
 maquettes, 25/11/2026).
 Fait les 25-26/11/2026 (pas encore publié) : ~~un personnage d'exemple par classe~~ (douze, niveaux 3
-à 15, dont un Paladin 10 du Seigneur Dragon avec ses dragons ; demande de Franck). Vus en route,
-pas faits : sorts de la Magie des Amazones à donner (`js/data/subclass-spells.js` :
-Injonction 3, Appel de destrier 5, Hâte 9, Confusion 13, Double illusoire 17) ; sorts d'Arcanum
-mystique cochés « préparé » comptés dans le total ; chakram absent de la liste des armes.
+à 15, dont un Paladin 10 du Seigneur Dragon avec ses dragons ; demande de Franck). Puis les trois
+manques vus en route : ~~sorts de la Magie des Amazones donnés~~ (Injonction 3, Appel de destrier 5,
+Hâte 9, Confusion 13, Double illusoire 17 ; noms du guide reconnus) ; ~~Arcanum mystique hors du
+compte des préparés~~ (une ligne par niveau, lancée seulement par sa case) ; ~~chakram dans la liste
+des armes~~ (Odyssée, à distance, sans botte ; le style Armes de lancer y est toujours compté).
+Choix à confirmer par Franck : « tromperie » du guide lue comme Double illusoire ; chakram sans botte
+d'arme (le guide est écrit pour l'ancienne édition) et seulement lancé.
 Étude faite le 23/11/2026 : ~~explications des options~~ (`docs/etudes/EXPLICATIONS.md`,
 proposition, rien n'est déployé ; Franck choisit ce qui est utile). Laissés de côté par Franck
 le 23/11/2026 : suites du mode Odyssée (choix de la campagne dans « Nouvelle fiche », exemples
