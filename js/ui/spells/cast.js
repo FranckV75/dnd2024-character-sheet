@@ -176,8 +176,10 @@ export function castSpell({ store, setStatus }, { name: spellName, level, concen
                     text: current ? `Me concentrer sur ce sort (met fin à la concentration sur ${current})`
                         : "Me concentrer sur ce sort (noté dans « États », onglet Combat)"
                 })) : null,
+            // Aucun emplacement proposé (ligne d'Arcanum mystique, sort sans emplacement de son
+            // niveau) : seulement la case du lancer gratuit
             anyLeft || boxLeft ? el('p', { class: 'muted', text: boxLeft
-                ? frenchSpaces(`Pour annuler : décochez l'emplacement dans le grimoire, ou la case du lancer gratuit${free.some(cast => cast.kind === 'class') ? FREE_CAST_CLASS_PLACE : ''}.`)
+                ? frenchSpaces(`Pour annuler : décochez ${options.length ? "l'emplacement dans le grimoire, ou " : ''}la case du lancer gratuit${free.some(cast => cast.kind === 'class') ? FREE_CAST_CLASS_PLACE : ''}.`)
                 : 'Pour annuler : décochez l\'emplacement dans le grimoire.' }) : null
         ].filter(Boolean),
         actions: [{ label: 'Annuler' }]

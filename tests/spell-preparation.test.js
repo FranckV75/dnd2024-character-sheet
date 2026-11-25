@@ -11,7 +11,7 @@ import {
     prepareSpellRows, unprepareSpellRows, setRowPrepared, matchesSpellQuery,
     replacesOneSpell, preparedSpellNames, preparationSwap,
     highestUsableSlot, mysticArcanumLevel, missingSlotLevel, missingSlotText, combatPlace, isArcanumSpellLevel, arcanumCastText,
-    arcanumRows, castModes
+    arcanumRows, arcanumSpareRows, arcanumSpareText, castModes
 } from '../js/rules/spell-preparation.js';
 import { EMPTY_SPELL } from '../js/state/schema.js';
 import { spellCounts, spellNameKey, spellLimitWarnings, findSpellByName } from '../js/rules/spells.js';
@@ -797,15 +797,44 @@ describe('Arcanum mystique : sorts toujours disponibles, hors des sorts prépar�
         assert.equal(arcanumRows(null, warlock(11), db).size, 0);
     });
 
-    test('Deux sorts notés au même niveau : celui au losange coché, sinon le premier ; les autres restent ordinaires', () => {
+    test('Deux sorts notés au même niveau : le premier noté, losange coché ou non ; les autres restent ordinaires', () => {
+        const states = (rows) => {
+            const arcanum = arcanumRows(rows, warlock(11), db);
+            return rows.map((r, i) => spellPrepState(r, { wholeList: true, fits: () => false, arcanum: arcanum.has(i) }));
+        };
         const rows = [row('Cercle de mort'), row('Mauvais oeil', true), row('Portail arcanique', true)];
-        assert.deepEqual(indices(rows, 11), [1]);
-        assert.deepEqual(indices([row('Cercle de mort'), row('Mauvais oeil')], 11), [0]);
-        // Le troisième, coché, compte comme un sort préparé ordinaire (au-delà de la table de l'Occultiste)
-        const arcanum = arcanumRows(rows, warlock(11), db);
-        assert.deepEqual(rows.map((r, i) => spellPrepState(r, { wholeList: true, fits: () => false, arcanum: arcanum.has(i) })),
-            ['unprepared', 'arcanum', 'prepared']);
-        assert.equal(spellCounts(rows, '', null, false, arcanum).prepared, 1);
+        // Le losange ne choisit pas l'Arcanum (fixe sur la ligne retenue, il ne pourrait pas s'annuler)
+        assert.deepEqual(indices(rows, 11), [0]);
+        assert.deepEqual(indices([row('Cercle de mort', true), row('Mauvais oeil')], 11), [0]);
+        // Les suivantes, cochées, comptent comme des sorts préparés ordinaires (au-delà de la table)
+        assert.deepEqual(states(rows), ['arcanum', 'prepared', 'prepared']);
+        assert.equal(spellCounts(rows, '', null, false, arcanumRows(rows, warlock(11), db)).prepared, 2);
+        // Lignes en trop : reliées à l'Arcanum de leur niveau ; aucune à un niveau à un seul sort
+        assert.deepEqual([...arcanumSpareRows(rows, warlock(11), db)], [[1, 0], [2, 0]]);
+        assert.equal(arcanumSpareRows([row('Cercle de mort'), row('Doigt de mort')], warlock(13), db).size, 0);
+        assert.equal(arcanumSpareRows(rows, warlock(10), db).size, 0);
+        assert.match(arcanumSpareText(6, 'Cercle de mort'), /^Arcanum de niveau 6 : déjà « Cercle de mort »/);
+        assert.match(arcanumSpareText(6, ''), /déjà un autre sort/);
+    });
+
+    test("Cocher B puis A (même niveau) : rien ne bascule, chaque losange à cocher s'annule", () => {
+        const step = (rows) => {
+            const arcanum = arcanumRows(rows, warlock(11), db);
+            const states = rows.map((r, i) => spellPrepState(r, { wholeList: true, fits: () => false, arcanum: arcanum.has(i) }));
+            return { states, prepared: spellCounts(rows, '', null, false, arcanum).prepared };
+        };
+        let rows = [row('Cercle de mort'), row('Mauvais oeil')];
+        assert.deepEqual(step(rows), { states: ['arcanum', 'unprepared'], prepared: 0 });
+        // B coché : A reste l'Arcanum, B compte (le joueur le voit), et se décoche sur le même losange
+        rows = [rows[0], { ...rows[1], prep: true }];
+        assert.deepEqual(step(rows), { states: ['arcanum', 'prepared'], prepared: 1 });
+        // A coché (fiche ancienne) : toujours l'Arcanum, son losange reste ignoré
+        rows = [{ ...rows[0], prep: true }, rows[1]];
+        assert.deepEqual(step(rows), { states: ['arcanum', 'prepared'], prepared: 1 });
+        rows = [rows[0], { ...rows[1], prep: false }];
+        assert.deepEqual(step(rows), { states: ['arcanum', 'unprepared'], prepared: 0 });
+        // Remplacement de l'Arcanum : la ligne de A supprimée, B devient l'Arcanum, hors du compte
+        assert.deepEqual(step([{ ...rows[1], prep: true }]), { states: ['arcanum'], prepared: 0 });
     });
 
     test("Rien n'est écrit dans la fiche : la valeur « prep » enregistrée est gardée", () => {

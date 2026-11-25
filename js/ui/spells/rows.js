@@ -99,6 +99,8 @@ export function createRow(g, { onCast, onDelete }) {
                     return;
                 }
                 editRow(g, r.index, { prep: row.prep !== true });
+                // Ligne en trop d'un niveau d'Arcanum : le toucher (tablette) dit lequel est l'Arcanum
+                if (r.prepNote) setStatus(r.prepNote);
             }
         }
     });
@@ -237,9 +239,10 @@ function applyRowLock(r, locked) {
  * Losange « préparé » de la ligne : ∞ (sort mineur), ◆ fixe (toujours préparé), ◆ / ◇ à cocher.
  * @param {Object} r - éléments de la ligne
  * @param {{ entry: boolean, cantrip: boolean, always: boolean, prepared: boolean, state: string|null,
- *   wholeList: boolean, what: string }} options - what : « nouveau sort », « « Nom » » ou « ligne N »
+ *   wholeList: boolean, what: string, note?: string }} options - what : « nouveau sort », « « Nom » » ou
+ *   « ligne N » ; note : infobulle propre du losange à cocher (ligne en trop d'un niveau d'Arcanum)
  */
-function writePrep(r, { entry, cantrip, always, prepared, state, wholeList, what }) {
+function writePrep(r, { entry, cantrip, always, prepared, state, wholeList, what, note = '' }) {
     r.prep.classList.toggle('is-entry', entry);
     r.prep.classList.toggle('is-cantrip', !entry && cantrip);
     r.prep.classList.toggle('is-prepared', !entry && !cantrip && prepared);
@@ -271,10 +274,10 @@ function writePrep(r, { entry, cantrip, always, prepared, state, wholeList, what
         r.prep.textContent = prepared ? '◆' : '◇';
         r.prep.setAttribute('aria-pressed', String(prepared));
         // Classe à liste fixe : sort noté hors de cette liste (niveau trop haut, autre liste)
-        r.prep.title = wholeList
+        r.prep.title = note || (wholeList
             ? (prepared ? 'Coché : compté dans vos sorts préparés' : "Hors de votre liste fixe (Découvertes magiques, autre liste…) : cochez-le seulement s'il compte dans vos sorts préparés")
             : prepared ? 'Sort préparé'
-                : state === 'ritual' ? 'Sort non préparé : lançable en rituel depuis votre livre (Savoir rituel)' : 'Sort non préparé';
+                : state === 'ritual' ? 'Sort non préparé : lançable en rituel depuis votre livre (Savoir rituel)' : 'Sort non préparé');
         r.prep.setAttribute('aria-label', `Sort ${what} préparé`);
     }
 }
@@ -286,7 +289,7 @@ function writePrep(r, { entry, cantrip, always, prepared, state, wholeList, what
  * @param {{ force: boolean, locked: boolean, entry: boolean, line: number }} options
  *        entry : ligne de saisie ; line : rang de la ligne dans le tableau affiché
  */
-export function writeRow(g, r, row, { force, locked, entry, line, elements = [], affinity = null, state = 'unprepared', wholeList = false, noSlot = 0 }) {
+export function writeRow(g, r, row, { force, locked, entry, line, elements = [], affinity = null, state = 'unprepared', wholeList = false, noSlot = 0, prepNote = '' }) {
     const name = plainText(row.name);
     const known = entry || (!elements.length && !affinity) ? null : findSpellByName(g.spellsDb, row.name);
     const types = adeptTypes(known, elements);
@@ -302,6 +305,7 @@ export function writeRow(g, r, row, { force, locked, entry, line, elements = [],
     const level = rowLevel(row);
     const what = entry ? 'nouveau sort' : name ? `« ${name} »` : `ligne ${line}`;
     r.state = entry ? null : state;
+    r.prepNote = entry ? '' : prepNote;
     r.ritual.hidden = entry || state !== 'ritual';
     r.noSlot.hidden = entry || !noSlot;
     if (noSlot) {
@@ -327,7 +331,7 @@ export function writeRow(g, r, row, { force, locked, entry, line, elements = [],
     for (const [key] of FLAG_COLUMNS) r.flags[key].checked = row[key] === true;
     r.name.placeholder = entry ? 'Nouveau sort…' : 'Nom…';
 
-    writePrep(r, { entry, cantrip, always, prepared, state, wholeList, what });
+    writePrep(r, { entry, cantrip, always, prepared, state, wholeList, what, note: prepNote });
 
     r.lvl.setAttribute('aria-label', entry ? 'Niveau du nouveau sort' : `Niveau du sort, ligne ${line}`);
     r.name.setAttribute('aria-label', entry ? 'Nom du nouveau sort' : `Nom du sort, ligne ${line}`);

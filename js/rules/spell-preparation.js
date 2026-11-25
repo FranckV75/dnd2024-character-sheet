@@ -13,8 +13,9 @@
 //  - Arcanum mystique (Occultiste 11+, PHB 2024 « Mystic Arcanum ») : un sort d'Occultiste de
 //    niveau 6 (puis 7, 8, 9) lancé une fois par repos long sans emplacement. Ce n'est pas un sort
 //    préparé de la table (Pact Magic : sorts de niveau 5 au plus) : la ligne qui le porte
-//    (arcanumRows, une par niveau) a un losange plein fixe, état 'arcanum', toujours disponible,
-//    hors du compte des préparés, et se lance seulement par sa case « Arcanum mystique (niveau N) »
+//    (arcanumRows, la première notée à chaque niveau ; les suivantes restent ordinaires,
+//    arcanumSpareRows) a un losange plein fixe, état 'arcanum', toujours disponible, hors du
+//    compte des préparés, et se lance seulement par sa case « Arcanum mystique (niveau N) »
 //    (aucun emplacement : ceux de pacte sont de niveau 5 au plus, et un emplacement de multiclasse
 //    ne lance que des sorts préparés, PHB 2024 chap. 2 « Multiclassing », « Pact Magic »).
 //  - État affiché du losange d'une ligne : calcul d'affichage, jamais écrit dans la fiche (la clé
@@ -319,12 +320,36 @@ export function isArcanumSpellLevel(spellLevel, arcanumLevel) {
 }
 
 /**
- * Lignes du grimoire qui portent un sort d'Arcanum mystique (Occultiste 11+) : sort nommé, noté à
- * un niveau d'Arcanum atteint (isArcanumSpellLevel), de la liste de l'Occultiste et de ce niveau
- * dans la base (sort absent de la base : on fait confiance au joueur, comme fitsWholeList), qui
- * n'est pas un sort donné. Une seule par niveau de sort (un arcanum par niveau) : la première
- * au losange coché (fiches où le joueur l'a coché pour pouvoir le lancer), sinon la première
- * notée. Les autres lignes de ce niveau restent des sorts ordinaires (losange à cocher).
+ * Lignes candidates à l'Arcanum mystique (Occultiste 11+), dans l'ordre de la fiche : sort nommé,
+ * noté à un niveau d'Arcanum atteint (isArcanumSpellLevel), de la liste de l'Occultiste et de ce
+ * niveau dans la base (sort absent de la base : on fait confiance au joueur, comme fitsWholeList),
+ * qui n'est pas un sort donné.
+ * @returns {Map<number, number[]>} niveau de sort → indices des lignes, dans l'ordre noté
+ */
+function arcanumCandidates(rows, derived, db, granted) {
+    const byLevel = new Map();
+    const top = mysticArcanumLevel(derived?.classSlug, derived?.level);
+    if (!top) return byLevel;
+    const spells = Array.isArray(db) ? db : [];
+    (Array.isArray(rows) ? rows : []).forEach((row, index) => {
+        if (!row || typeof row !== 'object' || isSpellRowEmpty(row) || !plainText(row.name).trim()) return;
+        const level = Number(rowLevel(row));
+        if (!isArcanumSpellLevel(level, top) || granted?.has(spellNameKey(row.name))) return;
+        const spell = findSpellByName(spells, row.name);
+        if (spell && (Number(spell.level) !== level || !(spell.classes || []).includes('warlock'))) return;
+        if (!byLevel.has(level)) byLevel.set(level, []);
+        byLevel.get(level).push(index);
+    });
+    return byLevel;
+}
+
+/**
+ * Lignes du grimoire qui portent un sort d'Arcanum mystique (Occultiste 11+, arcanumCandidates).
+ * Une seule par niveau de sort (un arcanum par niveau) : la première notée, quel que soit son
+ * losange (le losange d'une ligne d'Arcanum est fixe, il ne peut donc pas servir à choisir : le
+ * choix ne pourrait pas s'annuler). Les autres lignes de ce niveau restent des sorts ordinaires
+ * (losange à cocher, arcanumSpareRows) : pour remplacer son Arcanum (PHB 2024, en gagnant un
+ * niveau d'Occultiste), le joueur renomme la ligne ou supprime l'ancienne.
  * Calcul d'affichage : rien n'est écrit dans la fiche.
  * @param {Array<Object>} rows - dynamic_spells
  * @param {{ classSlug?: string, level?: number }} derived - deriveCharacter()
@@ -334,21 +359,37 @@ export function isArcanumSpellLevel(spellLevel, arcanumLevel) {
  */
 export function arcanumRows(rows, derived, db = null, granted = null) {
     const picked = new Set();
-    const top = mysticArcanumLevel(derived?.classSlug, derived?.level);
-    if (!top) return picked;
-    const spells = Array.isArray(db) ? db : [];
-    const byLevel = new Map();
-    (Array.isArray(rows) ? rows : []).forEach((row, index) => {
-        if (!row || typeof row !== 'object' || isSpellRowEmpty(row) || !plainText(row.name).trim()) return;
-        const level = Number(rowLevel(row));
-        if (!isArcanumSpellLevel(level, top) || granted?.has(spellNameKey(row.name))) return;
-        const spell = findSpellByName(spells, row.name);
-        if (spell && (Number(spell.level) !== level || !(spell.classes || []).includes('warlock'))) return;
-        const current = byLevel.get(level);
-        if (current === undefined || (rows[current].prep !== true && row.prep === true)) byLevel.set(level, index);
-    });
-    for (const index of byLevel.values()) picked.add(index);
+    for (const indices of arcanumCandidates(rows, derived, db, granted).values()) picked.add(indices[0]);
     return picked;
+}
+
+/**
+ * Lignes en trop d'un niveau d'Arcanum : sort de l'Occultiste noté au même niveau qu'un Arcanum
+ * déjà retenu (arcanumRows). Elles restent des sorts ordinaires ; leur losange le dit
+ * (arcanumSpareText).
+ * @param {Array<Object>} rows - dynamic_spells
+ * @param {{ classSlug?: string, level?: number }} derived - deriveCharacter()
+ * @param {Array<Object>|null} [db] - base de sorts
+ * @param {Set<string>|null} [granted] - grantedSpellKeys()
+ * @returns {Map<number, number>} indice de la ligne en trop → indice de la ligne d'Arcanum de son niveau
+ */
+export function arcanumSpareRows(rows, derived, db = null, granted = null) {
+    const spares = new Map();
+    for (const [first, ...others] of arcanumCandidates(rows, derived, db, granted).values()) {
+        for (const index of others) spares.set(index, first);
+    }
+    return spares;
+}
+
+/**
+ * Infobulle du losange d'une ligne en trop d'un niveau d'Arcanum (arcanumSpareRows), reprise dans la
+ * barre du haut au toucher (courte, comme PREP_HELP de js/ui/spells/rows.js)
+ * @param {number|string} level - niveau du sort
+ * @param {string} arcanumName - nom du sort retenu comme Arcanum de ce niveau
+ */
+export function arcanumSpareText(level, arcanumName) {
+    const name = plainText(arcanumName).trim();
+    return `Arcanum de niveau ${level} : déjà ${name ? `« ${name} »` : 'un autre sort'} (supprimez-le pour le remplacer) ; coché, celui-ci compte dans vos préparés.`;
 }
 
 /**

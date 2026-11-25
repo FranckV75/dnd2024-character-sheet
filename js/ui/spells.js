@@ -80,13 +80,13 @@ import { ABILITY_IDS } from '../data/constants.js';
 import { loadSpells } from '../data/spells.js';
 import {
     plainText, spellNames, findSpellByName, isSpellRowEmpty, hasSpellContent, spellRowsView, spellCounts,
-    formatSpellCount, spellLimitWarnings, cantripLimitNote, spellNameKey, newSpellRow
+    formatSpellCount, spellLimitWarnings, cantripLimitNote, spellNameKey, newSpellRow, rowLevel
 } from '../rules/spells.js';
 import { adeptElements } from '../rules/feat-choices.js';
 import { classSpellCounts } from '../rules/class-progression.js';
 import {
     wholeListSource, fitsWholeList, grantedSpellKeys, spellPrepState, combatPlace,
-    highestUsableSlot, mysticArcanumLevel, missingSlotLevel, arcanumRows
+    highestUsableSlot, mysticArcanumLevel, missingSlotLevel, arcanumRows, arcanumSpareRows, arcanumSpareText
 } from '../rules/spell-preparation.js';
 import { castsRitualsFromBook, isRitualSpell } from '../rules/spellbook.js';
 import { allFreeCasts } from '../rules/free-casts.js';
@@ -142,7 +142,8 @@ const COMBAT_VIEW_HELP = {
  * @param {Object} derivedNow - valeurs calculées (derivedOf)
  * @param {Object[]} rows - dynamic_spells
  * @returns {{ granted: Set<string>, wholeList: boolean, fits: (row: Object) => boolean, states: string[], noSlots: number[],
- *   arcanum: Set<number> }} arcanum : indices des lignes d'Arcanum mystique (hors du compte des préparés)
+ *   arcanum: Set<number>, prepNotes: string[] }} arcanum : indices des lignes d'Arcanum mystique (hors du
+ *   compte des préparés) ; prepNotes : infobulle propre du losange (ligne en trop d'un niveau d'Arcanum), ou ''
  */
 function rowStates(g, character, derivedNow, rows) {
     // Losange : liste fixe (Barde, Ensorceleur, Occultiste) et sorts donnés, toujours préparés ;
@@ -160,6 +161,10 @@ function rowStates(g, character, derivedNow, rows) {
     // Arcanum mystique (Occultiste 11+) : un sort par niveau, toujours disponible, hors du compte
     const arcanum = arcanumRows(rows, derivedNow, g.spellsDb, granted);
     const states = rows.map((row, i) => spellPrepState(row, { wholeList, granted, fits, bookRitual, arcanum: arcanum.has(i) }));
+    // Autre sort de l'Occultiste noté au même niveau qu'un Arcanum : sort ordinaire, son losange
+    // dit lequel est l'Arcanum et comment le remplacer
+    const spares = arcanumSpareRows(rows, derivedNow, g.spellsDb, granted);
+    const prepNotes = rows.map((row, i) => (spares.has(i) ? arcanumSpareText(rowLevel(row), rows[spares.get(i)].name) : ''));
 
     // Sort préparé au-dessus des emplacements : simple avertissement (jamais pour un sort qui a
     // son lancer gratuit, ni pour un Arcanum mystique)
@@ -174,7 +179,7 @@ function rowStates(g, character, derivedNow, rows) {
     };
     const noSlots = rows.map((row, i) => (missingSlotLevel(row, states[i], { topSlot, arcanumLevel })
         ? missingSlotLevel(row, states[i], { topSlot, arcanumLevel, freeCast: hasFreeCast(row) }) : 0));
-    return { granted, wholeList, fits, states, noSlots, arcanum };
+    return { granted, wholeList, fits, states, noSlots, arcanum, prepNotes };
 }
 
 /**
@@ -211,7 +216,7 @@ function renderRows(g, ui, character, force, structural) {
     const elements = adeptElements(character);
     const derivedNow = derivedOf(character);
     const affinity = elementalAffinity(derivedNow);
-    const { granted, wholeList, fits, states, noSlots, arcanum } = rowStates(g, character, derivedNow, rows);
+    const { granted, wholeList, fits, states, noSlots, arcanum, prepNotes } = rowStates(g, character, derivedNow, rows);
 
     // Vue « au combat » : les sorts de niveau 1+ non préparés se retirent de l'écran (classe
     // CSS, l'impression garde tout) ; pas la ligne en cours de saisie, qui ne disparaît pas
@@ -226,7 +231,7 @@ function renderRows(g, ui, character, force, structural) {
         const isEntry = r === entry;
         writeRow(g, r, isEntry ? newSpellRow(EMPTY_SPELL, g.entryLevel ?? view.level) : rows[i], {
             force, locked, entry: isEntry, line: isEntry ? lines.size + 1 : lines.get(i) ?? i + 1, elements, affinity,
-            state: isEntry ? null : states[i], wholeList, noSlot: isEntry ? 0 : noSlots[i]
+            state: isEntry ? null : states[i], wholeList, noSlot: isEntry ? 0 : noSlots[i], prepNote: isEntry ? '' : prepNotes[i]
         });
         if (!isEntry) {
             r.tr.hidden = !shown.has(i);
