@@ -12,10 +12,10 @@ en fin de session :
 
 ## En ce moment
 
-- **Commité, pas publié** : troisième personnage d'exemple (demande de Franck, 25/11/2026),
-  Kallias Aile-d'Airain, Paladin 10 du Serment du Seigneur Dragon (Humain, Garde) avec son
-  pseudodragon et son dragonnet d'airain. À annoncer dans les « Nouveautés » de la prochaine
-  version (rien de changé au numéro).
+- **Commité, pas publié** : un personnage d'exemple par classe (demande de Franck, 25-26/11/2026),
+  douze en tout, du niveau 3 au niveau 15, rangés par classe ; dont un Paladin 10 du Serment du
+  Seigneur Dragon avec ses deux dragons et cinq sous-classes de l'Odyssée. À annoncer dans les
+  « Nouveautés » de la prochaine version (rien de changé au numéro).
 - **En ligne** : version **4.49.0**, publiée le 25/11/2026 avec l'accord de Franck (« Publie »),
   version en ligne vérifiée (0 erreur console, fenêtre « Nouveautés » affichée) : remarques de
   Franck sur l'onglet Combat, d'après ses choix sur maquettes (« A · 4 colonnes », Épuisement
@@ -157,6 +157,18 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
    `docs/FEUILLE_DE_ROUTE.md`.
 
 ## Sessions
+
+### 26/11/2026 — Un personnage d'exemple par classe (pas publié)
+
+- Demande de Franck : un Paladin assez haut avec un dragonnet, puis un exemple par classe, niveaux
+  5 à 15. Paladin 10 du Seigneur Dragon fait à la main ; les neuf autres par trois agents, chacun
+  vérifié par un script commun qui applique les règles de la fiche (PV, compétences, Expertise,
+  outils, dons, sorts, choix de sous-classe), puis relus et fusionnés.
+- Les tests des exemples valent pour toutes les classes et espèces (Savoir primal, Thaumaturge,
+  Gardien, Égide du poète, Ascendance divine, Arnaqueur arcanique : liste du Magicien).
+- Restes vus en route (feuille de route) : la Magie des Amazones (Injonction, Appel de destrier…)
+  n'est pas encore donnée par la fiche ; les sorts d'Arcanum mystique comptent dans les préparés
+  s'ils sont cochés ; le chakram n'est pas dans la liste des armes.
 
 ### 25/11/2026 (soir) — Onglet Combat : petits − / + des PV, Inspiration héroïque en colonne, Épuisement centré (4.49.0, publiée le 25/11/2026)
 

@@ -28,12 +28,48 @@ import { experienceProgress } from '../js/rules/experience.js';
 import { classSpellCounts } from '../js/rules/class-progression.js';
 import { freeSpellbookSpells, spellbookCount, hasSpellbook } from '../js/rules/spellbook.js';
 import { spellCounts, findSpellByName, spellToRow, slotView, spellNameKey } from '../js/rules/spells.js';
-import { grantedSpellKeys } from '../js/rules/spell-preparation.js';
+import { grantedSpellKeys, givenSpellKeys, highestSlotLevel, wholeListSource } from '../js/rules/spell-preparation.js';
 import { hitDiceState } from '../js/rules/rest.js';
 import { hitPointState } from '../js/rules/hit-points.js';
 import { toolsInText } from '../js/rules/tools.js';
 import { companionCards } from '../js/rules/subclass-companions.js';
+import { featChoiceGrants } from '../js/rules/feat-choices.js';
+import { toolSources, toolSourceProgress } from '../js/rules/tool-sources.js';
+import { subclassChoiceFields, subclassChoice } from '../js/rules/subclass-choices.js';
+import { spellChoiceView } from '../js/rules/spell-choices.js';
 import { FEATS_DATA } from '../js/data/feats.js';
+
+// Règles du PHB 2024 que la fiche ne calcule pas : compétences de classe, Expertise par niveau,
+// compétence en plus de l'espèce (Humain : Doué ; Elfe : Sens aiguisés), bottes d'armes par niveau
+const CLASS_SKILLS = { barbarian: 2, bard: 3, cleric: 2, druid: 2, fighter: 2, monk: 2, paladin: 2, ranger: 3, rogue: 4, sorcerer: 2, warlock: 2, wizard: 2 };
+const EXPERTISE = { rogue: [[1, 2], [6, 2]], bard: [[2, 2], [9, 2]], ranger: [[1, 1], [9, 2]], wizard: [[2, 1]] };
+const SPECIES_SKILLS = { human: 1, elf: 1 };
+const MASTERIES = { barbarian: [[1, 2], [4, 3], [10, 4]], fighter: [[1, 3], [4, 4], [10, 5], [16, 6]], paladin: [[1, 2]], ranger: [[1, 2]], rogue: [[1, 2]] };
+const expertiseAt = (cls, level) => (EXPERTISE[cls] ?? []).filter(([at]) => at <= level).reduce((n, [, add]) => n + add, 0);
+const masteriesAt = (cls, level) => (MASTERIES[cls] ?? []).filter(([at]) => at <= level).reduce((n, [, count]) => count, 0);
+// Maîtrises en plus d'une capacité : Savoir primal (Barbare 3), Collège du Savoir (3), et celles
+// que la fiche demande de cocher (SUBCLASS_PROFICIENCIES, js/rules/subclass-calcs.js)
+const SUBCLASS_SKILLS = { path_of_the_heretic: 1, warrior_of_mercy: 2, prophecy_domain: 1 };
+const featureSkills = (d) => (d.classSlug === 'barbarian' && d.level >= 3 ? 1 : 0)
+    + (d.subclass === 'college_of_lore' && d.level >= 3 ? 3 : 0) + (d.level >= 3 ? SUBCLASS_SKILLS[d.subclass] ?? 0 : 0);
+const extraSaves = (d) => [...(d.subclass === 'demigod_bloodline' && d.level >= 3 ? ['str'] : []),
+    ...(d.subclass === 'gloom_stalker' && d.level >= 7 ? [d.subclassChoices?.save || 'wis'] : [])];
+// Formations d'armure en plus de la classe : sous-classes (SUBCLASS_ARMOR_TRAINING,
+// js/rules/class-features.js), Ordre divin Protecteur (Clerc), Ordre primitif Gardien (Druide)
+const extraArmor = (d) => {
+    const extra = new Set();
+    for (const [subclass, at, kinds] of [['college_of_valor', 3, ['medium', 'shield']], ['college_of_epic_muse', 6, ['medium']],
+        ['the_odyssean', 3, ['shield']], ['way_of_the_shield_dancer', 3, ['shield']]]) {
+        if (d.subclass === subclass && d.level >= at) kinds.forEach((kind) => extra.add(kind));
+    }
+    if (d.classSlug === 'cleric') extra.add('heavy');
+    if (d.classSlug === 'druid') extra.add('medium');
+    return extra;
+};
+// Sorts mineurs en plus d'une option de classe : Thaumaturge (Clerc), Mage (Druide), Pacte du grimoire (Occultiste)
+const extraCantrips = (d) => ({ cleric: 1, druid: 1, warlock: 3 })[d.classSlug] ?? 0;
+const ALL_EXAMPLES = ['barbare-6', 'barde-9', 'clerc-7', 'druide-5', 'ensorceleur-12', 'guerrier-3', 'magicienne-5', 'moine-11',
+    'occultiste-15', 'paladin-10', 'rodeur-8', 'roublard-13'];
 
 const SPELLS = JSON.parse(readFileSync(new URL('../data/spells.json', import.meta.url), 'utf8'));
 const byId = (id) => exampleCharacter(id);
@@ -42,8 +78,14 @@ const WIZARD = 'magicienne-5';
 const PALADIN = 'paladin-10';
 
 describe('Personnages d\'exemple : liste et lecture', () => {
-    test('Trois exemples : un Guerrier de niveau 3, une Magicienne de niveau 5, un Paladin de niveau 10', () => {
-        assert.deepEqual(listExamples().map((e) => e.id), [FIGHTER, WIZARD, PALADIN]);
+    test('Un exemple par classe, rangés par classe, du niveau 3 au niveau 15 (demande de Franck)', () => {
+        assert.deepEqual(listExamples().map((e) => e.id), ALL_EXAMPLES);
+        const classes = ALL_EXAMPLES.map((id) => deriveCharacter(byId(id)).classSlug);
+        assert.deepEqual([...classes].sort(), Object.keys(DD_RULES.classes).sort(), 'toutes les classes, une fois chacune');
+        for (const id of ALL_EXAMPLES) {
+            const level = Number(byId(id).char_level);
+            assert.ok(level >= 3 && level <= 15, `${id} : niveau ${level}`);
+        }
         assert.equal(byId(FIGHTER).char_class, 'Guerrier');
         assert.equal(byId(FIGHTER).char_level, '3');
         assert.equal(byId(WIZARD).char_class, 'Magicien');
@@ -122,7 +164,9 @@ describe('Personnages d\'exemple : cohérence avec les règles de 2024', () => {
         test(`${id} : PV maximum du manuel (valeur fixe par niveau), dé de vie de la classe`, () => {
             const faces = Number(cls.hitDice.slice(1));
             const tough = d.feats.includes('robuste') ? toughHitPoints(d.level) : 0;
-            const expected = faces + d.mods.con + (d.level - 1) * (faces / 2 + 1 + d.mods.con) + tough;
+            // Robustesse naine et Résilience draconique : +1 PV par niveau
+            const perLevel = (speciesView(character, d)?.slug === 'dwarf' ? d.level : 0) + (d.subclass === 'draconic_sorcery' ? d.level : 0);
+            const expected = faces + d.mods.con + (d.level - 1) * (faces / 2 + 1 + d.mods.con) + tough + perLevel;
             const hp = hitPointState(character);
             assert.equal(hp.max, expected);
             assert.equal(hp.current, hp.max, 'prêt à jouer : PV au maximum');
@@ -139,34 +183,48 @@ describe('Personnages d\'exemple : cohérence avec les règles de 2024', () => {
 
         test(`${id} : sauvegardes et formations aux armures de la classe`, () => {
             const proficient = Object.keys(d.saves).filter((ability) => d.saves[ability].proficient).sort();
-            assert.deepEqual(proficient, [...cls.savingThrows].sort());
+            assert.deepEqual(proficient, [...new Set([...cls.savingThrows, ...extraSaves(d)])].sort());
             const training = armorTraining(character);
-            assert.deepEqual(training, {
-                light: cls.armorProf.includes('light'), medium: cls.armorProf.includes('medium'),
-                heavy: cls.armorProf.includes('heavy'), shield: cls.armorProf.includes('shield')
-            });
+            const extra = extraArmor(d);
+            for (const kind of ['light', 'medium', 'heavy', 'shield']) {
+                if (cls.armorProf.includes(kind)) assert.equal(training[kind], true, `formation de la classe : ${kind}`);
+                else if (training[kind]) assert.ok(extra.has(kind), `formation en plus justifiée : ${kind}`);
+            }
             assert.deepEqual(armorWarnings(character.dynamic_armors, training, d.scores.str).flat(), []);
         });
 
-        test(`${id} : historique complet (rien « À vérifier »), 5 compétences (2 de classe, 2 d'historique, 1 d'Humain)`, () => {
+        test(`${id} : historique complet (rien « À vérifier »), compétences de la classe, de l'historique, de l'espèce et des dons, Expertise`, () => {
             const summary = backgroundSummary(character);
             assert.deepEqual(summary.lines.filter((line) => line.check).map((line) => line.id), []);
             assert.equal(summary.canApply, false);
             const skills = Object.keys(d.skills).filter((skill) => d.skills[skill].proficient);
-            assert.equal(skills.length, 5);
+            const fromFeats = featChoiceGrants(character).reduce((n, grant) => n + grant.skills.length, 0);
+            const species = speciesView(character, d).slug;
+            assert.equal(skills.length, CLASS_SKILLS[d.classSlug] + featureSkills(d) + 2 + (SPECIES_SKILLS[species] ?? 0) + fromFeats);
             for (const skill of backgroundOf(character).skillProfs) assert.ok(skills.includes(skill), skill);
-            assert.equal(toolsInText(character.profs_tools).length, 1, 'l\'outil de l\'historique, reconnu dans la liste du manuel');
+            const expert = Object.keys(d.skills).filter((skill) => d.skills[skill].expertise);
+            assert.equal(expert.length, expertiseAt(d.classSlug, d.level), 'Expertise de la classe');
+            for (const skill of expert) assert.ok(skills.includes(skill), `Expertise dans une compétence maîtrisée : ${skill}`);
+            // Outils de l'historique et des dons : reconnus dans la liste du manuel et notés
+            assert.ok(toolsInText(character.profs_tools).length >= 1);
+            for (const progress of toolSourceProgress(toolSources(character), character)) assert.ok(progress.done, `outils : ${progress.id} ${progress.status}`);
         });
 
         test(`${id} : dons existants, atteints, avec leurs choix faits`, () => {
             const slots = featSlots(character).filter((slot) => slot.featId);
-            assert.ok(slots.length >= 2, 'don de l\'historique et don de l\'Humain');
+            assert.ok(slots.length >= 1, 'don de l\'historique');
             for (const slot of slots) {
                 assert.ok(Object.hasOwn(FEATS_DATA, slot.featId), `don connu : ${slot.featId}`);
                 assert.equal(slot.reached, true, `don atteint : ${slot.featId}`);
             }
             assert.equal(character.feat_1, backgroundOf(character).featId, 'don d\'origine de l\'historique');
-            assert.equal(FEATS_DATA[character.feat_0].type, 'Origine', 'second don d\'origine (Humain)');
+            if (speciesView(character, d).slug === 'human') assert.equal(FEATS_DATA[character.feat_0].type, 'Origine', 'second don d\'origine (Humain)');
+            else assert.ok(!character.feat_0, 'second don d\'origine réservé à l\'Humain');
+            for (const grant of featChoiceGrants(character)) assert.deepEqual(grant.missing, [], `${grant.featName} : choix faits`);
+            // Un emplacement de don à chaque niveau prévu (4, 8, 12 ; 10 du Roublard)
+            for (const at of [4, 8, 12, ...(d.classSlug === 'rogue' ? [10] : [])].filter((at) => at <= d.level)) {
+                assert.ok(character[`feat_${at}`], `don du niveau ${at}`);
+            }
             for (const group of featSpellGroups(character, d)) {
                 assert.deepEqual(group.missing, [], `${group.featName} : choix faits`);
                 assert.deepEqual(group.warnings, [], `${group.featName} : aucun avertissement`);
@@ -185,6 +243,59 @@ describe('Personnages d\'exemple : cohérence avec les règles de 2024', () => {
                 const computed = computeWeapon(weapon, d, {});
                 assert.equal(computed.proficiency.proficient, true, `${weapon.name} maîtrisée`);
                 assert.match(computed.attack.text, /[+-]\d+$/);
+                if (weapon.prof) assert.equal(weapon.prof, ref.prof, `botte de l'arme : ${weapon.name}`);
+            }
+            const masteries = new Set(character.dynamic_weapons.map((weapon) => weapon.prof).filter(Boolean));
+            assert.ok(masteries.size <= masteriesAt(d.classSlug, d.level), 'pas plus de bottes d\'armes que la classe');
+        });
+
+        test(`${id} : sorts de la base, de la liste de la classe ou donnés ; mineurs et préparés de la table ; emplacements pleins`, () => {
+            const rows = character.dynamic_spells;
+            if (!d.spellcasting) {
+                assert.deepEqual(rows.filter((row) => !grantedSpellKeys(character, d, SPELLS).has(spellNameKey(row.name))), [], 'pas de sorts de classe');
+                return;
+            }
+            assert.equal(character.spell_ability, d.spellcasting.ability);
+            const granted = grantedSpellKeys(character, d, SPELLS);
+            const maxLevel = highestSlotLevel(d.spellSlots);
+            const names = new Set();
+            for (const row of rows) {
+                const spell = findSpellByName(SPELLS, row.name);
+                assert.ok(spell, `sort de la base : ${row.name}`);
+                const given = granted.has(spellNameKey(row.name));
+                assert.ok([d.classSlug, ...(wholeListSource(d)?.lists ?? [])].some((list) => spell.classes.includes(list)) || given, `sort de la liste ou donné : ${row.name}`);
+                assert.deepEqual({ ...row, prep: false }, { ...spellToRow(spell, { note: '' }), prep: false }, row.name);
+                assert.ok(Number(row.lvl) <= maxLevel || given, `niveau du sort atteint : ${row.name}`);
+                assert.ok(!(row.lvl === '0' && row.prep), `un sort mineur ne se prépare pas : ${row.name}`);
+                assert.ok(!names.has(row.name), `pas de doublon : ${row.name}`);
+                names.add(row.name);
+            }
+            const counts = spellCounts(rows, '', granted, false);
+            const limits = classSpellCounts(d.classSlug, d.level);
+            if (limits.cantrips !== null) {
+                assert.ok(counts.cantrips >= limits.cantrips && counts.cantrips <= limits.cantrips + extraCantrips(d), `sorts mineurs de la table : ${counts.cantrips} pour ${limits.cantrips}`);
+            }
+            if (limits.prepared !== null) assert.equal(counts.prepared, limits.prepared, 'sorts préparés de la table');
+            for (const [level, max] of Object.entries(d.spellSlots)) {
+                assert.deepEqual(slotView(character.spell_slots_state, level, max), { max, used: 0 });
+            }
+            for (const feature of spellChoiceView(character, d, { db: SPELLS, maxLevel, given: givenSpellKeys(character, d) })) {
+                for (const field of feature.fields) {
+                    assert.ok(field.value, `${feature.name} : ${field.label} choisi`);
+                    assert.equal(field.warning, '', `${feature.name} : ${field.label}`);
+                }
+            }
+        });
+
+        test(`${id} : choix de sous-classe faits, compagnons aux PV pleins, Points de Foi pleins`, () => {
+            const chosen = subclassChoice(character, d);
+            for (const field of subclassChoiceFields(d)) {
+                if (!field.inPlay && field.kind !== 'number') assert.ok(chosen[field.key], `${field.label} choisi`);
+            }
+            for (const card of companionCards(d, character)) if (card.hp) assert.equal(card.hp.current, card.hp.max, card.name);
+            if (character.heroic_inspiration) {
+                const faith = Math.max(1, d.pb + d.mods.wis);
+                assert.equal(character.heroic_inspiration, `${faith}/${faith}`, 'Points de Foi : bonus de maîtrise + Sagesse');
             }
         });
     }
