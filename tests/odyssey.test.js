@@ -785,7 +785,7 @@ describe('Mode Odyssée : écran, impression et notice', () => {
         const back = section('start').find((entry) => entry.title === '« Mode Odyssée » décoché : retrouver un choix');
         assert.match(back.text, /il sort aussitôt de sa liste/);
         assert.match(back.text, /Recochez la case « Mode Odyssée » pour le retrouver\./);
-        assert.match(section('role').find((entry) => entry.title === '« Odyssée des Seigneurs Dragons »').text, /recochez la case\./);
+        assert.match(section('role').find((entry) => entry.title === '« Odyssée des Seigneurs Dragons »').text, /Recochez la case pour le revoir/);
         assert.ok(section('lock').some((entry) => entry.text.includes(`« ${ODYSSEY_MODE_LABEL} »`)));
         assert.ok(section('role').find((entry) => entry.title === '« Odyssée des Seigneurs Dragons »').text.includes(`« ${ODYSSEY_MODE_LABEL} »`));
     });

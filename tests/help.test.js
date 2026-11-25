@@ -7,10 +7,10 @@
  */
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { HELP_SECTIONS, HELP_NEWS_SECTION, HELP_CONTENTS } from '../js/data/help.js';
+import { HELP_SECTIONS, HELP_NEWS_SECTION, HELP_CONTENTS, HELP_INTERNAL_FILES } from '../js/data/help.js';
 import { WHATS_NEW } from '../js/data/whats-new.js';
 import { frenchSpaces } from '../js/ui/help.js';
 import { fromVisualPrefs, portableBackground } from '../js/rules/gallery.js';
@@ -59,10 +59,42 @@ describe('Mode d\'emploi : structure', () => {
             assert.ok(section.title.trim(), section.id);
             assert.ok(section.entries.length >= 3, `${section.id} : au moins 3 entrées`);
             for (const entry of section.entries) {
-                assert.deepEqual(Object.keys(entry).sort(), ['text', 'title'], `${section.id} / ${entry.title}`);
+                assert.deepEqual(Object.keys(entry).sort(), ['files', 'text', 'title'], `${section.id} / ${entry.title}`);
                 assert.ok(entry.title.trim() && entry.text.trim());
             }
             assert.equal(new Set(section.entries.map((entry) => entry.title)).size, section.entries.length, `${section.id} : titres en double`);
+        }
+    });
+
+    // Relecture à chaque version (`npm run notice`) : chaque entrée dit quels fichiers de
+    // l'interface font ce qu'elle décrit, et chaque fichier de js/ui/ est cité ou déclaré interne.
+    test('Chaque entrée cite les fichiers qu\'elle décrit ; chaque fichier de js/ui/ est cité ou interne', () => {
+        const cited = new Set();
+        for (const section of HELP_SECTIONS) {
+            for (const entry of section.entries) {
+                assert.ok(Array.isArray(entry.files) && entry.files.length >= 1, `${section.id} / ${entry.title} : files`);
+                for (const file of entry.files) {
+                    assert.ok(existsSync(join(ROOT, file)) && statSync(join(ROOT, file)).isFile(), `${entry.title} : ${file} n'existe pas`);
+                    cited.add(file);
+                }
+            }
+        }
+        for (const file of HELP_INTERNAL_FILES) {
+            assert.ok(existsSync(join(ROOT, file)), `HELP_INTERNAL_FILES : ${file} n'existe pas`);
+            assert.ok(!cited.has(file), `${file} est à la fois cité et déclaré interne`);
+        }
+        const uiFiles = [];
+        const walk = (dir) => {
+            for (const name of readdirSync(join(ROOT, dir))) {
+                const path = `${dir}/${name}`;
+                if (statSync(join(ROOT, path)).isDirectory()) walk(path);
+                else if (name.endsWith('.js')) uiFiles.push(path);
+            }
+        };
+        walk('js/ui');
+        for (const file of uiFiles) {
+            assert.ok(cited.has(file) || HELP_INTERNAL_FILES.includes(file),
+                `${file} : citez-le dans l'entrée du mode d'emploi qui décrit ce qu'il fait, ou ajoutez-le à HELP_INTERNAL_FILES`);
         }
     });
 
