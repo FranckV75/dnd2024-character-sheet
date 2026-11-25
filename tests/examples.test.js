@@ -27,25 +27,29 @@ import { armorWarnings, armorTraining } from '../js/rules/armors.js';
 import { experienceProgress } from '../js/rules/experience.js';
 import { classSpellCounts } from '../js/rules/class-progression.js';
 import { freeSpellbookSpells, spellbookCount, hasSpellbook } from '../js/rules/spellbook.js';
-import { spellCounts, findSpellByName, spellToRow, slotView } from '../js/rules/spells.js';
+import { spellCounts, findSpellByName, spellToRow, slotView, spellNameKey } from '../js/rules/spells.js';
 import { grantedSpellKeys } from '../js/rules/spell-preparation.js';
 import { hitDiceState } from '../js/rules/rest.js';
 import { hitPointState } from '../js/rules/hit-points.js';
 import { toolsInText } from '../js/rules/tools.js';
+import { companionCards } from '../js/rules/subclass-companions.js';
 import { FEATS_DATA } from '../js/data/feats.js';
 
 const SPELLS = JSON.parse(readFileSync(new URL('../data/spells.json', import.meta.url), 'utf8'));
 const byId = (id) => exampleCharacter(id);
 const FIGHTER = 'guerrier-3';
 const WIZARD = 'magicienne-5';
+const PALADIN = 'paladin-10';
 
 describe('Personnages d\'exemple : liste et lecture', () => {
-    test('Deux exemples : un Guerrier de niveau 3 et une Magicienne de niveau 5', () => {
-        assert.deepEqual(listExamples().map((e) => e.id), [FIGHTER, WIZARD]);
+    test('Trois exemples : un Guerrier de niveau 3, une Magicienne de niveau 5, un Paladin de niveau 10', () => {
+        assert.deepEqual(listExamples().map((e) => e.id), [FIGHTER, WIZARD, PALADIN]);
         assert.equal(byId(FIGHTER).char_class, 'Guerrier');
         assert.equal(byId(FIGHTER).char_level, '3');
         assert.equal(byId(WIZARD).char_class, 'Magicien');
         assert.equal(byId(WIZARD).char_level, '5');
+        assert.equal(byId(PALADIN).char_class, 'Paladin');
+        assert.equal(byId(PALADIN).char_level, '10');
     });
 
     test('Chaque exemple a un identifiant unique, un nom et une phrase pour le joueur', () => {
@@ -167,7 +171,8 @@ describe('Personnages d\'exemple : cohérence avec les règles de 2024', () => {
                 assert.deepEqual(group.missing, [], `${group.featName} : choix faits`);
                 assert.deepEqual(group.warnings, [], `${group.featName} : aucun avertissement`);
             }
-            assert.deepEqual(reachedFeatIds(character).sort(), slots.map((slot) => slot.featId).sort());
+            // Un même don peut revenir (Amélioration de caractéristique aux niveaux 4 et 8)
+            assert.deepEqual(reachedFeatIds(character).sort(), [...new Set(slots.map((slot) => slot.featId))].sort());
         });
 
         test(`${id} : armes du manuel, maîtrisées, calculées`, () => {
@@ -212,6 +217,59 @@ describe('Personnages d\'exemple : cohérence avec les règles de 2024', () => {
         const cast = structuredClone(character);
         cast.dynamic_armors[0].equipped = true;
         assert.equal(deriveCharacter(cast).armorClass.value, 15, 'Armure du mage lancée : 13 + Dex');
+    });
+
+    test('Paladin : CA 21 (harnois, bouclier, style Défense), 104 PV (Robuste), DD 15, emplacements 4 / 3 / 2', () => {
+        const character = byId(PALADIN);
+        const d = deriveCharacter(character);
+        assert.equal(d.armorClass.value, 21);
+        assert.equal(character.feat_0, 'robuste');
+        assert.equal(hitPointState(character).max, 104);
+        assert.deepEqual(d.spellcasting, { ability: 'cha', dc: 15, attack: 7 });
+        assert.deepEqual(d.spellSlots, { 1: 4, 2: 3, 3: 2 });
+        for (const [level, max] of Object.entries(d.spellSlots)) {
+            assert.deepEqual(slotView(character.spell_slots_state, level, max), { max, used: 0 });
+        }
+        // Mode Odyssée (sous-classe de l'Odyssée) : Points de Foi pleins, bonus de maîtrise + Sagesse
+        assert.notEqual(character.odyssey_mode, 'off');
+        assert.equal(character.heroic_inspiration, `${d.pb + d.mods.wis}/${d.pb + d.mods.wis}`);
+        // Bottes d'arme : deux armes, deux bottes différentes (Paladin)
+        assert.equal(new Set(character.dynamic_weapons.map((weapon) => weapon.prof)).size, 2);
+    });
+
+    test('Paladin : pseudodragon familier et dragonnet d\'airain lié (œuf choisi), PV pleins', () => {
+        const character = byId(PALADIN);
+        const d = deriveCharacter(character);
+        const cards = companionCards(d, character);
+        assert.equal(cards.length, 2);
+        const [familiar, dragon] = cards;
+        assert.match(familiar.name, /^Pseudodragon/);
+        assert.match(dragon.name, /airain/);
+        assert.equal(dragon.hp.max, 40 + 2 * d.level);
+        for (const card of cards) assert.equal(card.hp.current, card.hp.max, `${card.name} : PV pleins`);
+    });
+
+    test('Paladin : chaque sort vient de la base, de la liste du Paladin ou donné ; 9 sorts préparés', () => {
+        const character = byId(PALADIN);
+        const d = deriveCharacter(character);
+        const granted = grantedSpellKeys(character, d, SPELLS);
+        const names = new Set();
+        for (const row of character.dynamic_spells) {
+            const spell = findSpellByName(SPELLS, row.name);
+            assert.ok(spell, `sort de la base : ${row.name}`);
+            assert.ok(spell.classes.includes('paladin') || granted.has(spellNameKey(row.name)), `sort de Paladin ou donné : ${row.name}`);
+            assert.deepEqual({ ...row, prep: false }, { ...spellToRow(spell, { note: '' }), prep: false }, row.name);
+            assert.ok(Number(row.lvl) >= 1 && Number(row.lvl) <= 3, 'niveau 1 à 3 au niveau 10');
+            assert.ok(!names.has(row.name), `pas de doublon : ${row.name}`);
+            names.add(row.name);
+        }
+        // Sorts donnés (Châtiment divin, Appel de destrier, sorts du serment) : tous notés
+        for (const name of ['Châtiment divin', 'Appel de destrier', 'Appel de familier', 'Marque du chasseur', 'Bourrasque', 'Lévitation', 'Hâte', 'Vol']) {
+            assert.ok(names.has(name), name);
+            assert.ok(granted.has(spellNameKey(name)), `donné : ${name}`);
+        }
+        const counts = spellCounts(character.dynamic_spells, '', granted, false);
+        assert.equal(counts.prepared, classSpellCounts(d.classSlug, d.level).prepared);
     });
 
     test('Équipement : noms du manuel français de 2024 (paquetage, grimoire, armure du mage)', () => {

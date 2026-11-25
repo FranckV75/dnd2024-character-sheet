@@ -82,7 +82,7 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Essayer sans rien préparer",
-                text: "Le bouton « Essayer un personnage d'exemple » ouvre un Guerrier de niveau 3 ou une Magicienne de niveau 5, prêts à jouer. Votre fiche est d'abord gardée dans « Revenir à… » ; pour la conserver durablement, faites un « Exporter » avant. L'exemple reste dans ce navigateur : vos personnages en ligne ne sont pas modifiés.",
+                text: "Le bouton « Essayer un personnage d'exemple » ouvre un Guerrier de niveau 3, une Magicienne de niveau 5 ou un Paladin de niveau 10 avec ses dragons, prêts à jouer. Votre fiche est d'abord gardée dans « Revenir à… » ; pour la conserver durablement, faites un « Exporter » avant. L'exemple reste dans ce navigateur : vos personnages en ligne ne sont pas modifiés.",
                 files: ["js/ui/examples.js", "js/ui/toolbar.js"]
             },
             {

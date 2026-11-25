@@ -70,7 +70,7 @@ export function openExamples({ store, setStatus }) {
         wide: true,
         focusField: false,
         body: [
-            el('p', { text: frenchSpaces('Deux personnages fictifs, prêts à jouer : ouvrez-en un pour découvrir la fiche sans rien préparer. Vous pouvez tout modifier, c\'est fait pour essayer.') }),
+            el('p', { text: frenchSpaces('Des personnages fictifs, prêts à jouer : ouvrez-en un pour découvrir la fiche sans rien préparer. Vous pouvez tout modifier, c\'est fait pour essayer.') }),
             el('p', { class: 'example-warning' }, icon('warning'), el('span', { text: frenchSpaces(replacementNote(store.get())) })),
             el('ul', { class: 'example-list' }, cards),
             el('p', {

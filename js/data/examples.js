@@ -1,15 +1,17 @@
 // =============================================================================
 // EXAMPLES.JS (données) - Personnages d'exemple (« Essayer un personnage d'exemple », barre Gestion)
 //
-// Deux personnages fictifs prêts à jouer, écrits pour cette fiche (noms inventés, données
-// publiques) : un Guerrier de niveau 3, simple, et une Magicienne de niveau 5, avec ses sorts.
+// Trois personnages fictifs prêts à jouer, écrits pour cette fiche (noms inventés, données
+// publiques) : un Guerrier de niveau 3, simple, une Magicienne de niveau 5, avec ses sorts, et un
+// Paladin de niveau 10 du Serment du Seigneur Dragon (Odyssée), avec son pseudodragon et son
+// dragonnet d'airain (demande de Franck, 25/11/2026).
 // Chaque fiche est une sauvegarde partielle au format habituel (mêmes clés que la v3) : elle est
 // complétée comme un fichier importé (js/state/examples.js) avant d'être ouverte.
 // Les lignes d'armes et de sorts sont celles que remplit l'auto-complétion (js/data/dd-rules.js,
 // data/spells.json) ; l'équipement et les armures suivent les noms du manuel français de 2024
 // (paquetage, grimoire, armure du mage). tests/examples.test.js vérifie leur cohérence avec les
 // règles de 2024 (PV, CA, maîtrises, Expertise, emplacements, sorts préparés, grimoire).
-// Les deux personnages s'ouvrent reposés : PV au maximum, aucun dé de vie ni emplacement dépensé.
+// Les personnages s'ouvrent reposés : PV au maximum, aucun dé de vie ni emplacement dépensé.
 //  - id : identifiant stable ; title : nom du personnage ; subtitle : classe, niveau, espèce,
 //    historique, écrits comme dans les listes de la fiche ; pitch : une phrase pour le joueur,
 //    dans la fenêtre de choix.
@@ -152,6 +154,91 @@ export const EXAMPLE_CHARACTERS = Object.freeze([
             sp: "12",
             appearance: "Mince, cheveux roux noués, doigts tachés d'encre. Un petit carnet dépasse toujours de sa poche.",
             backstory: "Ancienne bibliothécaire d'une tour d'étude, partie vérifier sur le terrain ce que disent les livres. Curieuse, parfois imprudente."
+        }
+    },
+    {
+        id: "paladin-10",
+        title: "Kallias Aile-d'Airain",
+        subtitle: "Paladin (Serment du Seigneur Dragon) de niveau 10 · Humain · Garde",
+        pitch: "Un paladin aguerri et ses dragons : pseudodragon familier, dragonnet d'airain lié, sorts et auras.",
+        character: {
+            char_name: "Kallias Aile-d'Airain",
+            char_class: "Paladin",
+            char_subclass: "Serment du Seigneur Dragon",
+            char_background: "Garde",
+            char_species: "Humain",
+            char_level: "10",
+            char_size: "M",
+            char_xp: "64000",
+            alignment: "Loyal bon",
+            str_score: "18",
+            dex_score: "8",
+            con_score: "14",
+            int_score: "10",
+            wis_score: "13",
+            cha_score: "16",
+            wis_save_prof: true,
+            cha_save_prof: true,
+            skill_prof_athletics: true,
+            skill_prof_perception: true,
+            skill_prof_insight: true,
+            skill_prof_persuasion: true,
+            skill_prof_religion: true,
+            hp_max: "104",
+            hp_current: "104",
+            hp_temp: "0",
+            hd_type: "d10",
+            hd_current: "0",
+            speed: "9m",
+            spell_ability: "cha",
+            heroic_inspiration: "5/5",
+            heroic_destiny: "exile",
+            glory_score: "12",
+            feat_1: "vigilant",
+            feat_0: "robuste",
+            feat_2: "defense",
+            feat_4: "amelioration_de_caracteristique",
+            feat_8: "amelioration_de_caracteristique",
+            feat_choices: { "4": { amelioration_de_caracteristique: { asi: "str,con" } }, "8": { amelioration_de_caracteristique: { asi: "cha,cha" } } },
+            subclass_choices: { oath_of_the_dragonlords: { egg: "brass" } },
+            prof_armor_light: true,
+            prof_armor_med: true,
+            prof_armor_heavy: true,
+            prof_armor_shield: true,
+            dynamic_weapons: [
+                { name: "Épée longue", prop: "Polyvalente (1d10)", prof: "Sape", ammo: "", note: "", category: "Guerre", atkKey: "FOR", baseDmg: "1d8 tran.", weaponConfig: "" },
+                { name: "Javeline", prop: "Lancer (9/36 m)", prof: "Ralentissement", ammo: "6", note: "", category: "Courante", atkKey: "FOR", baseDmg: "1d6 perf.", weaponConfig: "" }
+            ],
+            dynamic_armors: [
+                { name: "Harnois", type: "Lourde", ca: "18", str: "15", stealth: true, weight: "32,5 kg", price: "1500 po", comment: "", equipped: true },
+                { name: "Bouclier", type: "Bouclier", ca: "+2", str: "-", stealth: false, weight: "3 kg", price: "10 po", comment: "", equipped: true }
+            ],
+            dynamic_spells: [
+                { lvl: "1", name: "Châtiment divin", time: "Action bonus", range: "Perso", note: "Divine Smite", c: false, r: false, m: false, prep: true, school: "Évocation" },
+                { lvl: "1", name: "Appel de familier", time: "1 heure ou Rituel", range: "3 m", note: "Find Familiar", c: false, r: true, m: true, prep: true, school: "Invocation" },
+                { lvl: "1", name: "Marque du chasseur", time: "Action bonus", range: "27 m", note: "Hunter's Mark", c: true, r: false, m: false, prep: true, school: "Divination" },
+                { lvl: "1", name: "Bénédiction", time: "Action", range: "9 m", note: "Bless", c: true, r: false, m: true, prep: true, school: "Enchantement" },
+                { lvl: "1", name: "Bouclier de la foi", time: "Action bonus", range: "18 m", note: "Shield of Faith", c: true, r: false, m: true, prep: true, school: "Abjuration" },
+                { lvl: "1", name: "Soins", time: "Action", range: "Contact", note: "Cure Wounds", c: false, r: false, m: false, prep: true, school: "Abjuration" },
+                { lvl: "1", name: "Châtiment de tonnerre", time: "Action bonus", range: "Perso", note: "Thunderous Smite", c: false, r: false, m: false, prep: true, school: "Évocation" },
+                { lvl: "2", name: "Appel de destrier", time: "Action", range: "9 m", note: "Find Steed", c: false, r: false, m: false, prep: true, school: "Invocation" },
+                { lvl: "2", name: "Bourrasque", time: "Action", range: "Perso", note: "Gust of Wind", c: true, r: false, m: true, prep: true, school: "Évocation" },
+                { lvl: "2", name: "Lévitation", time: "Action", range: "18 m", note: "Levitate", c: true, r: false, m: true, prep: true, school: "Transmutation" },
+                { lvl: "2", name: "Aide", time: "Action", range: "9 m", note: "Aid", c: false, r: false, m: true, prep: true, school: "Abjuration" },
+                { lvl: "2", name: "Restauration partielle", time: "Action bonus", range: "Contact", note: "Lesser Restoration", c: false, r: false, m: false, prep: true, school: "Abjuration" },
+                { lvl: "2", name: "Arme magique", time: "Action bonus", range: "Contact", note: "Magic Weapon", c: false, r: false, m: false, prep: true, school: "Transmutation" },
+                { lvl: "3", name: "Hâte", time: "Action", range: "9 m", note: "Haste", c: true, r: false, m: true, prep: true, school: "Transmutation" },
+                { lvl: "3", name: "Vol", time: "Action", range: "Contact", note: "Fly", c: true, r: false, m: true, prep: true, school: "Transmutation" },
+                { lvl: "3", name: "Dissipation de la magie", time: "Action", range: "36 m", note: "Dispel Magic", c: false, r: false, m: false, prep: true, school: "Abjuration" },
+                { lvl: "3", name: "Aura de vitalité", time: "Action", range: "Perso", note: "Aura of Vitality", c: true, r: false, m: false, prep: true, school: "Abjuration" }
+            ],
+            profs_tools: "Échecs draconiques",
+            langs: "Commun, géant, elfique",
+            equipment: "Harnois, bouclier frappé d'un dragon d'airain, épée longue, 6 javelines, symbole sacré (amulette), paquetage d'ecclésiastique, lanterne à capote, menottes, échecs draconiques, vêtements de voyage.",
+            gp: "640",
+            sp: "15",
+            appearance: "Grand, barbe noire taillée court, une écaille d'airain sertie dans son bouclier. Le pseudodragon dort souvent enroulé sur son épaule.",
+            backstory: "Ancien garde d'une cité côtière, exilé pour avoir refusé un ordre injuste. Son pseudodragon lui a rapporté un œuf d'airain : le dragonnet qui en est sorti ne le quitte plus. Droit, patient, il protège d'abord les plus faibles."
         }
     }
 ]);

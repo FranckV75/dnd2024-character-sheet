@@ -101,6 +101,8 @@ Faits en 4.49.0 (25/11/2026, publiée le 25/11/2026) : ~~petits − / + autour d
 PV des compagnons)~~, ~~Inspiration héroïque dans sa propre colonne en mode Odyssée~~ (rangée du
 haut moins haute), ~~Épuisement centré~~, ~~titre de la renommée aéré~~ (choix de Franck sur
 maquettes, 25/11/2026).
+Fait le 25/11/2026 (pas encore publié) : ~~troisième personnage d'exemple, Paladin 10 du Serment
+du Seigneur Dragon avec ses dragons~~ (demande de Franck).
 Étude faite le 23/11/2026 : ~~explications des options~~ (`docs/etudes/EXPLICATIONS.md`,
 proposition, rien n'est déployé ; Franck choisit ce qui est utile). Laissés de côté par Franck
 le 23/11/2026 : suites du mode Odyssée (choix de la campagne dans « Nouvelle fiche », exemples

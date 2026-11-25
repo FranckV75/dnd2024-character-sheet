@@ -12,6 +12,10 @@ en fin de session :
 
 ## En ce moment
 
+- **Commité, pas publié** : troisième personnage d'exemple (demande de Franck, 25/11/2026),
+  Kallias Aile-d'Airain, Paladin 10 du Serment du Seigneur Dragon (Humain, Garde) avec son
+  pseudodragon et son dragonnet d'airain. À annoncer dans les « Nouveautés » de la prochaine
+  version (rien de changé au numéro).
 - **En ligne** : version **4.49.0**, publiée le 25/11/2026 avec l'accord de Franck (« Publie »),
   version en ligne vérifiée (0 erreur console, fenêtre « Nouveautés » affichée) : remarques de
   Franck sur l'onglet Combat, d'après ses choix sur maquettes (« A · 4 colonnes », Épuisement
