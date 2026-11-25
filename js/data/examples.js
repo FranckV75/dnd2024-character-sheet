@@ -703,9 +703,12 @@ export const EXAMPLE_CHARACTERS = Object.freeze([
                 { lvl: "5", name: "Scrutation", time: "10 minutes", range: "Perso", note: "Scrying", c: true, r: false, m: true, prep: true, school: "Divination" },
                 { lvl: "5", name: "Immobilisation de monstre", time: "Action", range: "27 m", note: "Hold Monster", c: true, r: false, m: true, prep: true, school: "Enchantement" },
                 { lvl: "5", name: "Songe", time: "1 minute", range: "Spéciale", note: "Dream", c: false, r: false, m: true, prep: true, school: "Illusion" },
-                { lvl: "5", name: "Contact avec les plans", time: "1 minute ou Rituel", range: "Perso", note: "Contact Other Plane", c: false, r: true, m: false, prep: true, school: "Divination" }
+                { lvl: "5", name: "Contact avec les plans", time: "1 minute ou Rituel", range: "Perso", note: "Contact Other Plane", c: false, r: true, m: false, prep: true, school: "Divination" },
+                { lvl: "6", name: "Vision suprême", time: "Action", range: "Contact", note: "True Seeing", c: false, r: false, m: true, prep: true, school: "Divination" },
+                { lvl: "7", name: "Doigt de mort", time: "Action", range: "18 m", note: "Finger of Death", c: false, r: false, m: false, prep: true, school: "Nécromancie" },
+                { lvl: "8", name: "Mot de pouvoir étourdissant", time: "Action", range: "18 m", note: "Power Word Stun", c: false, r: false, m: false, prep: true, school: "Enchantement" }
             ],
-            class_features: "Manifestations occultes (9) : Pacte de la chaîne (familier : sphinx merveilleux nommé Nyx), Engagement du maître des chaînes, Décharge déchirante, Décharge répulsive et Lance occulte (sur Décharge occulte), Vision du diable, Mille visages, Royaumes lointains, Vision sorcière.\nArcanum mystique : Vision suprême (niveau 6), Doigt de mort (niveau 7), Mot de pouvoir étourdissant (niveau 8).",
+            class_features: "Manifestations occultes (9) : Pacte de la chaîne (familier : sphinx merveilleux nommé Nyx), Engagement du maître des chaînes, Décharge déchirante, Décharge répulsive et Lance occulte (sur Décharge occulte), Vision du diable, Mille visages, Royaumes lointains, Vision sorcière.",
             profs_tools: "Matériel d'herboriste",
             langs: "Commun, infernal, céleste",
             equipment: "Armure de cuir, bâton de combat taillé en fuseau (focaliseur), dague, matériel d'herboriste, trousse de soins, sac de couchage, couverture, sac d'osselets divinatoires, robe noire brodée de fils d'argent.",
@@ -853,7 +856,8 @@ export const EXAMPLE_CHARACTERS = Object.freeze([
             dynamic_weapons: [
                 { name: "Javeline", prop: "Lancer (9/36 m)", prof: "Ralentissement", ammo: "5", note: "", category: "Courante", atkKey: "FOR", baseDmg: "1d6 perf.", weaponConfig: "" },
                 { name: "Épée courte", prop: "Finesse, Légère", prof: "Ouverture", ammo: "", note: "", category: "Guerre", atkKey: "DEX", baseDmg: "1d6 perf.", weaponConfig: "" },
-                { name: "Arc long", prop: "Munitions (45/180 m), Lourde, Deux mains", prof: "", ammo: "20", note: "", category: "Guerre", atkKey: "DEX", baseDmg: "1d8 perf.", weaponConfig: "" }
+                { name: "Arc long", prop: "Munitions (45/180 m), Lourde, Deux mains", prof: "", ammo: "20", note: "", category: "Guerre", atkKey: "DEX", baseDmg: "1d8 perf.", weaponConfig: "" },
+                { name: "Chakram", prop: "Finesse, Légère, Lancer (18/36 m)", prof: "-", ammo: "", note: "", category: "Guerre", atkKey: "DEX", baseDmg: "1d6 tran.", weaponConfig: "" }
             ],
             dynamic_armors: [
                 { name: "Armure de cuir clouté", type: "Légère", ca: "12 + Dex", str: "-", stealth: false, weight: "6,5 kg", price: "45 po", comment: "", equipped: true },
@@ -868,16 +872,18 @@ export const EXAMPLE_CHARACTERS = Object.freeze([
                 { lvl: "1", name: "Frappe piégeuse", time: "Action bonus", range: "Perso", note: "Ensnaring Strike", c: true, r: false, m: false, prep: true, school: "Invocation" },
                 { lvl: "1", name: "Grêle d'épines", time: "Action bonus", range: "Perso", note: "Hail of Thorns", c: false, r: false, m: false, prep: true, school: "Invocation" },
                 { lvl: "1", name: "Communication avec les animaux", time: "Action ou Rituel", range: "Perso", note: "Speak with Animals", c: false, r: true, m: false, prep: true, school: "Divination" },
+                { lvl: "1", name: "Injonction", time: "Action", range: "18 m", note: "Command", c: false, r: false, m: false, prep: true, school: "Enchantement" },
                 { lvl: "2", name: "Passage sans trace", time: "Action", range: "Perso", note: "Pass without Trace", c: true, r: false, m: true, prep: true, school: "Abjuration" },
                 { lvl: "2", name: "Croissance d'épines", time: "Action", range: "45 m", note: "Spike Growth", c: true, r: false, m: true, prep: true, school: "Transmutation" },
-                { lvl: "2", name: "Restauration partielle", time: "Action bonus", range: "Contact", note: "Lesser Restoration", c: false, r: false, m: false, prep: true, school: "Abjuration" }
+                { lvl: "2", name: "Restauration partielle", time: "Action bonus", range: "Contact", note: "Lesser Restoration", c: false, r: false, m: false, prep: true, school: "Abjuration" },
+                { lvl: "2", name: "Appel de destrier", time: "Action", range: "9 m", note: "Find Steed", c: false, r: false, m: false, prep: true, school: "Invocation" }
             ],
             profs_tools: "Outils de cartographe",
             langs: "Commun, géant, elfique, sylvestre, draconique",
-            equipment: "Armure de cuir clouté, bouclier rond, épée courte, 5 javelines, arc long et 20 flèches, chakram de bronze (arme thyléenne, 1d6 tranchants, lancer 18/36 m), trousse de soins, outils de cartographe, paquetage d'explorateur, cape de voyage.",
+            equipment: "Armure de cuir clouté, bouclier rond, épée courte, 5 javelines, arc long et 20 flèches, chakram de bronze, trousse de soins, outils de cartographe, paquetage d'explorateur, cape de voyage.",
             gp: "480",
             sp: "25",
-            class_features: "Explorateur habile : Expertise en Survie, deux langues de plus (sylvestre, draconique).\nMagie des Amazones : Injonction et Appel de destrier toujours préparés, hors du compte des sorts préparés.\nChakram (niveau 7) : arme thyléenne (1d6 tranchants, Finesse, Légère, Lancer 18/36 m) qui revient dans la main ; il n'est pas dans la liste des armes du manuel.",
+            class_features: "Explorateur habile : Expertise en Survie, deux langues de plus (sylvestre, draconique).",
             appearance: "Grande, bras couverts de brassards de bronze, cheveux noirs coupés court. Un faucon de bronze aux yeux d'ambre veille sur son épaule.",
             backstory: "Éclaireuse d'un conclave d'Amazones des montagnes, elle guide les voyageurs à travers les passes que hantent les monstres. Elle a forgé elle-même sa stimfée avec les forgerons du conclave. Fière, loyale, elle ne laisse jamais un compagnon derrière elle."
         }

@@ -28,7 +28,7 @@ import { experienceProgress } from '../js/rules/experience.js';
 import { classSpellCounts } from '../js/rules/class-progression.js';
 import { freeSpellbookSpells, spellbookCount, hasSpellbook } from '../js/rules/spellbook.js';
 import { spellCounts, findSpellByName, spellToRow, slotView, spellNameKey } from '../js/rules/spells.js';
-import { grantedSpellKeys, givenSpellKeys, highestSlotLevel, wholeListSource } from '../js/rules/spell-preparation.js';
+import { grantedSpellKeys, givenSpellKeys, highestSlotLevel, wholeListSource, arcanumRows } from '../js/rules/spell-preparation.js';
 import { hitDiceState } from '../js/rules/rest.js';
 import { hitPointState } from '../js/rules/hit-points.js';
 import { toolsInText } from '../js/rules/tools.js';
@@ -245,7 +245,8 @@ describe('Personnages d\'exemple : cohérence avec les règles de 2024', () => {
                 assert.match(computed.attack.text, /[+-]\d+$/);
                 if (weapon.prof) assert.equal(weapon.prof, ref.prof, `botte de l'arme : ${weapon.name}`);
             }
-            const masteries = new Set(character.dynamic_weapons.map((weapon) => weapon.prof).filter(Boolean));
+            // « - » : arme sans botte (Chakram de l'Odyssée), comme la liste du manuel le remplit
+            const masteries = new Set(character.dynamic_weapons.map((weapon) => weapon.prof).filter((prof) => prof && prof !== '-'));
             assert.ok(masteries.size <= masteriesAt(d.classSlug, d.level), 'pas plus de bottes d\'armes que la classe');
         });
 
@@ -259,18 +260,20 @@ describe('Personnages d\'exemple : cohérence avec les règles de 2024', () => {
             const granted = grantedSpellKeys(character, d, SPELLS);
             const maxLevel = highestSlotLevel(d.spellSlots);
             const names = new Set();
-            for (const row of rows) {
+            // Arcanum mystique de l'Occultiste (11+) : au-delà des emplacements, hors du compte des préparés
+            const arcanum = arcanumRows(rows, d, SPELLS, granted);
+            for (const [index, row] of rows.entries()) {
                 const spell = findSpellByName(SPELLS, row.name);
                 assert.ok(spell, `sort de la base : ${row.name}`);
                 const given = granted.has(spellNameKey(row.name));
                 assert.ok([d.classSlug, ...(wholeListSource(d)?.lists ?? [])].some((list) => spell.classes.includes(list)) || given, `sort de la liste ou donné : ${row.name}`);
                 assert.deepEqual({ ...row, prep: false }, { ...spellToRow(spell, { note: '' }), prep: false }, row.name);
-                assert.ok(Number(row.lvl) <= maxLevel || given, `niveau du sort atteint : ${row.name}`);
+                assert.ok(Number(row.lvl) <= maxLevel || given || arcanum.has(index), `niveau du sort atteint : ${row.name}`);
                 assert.ok(!(row.lvl === '0' && row.prep), `un sort mineur ne se prépare pas : ${row.name}`);
                 assert.ok(!names.has(row.name), `pas de doublon : ${row.name}`);
                 names.add(row.name);
             }
-            const counts = spellCounts(rows, '', granted, false);
+            const counts = spellCounts(rows, '', granted, false, arcanum);
             const limits = classSpellCounts(d.classSlug, d.level);
             if (limits.cantrips !== null) {
                 assert.ok(counts.cantrips >= limits.cantrips && counts.cantrips <= limits.cantrips + extraCantrips(d), `sorts mineurs de la table : ${counts.cantrips} pour ${limits.cantrips}`);
@@ -436,6 +439,34 @@ describe('Personnages d\'exemple : cohérence avec les règles de 2024', () => {
         assert.ok(evocations.length >= 3);
         // Les sorts mineurs ne se préparent pas
         assert.ok(character.dynamic_spells.filter((row) => row.lvl === '0').every((row) => row.prep === false));
+    });
+
+    test('Rôdeuse des Amazones : Injonction et Appel de destrier donnés (hors du compte), Chakram calculé sans botte', () => {
+        const character = byId('rodeur-8');
+        const d = deriveCharacter(character);
+        const granted = grantedSpellKeys(character, d, SPELLS);
+        for (const name of ['Injonction', 'Appel de destrier']) {
+            assert.ok(character.dynamic_spells.some((row) => row.name === name), `${name} au grimoire`);
+            assert.ok(granted.has(spellNameKey(name)), `${name} donné par Magie des Amazones`);
+        }
+        const chakram = character.dynamic_weapons.find((weapon) => weapon.name === 'Chakram');
+        assert.equal(chakram.prof, '-');
+        const computed = computeWeapon(chakram, d, {});
+        assert.equal(computed.proficiency.proficient, true);
+        assert.equal(computed.attack.text, 'DEX : +7', 'Dextérité +4, maîtrise +3');
+        assert.equal(computed.damage.text, '1d6 +4 TRAN');
+    });
+
+    test('Occultiste 15 : trois sorts d\'Arcanum mystique (niveaux 6, 7 et 8), hors des préparés', () => {
+        const character = byId('occultiste-15');
+        const d = deriveCharacter(character);
+        const granted = grantedSpellKeys(character, d, SPELLS);
+        const arcanum = arcanumRows(character.dynamic_spells, d, SPELLS, granted);
+        assert.deepEqual([...arcanum].map((index) => character.dynamic_spells[index].name).sort(),
+            ['Doigt de mort', 'Mot de pouvoir étourdissant', 'Vision suprême']);
+        const counts = spellCounts(character.dynamic_spells, '', granted, false, arcanum);
+        assert.equal(counts.prepared, classSpellCounts(d.classSlug, d.level).prepared);
+        assert.equal(highestSlotLevel(d.spellSlots), 5, 'magie de pacte : emplacements de niveau 5');
     });
 });
 
