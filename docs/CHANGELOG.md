@@ -3,7 +3,7 @@
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ## [4.49.0] - 2026-11-25 (onglet Combat : − / + des PV, Inspiration héroïque en colonne)
-Pas encore publiée. Remarques de Franck sur captures ; choix sur maquettes (« A · 4 colonnes »,
+Publiée le 25/11/2026 avec l'accord de Franck. Remarques de Franck sur captures ; choix sur maquettes (« A · 4 colonnes »,
 Épuisement « option 1 »).
 ### Changed
 - PV actuels et PV temp. : petits boutons − / + autour du titre (`around`, js/ui/stepper.js),

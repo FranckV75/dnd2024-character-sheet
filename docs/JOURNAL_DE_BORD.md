@@ -12,15 +12,13 @@ en fin de session :
 
 ## En ce moment
 
-- **Prête, pas publiée** : version **4.49.0** (25/11/2026), commitée sur `v4`, rien de poussé :
-  remarques de Franck sur l'onglet Combat, d'après ses choix sur maquettes (« A · 4 colonnes »,
-  Épuisement « option 1 »). Pièce « Inspiration héroïque » dans sa propre colonne en mode
-  Odyssée, petits − / + autour du titre des PV (aussi ceux des compagnons), Épuisement centré,
-  renommée aérée, bouclier de la CA plafonné. Nouveautés écrites, mode d'emploi relu
-  (`npm run notice`). Attend le « Publie » de Franck.
-- **En ligne** : version **4.48.1**, publiée le 25/11/2026 avec l'accord de Franck (« Publie »),
-  version en ligne vérifiée (0 erreur console) : mode d'emploi relu en entier et corrigé,
-  relecture systématique à chaque version (`npm run notice`). Avant elle, la **4.48.0**
+- **En ligne** : version **4.49.0**, publiée le 25/11/2026 avec l'accord de Franck (« Publie »),
+  version en ligne vérifiée (0 erreur console, fenêtre « Nouveautés » affichée) : remarques de
+  Franck sur l'onglet Combat, d'après ses choix sur maquettes (« A · 4 colonnes », Épuisement
+  « option 1 ») ; pièce « Inspiration héroïque » dans sa propre colonne en mode Odyssée, petits
+  − / + autour du titre des PV (aussi ceux des compagnons), Épuisement centré, renommée aérée,
+  bouclier de la CA plafonné. Avant elle, la **4.48.1** (25/11/2026) : mode d'emploi relu en
+  entier, relecture systématique à chaque version (`npm run notice`). Avant, la **4.48.0**
   (25/11/2026) : suites du grimoire (Paladin et Rôdeur, cases des
   lancers gratuits de classe, Magicien 5 / 18 / 20, Découvertes magiques du Barde du Savoir),
   groupe « Autres » de la liste des armures, outils des dons et de l'historique.
@@ -52,7 +50,7 @@ en fin de session :
 
 ### À vérifier par Franck (reste : l'iPad de Patricia)
 
-À voir sur tablette quand la 4.49.0 sera en ligne (Android, PC, et iPad de Patricia) :
+À voir sur tablette maintenant que la 4.49.0 est en ligne (Android, PC, et iPad de Patricia) :
 - Onglet Combat, mode Odyssée : quatre colonnes (Bonus de maîtrise, Points de Foi, Inspiration
   héroïque, Vitesse) ; la rangée n'est plus trop haute, le bouclier de la CA ne s'allonge plus.
   Mode décoché : la colonne disparaît, la pièce reprend la place des Points de Foi.
@@ -156,7 +154,7 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 
 ## Sessions
 
-### 25/11/2026 (soir) — Onglet Combat : petits − / + des PV, Inspiration héroïque en colonne, Épuisement centré (4.49.0, pas publiée)
+### 25/11/2026 (soir) — Onglet Combat : petits − / + des PV, Inspiration héroïque en colonne, Épuisement centré (4.49.0, publiée le 25/11/2026)
 
 - Remarques de Franck (captures) : − / + au titre partout comme les Points de Foi, Épuisement mal
   centré, titre de la renommée à l'étroit, rangée du haut trop haute en mode Odyssée (bouclier

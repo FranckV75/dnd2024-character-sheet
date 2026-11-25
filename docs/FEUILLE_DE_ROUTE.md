@@ -97,7 +97,7 @@ cases des lancers gratuits de classe, Magicien 5 / 18 / 20, Découvertes magique
 Savoir), ~~groupe « Autres » de la liste des armures~~, ~~outils des dons et de l'historique~~.
 Fait en 4.48.1 (publiée le 25/11/2026) : ~~mode d'emploi relu en entier face à la fiche~~
 et relecture systématique à chaque version (`npm run notice`, demande de Franck).
-Faits en 4.49.0 (25/11/2026, pas encore publiée) : ~~petits − / + autour du titre des PV (et des
+Faits en 4.49.0 (25/11/2026, publiée le 25/11/2026) : ~~petits − / + autour du titre des PV (et des
 PV des compagnons)~~, ~~Inspiration héroïque dans sa propre colonne en mode Odyssée~~ (rangée du
 haut moins haute), ~~Épuisement centré~~, ~~titre de la renommée aéré~~ (choix de Franck sur
 maquettes, 25/11/2026).
