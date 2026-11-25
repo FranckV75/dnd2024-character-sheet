@@ -8,7 +8,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { deriveCharacter } from '../js/rules/character.js';
-import { subclassSpells, subclassFeatures, automationKind } from '../js/rules/subclass-features.js';
+import { subclassSpells, subclassFeatures, automationKind, markListedSpells } from '../js/rules/subclass-features.js';
 import { SUBCLASS_SPELLS } from '../js/data/subclass-spells.js';
 import {
     givenSpellKeys, grantedSpellKeys, preparationView, preparedSpellNames, highestSlotLevel, spellPrepState
@@ -81,6 +81,23 @@ describe('Magie des Amazones : sorts de sous-classe', () => {
         }
         assert.match(feature(5).automation.text, /Appel de destrier : Carte de la monture d'Outremonde/);
         assert.equal(automationKind(feature(5)), 'partial');
+    });
+
+    test('noms du guide (« Trouver une monture », « Tromperie ») notés à la main : donnés aussi, hors du compte', () => {
+        const c = amazon(17);
+        const derived = deriveCharacter(c);
+        const granted = grantedSpellKeys(c, derived, db);
+        const rows = [
+            { ...EMPTY_SPELL, lvl: '2', name: 'Trouver une monture', prep: true },
+            { ...EMPTY_SPELL, lvl: '5', name: 'Tromperie', prep: true },
+            row('Soins', true)
+        ];
+        assert.equal(spellPrepState(rows[0], { granted }), 'granted');
+        assert.equal(spellPrepState(rows[1], { granted }), 'granted');
+        assert.equal(spellCounts(rows, '', granted).prepared, 1);
+        // Le bloc « Sorts de sous-classe » les voit notés : pas de doublon à noter
+        const listed = markListedSpells(subclassSpells(derived).reached, rows).filter(spell => spell.listed).map(spell => spell.name);
+        assert.ok(listed.includes('Appel de destrier') && listed.includes('Double illusoire'));
     });
 
     test('carte de la monture : sort nommé comme dans le grimoire', () => {

@@ -239,13 +239,14 @@ export const SUBCLASS_SPELLS = Object.freeze({
         [17, 'Seeming', 'Apparence trompeuse', 5]
     ],
     // Conclave des Amazones (Odyssée, p. 49, Magie des Amazones) : « trouver une monture » et
-    // « tromperie » du guide sont Appel de destrier et Double illusoire du Manuel des joueurs
+    // « tromperie » du guide sont Appel de destrier et Double illusoire du Manuel des joueurs (noms du guide
+    // gardés en « aka » : une fiche qui les a notés ainsi les voit aussi donnés, hors du compte)
     amazon_warrior: [
         [3, 'Command', 'Injonction', 1],
-        [5, 'Find Steed', 'Appel de destrier', 2, '', { note: 'Monture : carte dans « Compagnons & familiers » (onglet Aptitudes & Traits).' }],
+        [5, 'Find Steed', 'Appel de destrier', 2, '', { aka: ['Trouver une monture'], note: 'Monture : carte dans « Compagnons & familiers » (onglet Aptitudes & Traits).' }],
         [9, 'Haste', 'Hâte', 3],
         [13, 'Confusion', 'Confusion', 4],
-        [17, 'Mislead', 'Double illusoire', 5]
+        [17, 'Mislead', 'Double illusoire', 5, '', { aka: ['Tromperie'] }]
     ],
     // Ensorceleur
     aberrant_sorcery: [
