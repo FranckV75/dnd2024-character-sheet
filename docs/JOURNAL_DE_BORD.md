@@ -12,18 +12,13 @@ en fin de session :
 
 ## En ce moment
 
-- **En ligne** : version **4.47.1**, publiée le 23/11/2026 avec l'accord de Franck (« Publie »),
-  version en ligne vérifiée (0 erreur console) : noms du manuel français pour les dons, espèces,
-  aptitudes et outils, vérifiés sur toutes les photos ; plus de prérequis affiché pour les dons
-  d'origines. Avant elle, la 4.47.0 (même jour) : pièce « Inspiration héroïque », petits − / +,
-  listes des armes et des armures, confirmation des fenêtres d'arme et d'armure, noms des sorts.
-  Décisions sur la 4.46.0, la 4.47.0 et la 4.47.1 : toutes prises par Franck le 23/11/2026. En
-  attente : sur la 4.44.0 et la 4.45.0, point 3 de `docs/FEUILLE_DE_ROUTE.md`.
-- **Prête, pas publiée** : version **4.48.0** (23/11/2026), sur `v4` seulement : suites du
-  grimoire (Paladin et Rôdeur, cases des lancers gratuits de classe, Magicien 5 / 18 / 20,
-  Découvertes magiques du Barde du Savoir), groupe « Autres » de la liste des armures, outils des
-  dons et de l'historique. Attend le « Publie » de Franck et ses réponses aux décisions de la
-  4.48.0 (point 3 de `docs/FEUILLE_DE_ROUTE.md`). Étude `docs/etudes/EXPLICATIONS.md` à lire
+- **En ligne** : version **4.48.0**, publiée le 25/11/2026 avec l'accord de Franck (« Publie »),
+  version en ligne vérifiée (0 erreur console) : suites du grimoire (Paladin et Rôdeur, cases des
+  lancers gratuits de classe, Magicien 5 / 18 / 20, Découvertes magiques du Barde du Savoir),
+  groupe « Autres » de la liste des armures, outils des dons et de l'historique. Avant elle, la
+  4.47.1 (23/11/2026) : noms du manuel français pour les dons, espèces, aptitudes et outils.
+  En attente : les décisions sur la 4.48.0 (choix prudents faits sans Franck), la 4.44.0 et la
+  4.45.0, point 3 de `docs/FEUILLE_DE_ROUTE.md`. Étude `docs/etudes/EXPLICATIONS.md` à lire
   par Franck (rien de déployé).
 - **Suite** : multiclassage (attend les réponses de Franck), ou une idée du point 3. Laissés de
   côté par Franck le 23/11/2026 : suites du mode Odyssée, bilans des autres joueurs.
@@ -49,7 +44,7 @@ en fin de session :
 
 ### À vérifier par Franck (reste : l'iPad de Patricia)
 
-À voir sur tablette quand la 4.48.0 sera en ligne (Android, PC, et iPad de Patricia) :
+À voir sur tablette maintenant que la 4.48.0 est en ligne (Android, PC, et iPad de Patricia) :
 - Paladin 5 : cases « Châtiment de paladin » et « Fidèle destrier » dans le bandeau de l'onglet
   Combat et dans le bloc « Sorts de classe » du grimoire ; « Lancer » coche la case.
 - « Préparer mes sorts » d'un Paladin ou d'un Rôdeur : la ligne « Un seul échange… » se lit.
@@ -144,7 +139,7 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 
 ## Sessions
 
-### 23/11/2026 (nuit) — Suites du grimoire, armures « Autres », outils des dons, étude des explications (4.48.0, pas publiée)
+### 23/11/2026 (nuit) — Suites du grimoire, armures « Autres », outils des dons, étude des explications (4.48.0, publiée le 25/11/2026)
 
 - Demande de Franck : lancer trois chantiers (grimoire, armures « Autres », outils) et une étude
   (explications bouton par bouton, proposition seulement) ; mode Odyssée et bilan d'Iria laissés
@@ -160,6 +155,8 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
 - Fusion dans `v4`, 2 049 tests ; vérifié à l'écran à 820 px (clair et sombre) sur des fiches de
   test : Paladin 5, Magicien 20, Barde du Savoir 6, Occultiste 17, outils d'un Artisan ;
   0 erreur console.
+- Publiée le 25/11/2026 sur le « Publie » de Franck (`v4` et `master` = même commit), version en
+  ligne vérifiée.
 
 ### 23/11/2026 (soir) — Noms du manuel : dons, espèces, aptitudes et outils (4.47.1, publiée le 23/11/2026)
 

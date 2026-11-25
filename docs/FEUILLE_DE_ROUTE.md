@@ -92,7 +92,7 @@ héroïque en mode Odyssée~~ (point 1, audit du 22/11/2026). Faits en 4.47.0 (2
 sorts de toutes les listes de classe~~, ~~confirmation avant de fermer les réglages de l'armure~~,
 ~~« Sphère de feu » en Évocation~~ (décisions de Franck du 23/11/2026). Fait en 4.47.1
 (23/11/2026, publiée le 23/11/2026) : ~~noms du manuel pour les dons, espèces, aptitudes et outils~~.
-Faits en 4.48.0 (23/11/2026, pas encore publiée) : ~~suites du grimoire~~ (Paladin et Rôdeur,
+Faits en 4.48.0 (23/11/2026, publiée le 25/11/2026) : ~~suites du grimoire~~ (Paladin et Rôdeur,
 cases des lancers gratuits de classe, Magicien 5 / 18 / 20, Découvertes magiques du Barde du
 Savoir), ~~groupe « Autres » de la liste des armures~~, ~~outils des dons et de l'historique~~.
 Étude faite le 23/11/2026 : ~~explications des options~~ (`docs/etudes/EXPLICATIONS.md`,

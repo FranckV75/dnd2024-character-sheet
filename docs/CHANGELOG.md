@@ -3,7 +3,7 @@
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ## [4.48.0] - 2026-11-23 (suites du grimoire, armures « Autres », outils des dons)
-Pas encore publiée. Trois chantiers demandés par Franck, réalisés chacun dans sa copie de travail
+Publiée le 25/11/2026 (« Publie » de Franck). Trois chantiers demandés par Franck, réalisés chacun dans sa copie de travail
 puis relus (code et sauvegarde ; règles et interface) et corrigés avant la fusion. Aucune nouvelle
 clé de premier niveau : de nouvelles entrées dans les clés facultatives `subclass_uses` et
 `subclass_choices`, écrites au premier usage ; une fiche qui ne s'en sert pas reste identique.
