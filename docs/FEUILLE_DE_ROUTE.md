@@ -69,7 +69,7 @@ sous-classes). Restent des décisions de Franck :
 - Monté sur le dragon : remplacer vraiment la Perception passive par celle du dragon ?
 - Monture d'Outremonde (Amazone) : case pour l'action bonus (une fois par repos long) ; noms
   français des actions à vérifier dans le livre ; ~~sorts de la Magie des Amazones pas dans le
-  grimoire~~ (faits, version pas encore publiée : bloc « Sorts de sous-classe », toujours préparés).
+  grimoire~~ (faits en 4.50.0, publiée le 26/11/2026 : bloc « Sorts de sous-classe », toujours préparés).
 
 ### 3. Idées : ordre validé par Franck le 18/11/2026
 
@@ -102,7 +102,7 @@ Faits en 4.49.0 (25/11/2026, publiée le 25/11/2026) : ~~petits − / + autour d
 PV des compagnons)~~, ~~Inspiration héroïque dans sa propre colonne en mode Odyssée~~ (rangée du
 haut moins haute), ~~Épuisement centré~~, ~~titre de la renommée aéré~~ (choix de Franck sur
 maquettes, 25/11/2026).
-Fait les 25-26/11/2026 (pas encore publié) : ~~un personnage d'exemple par classe~~ (douze, niveaux 3
+Faits en 4.50.0 (25-26/11/2026, publiée le 26/11/2026) : ~~un personnage d'exemple par classe~~ (douze, niveaux 3
 à 15, dont un Paladin 10 du Seigneur Dragon avec ses dragons ; demande de Franck). Puis les trois
 manques vus en route : ~~sorts de la Magie des Amazones donnés~~ (Injonction 3, Appel de destrier 5,
 Hâte 9, Confusion 13, Double illusoire 17 ; noms du guide reconnus) ; ~~Arcanum mystique hors du

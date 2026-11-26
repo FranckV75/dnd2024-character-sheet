@@ -2,6 +2,27 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.50.0] - 2026-11-26 (un personnage d'exemple par classe ; Amazones, Arcanum, chakram)
+Publiée le 26/11/2026 avec l'accord de Franck (« Publie »). Demandes de Franck : un exemple par
+classe, puis corriger les trois manques vus en les construisant.
+### Added
+- Personnages d'exemple (`js/data/examples.js`) : douze, un par classe, du niveau 3 au niveau 15,
+  rangés par classe ; dont un Paladin 10 du Serment du Seigneur Dragon avec ses deux dragons et
+  cinq sous-classes de l'Odyssée. Tests communs à tous les exemples (`tests/examples.test.js`).
+- Magie des Amazones donnée par la sous-classe (`js/data/subclass-spells.js`) : Injonction 3,
+  Appel de destrier 5, Hâte 9, Confusion 13, Double illusoire 17 ; noms du guide de l'Odyssée
+  (« Trouver une monture », « Tromperie ») reconnus.
+- Chakram de l'Odyssée dans la liste des armes (`js/data/dd-rules.js`, `proposedWeapons`) : arme
+  de guerre à distance, lancer seulement, sans botte ; caché quand le mode Odyssée est décoché,
+  sauf s'il est déjà noté.
+### Fixed
+- Arcanum mystique : la première ligne de chaque niveau d'Arcanum est toujours disponible, hors du
+  compte des préparés, lancée seulement par sa case (`arcanumRows`) ; une deuxième ligne du même
+  niveau affiche « Pas d'emplacement » et n'utilise plus la case de l'Arcanum.
+- Style Armes de lancer : +2 toujours compté pour une arme seulement lancée (fléchette, chakram).
+- Mode d'emploi relu (`npm run notice`) : rubriques des exemples, de la case « Mode Odyssée » et du
+  bloc Arcanum à jour ; entrée « Nouveautés ».
+
 ## [4.49.0] - 2026-11-25 (onglet Combat : − / + des PV, Inspiration héroïque en colonne)
 Publiée le 25/11/2026 avec l'accord de Franck. Remarques de Franck sur captures ; choix sur maquettes (« A · 4 colonnes »,
 Épuisement « option 1 »).

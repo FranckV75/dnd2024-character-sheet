@@ -13,6 +13,15 @@
 /** @type {ReadonlyArray<{ version: string, items: ReadonlyArray<string> }>} */
 export const WHATS_NEW = Object.freeze([
     {
+        version: '4.50.0',
+        items: [
+            "Le bouton « Essayer un personnage d'exemple » propose maintenant un personnage par classe, du niveau 3 au niveau 15, dont un Paladin du Seigneur Dragon avec ses dragons.",
+            "Rôdeur des Amazones : les sorts de la Magie des Amazones sont donnés à leur niveau (Injonction, Appel de destrier, Hâte, Confusion, Double illusoire). Ils sont toujours préparés et ne comptent pas dans vos sorts préparés.",
+            "Occultiste : le sort d'Arcanum mystique de chaque niveau est toujours disponible et ne compte plus dans vos sorts préparés. Il se lance avec « Lancer gratuit », une fois par repos long.",
+            "Mode Odyssée : le chakram est dans la liste des armes. Le style de combat Armes de lancer ajoute bien ses +2 aux dégâts du chakram et de la fléchette."
+        ]
+    },
+    {
         version: '4.49.0',
         items: [
             "Mode Odyssée : la pièce « Inspiration héroïque » a sa propre colonne, à côté des « Points de Foi ». Le haut de l'onglet Combat est moins haut, et le « Bonus de maîtrise » est bien au milieu de sa case.",
