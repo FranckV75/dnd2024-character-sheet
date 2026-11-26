@@ -2,6 +2,29 @@
 
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [4.51.0] - 2026-11-26 (objets « Autres » magiques)
+Pas encore publiée. Demande de Franck (25/11/2026) : la cape, l'anneau… du tableau des armures
+doivent pouvoir être magiques ; précision de Franck : ils le sont par nature, leur bonus à la CA
+est leur magie (rien à ajouter, la CA est déjà juste).
+### Added
+- Rareté des objets magiques qui ne sont ni armure ni bouclier (`MAGIC_RARITIES`,
+  `armorMagicRarity`, `withArmorRarity` dans `js/rules/armors.js`) : peu commun, rare, très rare,
+  légendaire (DMG 2024). Elle donne à la ligne l'aspect magique (pastille ✦ et décors de
+  `js/ui/magic.js`, paliers 1 / 1 / 2 / 3 comme les armures +1 rare, +2 très rare, +3 légendaire)
+  et ne change jamais la CA.
+- Entrées « objet » du groupe « Autres » (`js/data/armor-others.js`, champ `rarity`) : Cape
+  peu commune ; Anneau, Bracelets, Pierre de Ioun rares ; Robe de l'archimage légendaire
+  (vérifié dans le DMG 2024). Choisies dans la liste, elles écrivent leur rareté dans la ligne
+  (clé facultative `magic_rarity`) ; les lignes choisies avant restent reconnues à leur nom et
+  à leur commentaire.
+- Roue dentée d'une ligne qui n'est ni armure ni bouclier : choix « Objet magique » (Non magique,
+  ou une rareté) ; « none » enregistré seulement pour rendre ordinaire un objet reconnu.
+### Changed
+- `setMagic` (`js/ui/magic.js`) accepte un texte de pastille et une nature (« objet magique
+  peu commun ») ; armes et armures +1 à +3 inchangées.
+- Mode d'emploi (`npm run notice`) : rubrique « Les armures » (roue dentée et magie) ; entrée
+  « Nouveautés ».
+
 ## [4.50.0] - 2026-11-26 (un personnage d'exemple par classe ; Amazones, Arcanum, chakram)
 Publiée le 26/11/2026 avec l'accord de Franck (« Publie »). Demandes de Franck : un exemple par
 classe, puis corriger les trois manques vus en les construisant.

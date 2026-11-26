@@ -13,6 +13,14 @@
 /** @type {ReadonlyArray<{ version: string, items: ReadonlyArray<string> }>} */
 export const WHATS_NEW = Object.freeze([
     {
+        version: '4.51.0',
+        items: [
+            "Armures : la cape et l'anneau de protection, les bracelets de défense, la pierre de Ioun et la robe de l'archimage ont maintenant l'aspect d'un objet magique, avec la pastille ✦ et les décors dorés.",
+            "Leur bonus à la CA est déjà leur magie : la CA ne change pas, rien ne compte deux fois. Plus l'objet est rare, plus la ligne brille : la robe de l'archimage, légendaire, a les plus beaux décors.",
+            "Un objet que vous avez écrit vous-même (amulette, cape…) peut aussi devenir magique : roue dentée de la ligne, puis « Objet magique » et sa rareté."
+        ]
+    },
+    {
         version: '4.50.0',
         items: [
             "Le bouton « Essayer un personnage d'exemple » propose maintenant un personnage par classe, du niveau 3 au niveau 15, dont un Paladin du Seigneur Dragon avec ses dragons.",

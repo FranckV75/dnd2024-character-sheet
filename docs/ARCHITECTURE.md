@@ -35,7 +35,7 @@ css/                    Une feuille par fonctionnalité ; toute couleur passe pa
 ├── hit-points.css      PV en jeu : boutons − / + des cases PV, bouton « Dégâts / Soins »
 ├── stepper.css         Boutons − / + et pavé de chiffres (PV, XP, compteurs, bourse)
 ├── level-up.css        Bouton « Passer au niveau N » et sa fenêtre
-├── magic.css           Armes et armures magiques (+1 à +3 de plus en plus marqués, enchantement)
+├── magic.css           Armes et armures magiques (+1 à +3 de plus en plus marqués, enchantement ; cape, anneau… selon leur rareté)
 ├── motion.css          Mouvements (ouverture en cascade, onglets, survol, thème, cinéma) ;
 │                       seule règle autorisée à utiliser !important : « Sans animation »
 ├── feedback.css        Réactions au jeu (Rage, jauge de PV, valeurs qui changent)

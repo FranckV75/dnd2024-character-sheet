@@ -312,8 +312,8 @@ export const HELP_SECTIONS = Object.freeze([
             },
             {
                 title: "Les armures",
-                text: "Cochez sous « Maîtrises d'armures » celles que vous savez porter. « Ajouter une armure » crée une ligne : touchez son nom vide, ou le bouton ▾, pour choisir dans les armures du manuel ou dans le groupe « Autres » (anneau, cape, Armure du mage…). Cochez « Équipée / actif » quand elle sert. Touchez la CA pour voir le calcul.",
-                files: ["js/ui/armors.js", "index.html", "js/rules/armor-picker.js"]
+                text: "Cochez sous « Maîtrises d'armures » celles que vous savez porter. « Ajouter une armure » crée une ligne : touchez son nom vide, ou le bouton ▾, pour choisir une armure du manuel ou dans le groupe « Autres » (anneau, cape, sort…). Cochez « Équipée / actif » quand elle sert. Touchez la CA pour voir le calcul. La roue dentée règle la magie d'une ligne.",
+                files: ["js/ui/armors.js", "index.html", "js/rules/armor-picker.js", "js/rules/armors.js"]
             },
             {
                 title: "Les capacités à cocher",

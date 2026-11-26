@@ -110,6 +110,11 @@ compte des préparés~~ (une ligne par niveau, lancée seulement par sa case) ; 
 des armes~~ (Odyssée, à distance, sans botte ; le style Armes de lancer y est toujours compté).
 Choix à confirmer par Franck : « tromperie » du guide lue comme Double illusoire ; chakram sans botte
 d'arme (le guide est écrit pour l'ancienne édition) et seulement lancé.
+Fait en 4.51.0 (26/11/2026, pas encore publiée) : ~~objets « Autres » magiques~~ (cape, anneau,
+bracelets, pierre de Ioun, robe : aspect magique selon leur rareté du DMG 2024, CA inchangée ;
+une ligne écrite à la main reçoit une rareté par la roue dentée). Choix à confirmer par Franck :
+paliers des décors (peu commun et rare : comme +1 ; très rare : +2 ; légendaire : +3), pastille
+« ✦ » au lieu d'un « +N ».
 Étude faite le 23/11/2026 : ~~explications des options~~ (`docs/etudes/EXPLICATIONS.md`,
 proposition, rien n'est déployé ; Franck choisit ce qui est utile). Laissés de côté par Franck
 le 23/11/2026 : suites du mode Odyssée (choix de la campagne dans « Nouvelle fiche », exemples
@@ -121,14 +126,6 @@ mode coupé) et bilans des autres joueurs (trop tôt). Reste :
    publiés en 3 versions, en commençant par un socle invisible. Avant de construire : les
    14 questions de l'étude (section 8) et les photos du chapitre 2 du manuel français
    (section 9, sans doute p. 41-45).
-2. **Objets « Autres » magiques** (demande de Franck, 25/11/2026, à faire plus tard) : dans le
-   tableau des armures, seules une armure et un bouclier peuvent recevoir un bonus magique (+1 à
-   +3, engrenage, `armorCanBeMagic`) avec la pastille et les décors. Une ligne d'un autre type
-   (Cape ou Anneau de protection, Robe de l'archimage, ligne « Bonus » saisie à la main) ne le
-   peut pas. Or ces objets sont magiques par nature (DMG 2024, précision de Franck du
-   25/11/2026) : leur bonus à la CA est leur magie, déjà compté comme « Valeur de base ».
-   Ajouter un bonus en plus compterait la magie deux fois : ce serait faux. À faire : reconnaître
-   ces lignes comme magiques (pastille, décors) sans changer la CA, qui est déjà juste.
 
 Décisions de Franck en attente sur la 4.44.0 (mode Odyssée) :
 - Toucher la case coupe le mode tout de suite et la barre du haut explique aussitôt (pas de

@@ -31,8 +31,11 @@ en fin de session :
   En attente : les décisions sur la 4.48.0 (choix prudents faits sans Franck), la 4.44.0 et la
   4.45.0, point 3 de `docs/FEUILLE_DE_ROUTE.md`. Étude `docs/etudes/EXPLICATIONS.md` à lire
   par Franck (rien de déployé).
-- **Suite** : multiclassage (attend les réponses de Franck), ou une idée du point 3. Noté le
-  25/11/2026 pour plus tard : objets « Autres » magiques (cape, anneau… : point 3, idée 2). Laissés de
+- **Prête, pas publiée** : version **4.51.0** (26/11/2026) : objets « Autres » magiques (cape,
+  anneau, robe… : pastille ✦ et décors selon leur rareté, CA inchangée). Attend le « Publie » de
+  Franck. Elle emporte aussi deux changements techniques sans effet pour les joueurs
+  (vérification GitHub sous Node 24, serveur de travail).
+- **Suite** : multiclassage (attend les réponses de Franck), ou une idée du point 3. Laissés de
   côté par Franck le 23/11/2026 : suites du mode Odyssée, bilans des autres joueurs.
 - **Serveur de travail** : `npm run dev` n'écoute plus que l'ordinateur (127.0.0.1 et ::1) et ne
   sert jamais `.git` ; relancé le 22/11/2026 avec cette protection (vérifié avec netstat).
@@ -55,6 +58,15 @@ en fin de session :
   jamais le texte du livre (le dépôt est public).
 
 ### À vérifier par Franck (reste : l'iPad de Patricia)
+
+À voir sur tablette quand la 4.51.0 sera en ligne (Android, PC, et iPad de Patricia) :
+- Armures : une Cape de protection choisie dans la liste ▾ a la pastille ✦ et les décors dorés ;
+  la Robe de l'archimage, légendaire, les plus beaux. La CA de la fiche ne change pas.
+- Toucher la pastille ✦ : la barre du haut dit « objet magique peu commun… déjà compté ».
+- Roue dentée d'une cape : choix « Objet magique » (rareté) ; « Non magique » retire l'aspect.
+- Nom long à côté de la pastille (« Robe de l'archimage » à 820 px) : coupé en fin de mot
+  (« archimag-e »), comme pour une armure +1 au nom long : gênant ou pas ?
+- La fenêtre « Nouveautés de la version 4.51.0 » s'affiche une fois et se lit en entier.
 
 À voir sur tablette maintenant que la 4.50.0 est en ligne (Android, PC, et iPad de Patricia) :
 - Menu « Gestion », « Essayer un personnage d'exemple » : les douze exemples, rangés par classe,
@@ -168,6 +180,15 @@ Ordre décidé le 11/11/2026 (détail dans `docs/FEUILLE_DE_ROUTE.md`) :
    `docs/FEUILLE_DE_ROUTE.md`.
 
 ## Sessions
+
+### 26/11/2026 — Objets « Autres » magiques : cape, anneau, robe… (4.51.0, pas publiée)
+
+- Demande de Franck (25/11/2026), précisée : ces objets sont magiques par nature, leur bonus à la
+  CA est leur magie. Donc aucun bonus en plus : la ligne reçoit l'aspect magique (pastille ✦,
+  décors) selon la rareté du DMG 2024 (vérifiée dans le PDF), la CA ne bouge pas.
+- Rareté écrite dans la ligne choisie (clé facultative `magic_rarity`), lignes plus anciennes
+  reconnues à leur nom et leur commentaire ; roue dentée : choix « Objet magique » pour une ligne
+  écrite à la main. 2 196 tests verts ; vu à l'écran à 820 px, thèmes clair et sombre, 0 erreur.
 
 ### 26/11/2026 — Les trois manques de la fiche : Amazones, Arcanum, chakram (4.50.0, publiée le 26/11/2026)
 
