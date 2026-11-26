@@ -54,6 +54,8 @@ describe('Serveur de développement', () => {
 
     test('refuse de sortir du dépôt', async () => {
         assert.equal(await statusOf('127.0.0.1', port, '/..%5c..%5cpackage.json'), 403);
+        assert.equal(await statusOf('127.0.0.1', port, '/js/..%2f..%2fpackage.json'), 403);
+        assert.equal(await statusOf('127.0.0.1', port, '/js/..%5cindex.html'), 403);
     });
 });
 

@@ -48,7 +48,10 @@ export async function handleRequest(req, res) {
             return;
         }
         let filePath = normalize(join(ROOT, urlPath));
-        if (filePath !== ROOT && !filePath.startsWith(ROOT + sep)) {
+        // « .. » refusé avec / comme avec \ : Windows lit \ comme un séparateur, Linux (la
+        // vérification de GitHub) comme une lettre ; la réponse est la même partout
+        const climbs = urlPath.split(/[\\/]/).includes('..');
+        if (climbs || (filePath !== ROOT && !filePath.startsWith(ROOT + sep))) {
             res.writeHead(403).end('Interdit');
             return;
         }
