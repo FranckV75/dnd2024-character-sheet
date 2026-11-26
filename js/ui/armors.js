@@ -4,7 +4,9 @@
 // Chaque ligne de dynamic_armors garde exactement les clés de la v3
 // (name, type, ca, str, stealth, weight, price, comment, equipped) ; les clés
 // inconnues d'une ancienne sauvegarde sont conservées. Clé facultative « magic » (1 à 3) :
-// bonus magique d'une armure ou d'un bouclier.
+// bonus magique d'une armure ou d'un bouclier. Clé facultative « magic_rarity » : rareté d'un
+// autre objet magique (cape, anneau… : son bonus à la CA est déjà sa magie) ; elle ne change pas
+// la CA, seulement l'aspect de la ligne (pastille ✦ et décors, js/rules/armors.js).
 // Colonne CA : calculée, jamais saisie. Elle montre ce que la ligne apporte (« 18 », « +3 ») ;
 // le calcul s'affiche dans une bulle au toucher ou au survol. Le type, la valeur de base (clé
 // « ca ») et le bonus magique se règlent avec l'engrenage ; pour une armure du manuel, type et
@@ -28,7 +30,8 @@ import { derivedOf } from './derived.js';
 import {
     ARMOR_TYPES, searchArmorCatalogue, searchArmorChoices, armorRowFromCatalogue, armorRowFromChoice, isArmorOther,
     armorWarnings, armorTraining, isBlankArmor, armorBaseText, armorBubbleText,
-    armorMagicBonus, armorCanBeMagic, withArmorMagic, ARMOR_MAGIC_MAX, armorLine, catalogueArmor, catalogueArmorClass
+    armorMagicBonus, armorCanBeMagic, withArmorMagic, ARMOR_MAGIC_MAX, armorLine, catalogueArmor, catalogueArmorClass,
+    MAGIC_RARITIES, armorMagicRarity, magicRarityInfo, withArmorRarity
 } from '../rules/armors.js';
 import { armorPickerGroups, ARMOR_PICKER_OTHER } from '../rules/armor-picker.js';
 import { EQUIPMENT_DATA } from '../data/equipment.js';
@@ -57,6 +60,12 @@ const WATCHED_KEYS = new Set([
 ]);
 /** Les dons atteints (feat_<N> ; feat_0 selon l'espèce) changent la Dex max des armures intermédiaires */
 const isWatched = (key) => WATCHED_KEYS.has(key) || key.startsWith('feat_');
+
+/** Palier magique d'une ligne : bonus d'une armure ou d'un bouclier, sinon rareté d'un objet magique */
+function rowMagicLevel(row) {
+    if (armorCanBeMagic(row)) return magicLevel(armorMagicBonus(row));
+    return magicRarityInfo(armorMagicRarity(row))?.level ?? 0;
+}
 
 const COLUMN_COUNT = 10;
 
@@ -227,6 +236,20 @@ export function initArmors({ root, store, setStatus }) {
         const magicField = el('div', { class: 'weapons-config-field' },
             el('label', { for: `${id}-magic`, text: 'Bonus magique' }), magicSelect,
             el('small', { class: 'weapons-config-help', text: 'Une armure ou un bouclier +1, +2 ou +3 ajoute ce bonus à sa CA.' }));
+        // Autre objet (cape, anneau…) : magique par nature, son bonus à la CA est déjà sa magie ;
+        // la rareté ne change que l'aspect de la ligne (demande de Franck, 25/11/2026)
+        const initialRarity = armorMagicRarity(original);
+        const raritySelect = el('select', { id: `${id}-rarity`, class: 'input' },
+            el('option', { value: '', text: 'Non magique', selected: initialRarity === '' }),
+            MAGIC_RARITIES.map((rarity) => el('option', {
+                value: rarity.id, text: `Objet magique ${rarity.label}`, selected: rarity.id === initialRarity
+            })));
+        const rarityField = el('div', { class: 'weapons-config-field' },
+            el('label', { for: `${id}-rarity`, text: 'Objet magique' }), raritySelect,
+            el('small', {
+                class: 'weapons-config-help',
+                text: "Cape, anneau… : leur bonus à la CA est déjà leur magie. La rareté ne change pas la CA, seulement l'aspect de la ligne."
+            }));
         const preview = el('p', { class: 'armor-config-preview', 'aria-live': 'polite' });
 
         /** Ligne telle qu'elle serait enregistrée avec les réglages de la fenêtre */
@@ -238,17 +261,18 @@ export function initArmors({ root, store, setStatus }) {
                 if (baseInput.value.trim() !== initialBase.trim() || type !== initialType) next.ca = armorBaseText(baseInput.value, type);
             }
             const canMagic = armorCanBeMagic(next);
-            return withArmorMagic(next, canMagic ? Number(magicSelect.value) : 0);
+            return withArmorRarity(withArmorMagic(next, canMagic ? Number(magicSelect.value) : 0), raritySelect.value);
         };
         const refresh = () => {
             const next = draft();
             magicField.hidden = !armorCanBeMagic(next);
+            rarityField.hidden = armorCanBeMagic(next);
             const line = armorLine(next, ctx);
             const parts = [el('strong', { text: line.kind === 'none' ? 'Ne compte pas dans la CA' : `Dans la CA : ${line.display}` })];
             if (line.kind !== 'none') parts.push(el('span', { text: ` (${line.formula})` }));
             preview.replaceChildren(...parts);
         };
-        for (const control of [typeSelect, baseInput, magicSelect]) {
+        for (const control of [typeSelect, baseInput, magicSelect, raritySelect]) {
             control.addEventListener('input', refresh);
             control.addEventListener('change', refresh);
         }
@@ -286,12 +310,12 @@ export function initArmors({ root, store, setStatus }) {
                     `Le manuel indique : ${entry.type}, CA ${entry.ca}. `, restore));
             }
         }
-        fields.push(magicField, preview);
+        fields.push(magicField, rarityField, preview);
         refresh();
 
         // Quitter sans appliquer après un changement : on demande d'abord (comme « Configuration
         // de l'arme », choix de Franck du 23/11/2026) ; rien de changé : fermeture immédiate
-        const settingsSnapshot = () => JSON.stringify([typeSelect.value, baseInput.value.trim(), magicSelect.value]);
+        const settingsSnapshot = () => JSON.stringify([typeSelect.value, baseInput.value.trim(), magicSelect.value, raritySelect.value]);
         const opened = settingsSnapshot();
         let asking = false;
         const close = openModal({
@@ -315,8 +339,7 @@ export function initArmors({ root, store, setStatus }) {
                         const next = draft();
                         replaceRow(at, () => next);
                         // Nouveau bonus magique : la ligne s'enchante sous les yeux, fenêtre refermée
-                        const before = armorCanBeMagic(original) ? armorMagicBonus(original) : 0;
-                        if (armorCanBeMagic(next) && armorMagicBonus(next) > before) {
+                        if (rowMagicLevel(next) > rowMagicLevel(original)) {
                             setTimeout(() => {
                                 const target = rows[at];
                                 if (target) enchant(target.magic, target.tr);
@@ -433,7 +456,7 @@ export function initArmors({ root, store, setStatus }) {
 
         // Réglages (type, valeur de base, bonus magique) : fiche déverrouillée seulement
         controls.config = el('button', {
-            type: 'button', class: 'btn-icon edit-only armor-config', title: 'Réglages (type, valeur, bonus magique)',
+            type: 'button', class: 'btn-icon edit-only armor-config', title: 'Réglages (type, valeur, magie)',
             'aria-label': `Réglages de l'armure (ligne ${index + 1})`, 'aria-haspopup': 'dialog',
             on: { click: () => openConfig(index) }
         }, icon('gear'));
@@ -574,18 +597,30 @@ export function initArmors({ root, store, setStatus }) {
 
             controls.config.hidden = blank;
             const magic = armorCanBeMagic(row) ? magicLevel(armorMagicBonus(row)) : 0;
+            const rarity = magic ? null : magicRarityInfo(armorMagicRarity(row));
             controls.config.setAttribute('aria-label',
-                `Réglages de ${label ? `« ${label} »` : `l'armure (ligne ${i + 1})`}${magic ? `, bonus magique +${magic}` : ''}`);
+                `Réglages de ${label ? `« ${label} »` : `l'armure (ligne ${i + 1})`}`
+                + (magic ? `, bonus magique +${magic}` : rarity ? `, objet magique ${rarity.label}` : ''));
             const shield = line.category === 'shield';
             // Équipée mais pas comptée (autre armure retenue, bouclier non maîtrisé) : la note le dit
             let where;
             if (status === 'counted') where = ' (déjà compté dans la CA de la fiche)';
             else if (row.equipped === true && result.note) where = ` (${result.note.replace(/\.$/, '')})`;
             else where = shield ? ' quand il est équipé' : ' quand elle est équipée';
-            setMagic(magicParts, tr, blank ? 0 : magic, {
-                label: `${shield ? 'Bouclier' : 'Armure'} ${label ? `« ${label} »` : `ligne ${i + 1}`}`,
-                effect: `+${magic} à la CA${where}`
-            });
+            if (rarity) {
+                // Objet magique par nature : sa magie est déjà dans sa CA, la pastille montre ✦
+                const counted = line.kind === 'none' ? 'ne change pas la CA de la fiche'
+                    : `son ${line.display} à la CA est sa magie, déjà compté`;
+                setMagic(magicParts, tr, blank ? 0 : rarity.level, {
+                    label: `Objet ${label ? `« ${label} »` : `ligne ${i + 1}`}`,
+                    effect: counted, face: '✦', what: `objet magique ${rarity.label}`
+                });
+            } else {
+                setMagic(magicParts, tr, blank ? 0 : magic, {
+                    label: `${shield ? 'Bouclier' : 'Armure'} ${label ? `« ${label} »` : `ligne ${i + 1}`}`,
+                    effect: `+${magic} à la CA${where}`
+                });
+            }
 
             const messages = warnings[i] || [];
             controls.warn.hidden = messages.length === 0;

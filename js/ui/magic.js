@@ -11,7 +11,9 @@
 // gerbe d'étincelles, d'autant plus fournie que le bonus est grand ; la barre d'état dit l'effet.
 //
 // Seul le réglage « Bonus magique » compte (jamais le nom saisi) ; rien n'est écrit dans la
-// fiche. Animations coupées (appareil ou bouton « Animations », motion-pref.js) : rien ne
+// fiche. Objet magique par nature (cape, anneau… du tableau des armures, dont le bonus EST la
+// magie) : même aspect selon sa rareté, avec une pastille « ✦ » au lieu d'un « +N »
+// (options face et what de setMagic). Animations coupées (appareil ou bouton « Animations », motion-pref.js) : rien ne
 // bouge, les ors, cadres et runes restent. Les décors (calques sans effet sur la mise en page)
 // ne sont créés que pour une ligne magique.
 // =============================================================================
@@ -118,13 +120,17 @@ function decor() {
  * @param {ReturnType<typeof createMagicParts>} parts
  * @param {HTMLTableRowElement} row
  * @param {number} bonus - bonus magique réglé (0 : objet ordinaire)
- * @param {{ label: string, effect: string }} text - nom lisible de l'objet (« l'arme « Hache » »)
- *   et effet du bonus (« +2 aux jets d'attaque et de dégâts »)
+ * @param {{ label: string, effect: string, face?: string, what?: string }} text - nom lisible de
+ *   l'objet (« l'arme « Hache » »), effet du bonus (« +2 aux jets d'attaque et de dégâts ») ;
+ *   facultatifs : texte de la pastille (« +2 » par défaut) et nature de l'objet (« objet magique
+ *   +2 » par défaut ; « objet magique peu commun » pour une cape)
  */
-export function setMagic(parts, row, bonus, { label, effect }) {
+export function setMagic(parts, row, bonus, { label, effect, face = '', what = '' }) {
     const level = magicLevel(bonus);
+    const gemText = face || `+${level}`;
+    const nature = what || `objet magique +${level}`;
     parts.level = level;
-    parts.message = level ? `${label} : objet magique +${level}, ${effect}.` : '';
+    parts.message = level ? `${label} : ${nature}, ${effect}.` : '';
     if (level && !parts.fx.firstChild) parts.fx.append(...decor());
     if (level) row.dataset.magic = String(level);
     else delete row.dataset.magic;
@@ -140,9 +146,9 @@ export function setMagic(parts, row, bonus, { label, effect }) {
     parts.gem.hidden = !level;
     if (!level) return;
     if (!rowWidths) parts.fx.style.setProperty('--magic-row-width', `${row.getBoundingClientRect().width}px`);
-    if (parts.face.textContent !== `+${level}`) parts.face.textContent = `+${level}`;
-    parts.gem.setAttribute('aria-label', `${label} : objet magique +${level}, voir l'effet`);
-    parts.gem.title = `Objet magique +${level} : ${effect}`;
+    if (parts.face.textContent !== gemText) parts.face.textContent = gemText;
+    parts.gem.setAttribute('aria-label', `${label} : ${nature}, voir l'effet`);
+    parts.gem.title = `${nature.charAt(0).toUpperCase()}${nature.slice(1)} : ${effect}`;
 }
 
 /**

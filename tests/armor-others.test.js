@@ -2,7 +2,8 @@
  * TESTS — GROUPE « AUTRES » DE LA LISTE DES ARMURES (js/data/armor-others.js)
  * Objets magiques (Dungeon Master's Guide 2024) et sorts (Player's Handbook 2024) qui changent la
  * CA : chaque entrée devient une ligne ordinaire du tableau, et le calcul de CA existant
- * (computeArmorClass) donne le bon total. Aucune clé de sauvegarde nouvelle.
+ * (computeArmorClass) donne le bon total. Seule clé ajoutée à la ligne : la rareté d'un objet
+ * magique (« magic_rarity », facultative), qui ne change jamais la CA.
  */
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,7 +16,8 @@ import { deriveCharacter, armorCategory, catalogueArmor } from '../js/rules/char
 import {
     ARMOR_TYPES, armorRowFromOther, armorRowFromChoice, armorRowFromCatalogue, isArmorOther, isArmorListComment,
     searchArmorChoices, searchArmorCatalogue, armorWarnings, isBlankArmor,
-    armorBaseText, armorOtherOfRow, armorBubbleText, ARMOR_REMINDER_FORMULA, ARMOR_TWICE_SPELL, ARMOR_TWICE_ITEM
+    armorBaseText, armorOtherOfRow, armorBubbleText, ARMOR_REMINDER_FORMULA, ARMOR_TWICE_SPELL, ARMOR_TWICE_ITEM,
+    MAGIC_RARITIES, NOT_MAGIC, armorMagicRarity, magicRarityInfo, withArmorRarity
 } from '../js/rules/armors.js';
 import { ARMOR_PICKER_GROUPS, ARMOR_PICKER_OTHER, armorPickerGroups } from '../js/rules/armor-picker.js';
 
@@ -56,6 +58,9 @@ function entryProblems(entry) {
     }
     if (!['objet', 'sort'].includes(entry.kind)) problems.push('kind : objet ou sort');
     if (!text(entry.vo)) problems.push('vo : nom anglais');
+    const rarities = MAGIC_RARITIES.map((rarity) => rarity.id);
+    if (entry.kind === 'objet' && !rarities.includes(entry.rarity)) problems.push(`rarity : une de ${rarities.join(', ')}`);
+    if (entry.kind === 'sort' && 'rarity' in entry) problems.push('rarity : jamais pour un sort');
     return problems;
 }
 
@@ -88,7 +93,7 @@ describe('Groupe « Autres » : la liste de données', () => {
     });
 
     test('Le contrôle accepte tout ce que le mode d\'emploi permet (bouclier, bonus négatif, maîtrise, détail, anciens textes)', () => {
-        const base = { kind: 'objet', vo: 'Example', ca: '+2', comment: 'Objet magique.' };
+        const base = { kind: 'objet', vo: 'Example', rarity: 'rare', ca: '+2', comment: 'Objet magique.' };
         assert.deepEqual(entryProblems({ ...base, name: 'Bouclier sentinelle', type: 'Bouclier', value: '+2' }), []);
         assert.deepEqual(entryProblems({ ...base, name: 'Anneau maudit', type: 'Bonus', value: '-1', ca: '-1' }), []);
         assert.deepEqual(entryProblems({ ...base, name: 'Cuir elfique', type: 'Légère', value: '13', ca: '13 + Dex' }), []);
@@ -226,20 +231,23 @@ describe('Groupe « Autres » : dans la liste à parcourir', () => {
 });
 
 describe('Groupe « Autres » : la ligne écrite dans le tableau', () => {
-    test('Exactement les clés d\'une ligne saisie à la main, aucune nouvelle', () => {
+    test('Les clés d\'une ligne saisie à la main, plus la rareté d\'un objet magique', () => {
         for (const entry of ARMOR_OTHERS) {
             const row = armorRowFromOther(entry);
-            assert.deepEqual(Object.keys(row).sort(), Object.keys(EMPTY_ARMOR).sort(), entry.name);
+            const rarity = entry.kind === 'objet' ? { magic_rarity: entry.rarity } : {};
             assert.deepEqual(row, {
-                ...EMPTY_ARMOR, name: entry.name, type: entry.type, ca: entry.value, comment: entry.comment
+                ...EMPTY_ARMOR, name: entry.name, type: entry.type, ca: entry.value, comment: entry.comment, ...rarity
             }, entry.name);
             assert.equal(isBlankArmor(row), false);
         }
     });
 
     test('Une ligne choisie est identique à la même ligne réglée à la main', () => {
-        // Nom tapé, type « Bonus » et valeur « +1 » réglés avec l'engrenage, commentaire tapé
-        const byHand = { ...EMPTY_ARMOR, name: 'Anneau de protection', type: 'Bonus', ca: '+1', comment: other('Anneau de protection').comment };
+        // Nom tapé, type « Bonus », valeur « +1 » et rareté réglés avec l'engrenage, commentaire tapé
+        const byHand = {
+            ...EMPTY_ARMOR, name: 'Anneau de protection', type: 'Bonus', ca: '+1',
+            comment: other('Anneau de protection').comment, magic_rarity: 'rare'
+        };
         assert.deepEqual(armorRowFromOther(other('Anneau de protection')), byHand);
         // La migration (lecture d'une sauvegarde) ne la change pas
         const saved = migrateCharacter({ dynamic_armors: [{ ...byHand, equipped: true }] }).character.dynamic_armors;
@@ -517,5 +525,70 @@ describe('Groupe « Autres » : interface (js/ui/armors.js)', () => {
 
     test('Nom tapé en entier : seules les armures du manuel sont complétées toutes seules', () => {
         assert.match(ui, /const entry = name && searchArmorCatalogue\(name\)\.find\(a => a\.name\.toLowerCase\(\) === name\);\s*if \(entry\) replaceRow\(index, current => armorRowFromCatalogue\(entry, current\)\);/);
+    });
+});
+
+describe('Objets magiques par nature : rareté, jamais de bonus en plus (demande de Franck, 25/11/2026)', () => {
+    test('Raretés du DMG 2024 : cape peu commune, anneau, bracelets et pierre rares, robe légendaire', () => {
+        assert.deepEqual(ARMOR_OTHERS.filter((entry) => entry.kind === 'objet').map((entry) => [entry.name, entry.rarity]), [
+            ['Anneau de protection', 'rare'], ['Cape de protection', 'uncommon'], ['Bracelets de défense', 'rare'],
+            ['Pierre de Ioun de protection', 'rare'], ["Robe de l'archimage", 'legendary']
+        ]);
+        // Paliers des décors, comme les armures magiques du DMG 2024 (+1 rare, +2 très rare, +3 légendaire)
+        assert.deepEqual(MAGIC_RARITIES.map((rarity) => [rarity.id, rarity.level]),
+            [['uncommon', 1], ['rare', 1], ['very_rare', 2], ['legendary', 3]]);
+        assert.equal(magicRarityInfo('rare').label, 'rare');
+        assert.equal(magicRarityInfo('mythique'), null);
+    });
+
+    test('armorMagicRarity : clé de la ligne, sinon entrée reconnue ; jamais pour une armure, un bouclier ou un sort', () => {
+        assert.equal(armorMagicRarity(armorRowFromOther(other('Cape de protection'))), 'uncommon');
+        assert.equal(armorMagicRarity(armorRowFromOther(other('Armure du mage'))), '');
+        // Ligne choisie avant la 4.51.0 (sans la clé) : reconnue à son nom et à son commentaire
+        const old = { ...armorRowFromOther(other("Robe de l'archimage")) };
+        delete old.magic_rarity;
+        assert.equal(armorMagicRarity(old), 'legendary');
+        // Commentaire changé par le joueur : la clé garde la ligne magique
+        assert.equal(armorMagicRarity({ ...armorRowFromOther(other('Anneau de protection')), comment: 'Cadeau de Vallus' }), 'rare');
+        // Ligne saisie à la main : magique seulement si l'engrenage l'a dit
+        const amulet = { ...EMPTY_ARMOR, name: 'Amulette', type: 'Bonus', ca: '+1' };
+        assert.equal(armorMagicRarity(amulet), '');
+        assert.equal(armorMagicRarity({ ...amulet, magic_rarity: 'very_rare' }), 'very_rare');
+        assert.equal(armorMagicRarity({ ...amulet, magic_rarity: 'mythique' }), '');
+        // Armure ou bouclier : leur magie est le bonus magique, la clé ne compte pas
+        assert.equal(armorMagicRarity({ ...worn('Armure de cuir'), magic_rarity: 'rare' }), '');
+        assert.equal(armorMagicRarity(null), '');
+    });
+
+    test('withArmorRarity : enregistre, retire, ou « none » pour un objet reconnu rendu ordinaire', () => {
+        const cape = armorRowFromOther(other('Cape de protection'));
+        assert.equal(withArmorRarity(cape, 'rare').magic_rarity, 'rare');
+        const plain = withArmorRarity(cape, '');
+        assert.equal(plain.magic_rarity, NOT_MAGIC);
+        assert.equal(armorMagicRarity(plain), '');
+        const amulet = { ...EMPTY_ARMOR, name: 'Amulette', type: 'Bonus', ca: '+1', legacy: 1 };
+        assert.deepEqual(withArmorRarity(amulet, ''), amulet);
+        assert.deepEqual(withArmorRarity(amulet, 'uncommon'), { ...amulet, magic_rarity: 'uncommon' });
+        assert.equal('magic_rarity' in withArmorRarity({ ...worn('Armure de cuir'), magic_rarity: 'rare' }, 'rare'), false);
+        assert.equal(amulet.magic_rarity, undefined); // la ligne d'origine n'est pas modifiée
+    });
+
+    test('La rareté ne change jamais la CA ; une armure ou un sort choisi à la place retire la clé', () => {
+        const cape = { ...armorRowFromOther(other('Cape de protection')), equipped: true };
+        const withoutKey = { ...cape };
+        delete withoutKey.magic_rarity;
+        assert.equal(armorClass([cape]).total, armorClass([withoutKey]).total);
+        assert.equal(armorClass([{ ...cape, magic_rarity: 'legendary' }]).total, armorClass([withoutKey]).total);
+        // Même un bonus magique laissé sur une cape ne compte pas : la magie ne compte jamais deux fois
+        assert.equal(armorClass([{ ...cape, magic: 2 }]).total, armorClass([cape]).total);
+        assert.equal('magic_rarity' in armorRowFromCatalogue(manual('Armure de cuir'), cape), false);
+        assert.equal('magic_rarity' in armorRowFromOther(other('Bouclier de la foi'), cape), false);
+    });
+
+    test('Ligne vide avec seulement une rareté : pas vide ; la lecture d\'une sauvegarde garde la clé', () => {
+        assert.equal(isBlankArmor({ ...EMPTY_ARMOR, magic_rarity: 'rare' }), false);
+        assert.equal(isBlankArmor({ ...EMPTY_ARMOR, magic_rarity: NOT_MAGIC }), true);
+        const row = { ...armorRowFromOther(other('Bracelets de défense')), equipped: true };
+        assert.deepEqual(migrateCharacter({ dynamic_armors: [row] }).character.dynamic_armors, [row]);
     });
 });

@@ -55,7 +55,7 @@ describe('Configuration de l\'arme : confirmation avant de perdre un changement'
 describe("Réglages de l'armure : même confirmation (accord de Franck, 23/11/2026)", () => {
     test('« Annuler », fond, Échap : question seulement après un changement', () => {
         assert.match(armors, /\{ label: 'Annuler', dismiss: true \}/);
-        assert.match(armors, /const settingsSnapshot = \(\) => JSON\.stringify\(\[typeSelect\.value, baseInput\.value\.trim\(\), magicSelect\.value\]\);/);
+        assert.match(armors, /const settingsSnapshot = \(\) => JSON\.stringify\(\[typeSelect\.value, baseInput\.value\.trim\(\), magicSelect\.value, raritySelect\.value\]\);/);
         assert.match(armors, /if \(settingsSnapshot\(\) === opened\) return true;/);
         assert.match(armors, /if \(!asking\) \{/);
         assert.match(armors, /confirmLabel: 'Fermer sans appliquer'/);

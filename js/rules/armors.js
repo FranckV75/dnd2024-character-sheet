@@ -8,6 +8,10 @@
 // Une telle ligne est reconnue à son nom ET à son commentaire, sans clé nouvelle (armorOtherOfRow) :
 // la bulle de sa CA donne le détail de l'entrée (armorBubbleText) et la même entrée active deux
 // fois est signalée (armorWarnings). Un nom tapé à la main n'est jamais reconnu.
+// Objets magiques par nature (cape, anneau, robe… ; demande de Franck du 25/11/2026) : leur bonus
+// à la CA EST leur magie, déjà compté. Ils ne reçoivent jamais de bonus magique en plus : une
+// rareté (clé facultative « magic_rarity » de la ligne, ou celle de l'entrée « Autres » reconnue)
+// leur donne seulement l'aspect d'un objet magique (armorMagicRarity, MAGIC_RARITIES).
 // =============================================================================
 
 import { EQUIPMENT_DATA } from '../data/equipment.js';
@@ -47,6 +51,63 @@ export function withArmorMagic(row, magic) {
 }
 
 /**
+ * Raretés d'un objet magique qui n'est ni une armure ni un bouclier (DMG 2024) : clé enregistrée
+ * dans « magic_rarity », nom affiché, palier des décors (js/ui/magic.js). Les paliers suivent ceux
+ * des armures magiques du DMG 2024 : une armure +1 est rare, +2 très rare, +3 légendaire.
+ */
+export const MAGIC_RARITIES = Object.freeze([
+    Object.freeze({ id: 'uncommon', label: 'peu commun', level: 1 }),
+    Object.freeze({ id: 'rare', label: 'rare', level: 1 }),
+    Object.freeze({ id: 'very_rare', label: 'très rare', level: 2 }),
+    Object.freeze({ id: 'legendary', label: 'légendaire', level: 3 })
+]);
+
+/** Valeur de « magic_rarity » qui retire l'aspect magique d'un objet reconnu dans la liste */
+export const NOT_MAGIC = 'none';
+
+const rarityOf = (id) => MAGIC_RARITIES.find(rarity => rarity.id === id) ?? null;
+
+/**
+ * Rareté d'un objet magique qui n'est ni une armure ni un bouclier, ou '' (objet ordinaire,
+ * armure, bouclier, sort) : celle de la clé « magic_rarity » de la ligne si elle est connue
+ * (« none » : pas magique), sinon celle de l'entrée « Autres » d'où vient la ligne (lignes
+ * choisies avant la 4.51.0, sans la clé). Ne change jamais la CA.
+ * @param {Object} row - ligne de dynamic_armors
+ * @param {Array<Object>} [others]
+ * @returns {string}
+ */
+export function armorMagicRarity(row, others = ARMOR_OTHERS) {
+    if (!row || typeof row !== 'object' || armorCanBeMagic(row)) return '';
+    if (row.magic_rarity === NOT_MAGIC) return '';
+    if (rarityOf(row.magic_rarity)) return row.magic_rarity;
+    const entry = armorOtherOfRow(row, others);
+    return entry?.kind === 'objet' && rarityOf(entry.rarity) ? entry.rarity : '';
+}
+
+/** Rareté connue : son nom (« peu commun ») et le palier de ses décors ; null sinon */
+export function magicRarityInfo(id) {
+    return rarityOf(id);
+}
+
+/**
+ * Ligne avec une nouvelle rareté d'objet magique (fenêtre de réglages). Armure ou bouclier : la
+ * clé est retirée (leur magie, c'est le bonus magique). Rareté connue : enregistrée. Aucune :
+ * clé retirée, ou « none » si la ligne est un objet reconnu de la liste (sinon il resterait
+ * magique). Les autres clés sont conservées.
+ * @param {Object} row
+ * @param {string} rarity - id de MAGIC_RARITIES, ou '' (pas magique)
+ * @param {Array<Object>} [others]
+ * @returns {Object}
+ */
+export function withArmorRarity(row, rarity, others = ARMOR_OTHERS) {
+    const rest = { ...(row && typeof row === 'object' ? row : {}) };
+    delete rest.magic_rarity;
+    if (armorCanBeMagic(rest)) return rest;
+    if (rarityOf(rarity)) return { ...rest, magic_rarity: rarity };
+    return armorMagicRarity(rest, others) ? { ...rest, magic_rarity: NOT_MAGIC } : rest;
+}
+
+/**
  * Armures du catalogue dont le nom contient la recherche (sans tenir compte des accents ni de la casse).
  * @param {string} query
  * @param {Array} [catalogue]
@@ -63,6 +124,7 @@ export function isBlankArmor(armor) {
     const typed = ['name', 'ca', 'str', 'weight', 'price', 'comment'].some(key => plainText(armor[key]) !== '');
     const type = plainText(armor.type);
     return !typed && armor.stealth !== true && armor.equipped !== true && armorMagicBonus(armor) === 0
+        && !rarityOf(armor.magic_rarity)
         && (type === '' || type === EMPTY_ARMOR.type);
 }
 
@@ -189,6 +251,8 @@ export function armorRowFromCatalogue(entry, row = {}) {
         price: entry.price || ''
     };
     if (isArmorListComment(next.comment)) next.comment = '';
+    // Armure ou bouclier : sa magie est le bonus magique, jamais une rareté
+    delete next.magic_rarity;
     return next;
 }
 
@@ -198,8 +262,9 @@ export function isArmorOther(entry, others = ARMOR_OTHERS) {
 }
 
 /**
- * Ligne remplie à partir d'une entrée du groupe « Autres » (anneau, cape, sort…) : exactement les
- * clés d'une ligne saisie à la main (aucune clé nouvelle). Le type et la valeur de base sont ceux
+ * Ligne remplie à partir d'une entrée du groupe « Autres » (anneau, cape, sort…) : les clés d'une
+ * ligne saisie à la main, plus la rareté d'un objet magique (clé facultative « magic_rarity »,
+ * qu'une ligne saisie à la main reçoit aussi par l'engrenage). Le type et la valeur de base sont ceux
  * de l'entrée, comme si le joueur les avait réglés avec l'engrenage ; Force, Discrétion, poids et
  * prix sont ceux de l'entrée (vides en général).
  * Commentaire : celui de l'entrée (sa condition, ce que la fiche ne compte pas), sauf si le joueur
@@ -224,6 +289,10 @@ export function armorRowFromOther(entry, row = {}) {
         price: entry.price || '',
         comment: own ? row.comment : (entry.comment || '')
     };
+    // Objet magique : sa rareté est écrite dans la ligne (elle reste magique si le joueur change
+    // le commentaire, qui sert à la reconnaître) ; un sort n'en a pas
+    delete next.magic_rarity;
+    if (entry.kind === 'objet' && rarityOf(entry.rarity) && !armorCanBeMagic(next)) next.magic_rarity = entry.rarity;
     return armorCanBeMagic(next) ? next : withArmorMagic(next, 0);
 }
 

@@ -31,12 +31,21 @@
 //             recopier ici (oldComments: ['ancien texte']), sinon la fiche le prend pour un
 //             commentaire du joueur (il n'est plus remplacé quand on choisit autre chose sur la
 //             ligne, et la bulle ne reconnaît plus la ligne) ;
-//   kind    : 'objet' ou 'sort' ; vo : nom anglais (pour retrouver la règle).
+//   kind    : 'objet' ou 'sort' ; vo : nom anglais (pour retrouver la règle) ;
+//   rarity  : (objets seulement, obligatoire) rareté du Dungeon Master's Guide 2024 :
+//             'uncommon' (peu commun), 'rare', 'very_rare' (très rare), 'legendary' (légendaire).
+//             Ces objets sont magiques par nature : leur bonus à la CA EST leur magie, déjà compté
+//             dans « value ». La rareté ne change pas la CA : elle donne seulement à la ligne
+//             l'aspect d'un objet magique (pastille ✦ et décors, comme une armure +1 à +3 ;
+//             MAGIC_RARITIES, js/rules/armors.js). Elle est écrite dans la ligne choisie
+//             (clé facultative « magic_rarity ») : la ligne reste magique si le joueur change
+//             ensuite son commentaire. Sans effet pour une entrée de type armure ou bouclier
+//             (leur magie, c'est le « Bonus magique » de l'engrenage).
 // tests/armor-others.test.js vérifie ces contraintes : un oubli fait échouer npm run check en
 // nommant l'entrée.
 //
 // Une ligne choisie ici est une ligne ordinaire du tableau (mêmes clés qu'une ligne saisie à la
-// main, aucune clé nouvelle) : le joueur la règle ensuite avec l'engrenage, comme les autres.
+// main, plus la rareté d'un objet, « magic_rarity », que l'engrenage règle aussi) : le joueur la règle ensuite avec l'engrenage, comme les autres.
 // Ces noms ne sont PAS reconnus quand on les tape à la main sans passer par la liste : une ligne
 // « Anneau de protection » d'une ancienne fiche reste exactement comme elle était. La fiche
 // reconnaît une ligne de la liste à son nom ET à son commentaire (celui de l'entrée, tel quel) :
@@ -68,27 +77,27 @@ const SPELL_END = "La fiche ne décoche pas la ligne quand le sort finit (durée
 export const ARMOR_OTHERS = [
     // --- Objets magiques (Dungeon Master's Guide 2024) ---
     {
-        name: 'Anneau de protection', kind: 'objet', vo: 'Ring of Protection',
+        name: 'Anneau de protection', kind: 'objet', vo: 'Ring of Protection', rarity: 'rare',
         type: 'Bonus', value: '+1', ca: '+1',
         comment: 'Objet magique (harmonisation). Aussi +1 aux jets de sauvegarde, non compté ici.'
     },
     {
-        name: 'Cape de protection', kind: 'objet', vo: 'Cloak of Protection',
+        name: 'Cape de protection', kind: 'objet', vo: 'Cloak of Protection', rarity: 'uncommon',
         type: 'Bonus', value: '+1', ca: '+1',
         comment: 'Objet magique (harmonisation). Aussi +1 aux jets de sauvegarde, non compté ici.'
     },
     {
-        name: 'Bracelets de défense', kind: 'objet', vo: 'Bracers of Defense',
+        name: 'Bracelets de défense', kind: 'objet', vo: 'Bracers of Defense', rarity: 'rare',
         type: 'Bonus', value: '+2', ca: '+2 (sans armure)',
         comment: 'Objet magique (harmonisation). Sans armure ni bouclier : à décocher sinon.'
     },
     {
-        name: 'Pierre de Ioun de protection', kind: 'objet', vo: 'Ioun Stone (Protection)',
+        name: 'Pierre de Ioun de protection', kind: 'objet', vo: 'Ioun Stone (Protection)', rarity: 'rare',
         type: 'Bonus', value: '+1', ca: '+1',
         comment: 'Objet magique (harmonisation).'
     },
     {
-        name: "Robe de l'archimage", kind: 'objet', vo: 'Robe of the Archmagi',
+        name: "Robe de l'archimage", kind: 'objet', vo: 'Robe of the Archmagi', rarity: 'legendary',
         type: 'Bonus', value: '+5', ca: '15 + Dex',
         comment: 'Objet magique (harmonisation). CA 15 + Dex, notée +5 : à décocher en armure.',
         detail: "Harmonisation réservée à un Ensorceleur, un Occultiste ou un Magicien. Sans armure, la CA de base vaut 15 + Dex : la fiche la note +5 par rapport à 10 + Dex. Ne se cumule pas avec une Défense sans armure (Barbare, Moine…) ni avec Armure du mage : seule la meilleure base compte, la fiche les additionnerait. Aussi +2 au DD de sauvegarde et au bonus d'attaque des sorts, et Avantage aux jets de sauvegarde contre les sorts et les effets magiques : non comptés ici."
