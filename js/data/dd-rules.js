@@ -838,7 +838,9 @@ const DD_RULES = {
         // guerre, 1d6 tranchants, lancer (18/36 m), finesse, légère ; elle revient dans la main après
         // le lancer, sauf sur un 1 naturel ; 1 kg, 10 po. « Arme de jet » : à distance, comme la
         // Fléchette (weaponReach, js/rules/weapons.js). Guide écrit pour la 5e édition de 2014 : aucune
-        // botte d'arme (« - », comme l'Attaque à mains nues). Mode Odyssée coupé : retirée de la liste
+        // botte d'arme (« - », comme l'Attaque à mains nues). Recherché le 26/11/2026 : aucune
+        // conversion officielle 2024 du chakram (seulement des propositions de joueurs) ; botte et
+        // usage au corps à corps à valider avec le MJ (dit dans la capacité « Maniement du chakram »). Mode Odyssée coupé : retirée de la liste
         // des armes, sauf si le tableau en a déjà une (proposedWeapons, js/rules/odyssey.js).
         { name: "Chakram", atk: "DEX", dmg: "1d6 tran.", prop: "Finesse, Légère, Lancer (18/36 m)", prof: "-", ammo: "-", category: "Guerre", source: "Odyssée" }
     ]
