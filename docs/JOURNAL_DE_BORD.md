@@ -12,7 +12,8 @@ en fin de session :
 
 ## En ce moment
 
-- **En ligne** : version **4.50.0**, publiée le 26/11/2026 avec l'accord de Franck (« Publie ») :
+- **En ligne** : version **4.50.0**, publiée le 26/11/2026 avec l'accord de Franck (« Publie »),
+  vérifiée en ligne (0 erreur console, fenêtre « Nouveautés » affichée, douze exemples) :
   un personnage d'exemple par classe (douze, du niveau 3 au niveau 15, dont un Paladin 10 du
   Serment du Seigneur Dragon avec ses deux dragons), puis les trois manques corrigés : Magie des
   Amazones donnée, Arcanum mystique hors du compte des préparés, chakram dans la liste des armes.
