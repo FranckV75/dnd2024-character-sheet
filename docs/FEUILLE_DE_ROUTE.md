@@ -110,7 +110,7 @@ compte des préparés~~ (une ligne par niveau, lancée seulement par sa case) ; 
 des armes~~ (Odyssée, à distance, sans botte ; le style Armes de lancer y est toujours compté).
 Choix à confirmer par Franck : « tromperie » du guide lue comme Double illusoire ; chakram sans botte
 d'arme (le guide est écrit pour l'ancienne édition) et seulement lancé.
-Fait en 4.51.0 (26/11/2026, pas encore publiée) : ~~objets « Autres » magiques~~ (cape, anneau,
+Fait en 4.51.0 (26/11/2026, publiée le 28/11/2026) : ~~objets « Autres » magiques~~ (cape, anneau,
 bracelets, pierre de Ioun, robe : aspect magique selon leur rareté du DMG 2024, CA inchangée ;
 une ligne écrite à la main reçoit une rareté par la roue dentée). Choix à confirmer par Franck :
 paliers des décors (peu commun et rare : comme +1 ; très rare : +2 ; légendaire : +3), pastille

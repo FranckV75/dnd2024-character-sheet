@@ -3,7 +3,7 @@
 Toutes les modifications notables du projet sont documentées dans ce fichier. Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ## [4.51.0] - 2026-11-26 (objets « Autres » magiques)
-Pas encore publiée. Demande de Franck (25/11/2026) : la cape, l'anneau… du tableau des armures
+Publiée le 28/11/2026 avec l'accord de Franck (« Publie »). Demande de Franck (25/11/2026) : la cape, l'anneau… du tableau des armures
 doivent pouvoir être magiques ; précision de Franck : ils le sont par nature, leur bonus à la CA
 est leur magie (rien à ajouter, la CA est déjà juste).
 ### Added
